@@ -17,7 +17,7 @@ class IsAdminOrReadOnly(BasePermission):
 
 class IsAdmin(BasePermission):
     def has_permission(self, request, view):
-        return request.user and (request.user.is_staff)
+        return request.user and (request.user.is_staff or request.user.role == 'admin')
 
 class IsStudent(BasePermission):
     def has_permission(self, request, view):

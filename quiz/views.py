@@ -22,6 +22,7 @@ from rest_framework.decorators import api_view, permission_classes
 from datetime import timedelta
 from django.db.models import Q, Count, Sum
 from random import sample
+from invitation.models import ExamInvite
 import openpyxl
 import random
 import pandas as pd
@@ -56,45 +57,12 @@ class ExamDetailView(generics.RetrieveAPIView):
         context.update({"request": self.request})
         return context
     
-# class ExamDetailView(generics.RetrieveAPIView):
-#     queryset = Exam.objects.all()
-#     serializer_class = ExamSerializer
-#     permission_classes = [IsAuthenticated]
-#     authentication_classes = [JWTAuthentication]
-#     lookup_field = 'exam_id'
 
-#     def get(self, request, *args, **kwargs):
-#         exam = self.get_object()
-        
-#         # Check if the exam's status is "published"
-#         try:
-#             exam_status = Status.objects.get(exam=exam)
-#             if exam_status.status != 'published':
-#                 return Response({'error': 'This exam is not published yet.'}, status=status.HTTP_400_BAD_REQUEST)
-#         except Status.DoesNotExist:
-#             return Response({'error': 'Status not found for this exam.'}, status=status.HTTP_404_NOT_FOUND)
-
-#         return super().get(request, *args, **kwargs)
-
-#     def get_serializer_context(self):
-#         context = super().get_serializer_context()
-#         context.update({"request": self.request})
-#         return context
 
 class CategoryViewSet(viewsets.ModelViewSet):
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
 
-class QuestionViewSet(viewsets.ModelViewSet):
-    queryset = Question.objects.all()
-    serializer_class = QuestionSerializer
-    permission_classes = [IsAuthenticated, IsAdminOrReadOnly]
-
-    def perform_create(self, serializer):
-        exam = serializer.validated_data.get('exam')
-        category = serializer.validated_data.get('category')
-        question = serializer.save(exam=exam, category=category)
-        return Response({"question_id": question.id})
 
 
     
@@ -102,52 +70,59 @@ class QuestionViewSet(viewsets.ModelViewSet):
 class ExamViewSet(viewsets.ModelViewSet):
     queryset = Exam.objects.all()
     serializer_class = ExamSerializer
-    permission_classes = [IsAuthenticated, IsAdminOrReadOnly]
+    permission_classes = [IsAuthenticated]
+    authentication_classes=[JWTAuthentication]
 
     
     def perform_create(self, serializer):
         exam = serializer.save(created_by=self.request.user)
-        Status.objects.create(exam=exam, status='draft', user=self.request.user)
-        return Response({'exam_id': exam.exam_id}, status=status.HTTP_201_CREATED)
+        status = 'draft'
+        
+        if self.request.user.role=='student':
+            status = 'student'
+            Status.objects.create(exam=exam, status=status, user=self.request.user)
+            return Response({'exam_id': exam.exam_id})
+            # invite = ExamInvite.objects.create(invited_by = self.request.user, exam=exam)
+        Status.objects.create(exam=exam, status=status, user=self.request.user)
+        return Response({'exam_id': exam.exam_id})
     
     
-    @action(detail=False, methods=['get'], permission_classes=[IsAuthenticated])
+    @action(detail=False, methods=['get'], permission_classes=[IsAuthenticated], authentication_classes=[JWTAuthentication])
     def exam_list(self, request):
+        # print(request.user.role)
         # Filter exams where status is 'draft' and created_by is the current user
         exams = Exam.objects.filter(exam__status='published')
         serializer = self.get_serializer(exams, many=True)
         return Response(serializer.data)
     
     
-    # @action(detail=False, methods=['get'], url_path='draft-exams', permission_classes=[IsAuthenticated])
-    # def list_draft_exams(self, request):
-    #     # Filter exams where status is 'draft' and created_by is the current user
-    #     draft_exams = Exam.objects.filter(created_by=request.user, exam__status='Draft')
-    #     # draft_exams = Status.objects.filter(exam__in = exams, status='draft')
-    #     serializer = self.get_serializer(draft_exams, many=True)
-    #     return Response(serializer.data)
+    @action(detail=False, methods=['get'], permission_classes=[IsAuthenticated], authentication_classes=[JWTAuthentication])
+    def student_exam_list(self, request):
+        
+        exams = Exam.objects.filter(exam__status='student', created_by=self.request.user)
+        serializer = self.get_serializer(exams, many=True)
+        return Response(serializer.data)
+    
+    
     
     @action(detail=True, methods=['get'], url_path='start', permission_classes=[IsAuthenticated], authentication_classes=[JWTAuthentication])
     def start_exam(self, request, pk=None):
         exam = self.get_object()
         status = Status.objects.filter(exam = exam)
-        print(status.values()[0]['status'])
-        if status.values()[0]['status'] != 'published':
-            return response({"message": "The exam didn't published"})
-        user = request.user
-        # try:
-        #     exam_status = Status.objects.get(exam=exam)
-        #     if exam_status.status != 'published':
-        #         return Response({'error': 'This exam is not published yet.'}, status=status.HTTP_400_BAD_REQUEST)
-        # except Status.DoesNotExist:
-        #     return Response({'error': 'Status not found for this exam.'}, status=status.HTTP_404_NOT_FOUND)
-        
-        return Response({
+        if status.values()[0]['status'] == 'published' or status.values()[0]['status'] == 'student':
+            user = self.request.user
+            return Response({
             'exam_id': exam.exam_id,
             'title': exam.title,
             'total_questions': exam.total_questions,
             'start_time': timezone.now(),  # Just return the current time as start time
         })
+        
+        
+        return Response({"message": "The exam didn't published"})
+        
+        
+        
 
     @action(detail=True, methods=['get'], url_path='questions', permission_classes=[IsAuthenticated], authentication_classes=[JWTAuthentication])
     def get_questions(self, request, pk=None):
@@ -189,14 +164,6 @@ class ExamViewSet(viewsets.ModelViewSet):
         # If the total number of selected questions is less than `questions_to_generate`, fill with random questions
         total_selected = len(selected_questions)
         print(total_selected)
-        # if total_selected < questions_to_generate:
-        #     remaining_questions = questions_to_generate - total_selected
-        #     additional_questions = Question.objects.filter(exam=exam).exclude(id__in=question_ids_selected)
-        #     if additional_questions.count() > 0:
-        #         additional_sample = random.sample(list(additional_questions), min(remaining_questions, additional_questions.count()))
-        #         selected_questions.extend(additional_sample)
-
-        # Serialize the questions
         serializer = QuestionSerializer(selected_questions, many=True)
         return Response(serializer.data)
 
@@ -250,7 +217,7 @@ class ExamViewSet(viewsets.ModelViewSet):
         })
         
     
-    @action(detail=True, methods=['post'], permission_classes=[IsAdminOrReadOnly])
+    @action(detail=True, methods=['post'])
     def generate_exam(self, request, pk=None):
         """
         Custom action to generate an exam by selecting random questions based on difficulty percentages.
@@ -316,6 +283,7 @@ class ExamViewSet(viewsets.ModelViewSet):
             if question_count > 0:
                 selected_questions += sample(questions, min(len(questions), question_count))
 
+        print(len(selected_questions))
         # Check if we have enough questions selected
         if len(selected_questions) < total_questions:
             return Response({'error': 'Not enough questions available to generate the exam.'}, status=status.HTTP_400_BAD_REQUEST)
@@ -456,7 +424,7 @@ class QuestionViewSet(viewsets.ModelViewSet):
                                 'marks': 1,
                                 'category': category,
                                 'difficulty_level': difficulty_level,
-                                'created_by': self.request.user,
+                                'created_by': request.user,
                                 'status': 'submitted'  # Assuming 'submitted' is the status
                             }
                         )
@@ -499,8 +467,10 @@ class QuestionViewSet(viewsets.ModelViewSet):
     
     @action(detail=False, methods=['get'], permission_classes=[IsAdminOrReadOnly])
     def user_questions(self, request):
-        user = request.user
+        user = self.request.user
+        
         user_questions = Question.objects.filter(created_by=user)  # Filter by the logged-in user
+        # print(user_questions)
         serializer = self.get_serializer(user_questions, many=True)
         return Response(serializer.data)
 
@@ -530,6 +500,7 @@ class QuestionViewSet(viewsets.ModelViewSet):
     def submitted_questions(self, request, user_id=None):
         submitted_status = 'submitted'
         user = User.objects.get(id=user_id)
+        # print('Hello')
 
         user_questions = Question.objects.filter(created_by=user)  # Filter by the logged-in user
         serializer = self.get_serializer(user_questions, many=True)
@@ -573,6 +544,7 @@ class QuestionViewSet(viewsets.ModelViewSet):
         # print("pk: ", pk)
         # Get the reviewer (the logged-in user)
         reviewer =self.request.user
+        # print(reviewer)
 
         # If user_id is provided, filter questions created by that user and reviewed by the current reviewer
         if pk:
@@ -624,7 +596,7 @@ class QuestionViewSet(viewsets.ModelViewSet):
         # Return the list of users with the total number of reviewed questions
         return Response(users_data, status=status.HTTP_200_OK)
     
-    
+        
     @action(detail=True, methods=['get'], permission_classes=[IsAdminOrReadOnly])
     def approved_questions(self, request, pk=None):
         reviewed_status = 'approved'
@@ -653,38 +625,47 @@ class QuestionViewSet(viewsets.ModelViewSet):
         # id = pk
         # data ={"id": id, "questions": serializer.data}
         return Response(serializer.data)
-    
+
     @action(detail=False, methods=['post'])
     def submit_all_reviews(self, request):
-        # Extract the list of reviews from the request body
         reviews = request.data.get('reviews', [])
         
         if not reviews:
             return Response({"error": "No reviews provided"}, status=status.HTTP_400_BAD_REQUEST)
 
-        for review in reviews:
-            question_id = review.get('question_id')
-            remarks = review.get('remarks', '')
+        question_ids = [review.get('question_id') for review in reviews]
+        remarks_by_id = {review.get('question_id'): review.get('remarks', '') for review in reviews}
+        
+        # val = remarks_by_id.get('1760', '')
+        # print(val)
+        # print("id: ", question_ids)
+        # print("remarks: ", remarks_by_id)
 
+        # Use a transaction to wrap the whole process
+        with transaction.atomic():
+            questions = Question.objects.filter(id__in=question_ids)
+            # print(questions)
+            for question in questions:
+                # print(remarks_by_id.get(question.id))
+                # print("remark", remarks_by_id.get(question.id, ''))
+                print(question.id)
+                question.remarks = remarks_by_id.get(str(question.id), '')
+                question.status = 'approved'
             
-            question = Question.objects.get(id=question_id)
-            question.remarks = remarks
-            question.status = 'approved'
-            question.save()
+            Question.objects.bulk_update(questions, ['remarks', 'status'])
 
         return Response({"message": "All reviews processed successfully"}, status=status.HTTP_200_OK)
-
     
     
     
-    @action(detail=False, methods=['post'], permission_classes=[IsAdminOrReadOnly])
+    @action(detail=False, methods=['post'], permission_classes=[IsAdmin])
     def assign_teacher(self, request):
         """
         Custom action to assign a teacher to multiple questions and update their status to reviewed
         """
-        teacher_id = request.data.get('teacherId')
-        question_ids = request.data.get('question_ids', [])
-
+        teacher_id = self.request.data.get('teacherId')
+        question_ids = self.request.data.get('question_ids', [])
+        print("teacher id:", teacher_id)
         if not teacher_id:
             return Response({'error': 'Teacher id is required.'}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -695,32 +676,33 @@ class QuestionViewSet(viewsets.ModelViewSet):
 
         questions = Question.objects.filter(id__in=question_ids).update(reviewed_by=teacher, status='reviewed')
         updated_count = 0
-
-        # questions.objects.update()
-        # questions.save()
-        # for question in questions:
-        #     if question.reviewed_by != teacher or question.status != 'reviewed':
-        #         question.reviewed_by = teacher
-        #         question.status = 'reviewed'  # Assuming 1 means "Yes" for being reviewed
-        #         question.save()
-        #         updated_count += 1
              
         return Response({'message': f'{updated_count} questions updated.'}, status=status.HTTP_200_OK)
     
     
-    @action(detail=True, methods=['post'], permission_classes=[IsAdmin])  # Customize permissions if needed
+    @action(detail=True, methods=['post'], permission_classes=[IsAdmin])
     def publish_approved(self, request, pk):
         user = get_object_or_404(User, id=pk)
-        print(user)
-        approved_questions = Question.objects.filter(created_by=user, status='approved', remarks='')
+
+        # Filter questions created by the user with status 'approved'
+        approved_questions = Question.objects.filter(created_by=user, status='approved')
 
         if not approved_questions.exists():
-            return Response({'error': 'No approved questions found for this user or provided IDs.'}, status=status.HTTP_404_NOT_FOUND)
+            return Response({'error': 'No approved questions found for this user.'}, status=status.HTTP_404_NOT_FOUND)
 
-        # Update status of all the filtered questions to 'published'
-        updated_count = approved_questions.update(status='published')
+        # Split questions based on whether they have remarks
+        questions_with_remarks = approved_questions.filter(~Q(remarks=''))  # Questions with remarks
+        questions_without_remarks = approved_questions.filter(remarks='')  # Questions without remarks
 
-        return Response({'message': f'{updated_count} questions published successfully!'}, status=status.HTTP_200_OK)
+        # Update the status of questions with remarks to 'rejected'
+        rejected_count = questions_with_remarks.update(status='rejected')
+
+        # Update the status of questions without remarks to 'published'
+        published_count = questions_without_remarks.update(status='published')
+
+        return Response({
+            'message': f'{published_count} questions published successfully and {rejected_count} questions rejected.'
+        }, status=status.HTTP_200_OK)
 
 
     @action(detail=False, methods=['get'], permission_classes=[IsAdminOrReadOnly])  # Use detail=False for list actions
@@ -833,10 +815,6 @@ class ExamUploadView(APIView):
                 # exam.total_marks = total_marks
                 exam.save()
 
-            # # Update or create ExamDifficulty record
-            # exam_difficulty, created = ExamDifficulty.objects.get_or_create(exam=exam)
-            # exam_difficulty.save()  # Ensure this method or equivalent updates percentages correctly
-
             return Response({"message": "All questions created successfully."}, status=status.HTTP_201_CREATED)
 
         except Exception as e:
@@ -861,7 +839,7 @@ class StudentListView(ListAPIView):
 
     def get_queryset(self):
         students = User.objects.filter(role='student').exclude(id=self.request.user.id)
-        print("the student", students[0].username)
+        # print("the student", students[0].username)
         # Filter users who are teachers (you might use a role or a specific flag)
         return students
 

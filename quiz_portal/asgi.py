@@ -1,16 +1,33 @@
-"""
-ASGI config for quiz_portal project.
+# # your_project_name/asgi.py
 
-It exposes the ASGI callable as a module-level variable named ``application``.
+# import os
+# from django.core.asgi import get_asgi_application
+# from channels.routing import ProtocolTypeRouter, URLRouter
+# from channels.auth import AuthMiddlewareStack
+# from quiz.routing import websocket_urlpatterns # Import your routing configuration
 
-For more information on this file, see
-https://docs.djangoproject.com/en/5.0/howto/deployment/asgi/
-"""
+# os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'quiz_portal.settings')
 
+# application = ProtocolTypeRouter({
+#     "http": get_asgi_application(),
+#     "websocket": 
+#         URLRouter(
+#             websocket_urlpatterns  # Your WebSocket URLs
+#         )
+# })
 import os
-
 from django.core.asgi import get_asgi_application
+from channels.routing import ProtocolTypeRouter, URLRouter
+from channels.auth import AuthMiddlewareStack
+from quiz.routing import websocket_urlpatterns
 
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'quiz_portal.settings')
 
-application = get_asgi_application()
+application = ProtocolTypeRouter({
+    "http": get_asgi_application(),
+    "websocket": AuthMiddlewareStack(
+        URLRouter(
+            websocket_urlpatterns
+        )
+    ),
+})

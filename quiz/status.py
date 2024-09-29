@@ -9,13 +9,15 @@ from .permissions import IsAdminOrReadOnly, IsAdmin
 from rest_framework.permissions import IsAdminUser
 from rest_framework.views import APIView
 from django.contrib.auth import get_user_model
+from rest_framework_simplejwt.authentication import JWTAuthentication
 User = get_user_model()
 
 
 class StatusViewSet(viewsets.ModelViewSet):
     queryset = Status.objects.all()
     serializer_class = StatusSerializer
-    permission_classes = [IsAuthenticated]
+    # permission_classes = [IsAuthenticated]
+    authentication_classes = [JWTAuthentication]
 
     def perform_create(self, serializer):
         exam = get_object_or_404(Exam, pk=self.request.data.get('exam_id'))
@@ -31,7 +33,7 @@ class StatusViewSet(viewsets.ModelViewSet):
         return Response(serializer.data, status=status.HTTP_200_OK)
     
     
-    @action(detail=True, methods=['post'], permission_classes=[IsAdminOrReadOnly])
+    @action(detail=True, methods=['post'], permission_classes=[IsAdminOrReadOnly], authentication_classes = [JWTAuthentication])
     def submit_to_admin(self, request, pk=None):
         """Submit exam to admin for review"""
         status_obj = self.get_object()
@@ -41,8 +43,9 @@ class StatusViewSet(viewsets.ModelViewSet):
             return Response({'detail': 'Exam submitted to admin for review'}, status=status.HTTP_200_OK)
         return Response({'detail': 'Exam must be in draft status to submit to admin'}, status=status.HTTP_400_BAD_REQUEST)
 
-    @action(detail=False, methods=['get'], permission_classes=[IsAdminUser])
+    @action(detail=False, methods=['get'], permission_classes=[IsAdmin])
     def submitted_to_admin(self, request):
+        print("hello")
         """List all exams with status 'submitted_to_admin'"""
         submitted_exams = Status.objects.filter(status='submitted_to_admin')
         serializer = self.get_serializer(submitted_exams, many=True)
@@ -51,7 +54,7 @@ class StatusViewSet(viewsets.ModelViewSet):
     
     
     
-    @action(detail=True, methods=['post'], permission_classes=[IsAdminOrReadOnly])
+    @action(detail=True, methods=['post'], permission_classes=[IsAdminOrReadOnly], authentication_classes = [JWTAuthentication])
     def assign_reviewer(self, request, pk=None):
         print(request)
         """Admin assigns a teacher (reviewer) to review the exam"""
@@ -81,7 +84,7 @@ class StatusViewSet(viewsets.ModelViewSet):
 
     
     
-    @action(detail=True, methods=['post'], permission_classes=[IsAuthenticated])
+    @action(detail=True, methods=['post'], permission_classes=[IsAuthenticated], authentication_classes = [JWTAuthentication])
     def submit_to_admin_from_reviewer(self, request, pk=None):
         """Reviewer submits the reviewed exam back to the admin, including question remarks."""
         # Fetch the status object using pk (which is the status ID)

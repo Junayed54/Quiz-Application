@@ -179,7 +179,7 @@ document.addEventListener('DOMContentLoaded', function() {
             headers: {
                 'Content-Type': 'application/json',
                 'Authorization': 'Bearer ' + accessToken,
-                'X-CSRFToken': getCookie('csrftoken')
+                // 'X-CSRFToken': getCookie('csrftoken')
             },
             body: JSON.stringify({ reviewer_id: teacherId })
         })

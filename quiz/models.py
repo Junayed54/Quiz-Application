@@ -52,6 +52,7 @@ class Exam(models.Model):
 
 class Status(models.Model):
     STATUS_CHOICES = [
+        ('student', 'student'),
         ('draft', 'Draft'),
         ('submitted_to_admin', 'Submitted to Admin'),
         ('under_review', 'Under Review'),
@@ -175,7 +176,7 @@ class Question(models.Model):
         return self.category.name
     
     
-    
+
 
     
 

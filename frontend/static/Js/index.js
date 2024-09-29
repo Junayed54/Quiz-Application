@@ -6,6 +6,14 @@ document.addEventListener('DOMContentLoaded', function() {
     const teacher_admin = document.getElementById('teacheradmin');
     const login = document.getElementById('login-btn');
     const logoutBtn = document.getElementById('logout');
+    const user_name = document.getElementById('user_name');
+    const role = document.getElementById('role');
+    const packages = document.getElementById('packages')
+
+    if (!accessToken) {
+        window.location.href = '/login/';
+        return;
+    }
     // teacher.classList.add('d-none');
     // Check if the required elements exist in the DOM
     if (logout && teacher && login && logoutBtn) {
@@ -30,6 +38,9 @@ document.addEventListener('DOMContentLoaded', function() {
             })
             .then(response => response.json())
             .then(data => {
+                console.log(data);
+                user_name.innerText = data.username
+                role.innerHTML = data.role
                 if (data.role === 'teacher') {
                     teacher.classList.remove('d-none');
                     
@@ -39,6 +50,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
                 else if(data.role =='admin' || data.role =='teacher'){
                     teacher_admin.classList.remove('d-none');
+                    packages.classList.remove('d-none')
                 }
                 else{
                     teacher.classList.add('d-none');

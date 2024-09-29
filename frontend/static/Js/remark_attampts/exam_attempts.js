@@ -33,7 +33,9 @@ function fetchUserAttempts(examId) {
                 const tableRow = `
                     <tr>
                         <td>${attempt.username}</td>
-                        <td>${attempt.num_attempts}</td>
+                        
+                        <td class='text-center'>${attempt.num_attempts}</td>
+                        
                     </tr>
                 `;
                 tableBody.insertAdjacentHTML('beforeend', tableRow);

@@ -55,9 +55,9 @@ class ExamDifficultyAdmin(admin.ModelAdmin):
 
 
 class QuestionAdmin(admin.ModelAdmin):
-    list_display = ('text', 'exam', 'category', 'difficulty_level', 'marks', 'status', 'created_by', 'reviewed_by', 'created_at', 'updated_at')
+    list_display = ('id', 'text', 'exam', 'remarks', 'category', 'difficulty_level', 'marks', 'status', 'created_by', 'reviewed_by', 'created_at', 'updated_at')
     list_filter = ('difficulty_level', 'status', 'category', 'exam')
-    # search_fields = ('text', 'remarks')
+    search_fields = ('text', 'remarks')
     # ordering = ('-created_at',)
     readonly_fields = ('created_at', 'updated_at')
     # list_editable = ('status', 'marks', 'difficulty_level')

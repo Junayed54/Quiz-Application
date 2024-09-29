@@ -8,6 +8,7 @@ document.addEventListener('DOMContentLoaded', function() {
         window.location.href = '/login/';
         return;
     }
+
     function fetchExamDetails() {
         fetch(`/quiz/exams/${examId}/start/`, {
             method: 'GET',
@@ -17,6 +18,7 @@ document.addEventListener('DOMContentLoaded', function() {
         })
         .then(response => response.json())
         .then(data => {
+            console.log(data)
             document.getElementById('exam-info').innerHTML = `
                 <h3 class="text-xl font-bold">${data.title}</h3>
             `;
@@ -53,6 +55,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function submitExam() {
+        console.log(answers);
         fetch(`/quiz/exams/${examId}/submit/`, {
             method: 'POST',
             headers: {
@@ -77,9 +80,6 @@ document.addEventListener('DOMContentLoaded', function() {
             if (currentQuestionIndex < questions.length - 1) {
                 currentQuestionIndex++;
                 showQuestion(currentQuestionIndex);
-            } else {
-                document.getElementById('next-question').classList.add('d-none');
-                document.getElementById('submit-exam').classList.remove('d-none');
             }
         } else {
             alert("Please select an option before proceeding to the next question.");
@@ -133,9 +133,13 @@ document.addEventListener('DOMContentLoaded', function() {
         // Make sure question container is visible
         document.getElementById('question-container').classList.remove('d-none');
 
-        // Show or hide Previous and Next buttons based on question index
+        // Show or hide Previous button based on question index
         document.getElementById('prev-question').classList.toggle('d-none', index === 0);
-        document.getElementById('next-question').classList.remove('d-none'); // Always show Next button for all questions
+        
+        // Hide Next button on last question, show otherwise
+        document.getElementById('next-question').classList.toggle('d-none', index === questions.length - 1);
+        
+        // Show Submit button on last question, hide otherwise
         document.getElementById('submit-exam').classList.toggle('d-none', index !== questions.length - 1);
     }
 

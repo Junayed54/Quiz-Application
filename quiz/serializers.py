@@ -26,14 +26,14 @@ class QuestionSerializer(serializers.ModelSerializer):
     category = serializers.PrimaryKeyRelatedField(queryset=Category.objects.all(), write_only=True)
     category_name = serializers.SerializerMethodField()
 
-    created_by_name = serializers.StringRelatedField(read_only=True)  # Use username or any identifier as per your requirement
+    created_by = serializers.StringRelatedField(read_only=True)  # Use username or any identifier as per your requirement
     reviewed_by = serializers.StringRelatedField(read_only=True) 
     class Meta:
         model = Question
-        fields = ['id', 'text', 'marks', 'exam', 'options', 'status', 'remarks', 'category', 'created_by', 'category_name', 'difficulty_level',  'time_limit', 'reviewed_by', 'updated_at', 'created_at', 'created_by_name']
+        fields = ['id', 'text', 'marks', 'exam', 'options', 'status', 'remarks', 'category', 'created_by', 'category_name', 'difficulty_level',  'time_limit', 'reviewed_by', 'updated_at', 'created_at']
         
-    def get_created_by_name(self, obj):
-        return obj.created_by.username if obj.exam and obj.created_by else None
+    # def get_created_by_name(self, obj):
+    #     return obj.created_by if obj.exam and obj.created_by else None
        
     def get_category_name(self, obj):
         return obj.category.name if obj.category and obj.category.name else None
@@ -131,3 +131,6 @@ class LeaderboardSerializer(serializers.ModelSerializer):
     class Meta:
         model = Leaderboard
         fields = ['user', 'exam', 'score']
+
+
+

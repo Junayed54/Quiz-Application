@@ -33,7 +33,7 @@ function fetchAllExamsWithAttempts() {
             const tableRow = `
                 <tr>
                     <td>${exam.exam_title}</td>
-                    <td>${exam.num_attempts}</td>
+                    <td class='text-center'>${exam.num_attempts}</td>
                     <td>
                         <button class="btn btn-primary" onclick="redirectToUserAttemptsPage('${exam.exam_id}')">
                             View all attempters

@@ -12,10 +12,10 @@
         {% comment %} @SPK@include("partials/sidebar.html") {% endcomment %}
         {% include "../../partials/sidebar.html" %}
         <!-- Start::app-content -->
-        <div class="d-flex justify-content-between main-content app-content">
+        <div class=" main-content app-content">
 
             <!-- HTML structure for displaying submitted users and their questions -->
-            <div class="container mt-5">
+            <div class="container mt-5" style="margin:auto">
                 <!-- Loading spinner -->
                 <div id="loading" class="text-center">
                     <div class="spinner-border text-primary" role="status">
@@ -24,7 +24,7 @@
                 </div>
             
                 <!-- Review Container -->
-                <div id="review-container" class="d-none row">
+                <div id="review-container" class="d-none row justify-content-center mb-4">
                     <!-- Correct Answers Section -->
                     <div class="col-md-6">
                         <h4 class='text-center mb-4'>All question</h4>

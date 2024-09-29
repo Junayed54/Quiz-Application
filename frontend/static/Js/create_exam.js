@@ -88,7 +88,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const formData = new FormData();
         formData.append('file', file);
         formData.append('exam_id', examId);
-
+        
         try {
             const response = await fetch('/quiz/upload-excel/', {
                 method: 'POST',
@@ -132,7 +132,7 @@ document.addEventListener('DOMContentLoaded', function() {
             alert('Please provide the exam ID and the number of questions to generate.');
             return;
         }
-    
+        console.log(accessToken);
         try {
             const response = await fetch(`/quiz/exams/${exam_Id}/generate_exam/`, {
                 method: 'POST',

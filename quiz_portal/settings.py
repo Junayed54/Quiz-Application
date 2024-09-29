@@ -4,9 +4,10 @@
 from pathlib import Path
 from datetime import timedelta
 import dj_database_url
-from decouple import config
+# from decouple import config
 from django.core.management.utils import get_random_secret_key
 import os
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -14,19 +15,30 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'wkf6c#&j%k%-jae(!p_*dq&9x*j_cvsa_l4ump#5f-^p1b(-8b'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
+# FRONTEND_URL = 'http://localhost:8000'
 
 # ALLOWED_HOSTS = []
-
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
+]
 # Custom user model
 AUTH_USER_MODEL = 'users.CustomUser'
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = 'jonaetshanto8@gmail.com'
+EMAIL_HOST_PASSWORD = 'nkyg zrps jmrt zbay'
 
-
-ALLOWED_HOSTS = ['.vercel.app','now.sh','127.0.0.1','localhost']
+ALLOWED_HOSTS = ['127.0.0.1','localhost', '217.76.63.211']
 
 # Application definition
 INSTALLED_APPS = [
     # Django apps
+    'daphne',
+    'channels',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -40,15 +52,19 @@ INSTALLED_APPS = [
     'rest_framework_simplejwt',
     'dj_rest_auth',
     'dj_rest_auth.registration',
-    
     # Your apps
     'users',
     'quiz',
     'frontend',
+    'invitation',
+    'subscription',
+    
+    
 ]
 
 # Middleware settings
 MIDDLEWARE = [
+    # 'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -78,7 +94,10 @@ REST_FRAMEWORK = {
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [os.path.join(BASE_DIR, "frontend", "templates")],
+        'DIRS': [
+            os.path.join(BASE_DIR, "frontend", "templates"),
+            os.path.join(BASE_DIR, "invitation", "templates") 
+            ],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -93,24 +112,44 @@ TEMPLATES = [
 ]
 
 # WSGI application
-WSGI_APPLICATION = 'quiz_portal.wsgi.application'
+# WSGI_APPLICATION = 'quiz_portal.wsgi.application'
+#ASGI application
+ASGI_APPLICATION = 'quiz_portal.asgi.application'
 
-# Database configuration (SQLite for simplicity)
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.sqlite3',
-#         'NAME': BASE_DIR / 'db.sqlite3',
-#     }
-# }
-
-
-DATABASE_URL = 'postgresql://postgres:WOCPsPKPuyQZVEyjVagJxLLidyAWeGWt@junction.proxy.rlwy.net:44188/railway'
-
-DATABASES = {
-    'default': dj_database_url.config(
-        default=config('DATABASE_URL', default=DATABASE_URL)
-    )
+CHANNEL_LAYERS = {
+    'default': {
+        'BACKEND': 'channels_redis.core.RedisChannelLayer',
+        'CONFIG': {
+            'hosts': [('127.0.0.1', 6379)],
+        },
+    },
 }
+# CORS_ALLOW_HEADERS = [
+#     'authorization',
+#     'content-type',
+#     'x-requested-with',
+# ]
+# Database configuration (SQLite for simplicity)
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3',
+    }
+}
+
+
+
+
+
+
+
+# DATABASE_URL = 'postgresql://postgres:WOCPsPKPuyQZVEyjVagJxLLidyAWeGWt@junction.proxy.rlwy.net:44188/railway'
+
+# DATABASES = {
+#     'default': dj_database_url.config(
+#         default=config('DATABASE_URL', default=DATABASE_URL)
+#     )
+# }
 
 
 # Password validation
@@ -129,9 +168,9 @@ import os
 # STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles_build')
 STATIC_URL = '/static/'
 STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, 'static'),
+    os.path.join(BASE_DIR, 'frontend', 'static'),
 ]
-STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles_build')
+# STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles_build')
 
 # Default primary key field type
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
@@ -161,3 +200,5 @@ SIMPLE_JWT = {
 
 # Social account providers
 
+
+# DEFAULT_FROM_EMAIL = 'your-email@example.com'

@@ -4,19 +4,26 @@ from .models import CustomUser
 
 class CustomUserAdmin(UserAdmin):
     model = CustomUser
-    list_display = ('phone_number', 'username', 'is_staff', 'is_active', 'role')
-    list_filter = ('is_staff', 'is_active',)
+    list_display = ('phone_number', 'username', 'email', 'role', 'is_staff', 'is_active', 'date_joined')
+    list_filter = ('is_staff', 'is_active', 'role')
     fieldsets = (
         (None, {'fields': ('phone_number', 'username', 'password')}),
-        ('Permissions', {'fields': ('is_staff', 'is_active')}),
+        ('Personal info', {'fields': ('email', 'address', 'other_information', 'profile_picture', 'date_of_birth', 'gender', 'secondary_phone_number', 'bio', 'facebook_profile', 'twitter_profile', 'linkedin_profile', 'preferences')}),
+        ('Permissions', {'fields': ('is_staff', 'is_active', 'role')}),
+        ('Important dates', {'fields': ('date_joined', 'last_login')}),
     )
     add_fieldsets = (
         (None, {
             'classes': ('wide',),
-            'fields': ('phone_number', 'username', 'password1', 'password2', 'is_staff', 'is_active')}
-        ),
+            'fields': ('phone_number', 'username', 'email', 'password1', 'password2', 'role', 'is_staff', 'is_active')
+        }),
+        ('Additional info', {
+            'classes': ('wide',),
+            'fields': ('address', 'other_information', 'profile_picture', 'date_of_birth', 'gender', 'secondary_phone_number', 'bio', 'facebook_profile', 'twitter_profile', 'linkedin_profile', 'preferences'),
+        }),
     )
-    search_fields = ('phone_number', 'username',)
+    search_fields = ('phone_number', 'username', 'email')
     ordering = ('phone_number',)
+    filter_horizontal = ()
 
 admin.site.register(CustomUser, CustomUserAdmin)

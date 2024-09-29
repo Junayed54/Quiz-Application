@@ -477,7 +477,7 @@
     </div>
     <!-- End Switcher -->
 
-    <div class="row authentication mx-0">
+    <div class="row justify-content-center authentication mx-0">
 
         <div class="col-xxl-7 col-xl-7 col-lg-12">
             <div class="row justify-content-center align-items-center h-100">
@@ -501,27 +501,34 @@
                         </div>
                         <div class="row gy-3">
                             <div class="col-xl-12 mt-0">
-                                <label for="signup-firstname" class="form-label text-default">Username</label>
+                                <label for="username" class="form-label text-default">Username</label>
                                 <input type="text" class="form-control form-control-lg" id="username" placeholder="User name">
                                 <p id="username-error" class="text-red-500 text-xs italic mt-2"></p>
-
-                            </div>
-                            <div class="col-xl-12">
-                                <label for="signup-lastname" class="form-label text-default">Phone number</label>
-                                <input type="text" class="form-control form-control-lg" id="phone_number" placeholder="Phone number">
-                                <p id="phone-number-error" class="text-red-500 text-xs italic mt-2"></p>
-
-                            </div>
-                            <div class="col-xl-12">
-                                <label for="signup-password" class="form-label text-default">Password</label>
-                                <div class="input-group">
-                                    <input type="password" class="form-control form-control-lg" id="password" placeholder="password">
-                                    <button class="btn btn-light" onclick="createpassword('signup-password',this)" type="button" id="button-addon2"><i class="ri-eye-off-line align-middle"></i></button>
-                                    <p id="password-error" class="text-red-500 text-xs italic mt-2"></p>
-
-                                </div>
                             </div>
                             
+                            <div class="col-xl-12">
+                                <label for="phone_number" class="form-label text-default">Phone number</label>
+                                <input type="text" class="form-control form-control-lg" id="phone_number" placeholder="Phone number">
+                                <p id="phone-number-error" class="text-red-500 text-xs italic mt-2"></p>
+                            </div>
+                            
+                            <div class="col-xl-12">
+                                <label for="email" class="form-label text-default">Email</label>
+                                <input type="email" class="form-control form-control-lg" id="email" placeholder="Email address">
+                                <p id="email-error" class="text-red-500 text-xs italic mt-2"></p>
+                            </div>
+                            
+                            <div class="col-xl-12">
+                                <label for="password" class="form-label text-default">Password</label>
+                                <div class="input-group">
+                                    <input type="password" class="form-control form-control-lg" id="password" placeholder="Password">
+                                    <button class="btn btn-light" onclick="createpassword('signup-password',this)" type="button" id="button-addon2">
+                                        <i class="ri-eye-off-line align-middle"></i>
+                                    </button>
+                                    <p id="password-error" class="text-red-500 text-xs italic mt-2"></p>
+                                </div>
+                            </div>
+                        
                             <!-- Role -->
                             <div class="col-xl-12">
                                 <label for="role" class="form-label text-default">Role</label>
@@ -535,6 +542,8 @@
                                 </div>
                                 <p id="role-error" class="text-danger text-xs italic mt-2"></p>
                             </div>
+                        </div>
+                        
 
                             <div class="col-xl-12 mb-3">
                                 {% comment %} <label for="signup-confirmpassword" class="form-label text-default">Confirm Password</label>
@@ -562,7 +571,7 @@
                 </div>
             </div>
         </div>
-        <div class="col-xxl-5 col-xl-5 col-lg-5 d-xl-block d-none px-0">
+        <div class="col-xxl-5 col-xl-5 col-lg-5 d-none px-0">
             <div class="authentication-cover">
                 <div class="aunthentication-cover-content rounded">
                     <div class="swiper keyboard-control">

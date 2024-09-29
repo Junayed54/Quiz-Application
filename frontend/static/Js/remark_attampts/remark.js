@@ -15,7 +15,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     <td>${item.text}</td>
                     <td>${item.remarks}</td>
                     <td>${item.difficulty_level}</td
-                    <td>${new Date(item.updated_at).toLocaleDateString()} ${new Date(item.updated_at).toLocaleTimeString()}</td>
+                    <td class='text-center'>${new Date(item.updated_at).toLocaleDateString()}</td>
                 `;
                 tableBody.appendChild(row);
             });

@@ -10,7 +10,7 @@ from .status import StatusViewSet
 router = DefaultRouter()
 router.register(r'exams', ExamViewSet, basename='exam')
 router.register(r'attempts', ExamAttemptViewSet, basename='attempts')
-router.register(r'questions', QuestionViewSet)
+router.register(r'questions', QuestionViewSet, basename='questions')
 router.register(r'question-options', QuestionOptionViewSet)
 router.register(r'categories', CategoryViewSet)
 router.register(r'status', StatusViewSet, basename='status')
@@ -39,6 +39,7 @@ urlpatterns = [
     path('admin_user_attempts/', user_exam_attempts_by_month, name='admin_user_attempts_by_month'),
     
     # templates urls
+    path('student_exams/', TemplateView.as_view(template_name='Html/custom/student_exams.html'), name = 'student_exams'),
     path('exam_list/', TemplateView.as_view(template_name='Html/custom/exam_list.html'), name='exam-list'),
     path('exam_detail/<uuid:exam_id>/', TemplateView.as_view(template_name='Html/custom/exam_detail.html'), name='exam_detail'),
     path('start_exam/<uuid:exam_id>/', TemplateView.as_view(template_name='Html/custom/start_exam.html'), name='start-exam'),
@@ -77,4 +78,7 @@ urlpatterns = [
     path('exam_attempts/<uuid:exam_id>/', TemplateView.as_view(template_name='Html/custom/remark_attampts/exam_attempts.html'), name='exam_attempts'),
     path('users_attempts_query/', TemplateView.as_view(template_name='Html/custom/remark_attampts/user_attempts_query.html'), name='user_attempt_query'),
     path('admin_users_attempts_query/', TemplateView.as_view(template_name='Html/custom/remark_attampts/admin_user_attempts_query.html'), name='admin_user_attempts_query'),
+    
+    
+    path('exam_room/<uuid:exam_id>/', TemplateView.as_view(template_name='Html/custom/invitation/exam_room.html'), name='exam_room'),
 ]

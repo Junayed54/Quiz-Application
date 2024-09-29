@@ -19,6 +19,7 @@ function fetchTeachers() {
             if(parseInt(userid)===teacher.id) return;
             const option = document.createElement('option');
             option.value = teacher.id; // Use username for selection
+            console.log(teacher.id);
             option.textContent = teacher.username; // Display username
             teacherSelect.appendChild(option);
         });

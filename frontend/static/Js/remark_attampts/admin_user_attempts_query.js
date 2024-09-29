@@ -56,7 +56,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         <tr>
                             <td>${index + 1}</td>
                             <td>${attempt.exam_title}</td>
-                            <td class='text-center' >${attempt.total_correct_answers}</td>
+                            <td class='text-center'>${attempt.total_correct_answers}</td>
                             <td>${new Date(attempt.timestamp).toLocaleString()}</td>
                         </tr>
                     `;

@@ -18,11 +18,12 @@ function fetchUserQuestions() {
         return response.json(); // If it's OK, then parse as JSON
     })
     .then(data => {
+        // console.log(data);
         const questionsContainer = document.getElementById('questions-container').querySelector('.card-body');
         questionsContainer.innerHTML = '';  // Clear previous questions
 
         if (data.length > 0) {
-            console.log(data);
+            // console.log(data);
             data.forEach(question => {
                 const questionDiv = document.createElement('div');
                 questionDiv.classList.add('mb-4', 'border-bottom', 'pb-3');

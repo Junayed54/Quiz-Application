@@ -32,6 +32,7 @@ document.addEventListener('DOMContentLoaded', function () {
         })
         .then(response => response.json())
         .then(data => {
+            console.log(data);
             // Clear previous results
             const questionList = document.getElementById('question-list');
             questionList.innerHTML = '';
