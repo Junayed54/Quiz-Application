@@ -22,6 +22,7 @@ DEBUG = True
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",
     "http://127.0.0.1:3000",
+    "http://217.76.63.211:8000",
 ]
 # Custom user model
 AUTH_USER_MODEL = 'users.CustomUser'
@@ -130,24 +131,24 @@ CHANNEL_LAYERS = {
 #     'x-requested-with',
 # ]
 # Database configuration (SQLite for simplicity)
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.sqlite3',
-#         'NAME': BASE_DIR / 'db.sqlite3',
-#     }
-# }
-
-
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'quiz_application',  # Your database name
-        'USER': 'bridgers',     # The new user you just created
-        'PASSWORD': 'Bridgers@123',  # The password for the new user
-        'HOST': 'localhost',
-        'PORT': '3306',  # Default MySQL port
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3',
     }
 }
+
+
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.mysql',
+#         'NAME': 'quiz_application',  # Your database name
+#         'USER': 'bridgers',     # The new user you just created
+#         'PASSWORD': 'Bridgers@123',  # The password for the new user
+#         'HOST': 'localhost',
+#         'PORT': '3306',  # Default MySQL port
+#     }
+# }
 
 
 
