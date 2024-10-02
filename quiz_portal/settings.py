@@ -7,7 +7,10 @@ import dj_database_url
 # from decouple import config
 from django.core.management.utils import get_random_secret_key
 import os
+from decouple import config
+import django.core.management.commands.runserver as runserver
 
+runserver.Command.default_port = config('WebServer_Port', default = "8088")
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -24,6 +27,9 @@ CORS_ALLOWED_ORIGINS = [
     "http://127.0.0.1:3000",
     "http://217.76.63.211:8000",
 ]
+
+
+
 # Custom user model
 AUTH_USER_MODEL = 'users.CustomUser'
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
