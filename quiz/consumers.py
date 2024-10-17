@@ -1,182 +1,276 @@
-
-from channels.generic.websocket import AsyncJsonWebsocketConsumer, AsyncWebsocketConsumer
-
-# class MyAsyncJsonWebSocketConsumer(AsyncJsonWebsocketConsumer):
-    
-#     async def connect(self):
-#         print('websocket connected...')
-#         await self.accept()  # Accept the WebSocket connection
-    
-#     async def receive_json(self, content, **kwargs):
-#         # This handler is called when data is received from the client with decoded JSON content
-#         print('Message received from client...', content)
-        
-#     async def disconnect(self, close_code):
-#         print('websocket disconnected...', close_code)  # Log when the WebSocket disconnects
-
-# from channels.generic.websocket import AsyncJsonWebsocketConsumer
-from channels.db import database_sync_to_async
-from rest_framework_simplejwt.tokens import UntypedToken
-from rest_framework_simplejwt.exceptions import InvalidToken
-from django.contrib.auth import get_user_model
-from quiz.models import Exam, Question, QuestionOption, ExamAttempt, Status
-from django.utils import timezone
-from uuid import UUID
-CustomUser = get_user_model()
+from channels.generic.websocket import AsyncWebsocketConsumer
 import json
+from channels.db import database_sync_to_async
+from django.contrib.auth import get_user_model
+import jwt
+from django.conf import settings
+import random
 
-# class ExamsConsumer(AsyncJsonWebsocketConsumer):
+from .models import Exam, Question, QuestionOption, ExamAttempt, ExamDifficulty
+
+User = get_user_model()
+
+# class ExamConsumer(AsyncWebsocketConsumer):
+#     active_users = {}  # Initialize the active users dictionary
+
 #     async def connect(self):
-#         self.group_name = None  # Initialize group_name to None
-#         token = self.scope['query_string'].decode('utf-8').split('=')[1]  # Extract token from query string
+#         self.exam_id = self.scope['url_route']['kwargs']['exam_id']
+#         self.user = None  # Will be set later
+#         self.current_question_index = 0  # Initialize the current question index
+#         self.group_name = f'exam_{self.exam_id}'  # Set the group name for the exam
 
-#         try:
-#             # Decode the JWT token and extract user_id
-#             decoded_data = UntypedToken(token)
-#             # print("Decoded JWT Data:", decoded_data)
-#             user_id = decoded_data['user_id']  # Ensure that this key is present in your token payload
-
-#             # Retrieve the user from the database
-#             self.user = await self.get_user_from_token(user_id)
-
-#             # Proceed with the exam logic
-#             self.exam_id = self.scope['url_route']['kwargs']['exam_id']
-#             self.group_name = f'exam_{self.exam_id}'
-
-#             if await self.is_exam_accessible_by_student():
-#                 await self.channel_layer.group_add(self.group_name, self.channel_name)
-#                 await self.accept()
-#                 await self.send_user_update()  # Send initial updates to the user
-#             else:
-#                 await self.close()
-
-#         except InvalidToken:
-#             await self.close()  # Close connection on invalid token
-#         except KeyError:
-#             print("User ID not found in token.")
-#             await self.close()  # Close on KeyError if user_id is not in token
-#         except Exception as e:
-#             print(f"Error during connect: {e}")
-#             await self.close()  # Close on any other error
+#         # Accept the WebSocket connection
+#         await self.accept()
+#         # Join the exam group
+#         await self.channel_layer.group_add(self.group_name, self.channel_name)
 
 #     async def disconnect(self, close_code):
-#         if self.group_name:  # Check if group_name is set
-#             await self.channel_layer.group_discard(self.group_name, self.channel_name)
+#         # Leave the exam group
+#         await self.channel_layer.group_discard(self.group_name, self.channel_name)
+#         if self.user and self.user.username in self.active_users:
+#             del self.active_users[self.user.username]
+#             await self.broadcast_active_users()
 
-#     @database_sync_to_async
-#     def get_user_from_token(self, user_id):
-#         # Fetch the user by numeric ID
-#         return CustomUser.objects.get(phone_number=user_id)
-    
-#     async def receive_json(self, content):
-#         user_id = content.get('user_id')
-#         is_correct = content.get('is_correct')
+#     async def receive(self, text_data):
+#         data = json.loads(text_data)
+#         action = data.get('action')
 
-#         try:
-#             exam = await self.get_exam()
-#             attempt = await self.get_or_create_attempt(user_id)
-#         except (Exam.DoesNotExist, ExamAttempt.DoesNotExist):
-#             await self.send_json({'error': 'Exam or ExamAttempt not found.'})
-#             return
+#         # If the action is to authenticate the user, get the token
+#         if action == 'authenticate':
+#             token = data.get('token')
+#             self.user = await self.get_user_from_token(token)
+#             if not self.user:
+#                 await self.send(text_data=json.dumps({
+#                     'error': 'Authentication failed. Invalid token.'
+#                 }))
+#                 print("Authentication failed: Invalid token.")
+#                 await self.close()
+#                 return
+#             else:
+#                 print("Authenticated user: {self.user.username}")
+#             # Add the user to active users
+#             self.active_users[self.user.username] = 0  # Initialize score to 0
+#             print(f"Active users after adding {self.user.username}: {self.active_users}")
+#             await self.broadcast_active_users()  # Broadcast active users list
+#             # Proceed to start the exam after successful authentication
+#             await self.start_exam()
+        
+#         elif action == 'next_question':
+#             await self.send_next_question()
 
-#         # Update correct or wrong answers based on the submission
-#         if is_correct:
-#             exam.correct_answers += 1
-#             attempt.total_correct_answers += 1
-#         else:
-#             exam.wrong_answers += 1
+#         elif action == 'submit_answer':
+#             question_id = data.get('question_id')
+#             selected_option_id = data.get('selected_option_id')
+#             await self.check_answer(question_id, selected_option_id)
 
-#         await self.save_exam_attempt(exam, attempt)
-
-#         # Broadcast the update to the WebSocket group
+#     async def broadcast_active_users(self):
+#         print(f"Sending active users: {self.active_users}")
+#         """Broadcast the list of active users and their scores to all users in the group."""
 #         await self.channel_layer.group_send(self.group_name, {
-#             'type': 'exam_update',
-#             'user_id': user_id,
-#             'correct_answers': exam.correct_answers,
-#             'wrong_answers': exam.wrong_answers,
-#             'user_correct_answers': attempt.total_correct_answers,
-#             'total_users': await self.get_total_users_in_exam()  # Get total users
+#             'action': 'active_users',
+#             'type': 'send_active_users',
+#             'active_users': self.active_users,
 #         })
-
-#     async def exam_update(self, event):
-#         # Send updated exam and user attempt data back to all clients
-#         await self.send_json({
-#             'user_id': event['user_id'],
-#             'correct_answers': event['correct_answers'],
-#             'wrong_answers': event['wrong_answers'],
-#             'user_correct_answers': event['user_correct_answers'],
-#             'total_users': event['total_users']  # Send total users count
-#         })
-
-#     async def send_user_update(self):
-#         # Get all users' attempts and send them to the new user
-#         all_attempts = await self.get_all_attempts()
-#         await self.send_json({'all_attempts': all_attempts})
-
+    
+#     async def send_active_users(self, event):
+#         print(f"Sending active users: {event['active_users']}")
+#         """Send the list of active users and their scores to the WebSocket."""
+#         await self.send(text_data=json.dumps({
+#             'action': 'active_users',
+#             'users': event['active_users'],
+#         }))
+    
 #     @database_sync_to_async
-#     def get_all_attempts(self):
-#         # Fetch all exam attempts for the current exam
-#         return list(ExamAttempt.objects.filter(exam_id=self.exam_id).values())
-
-#     @database_sync_to_async
-#     def get_exam(self):
-#         return Exam.objects.get(exam_id=self.exam_id)
-
-#     @database_sync_to_async
-#     def get_or_create_attempt(self, user_id):
-#         user = User.objects.get(id=user_id)
-#         attempt, created = ExamAttempt.objects.get_or_create(exam_id=self.exam_id, user=user)
-#         return attempt
-
-#     @database_sync_to_async
-#     def save_exam_attempt(self, exam, attempt):
-#         exam.save()
-#         attempt.save()
-
-#     @database_sync_to_async
-#     def is_exam_accessible_by_student(self):
+#     def get_user_from_token(self, token):
 #         try:
-#             status = Status.objects.get(exam__exam_id=self.exam_id)
-#             return status.status == 'student'
-#         except Status.DoesNotExist:
-#             return False
+#             # Decode the JWT token using the secret key
+#             payload = jwt.decode(token, settings.SECRET_KEY, algorithms=['HS256'])
+
+#             # Extract the phone number from the payload
+#             phone_number = payload.get('user_id')  # Adjust this according to your token structure
+#             if phone_number:
+#                 user = User.objects.get(phone_number=phone_number)  # Fetch the user using phone_number
+#                 return user
+#         except User.DoesNotExist:
+#             print("User not found.")
+#         except jwt.ExpiredSignatureError:
+#             print("Token has expired.")
+#         except jwt.InvalidTokenError:
+#             print("Invalid token.")
+#         except Exception as e:
+#             print("Error decoding token:", e)
+        
+#         return None
+
+#     async def start_exam(self):
+#         """Fetch a limited number of exam questions based on difficulty percentages and send the first one."""
+#         try:
+#             # Fetch the exam and its difficulty percentages
+#             exam = await database_sync_to_async(Exam.objects.prefetch_related('questions').get)(exam_id=self.exam_id)
+#             difficulty = await database_sync_to_async(ExamDifficulty.objects.get)(exam=exam)
+            
+            
+            
+#             exam_attempt = await database_sync_to_async(ExamAttempt.objects.create)(
+#                 exam=exam,
+#                 user=self.user,
+#                 total_correct_answers=0
+#             )
+#             # Total number of questions to generate
+#             total_questions = exam.questions_to_generate
+#             questions_distribution = {
+#                 1: total_questions * difficulty.difficulty1_percentage / 100,
+#                 2: total_questions * difficulty.difficulty2_percentage / 100,
+#                 3: total_questions * difficulty.difficulty3_percentage / 100,
+#                 4: total_questions * difficulty.difficulty4_percentage / 100,
+#                 5: total_questions * difficulty.difficulty5_percentage / 100,
+#                 6: total_questions * difficulty.difficulty6_percentage / 100
+#             }
+            
+#             selected_questions = []
+            
+#             # Randomly select questions from each difficulty level
+#             for level, num_questions in questions_distribution.items():
+#                 if num_questions > 0:
+#                     # Fetch the questions of the current difficulty level
+#                     questions = await database_sync_to_async(list)(
+#                         exam.questions.filter(difficulty_level=level).order_by('?')[:num_questions]
+#                     )
+#                     selected_questions.extend(questions)
+            
+#             # Shuffle the selected questions to ensure randomness across difficulties
+#             random.shuffle(selected_questions)
+
+#             # Set the questions for the exam session
+#             self.questions = selected_questions
+            
+#             # Send the first question to the user
+#             await self.send_next_question()
+
+#         except Exam.DoesNotExist:
+#             await self.send(text_data=json.dumps({'error': 'Exam not found.'}))
+#         except ExamDifficulty.DoesNotExist:
+#             await self.send(text_data=json.dumps({'error': 'Exam difficulty configuration not found.'}))
+
+#     async def send_next_question(self):
+#         """Send the next question in the exam."""
+#         if self.current_question_index < len(self.questions):
+#             question = self.questions[self.current_question_index]
+#             await self.send(text_data=json.dumps({
+#                 'action': 'question',
+#                 'question': question.text,
+#                 'options': [{'id': option.id, 'text': option.text} for option in await database_sync_to_async(list)(question.options.all())],
+#                 'question_id': question.id,
+#                 'current_question_number': self.current_question_index + 1,
+#                 'total_questions': len(self.questions),
+#                 'score': await self.get_user_score()
+#             }))
+#             self.current_question_index += 1
+#         else:
+#             await self.send(text_data=json.dumps({'action': 'exam_complete', 'message': 'All questions have been answered.'}))
+
+#     async def check_answer(self, question_id, selected_option_id):
+#         """Validate the selected answer and broadcast score updates."""
+#         question = await database_sync_to_async(Question.objects.get)(id=question_id)
+#         selected_option = await database_sync_to_async(QuestionOption.objects.get)(id=selected_option_id)
+
+#         # Check if the selected option is correct
+#         is_correct = selected_option.is_correct
+
+#         # exam = await database_sync_to_async(Exam.objects.get)(exam_id=self.exam_id)
+#         # Update the user's exam attempt
+#         exam_attempt = await database_sync_to_async(ExamAttempt.objects.filter(exam_id=self.exam_id, user=self.user).order_by('-timestamp').first)()
+
+#         if is_correct:
+#             exam_attempt.total_correct_answers += 1
+        
+#         await database_sync_to_async(exam_attempt.save)()
+
+#         self.active_users[self.user.username] = exam_attempt.total_correct_answers
+#         await self.broadcast_score_update()
+        
+#         # Broadcast the updated score to the user
+#         await self.send(text_data=json.dumps({
+#             'action': 'score_update',
+#             'score': exam_attempt.total_correct_answers,
+#             'correct': is_correct
+#         }))
+        
+#     async def broadcast_score_update(self):
+#         """Broadcast the scores of all active users to the exam group."""
+#         await self.channel_layer.group_send(self.group_name, {
+#             'type': 'send_score_update',
+#             'active_users': self.active_users,
+#         })
+
+#     async def send_score_update(self, event):
+#         """Send the score update to all users in the exam group."""
+#         await self.send(text_data=json.dumps({
+#             'action': 'active_users',
+#             'users': event['active_users'],
+#         }))
 
 #     @database_sync_to_async
-#     def get_total_users_in_exam(self):
-#         # Count total users in the exam
-#         return ExamAttempt.objects.filter(exam_id=self.exam_id).count()
+#     def get_user_score(self):
+#         """Calculate the user's current score."""
+#         exam_attempt = ExamAttempt.objects.filter(exam_id=self.exam_id, user=self.user).first()
+#         if exam_attempt:
+#             return exam_attempt.total_correct_answers  # Return the user's current correct answers
+#         return 0
 
 
 
-# consumers.py
 
 class ExamConsumer(AsyncWebsocketConsumer):
+    active_users = {}  # Initialize the active users dictionary
+    group_questions = {}  # Store the exam questions for the group
+
     async def connect(self):
         self.exam_id = self.scope['url_route']['kwargs']['exam_id']
-        self.user = self.scope['user']
-        self.current_question_index = 0  # Initialize question index
+        self.user = None  # Will be set later
+        self.current_question_index = 0  # Initialize the current question index
+        self.group_name = f'exam_{self.exam_id}'  # Set the group name for the exam
 
-        # Join the exam group
-        self.group_name = f'exam_{self.exam_id}'
-        await self.channel_layer.group_add(self.group_name, self.channel_name)
-
+        
+        # if not hasattr(self, 'active_users'):
+        #     self.active_users = {}
+        # Accept the WebSocket connection
         await self.accept()
-
-        # Notify user of successful connection
-        await self.send(text_data=json.dumps({
-            'message': f'{self.user.username} has joined the exam.'
-        }))
+        # Join the exam group
+        await self.channel_layer.group_add(self.group_name, self.channel_name)
 
     async def disconnect(self, close_code):
         # Leave the exam group
         await self.channel_layer.group_discard(self.group_name, self.channel_name)
+        if self.user and self.user.username in self.active_users:
+            del self.active_users[self.user.username]
+            await self.broadcast_active_users()
+        # await self.channel_layer.group_discard(self.group_name, self.channel_name)
 
     async def receive(self, text_data):
         data = json.loads(text_data)
         action = data.get('action')
 
-        if action == 'start_exam':
-            await self.start_exam()
+        # If the action is to authenticate the user, get the token
+        if action == 'authenticate':
+            token = data.get('token')
+            self.user = await self.get_user_from_token(token)
+            if not self.user:
+                await self.send(text_data=json.dumps({
+                    'error': 'Authentication failed. Invalid token.'
+                }))
+                await self.close()
+                return
+
+            if self.user.username not in self.active_users:
+                self.active_users[self.user.username] = 0  # Initialize score
+                await self.broadcast_active_users() 
+
+            # Start the exam if this is the first user, or join the ongoing exam
+            if self.exam_id not in self.group_questions:
+                await self.start_exam()
+            else:
+                await self.send_next_question()
 
         elif action == 'next_question':
             await self.send_next_question()
@@ -186,80 +280,157 @@ class ExamConsumer(AsyncWebsocketConsumer):
             selected_option_id = data.get('selected_option_id')
             await self.check_answer(question_id, selected_option_id)
 
-    async def start_exam(self):
-        """ Fetch all exam questions and send the first one to the user. """
+    async def broadcast_active_users(self):
+        """Broadcast the list of active users and their scores to all users in the group."""
+        await self.channel_layer.group_send(self.group_name, {
+            'action': 'active_users',
+            'type': 'send_active_users',
+            'active_users': self.active_users,
+        })
+    
+    async def send_active_users(self, event):
+        """Send the list of active users and their scores to the WebSocket."""
+        await self.send(text_data=json.dumps({
+            'action': 'active_users',
+            'users': event['active_users'],
+        }))
+    
+    @database_sync_to_async
+    def get_user_from_token(self, token):
         try:
-            # Fetch the exam and cache the questions
-            exam = await database_sync_to_async(Exam.objects.prefetch_related('questions').get)(exam_id=self.exam_id)
-            self.questions = await database_sync_to_async(list)(exam.questions.all())  # Cache questions
+            # Decode the JWT token using the secret key
+            payload = jwt.decode(token, settings.SECRET_KEY, algorithms=['HS256'])
 
-            # Directly send the first question
+            # Extract the phone number from the payload
+            phone_number = payload.get('user_id')  # Adjust this according to your token structure
+            if phone_number:
+                user = User.objects.get(phone_number=phone_number)  # Fetch the user using phone_number
+                return user
+        except User.DoesNotExist:
+            print("User not found")
+        except jwt.ExpiredSignatureError:
+            print("Token has expired")
+        except jwt.InvalidTokenError:
+            print("Invalid token")
+        
+        return None
+
+    async def start_exam(self):
+        """Fetch a limited number of exam questions for the group based on difficulty percentages."""
+        try:
+            # Fetch the exam and its difficulty percentages
+            exam = await database_sync_to_async(Exam.objects.prefetch_related('questions').get)(exam_id=self.exam_id)
+            difficulty = await database_sync_to_async(ExamDifficulty.objects.get)(exam=exam)
+
+            # Total number of questions to generate
+            
+            exam_attempt = await database_sync_to_async(ExamAttempt.objects.create)(
+                exam=exam,
+                user=self.user,
+                total_correct_answers=0
+            )
+            
+            
+            
+            total_questions = exam.questions_to_generate
+            questions_distribution = {
+                1: total_questions * difficulty.difficulty1_percentage / 100,
+                2: total_questions * difficulty.difficulty2_percentage / 100,
+                3: total_questions * difficulty.difficulty3_percentage / 100,
+                4: total_questions * difficulty.difficulty4_percentage / 100,
+                5: total_questions * difficulty.difficulty5_percentage / 100,
+                6: total_questions * difficulty.difficulty6_percentage / 100
+            }
+            
+            selected_questions = []
+            
+            # Randomly select questions from each difficulty level
+            for level, num_questions in questions_distribution.items():
+                if num_questions > 0:
+                    # Fetch the questions of the current difficulty level
+                    questions = await database_sync_to_async(list)(
+                        exam.questions.filter(difficulty_level=level).order_by('?')[:num_questions]
+                    )
+                    selected_questions.extend(questions)
+            
+            # Shuffle the selected questions to ensure randomness across difficulties
+            random.shuffle(selected_questions)
+
+        
+            # Store the selected questions for the group
+            self.group_questions[self.exam_id] = selected_questions
+            self.current_question_index = 0  # Reset question index
+
+            # Send the first question to the user
             await self.send_next_question()
 
         except Exam.DoesNotExist:
             await self.send(text_data=json.dumps({'error': 'Exam not found.'}))
-        
-    async def send_next_question(self):
-        """ Send the next question in the exam based on the current index. """
-        if self.current_question_index < len(self.questions):
-            question = self.questions[self.current_question_index]
+        except ExamDifficulty.DoesNotExist:
+            await self.send(text_data=json.dumps({'error': 'Exam difficulty configuration not found.'}))
 
-            # Send the current question with its options
+    async def send_next_question(self):
+        """Send the next question in the exam to all users in the group."""
+        questions = self.group_questions.get(self.exam_id, [])
+        if self.current_question_index < len(questions):
+            question = questions[self.current_question_index]
             await self.send(text_data=json.dumps({
                 'action': 'question',
-                'question': question.text,  # Assuming question has 'text'
-                'options': [
-                    {'id': option.id, 'text': option.text}
-                    for option in await database_sync_to_async(list)(question.options.all())
-                ],
+                'question': question.text,
+                'options': [{'id': option.id, 'text': option.text} for option in await database_sync_to_async(list)(question.options.all())],
                 'question_id': question.id,
+                'current_question_number': self.current_question_index + 1,
+                'total_questions': len(questions),
+                'score': await self.get_user_score()
             }))
-
-            # Increment the question index for the next question
             self.current_question_index += 1
         else:
-            await self.send(text_data=json.dumps({
-                'action': 'exam_complete',
-                'message': 'All questions have been answered.'
-            }))
+            await self.send(text_data=json.dumps({'action': 'exam_complete', 'message': 'All questions have been answered.'}))
 
     async def check_answer(self, question_id, selected_option_id):
-        """ Validate the selected answer and broadcast score updates. """
-        try:
-            # Fetch the question and selected option
-            question = await database_sync_to_async(Question.objects.select_related('exam').get)(id=question_id)
-            selected_option = await database_sync_to_async(QuestionOption.objects.get)(id=selected_option_id, question=question)
+        """Validate the selected answer and broadcast score updates."""
+        question = await database_sync_to_async(Question.objects.get)(id=question_id)
+        selected_option = await database_sync_to_async(QuestionOption.objects.get)(id=selected_option_id)
 
-            correct = selected_option.is_correct
+        # Check if the selected option is correct
+        is_correct = selected_option.is_correct
 
-            # Record the user's attempt
-            await database_sync_to_async(ExamAttempt.objects.create)(
-                exam=question.exam,
-                user=self.user,
-                selected_option=selected_option,
-                correct=correct,
-                timestamp=timezone.now()
-            )
+        # Update the user's exam attempt
+        exam_attempt = await database_sync_to_async(ExamAttempt.objects.filter(exam_id=self.exam_id, user=self.user).order_by('-timestamp').first)()
 
-            # Broadcast result to all users in the group
-            await self.channel_layer.group_send(self.group_name, {
-                'type': 'send_score_update',
-                'user': self.user.username,
-                'correct': correct,
-            })
+        if is_correct:
+            exam_attempt.total_correct_answers += 1
+        
+        await database_sync_to_async(exam_attempt.save)()
 
-            # Optionally, send the next question after answer submission
-            await self.send_next_question()
-
-        except Question.DoesNotExist:
-            await self.send(text_data=json.dumps({'error': 'Question not found.'}))
-        except QuestionOption.DoesNotExist:
-            await self.send(text_data=json.dumps({'error': 'Option not found.'}))
-
-    async def send_score_update(self, event):
-        """ Broadcast the score update to all users. """
+        self.active_users[self.user.username] = exam_attempt.total_correct_answers
+        await self.broadcast_score_update()
+        
+        # Broadcast the updated score to the user
         await self.send(text_data=json.dumps({
             'action': 'score_update',
-            'user': event['user'],
-            'correct': event['correct'],
+            'score': exam_attempt.total_correct_answers,
+            'correct': is_correct
         }))
+        
+    async def broadcast_score_update(self):
+        """Broadcast the scores of all active users to the exam group."""
+        await self.channel_layer.group_send(self.group_name, {
+            'type': 'send_score_update',
+            'active_users': self.active_users,
+        })
+
+    async def send_score_update(self, event):
+        """Send the score update to all users in the exam group."""
+        await self.send(text_data=json.dumps({
+            'action': 'active_users',
+            'users': event['active_users'],
+        }))
+
+    @database_sync_to_async
+    def get_user_score(self):
+        """Calculate the user's current score."""
+        exam_attempt = ExamAttempt.objects.filter(exam_id=self.exam_id, user=self.user).first()
+        if exam_attempt:
+            return exam_attempt.total_correct_answers  # Return the user's current correct answers
+        return 0

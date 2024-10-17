@@ -9,6 +9,9 @@ from .models import ExamInvite
 from django.contrib.auth import get_user_model
 User = get_user_model()
 from django.template.loader import render_to_string
+from rest_framework import generics
+from .serializers import ExamInviteSerializer
+
 
 class InviteViewSet(viewsets.ViewSet):
     authentication_classes = [JWTAuthentication]
@@ -58,3 +61,15 @@ def accept_invitation(request, token):
     invitation.save()
 
     return Response({"message": "Invitation accepted successfully."})
+
+
+class InvitedExamsView(generics.ListAPIView):
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated]
+    serializer_class = ExamInviteSerializer
+
+    def get_queryset(self):
+        # Filter invitations where the current user is the invited_by
+        print("hello")
+        return ExamInvite.objects.filter(invited_user=self.request.user)
+

@@ -30,7 +30,7 @@ class Exam(models.Model):
         self.save()
         
     def status_id(self):
-        print(self.exam__id)
+        # print(self.exam__id)
         return self.exam__id
 
     def __str__(self):

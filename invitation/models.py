@@ -15,7 +15,6 @@ class ExamInvite(models.Model):
     exam = models.ForeignKey(Exam, on_delete=models.CASCADE, related_name='exams')
     invited_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name='sent_invites')
     invited_user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='received_invites', null=True)
-    # token = models.uuid.uuid4(max_length=64, unique=True)
     token = models.UUIDField(default=uuid.uuid4, editable=False)
     invited_at = models.DateTimeField(auto_now=True)
     is_accepted = models.BooleanField(default=False)

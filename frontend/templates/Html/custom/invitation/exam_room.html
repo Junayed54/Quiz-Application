@@ -1,5 +1,12 @@
 {% comment %} @SPK@include("partials/mainhead.html") {% endcomment %}
 {% include "../../partials/mainhead.html"%}
+<!--
+<style>
+    #active-users-table th, #active-users-table td {
+        border: 1px solid black;  /* Adds black borders to each cell */
+    }
+</style>
+-->
 </head>
 
 <body>
@@ -13,43 +20,85 @@
         {% include "../../partials/sidebar.html" %}
 
         <!-- Start::app-content -->
-        <div class="main-content app-content">
+        <div class="main-content app-content ">
+            <div class="container my-5">
+                <h1 class="text-center">Exam Session</h1>
+            
+                <!-- Exam Container -->
+                <div id="exam-container" class="mt-4">
+                    
+                    <!-- Question Information Section -->
+                    <div id="exam-info" class="d-flex justify-content-lg-between mb-3">
+                        <div>
+                            <h5 id="question-number">Question: 0</h5> <!-- Current question number -->
+                        </div>
+                        <div>
+                            <h5 id="total-questions">Total Questions: 0</h5> <!-- Total questions -->
+                        </div>
+                        <div>
+                            <h5 id="score">Score: 0</h5> <!-- Current score -->
+                        </div>
+                    </div>
+                    <div class=''>
+                    <!-- Question Section -->
+                        <div>
+                            <div id="question-section" class="mb-3">
+                                <h4 id="question-text">Waiting for the exam to start...</h4> <!-- Question text -->
+                                <div id="options-list" class="list-group w-50"></div> <!-- Dynamic options list -->
+                            </div>
+                    
+                            <!-- Control Buttons -->
+                            <button id="start-exam-btn" class="btn btn-primary">Start Exam</button>
+                            <button id="next-question-btn" class="btn btn-secondary d-none mb-4">Next Question</button>
+                        </div>
 
-            <div class="container">
-                <h2>Exam Room</h2>
-
-                <div id="exam-info" class="mb-4">
-                    <h4>Exam Information</h4>
-                    <button id="start-exam" class="btn btn-primary">Start Exam</button>
+                        <div class="col-xl-12 w-75 align-self-center">
+                            <div class="card custom-card">
+                                <div class="card-header justify-content-between">
+                                    <div class="card-title">
+                                        Active Users:
+                                    </div>
+                                </div>
+                            
+                                <div class="card-body my-4">
+                                    <div class="table-responsive">
+                                        <table class="table text-nowrap table-hover border table-bordered text-center">
+                                            <thead>
+                                                <tr>
+                                                    <th scope="col">Username</th>
+                                                    <th scope="col">Score</th>
+                                                    
+                                                </tr>
+                                            </thead>
+                                            <tbody id="active-users-table-body">
+                                            </tbody>
+                                        </table>
+                                </div>
+                                
+                            </div>
+                        </div>
+                    </div>
                 </div>
-
-                <div id="question-container" class="d-none">
-                    <h4 id="question-text"></h4>
-                    <div id="options-container"></div>
-
-                    <button id="prev-question" class="btn btn-secondary d-none">Previous</button>
-                    <button id="next-question" class="btn btn-primary">Next</button>
-                    <button id="submit-exam" class="btn btn-success d-none">Submit Exam</button>
+            
+                <!-- Score Update Section 
+                <div id="score-update " class="mt-4">
+                    <h5 class="d-none">Score Updates:</h5>
+                    <ul id="score-list" class="list-group"></ul> <!-- Dynamic score updates 
                 </div>
-
-                <div id="result-container" class="d-none">
-                    <h4>Exam Results</h4>
-                    <p id="result-text"></p>
-                </div>
-
-                <div id="exam-progress" class="mt-4">
-                    <h5>Your Progress</h5>
-                    <p id="progress-text"></p>
-                </div>
-
-                <div id="attempts-container" class="mt-4">
-                    <h5>Other Students' Scores</h5>
-                    <div id="scores-list"></div>
-                </div>
+            
+                Users Taking the Exam Section -->
+                
+                    
+                    
+                
+                    
+                    
+                
+                
             </div>
-            <!-- End::app-content -->
-
+            
         </div>
+        
 
         {% comment %} @SPK@include("partials/headersearch_modal.html") {% endcomment %}
         {% include "../../partials/headersearch_modal.html"%}
@@ -64,43 +113,17 @@
     {% include "../../partials/custom_switcherjs.html"%}
     
     <!-- Custom CSS -->
-    <style>
-        /* Custom styles */
-        #user-progress {
-            max-height: 300px;
-            overflow-y: auto;
-            border: 1px solid #ddd;
-            padding: 10px;
-            margin-top: 20px;
-            background-color: #f9f9f9;
-        }
-
-        #exam-info {
-            background-color: #f8f9fa;
-            border: 1px solid #ddd;
-            padding: 15px;
-            border-radius: 5px;
-            margin-bottom: 20px;
-        }
-
-        #question-container {
-            border: 1px solid #ddd;
-            padding: 15px;
-            border-radius: 5px;
-            background-color: #fff;
-        }
-
-        #result-container {
-            border: 1px solid #28a745;
-            padding: 15px;
-            border-radius: 5px;
-            background-color: #eafaf1;
-            color: #155724;
-        }
-    </style>
+    
 
     <!-- Custom JS -->
     <script src="../../../../static/assets/js/custom.js"></script>
+
+
+
+    {% comment %} <script src="../../../../static/assets/libs/prismjs/prism.js"></script>
+    <script src="../../../../static/assets/js/prism-custom.js"></script> {% endcomment %}
+
+    <!-- Custom JS -->
 
     <!-- My exam js -->
     <script src="../../../../static/Js/invitation/exam_room.js"></script>

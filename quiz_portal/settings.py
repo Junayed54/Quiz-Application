@@ -10,7 +10,7 @@ import os
 from decouple import config
 import django.core.management.commands.runserver as runserver
 
-runserver.Command.default_port = config('WebServer_Port', default = "8088")
+# runserver.Command.default_port = config('WebServer_Port', default = "8088")
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -71,7 +71,7 @@ INSTALLED_APPS = [
 
 # Middleware settings
 MIDDLEWARE = [
-    # 'corsheaders.middleware.CorsMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -137,24 +137,24 @@ CHANNEL_LAYERS = {
 #     'x-requested-with',
 # ]
 # Database configuration (SQLite for simplicity)
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
-    }
-}
-
-
 # DATABASES = {
 #     'default': {
-#         'ENGINE': 'django.db.backends.mysql',
-#         'NAME': 'quiz_application',  # Your database name
-#         'USER': 'bridgers',     # The new user you just created
-#         'PASSWORD': 'Bridgers@123',  # The password for the new user
-#         'HOST': 'localhost',
-#         'PORT': '3306',  # Default MySQL port
+#         'ENGINE': 'django.db.backends.sqlite3',
+#         'NAME': BASE_DIR / 'db.sqlite3',
 #     }
 # }
+
+
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': 'quiz_application',  # Your database name
+        'USER': 'bridgers',     # The new user you just created
+        'PASSWORD': 'Bridgers@123',  # The password for the new user
+        'HOST': 'localhost',
+        'PORT': '3306',  # Default MySQL port
+    }
+}
 
 
 
@@ -184,10 +184,10 @@ import os
 # STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles_build')
 STATIC_URL = '/static/'
 STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, 'frontend', 'static'),
+    os.path.join(BASE_DIR, 'staticfiles'),
 ]
-# STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles_build')
-
+STATIC_ROOT = os.path.join(BASE_DIR, 'static')
+STATICFILES_STORAGE = "whitenoise.storage.CompressedStaticFilesStorage"
 # Default primary key field type
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
