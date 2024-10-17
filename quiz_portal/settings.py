@@ -4,13 +4,13 @@
 from pathlib import Path
 from datetime import timedelta
 import dj_database_url
-# from decouple import config
+from decouple import config
 from django.core.management.utils import get_random_secret_key
 import os
 from decouple import config
 import django.core.management.commands.runserver as runserver
 
-# runserver.Command.default_port = config('WebServer_Port', default = "8088")
+runserver.Command.default_port = config('WebServer_Port', default = "8088")
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
