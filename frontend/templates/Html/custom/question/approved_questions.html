@@ -1,5 +1,49 @@
 {% comment %} @SPK@include("partials/mainhead.html") {% endcomment %}
 {% include "../../partials/mainhead.html"%}
+
+<style>
+    /* Scrollable list for correct answers */
+    #correct-answers-list {
+        max-height: 500px; /* Set the maximum height */
+        overflow-y: auto; /* Enable vertical scrolling */
+        border: 1px solid #dee2e6; /* Optional: Add a border */
+        border-radius: 0.25rem; /* Optional: Add rounded corners */
+    }
+
+    /* Scrollable list for incorrect answers */
+    #incorrect-answers-list {
+        max-height: 500px; /* Set the maximum height */
+        overflow-y: auto; /* Enable vertical scrolling */
+        border: 1px solid #dee2e6; /* Optional: Add a border */
+        border-radius: 0.25rem; /* Optional: Add rounded corners */
+    }
+
+    /* Scrollbar styles for WebKit browsers (Chrome, Safari) */
+    #correct-answers-list::-webkit-scrollbar, 
+    #incorrect-answers-list::-webkit-scrollbar {
+        width: 12px; /* Width of the scrollbar */
+        background-color: #f1f1f1; /* Background color of the scrollbar track */
+    }
+
+    #correct-answers-list::-webkit-scrollbar-thumb, 
+    #incorrect-answers-list::-webkit-scrollbar-thumb {
+        background-color: #888; /* Color of the scrollbar handle */
+        border-radius: 10px; /* Rounded edges for the scrollbar handle */
+    }
+
+    #correct-answers-list::-webkit-scrollbar-thumb:hover, 
+    #incorrect-answers-list::-webkit-scrollbar-thumb:hover {
+        background-color: #555; /* Darker color on hover */
+    }
+
+    /* Scrollbar styles for Firefox */
+    #correct-answers-list, 
+    #incorrect-answers-list {
+        scrollbar-width: thin; /* Thin scrollbar */
+        scrollbar-color: #888 #f1f1f1; /* Handle color and track color */
+    }
+</style>
+
 </head>
 
 <body>
@@ -30,11 +74,11 @@
                 </div>
             
                 <!-- Review Container -->
-                <div id="review-container" class="d-none row">
+                <div id="review-container" class="d-none row justify-content-between">
                     <!-- Correct Answers Section -->
                     <div class="col-md-6">
                         <h4>Correct Answers</h4>
-                        <ul id="correct-answers-list" class="list-group"></ul>
+                        <ul id="correct-answers-list" class="list-group" style="max-height: 500px; overflow-y: auto;"></ul>
                     </div>
             
                     <!-- Incorrect Answers Section -->
@@ -45,7 +89,7 @@
                 </div>
             
                 <!-- Action Buttons -->
-                <div id="actions-container" class="mt-4 text-center">
+                <div id="actions-container" class="my-4">
                     <button id="publish-questions-btn" class="btn btn-success d-none">Publish All Questions</button>
                 </div>
             </div>

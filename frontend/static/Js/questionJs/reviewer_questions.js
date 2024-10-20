@@ -69,7 +69,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
         // Add a single submit button at the end
         const submitButton = document.createElement('button');
-        submitButton.classList.add('btn', 'btn-primary', 'mt-3');
+        submitButton.classList.add('btn', 'btn-primary', 'my-4');
         submitButton.innerText = 'Submit All Reviews';
         submitButton.onclick = submitAllReviews;
         questionsList.appendChild(submitButton);
