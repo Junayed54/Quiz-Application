@@ -379,7 +379,7 @@ class QuestionViewSet(viewsets.ModelViewSet):
             return Response({"error": "No file provided."}, status=status.HTTP_400_BAD_REQUEST)
 
         file = request.FILES['file']
-        
+
         # Try to read the file as an Excel file
         try:
             df = pd.read_excel(file)
@@ -403,7 +403,7 @@ class QuestionViewSet(viewsets.ModelViewSet):
                     # Get data from the row
                     question_text = row['Question']
                     options = [row['Option1'], row['Option2'], row['Option3'], row['Option4']]
-                    correct_answer = row['Answer'].strip().lower()
+                    correct_answer = row['Answer'].strip().lower().replace(" ", "")  # Normalize answer for comparison
                     option_num = row['Options_num']
                     category_name = row['Category']
                     difficulty_level = int(row['Difficulty'])
@@ -415,7 +415,7 @@ class QuestionViewSet(viewsets.ModelViewSet):
 
                     # Get or create category
                     category, created = Category.objects.get_or_create(name=category_name)
-                    
+
                     try:
                         # Create the question
                         question, created = Question.objects.get_or_create(
@@ -428,13 +428,14 @@ class QuestionViewSet(viewsets.ModelViewSet):
                                 'status': 'submitted'  # Assuming 'submitted' is the status
                             }
                         )
-                        
+
                         if created:
                             question_count += 1
 
                             # Create the options for the question
                             for i, option_text in enumerate(options, start=1):
-                                is_correct = (f"option {i}".strip().lower() == correct_answer)
+                                normalized_option_label = f"option{i}".strip().lower().replace(" ", "")  # Normalize option label
+                                is_correct = (normalized_option_label == correct_answer)  # Compare normalized values
                                 QuestionOption.objects.create(
                                     question=question,
                                     text=option_text,
@@ -443,7 +444,7 @@ class QuestionViewSet(viewsets.ModelViewSet):
                         else:
                             # Track duplicate questions
                             duplicate_questions.append(question_text)
-                            
+
                     except IntegrityError:
                         # Handle other potential integrity errors and log error
                         error_details.append(f"Error creating question '{question_text}'.")
@@ -747,39 +748,48 @@ class UserCreatedExamsView(ListAPIView):
 class ExamUploadView(APIView):
     def post(self, request, *args, **kwargs):
         exam_id = request.POST.get('exam_id')
-        
+
         if not exam_id:
             return Response({"error": "Exam ID is required."}, status=status.HTTP_400_BAD_REQUEST)
-        
+
         if 'file' not in request.FILES:
             return Response({"error": "No file provided."}, status=status.HTTP_400_BAD_REQUEST)
-        
+
         try:
             exam = Exam.objects.get(exam_id=exam_id)
         except Exam.DoesNotExist:
             return Response({"error": "Exam not found."}, status=status.HTTP_404_NOT_FOUND)
-        
+
         file = request.FILES['file']
         try:
             df = pd.read_excel(file)
         except Exception as e:
             return Response({"error": f"Error reading file: {str(e)}"}, status=status.HTTP_400_BAD_REQUEST)
-        
+
         required_columns = ['Question', 'Option1', 'Option2', 'Option3', 'Option4', 'Answer', 'Options_num', 'Category', 'Difficulty']
-        if not all(col in df.columns for col in required_columns):
-            missing_cols = [col for col in required_columns if col not in df.columns]
+        df_columns_lower = [col.lower() for col in df.columns]
+
+        # Check for missing columns in a case-insensitive manner
+        missing_cols = [col for col in required_columns if col.lower() not in df_columns_lower]
+        if missing_cols:
             return Response({"error": f"Missing columns: {', '.join(missing_cols)}"}, status=status.HTTP_400_BAD_REQUEST)
 
         question_count = 0
-        total_marks = 0
 
         try:
             with transaction.atomic():
                 for _, row in df.iterrows():
                     question_text = row['Question']
                     options = [row['Option1'], row['Option2'], row['Option3'], row['Option4']]
-                    correct_answer = row['Answer'].strip().lower()
-                    option_num = 1
+                    correct_answer = row['Answer'].strip().lower().replace(" ", "")  # Normalize answer
+
+                    # Normalize options
+                    normalized_options = [opt.strip().lower().replace(" ", "") for opt in options]
+
+                    # Check if the normalized correct answer is in normalized options
+                    if correct_answer not in normalized_options:
+                        return Response({"error": f"Correct answer '{row['Answer']}' does not match any provided options."}, status=status.HTTP_400_BAD_REQUEST)
+
                     category_name = row['Category']
 
                     try:
@@ -792,20 +802,18 @@ class ExamUploadView(APIView):
 
                     category, created = Category.objects.get_or_create(name=category_name)
                     question_count += 1
-                    # total_marks += option_num
 
                     question = Question.objects.create(
                         exam=exam,
                         text=question_text,
-                        marks=option_num,
+                        marks=1,  # Assuming static marks for each question
                         category=category,
-                        difficulty_level=difficulty_level  # Store the difficulty level
-                        # created_by = self.request.user
+                        difficulty_level=difficulty_level
                     )
 
                     for i, option_text in enumerate(options, start=1):
-                        option_label = f"option {i}".strip().lower()
-                        is_correct = (option_label == correct_answer)
+                        option_label = f"option{i}".strip().lower().replace(" ", "")  # Normalize option label
+                        is_correct = (option_label == correct_answer)  # Compare normalized values
                         QuestionOption.objects.create(
                             question=question,
                             text=option_text,
@@ -813,13 +821,13 @@ class ExamUploadView(APIView):
                         )
                 
                 exam.total_questions = question_count
-                # exam.total_marks = total_marks
                 exam.save()
 
             return Response({"message": "All questions created successfully."}, status=status.HTTP_201_CREATED)
 
         except Exception as e:
             return Response({"error": f"An error occurred: {str(e)}"}, status=status.HTTP_400_BAD_REQUEST)
+
 
 
 class TeacherListView(ListAPIView):
