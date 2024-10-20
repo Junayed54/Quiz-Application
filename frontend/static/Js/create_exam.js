@@ -16,6 +16,15 @@ document.addEventListener('DOMContentLoaded', function() {
         const formData = new FormData(form);
         const data = Object.fromEntries(formData);
 
+        const difficultyInputs = document.querySelectorAll('input[id^="difficulty"]');
+        const totalPercentage = validateDifficultyPercentage(difficultyInputs);
+
+        if (totalPercentage !== 100) {
+            alert('The total percentage of all difficulty levels must be 100%. Currently, it is ' + totalPercentage + '%. Please adjust the values.');
+            return;  // Prevent exam creation if validation fails
+        }
+
+
         try {
             const response = await fetch('/quiz/exams/', {
                 method: 'POST',
@@ -75,6 +84,26 @@ document.addEventListener('DOMContentLoaded', function() {
             console.error('Error:', error);
         }
     });
+
+
+    function validateDifficultyPercentage(difficultyInputs) {
+        let totalPercentage = 0;
+        difficultyInputs.forEach(input => {
+            totalPercentage += parseInt(input.value) || 0;
+        });
+        return totalPercentage;
+    }
+
+    // Function to collect difficulty data
+    function collectDifficultyData(examId, difficultyInputs) {
+        const difficultyData = {
+            exam: examId
+        };
+        difficultyInputs.forEach(input => {
+            difficultyData[input.name] = input.value;
+        });
+        return difficultyData;
+    }
 
     uploadExcelBtn.addEventListener('click', async function() {
         const file = fileInput.files[0];

@@ -53,6 +53,7 @@ function fetchReviewedUsers() {
             row.innerHTML = `
                 <td>${user.username}</td>
                 <td>${user.total_approved_questions}</td>
+                <td>${user.reviewer}</td>
                 <td><button class="btn btn-primary" onclick="redirectToApprovedQuestionsPage(${user.user_id})">View Questions</button></td>
             `;
 

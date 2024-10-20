@@ -30,7 +30,7 @@ urlpatterns = [
     path('students/', StudentListView.as_view(), name='student'),
     path('question-history/', QuestionHistoryByMonthView.as_view(), name='question-history'),
     path('teacher-history/', QuestionHistoryByTeacherMonthYearView.as_view(), name='teacher-history'),
-    path('teacher-summury/', UserQuestionSummaryView.as_view(), name='teacher-question-summary'),
+    path('teacher-summary/', UserQuestionSummaryView.as_view(), name='teacher-question-summary'),
     
     
     #attempts
@@ -43,7 +43,7 @@ urlpatterns = [
     path('exam_list/', TemplateView.as_view(template_name='Html/custom/exam_list.html'), name='exam-list'),
     path('exam_detail/<uuid:exam_id>/', TemplateView.as_view(template_name='Html/custom/exam_detail.html'), name='exam_detail'),
     path('start_exam/<uuid:exam_id>/', TemplateView.as_view(template_name='Html/custom/start_exam.html'), name='start-exam'),
-    path('leader_board/<uuid:exam_id>/', TemplateView.as_view(template_name='leaderboard.html'), name='leader_board'),
+    path('leader_board/<uuid:exam_id>/', TemplateView.as_view(template_name='Html/custom/leaderboard.html'), name='leader_board'),
     path('create_exam/', TemplateView.as_view(template_name='Html/icons.html'), name='create_exam'),
     path('user_exams/', TemplateView.as_view(template_name='Html/custom/user_exams.html'), name='user_exams'),
     path('questions_history/', TemplateView.as_view(template_name='Html/custom/questions_history.html'), name='questions_history'),

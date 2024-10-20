@@ -1,10 +1,15 @@
 document.addEventListener("DOMContentLoaded", function() {
-    const packagesTable = document.getElementById('packagesTable');
+    const packagesContainer = document.getElementById('packagesContainer');
 
     // Fetch access token
     const accessToken = localStorage.getItem('access_token'); // Replace with actual token retrieval
 
-    // Function to fetch all packages and display in the table
+    // Function to capitalize the first letter of each word
+    function capitalizeWords(str) {
+        return str.replace(/\b\w/g, char => char.toUpperCase());
+    }
+
+    // Function to fetch all packages and display in the card layout
     function fetchPackages() {
         fetch('/packages/', {
             headers: {
@@ -13,26 +18,59 @@ document.addEventListener("DOMContentLoaded", function() {
         })
         .then(response => response.json())
         .then(data => {
-            packagesTable.innerHTML = ''; // Clear the table
+            packagesContainer.innerHTML = ''; // Clear the container
             data.forEach(pkg => {
-                const row = `
-                    <tr>
-                        <td>${pkg.name}</td>
-                        <td>${pkg.price}</td>
-                        <td>${pkg.duration_in_days}</td>
-                        <td>${pkg.max_exams}</td>
-                        <td>
-                            Very Easy: ${pkg.very_easy_percentage}%, Easy: ${pkg.easy_percentage}%, 
-                            Medium: ${pkg.medium_percentage}%, Hard: ${pkg.hard_percentage}%, 
-                            Very Hard: ${pkg.very_hard_percentage}%, Expert: ${pkg.expert_percentage}%
-                        </td>
-                        <td><button class="btn btn-danger">Delete</button></td>
-                    </tr>
+                const capitalizedName = capitalizeWords(pkg.name); // Capitalize the package name
+                const card = `
+                    <div class="col-md-4 mb-4">
+                        <div class="card border-primary">
+                            <div class="card-body">
+                                <h2 class="card-title text-center">${capitalizedName}</h2>
+                                <p class="card-text"><strong>Price:</strong> $${pkg.price}</p>
+                                <p class="card-text"><strong>Duration:</strong> ${pkg.duration_in_days} days</p>
+                                <p class="card-text"><strong>Max Exams:</strong> ${pkg.max_exams}</p>
+                                <p class="card-text"><strong>Difficulty Distribution:</strong></p>
+                                <ul>
+                                    <li>Very Easy: ${pkg.very_easy_percentage}%</li>
+                                    <li>Easy: ${pkg.easy_percentage}%</li>
+                                    <li>Medium: ${pkg.medium_percentage}%</li>
+                                    <li>Hard: ${pkg.hard_percentage}%</li>
+                                    <li>Very Hard: ${pkg.very_hard_percentage}%</li>
+                                    <li>Expert: ${pkg.expert_percentage}%</li>
+                                </ul>
+                                <div class="d-flex justify-content-between">
+                                    <button class="btn btn-primary" onclick="editPackage(${pkg.id})">Buy Now</button>
+                                    
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 `;
-                packagesTable.innerHTML += row;
+                packagesContainer.innerHTML += card;
             });
         })
         .catch(error => console.error('Error fetching packages:', error));
+    }
+
+    // Function to handle package deletion
+    function deletePackage(id) {
+        if (confirm('Are you sure you want to delete this package?')) {
+            fetch(`/packages/${id}/`, {
+                method: 'DELETE',
+                headers: {
+                    'Authorization': `Bearer ${accessToken}`
+                }
+            })
+            .then(response => {
+                if (response.ok) {
+                    alert('Package deleted successfully.');
+                    fetchPackages(); // Refresh the package list after deletion
+                } else {
+                    console.error('Error deleting package:', response.statusText);
+                }
+            })
+            .catch(error => console.error('Error deleting package:', error));
+        }
     }
 
     // Fetch packages on page load

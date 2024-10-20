@@ -1,5 +1,6 @@
 # Django settings for quiz_portal project.
-
+# import django
+# django.setup()
 # Import necessary modules
 from pathlib import Path
 from datetime import timedelta
@@ -10,7 +11,7 @@ import os
 from decouple import config
 import django.core.management.commands.runserver as runserver
 
-runserver.Command.default_port = config('WebServer_Port', default = "8088")
+runserver.Command.default_port = config('WebServer_Port', default = "8001")
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -25,7 +26,7 @@ DEBUG = True
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",
     "http://127.0.0.1:3000",
-    "http://217.76.63.211:8000",
+    "http://217.76.63.211:8001",
 ]
 
 

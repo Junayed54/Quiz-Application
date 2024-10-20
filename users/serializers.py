@@ -2,7 +2,7 @@ from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from django.contrib.auth import authenticate
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
-
+from rest_framework.exceptions import ValidationError
 User = get_user_model()
 
 class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
@@ -47,6 +47,10 @@ class UserSerializer(serializers.ModelSerializer):
             'linkedin_profile', 'bio', 'preferences'
         )
         extra_kwargs = {'password': {'write_only': True}}
+    def validate_email(self, value):
+        if User.objects.filter(email=value).exists():
+            raise ValidationError("A user with this email already exists. Please try another email.")
+        return value
 
     def create(self, validated_data):
         user = User.objects.create_user(
@@ -99,3 +103,13 @@ class UserSerializer(serializers.ModelSerializer):
         
         instance.save()
         return instance
+
+
+
+class RequestOTPSerializer(serializers.Serializer):
+    email = serializers.EmailField()
+
+class VerifyOTPSerializer(serializers.Serializer):
+    email = serializers.EmailField()
+    otp = serializers.CharField(max_length=6)
+    new_password = serializers.CharField(write_only=True)

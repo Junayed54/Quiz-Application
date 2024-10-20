@@ -20,27 +20,14 @@
                 <h1 class="mb-4">Subscription Packages</h1>
                 <div id="responseMessage"></div>
                 
-                <!-- Table to list all packages -->
-                <table class="table table-striped">
-                    <thead>
-                        <tr>
-                            <th>Name</th>
-                            <th>Price</th>
-                            <th>Duration (Days)</th>
-                            <th>Max Exams</th>
-                            <th>Difficulty Distribution</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody id="packagesTable">
-                        <!-- Rows will be inserted dynamically here -->
-                    </tbody>
-                </table>
-        
+                <div class="row" id="packagesContainer">
+                    <!-- Cards will be dynamically inserted here -->
+                </div>
+            
                 <!-- Floating button to add new package (redirects to package creation URL) -->
-                <a href="/create_package/" class="btn btn-primary add-package-btn">
+                {% comment %} <a href="/create_package/" class="btn btn-primary add-package-btn">
                     <i class="bi bi-plus-circle"></i> Add Package
-                </a>
+                </a> {% endcomment %}
             </div>
 
 

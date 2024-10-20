@@ -9,6 +9,7 @@ from rest_framework import generics
 from django.contrib.auth import logout
 from django.contrib.auth import get_user_model
 from .serializers import CustomTokenObtainPairSerializer, UserSerializer
+from django.core.exceptions import ObjectDoesNotExist 
 from .models import CustomUser
 from .serializers import UserSerializer
 User = get_user_model()
@@ -74,3 +75,47 @@ class UserDetailView(APIView):
             print("Validation errors:", serializer.errors)  # This will help pinpoint the exact field(s) causing issues.
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
+    
+    
+class RequestOTPView(APIView):
+    """
+    View to request an OTP for password reset.
+    """
+    permission_classes = [AllowAny]
+    def post(self, request):
+        phone_number = request.data.get('phone_number')
+        try:
+            user = User.objects.get(phone_number=phone_number)
+            user.generate_otp()  # Generate OTP
+            user.send_otp_email()  # Send OTP to email
+            return Response({"message": "OTP sent to your email."}, status=status.HTTP_200_OK)
+        except ObjectDoesNotExist:
+            return Response({"error": "No user found with this email."}, status=status.HTTP_404_NOT_FOUND)
+        
+        
+class VerifyOTPView(APIView):
+    """
+    View to verify the OTP and reset the password.
+    """
+    permission_classes = [AllowAny]
+    def post(self, request):
+        phone_number = request.data.get('phone_number')
+        otp = request.data.get('otp')
+        new_password = request.data.get('new_password')
+        
+        try:
+            user = User.objects.get(phone_number=phone_number)
+
+            if user.otp_is_valid() and user.otp == otp:
+                # Reset password
+                user.set_password(new_password)
+                user.otp = None  # Invalidate OTP after use
+                user.otp_created_at = None
+                user.save()
+
+                return Response({"message": "Password reset successfully."}, status=status.HTTP_200_OK)
+            else:
+                return Response({"error": "Invalid or expired OTP."}, status=status.HTTP_400_BAD_REQUEST)
+
+        except ObjectDoesNotExist:
+            return Response({"error": "Phone number does not exist."}, status=status.HTTP_404_NOT_FOUND)

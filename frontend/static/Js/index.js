@@ -14,7 +14,7 @@ document.addEventListener('DOMContentLoaded', function() {
         window.location.href = '/login/';
         return;
     }
-    // teacher.classList.add('d-none');
+    teacher.classList.add('d-none');
     // Check if the required elements exist in the DOM
     if (logout && teacher && login && logoutBtn) {
         

@@ -582,12 +582,13 @@ class QuestionViewSet(viewsets.ModelViewSet):
         users = User.objects.filter(
             question_created_by__in=questions
         ).annotate(total_reviewed_questions=Count('question_created_by')).distinct()
-
+        # print(users)
         # Prepare user data with total reviewed questions
         users_data = [
             {
                 'username': user.username,
                 'total_approved_questions': user.total_reviewed_questions,
+                'reviewer': questions.filter(created_by=user).first().reviewed_by.username if questions.filter(created_by=user).first() else None,
                 'user_id': user.id
             }
             for user in users
@@ -923,11 +924,12 @@ class QuestionHistoryByTeacherMonthYearView(APIView):
 class UserQuestionSummaryView(APIView):
     permission_classes = [IsAuthenticated]
 
-    def get(self, request):
-        month = request.query_params.get('month')
-        year = request.query_params.get('year')
-        user_id = request.query_params.get('user_id')
-
+    def post(self, request):
+        month = request.data.get('month')
+        year = request.data.get('year')
+        user_id = request.data.get('user_id')
+        print("hello world")
+        print(month, year, user_id)
         # Validate parameters
         if not year or not month:
             return Response({'detail': 'Year and month are required.'}, status=status.HTTP_400_BAD_REQUEST)
@@ -940,33 +942,26 @@ class UserQuestionSummaryView(APIView):
         except ValueError:
             return Response({'detail': 'Invalid year or month.'}, status=status.HTTP_400_BAD_REQUEST)
 
-        # Initialize result container
         results = []
 
-        # Handle the case where user_id is "all" or a specific user
         if user_id:
             if isinstance(user_id, str) and user_id.lower() == "all":
-                # Query all teachers
                 teachers = User.objects.filter(role='teacher')
                 overall_summary = self.get_category_summary(year, month)
             else:
                 try:
-                    # Convert user_id to an integer to filter by a specific user
                     user_id = int(user_id)
                     teachers = User.objects.filter(id=user_id, role='teacher')
                 except ValueError:
                     return Response({'detail': 'Invalid user ID.'}, status=status.HTTP_400_BAD_REQUEST)
         else:
-            # Default case: no user_id provided, so query all teachers
             teachers = User.objects.filter(role='teacher')
 
-        # Query for the total number of questions and category-wise breakdown
         for teacher in teachers:
             total_questions = Question.objects.filter(
                 Q(exam__created_by=teacher) & Q(exam__created_at__year=year, exam__created_at__month=month)
             ).count()
 
-            # Get category-wise breakdown for the teacher
             category_counts = Question.objects.filter(
                 Q(exam__created_by=teacher) & Q(exam__created_at__year=year, exam__created_at__month=month)
             ).values('category__name').annotate(
@@ -977,6 +972,7 @@ class UserQuestionSummaryView(APIView):
                 {'category_name': item['category__name'], 'question_count': item['question_count']}
                 for item in category_counts
             ]
+            print(total_questions)
 
             results.append({
                 'username': teacher.username,
@@ -984,18 +980,16 @@ class UserQuestionSummaryView(APIView):
                 'categories': category_data
             })
 
-        # If querying for all teachers, return both overall and individual summaries
         if user_id and isinstance(user_id, str) and user_id.lower() == "all":
+            # print(overall_summary)
             return Response({
                 'overall_summary': overall_summary,
                 'individual_teachers': results
             }, status=status.HTTP_200_OK)
 
-        # Return results for specific teacher or list of teachers
         return Response(results, status=status.HTTP_200_OK)
 
     def get_category_summary(self, year, month):
-        # Get category-wise breakdown for all questions across all teachers
         category_counts = Question.objects.filter(
             exam__created_at__year=year,
             exam__created_at__month=month
@@ -1007,8 +1001,6 @@ class UserQuestionSummaryView(APIView):
             {'category_name': item['category__name'], 'question_count': item['question_count']}
             for item in category_counts
         ]
-
-
 
 # Work Flow 
 class ExamAttemptViewSet(viewsets.ViewSet):

@@ -5,17 +5,16 @@ from .models import SubscriptionPackage
 from .serializers import SubscriptionPackageSerializer
 from quiz.permissions import IsAdmin
 from rest_framework_simplejwt.authentication import JWTAuthentication
+
 class SubscriptionPackageListCreateView(generics.ListCreateAPIView):
     queryset = SubscriptionPackage.objects.all()
     serializer_class = SubscriptionPackageSerializer
     authentication_classes = [JWTAuthentication]
-    permission_classes = [IsAdmin]
+    # permission_classes = [IsAdmin]
     
     def create(self, request, *args, **kwargs):
-        # print("hello")
         serializer = self.get_serializer(data=request.data)
         if serializer.is_valid():
-            # Validate percentages before saving
             try:
                 # Collect percentages
                 package = SubscriptionPackage(**serializer.validated_data)
@@ -36,7 +35,6 @@ class SubscriptionPackageDetailView(generics.RetrieveUpdateDestroyAPIView):
         serializer = self.get_serializer(instance, data=request.data, partial=True)
 
         if serializer.is_valid():
-            # Validate percentages before updating
             try:
                 package = SubscriptionPackage(**serializer.validated_data)
                 package.validate_percentages()  # Validate total percentage
@@ -45,6 +43,7 @@ class SubscriptionPackageDetailView(generics.RetrieveUpdateDestroyAPIView):
             except ValueError as e:
                 return Response({"detail": str(e)}, status=status.HTTP_400_BAD_REQUEST)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
 
 class SubscriptionPackageActionView(generics.GenericAPIView):
     queryset = SubscriptionPackage.objects.all()
@@ -76,7 +75,7 @@ class SubscriptionPackageActionView(generics.GenericAPIView):
             discount_amount = (discount_percentage / 100) * package.price
             package.price -= discount_amount
             package.save()
-            return Response({"detail": f"Discount applied successfully. New price: ${package.price}"}, status=status.HTTP_200_OK)
+            return Response({"detail": f"Discount applied successfully. New price: ${package.price:.2f}"}, status=status.HTTP_200_OK)
         return Response({"detail": "Invalid discount percentage."}, status=status.HTTP_400_BAD_REQUEST)
 
     @action(detail=True, methods=['get'])

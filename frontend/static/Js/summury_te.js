@@ -1,6 +1,6 @@
 document.addEventListener('DOMContentLoaded', function () {
     const accessToken = localStorage.getItem('access_token');
-    // console.log("Access token:", accessToken);
+
     fetch(`/quiz/teachers`, {
         method: 'GET',
         headers: {
@@ -9,21 +9,19 @@ document.addEventListener('DOMContentLoaded', function () {
     })
     .then(response => response.json())
     .then(data => {
-        // console.log(data);
         const teacherSelect = document.getElementById('teachers');
-        console.log(teacherSelect);
         
         teacherSelect.innerHTML = '<option selected disabled value="">Choose...</option>'; // Reset options
         const allOption = document.createElement('option');
         allOption.value = 'All';
         allOption.textContent = 'All';
-        teacherSelect.appendChild(allOption)
+        teacherSelect.appendChild(allOption);
+
         if (Array.isArray(data)) {
             data.forEach(teacher => {
                 const option = document.createElement('option');
                 option.value = teacher.id;
-                // console.log(teacher.id);
-                option.textContent = teacher.username;  // Adjust field based on your serializer
+                option.textContent = teacher.username;
                 teacherSelect.appendChild(option);
             });
         } else {
@@ -33,30 +31,38 @@ document.addEventListener('DOMContentLoaded', function () {
     .catch(error => console.error('Error loading teachers:', error));
 });
 
-
 document.getElementById('filter-form').addEventListener('submit', function(event) {
     event.preventDefault();
 
     const formData = new FormData(this);
     const userId = formData.get('teacher_id');
-    // console.log("user Id", userId);
     const month = formData.get('month');
     const year = formData.get('year');
 
-    fetch(`/quiz/teacher-summury/?user_id=${userId}&month=${month}&year=${year}`, {
-        method: 'GET',
+    console.log("Selected User ID:", userId); // Debugging check
+
+    fetch(`/quiz/teacher-summary/`, {
+        method: 'POST',
         headers: {
-            'Authorization': `Bearer ${localStorage.getItem('access_token')}`
-        }
+            'Authorization': `Bearer ${localStorage.getItem('access_token')}`,
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            user_id: userId,
+            month: month,
+            year: year
+        })
     })
     .then(response => response.json())
     .then(data => {
-        console.log(data)
+        console.log(data); // Check the data
+
         const resultDiv = document.getElementById('results');
         resultDiv.innerHTML = ''; // Clear previous results
-        console.log(data.total_questions);
-        if (data.overall_summary) {
-            // Handle the case where user_id is 'all'
+
+        // Check if user ID is 'All' to display summary for all teachers
+        if (userId.toLowerCase() === 'all' && data.overall_summary) {
+            // Overall summary for all teachers
             const summaryDiv = document.createElement('div');
             summaryDiv.innerHTML = `
                 <h3>Overall Category Summary</h3>
@@ -65,10 +71,9 @@ document.getElementById('filter-form').addEventListener('submit', function(event
                 </ul>
             `;
             resultDiv.appendChild(summaryDiv);
-    
+
             const teachersDiv = document.createElement('div');
             teachersDiv.innerHTML = `<h3>Teachers Summary</h3>`;
-            console.log("this is", Array.isArray(data))
             data.individual_teachers.forEach(item => {
                 const userDiv = document.createElement('div');
                 userDiv.innerHTML = `
@@ -80,28 +85,27 @@ document.getElementById('filter-form').addEventListener('submit', function(event
                 `;
                 teachersDiv.appendChild(userDiv);
             });
-    
+
             resultDiv.appendChild(teachersDiv);
-        } else {
-            // Handle the case where user_id is a specific user
+        } else if (data.length > 0) {
+            // Specific summary for one teacher
+            const user = data[0]; // Access the first element in the array
             const userDiv = document.createElement('div');
             userDiv.innerHTML = `
-                <h3>${data.username}</h3>
-                <p>Total Questions: ${data.total_questions}</p>
+                <h3>${user.username || 'Teacher Details'}</h3>
+                <p>Total Questions: ${user.total_questions}</p>
                 <ul>
-                    ${Array.isArray(data.categories) ? data.categories.map(cat => 
+                    ${user.categories.map(cat => 
                         `<li>${cat.category_name}: ${cat.question_count} questions</li>`
-                    ).join('') : '<li>No categories available</li>'}
+                    ).join('')}
                 </ul>
             `;
             resultDiv.appendChild(userDiv);
+        } else {
+            resultDiv.innerHTML = `<p>No data available for the selected teacher or period.</p>`;
         }
     })
     .catch(error => {
         console.error('Error:', error);
     });
-    
-    
-    })
-    .catch(error => console.error('Error:', error)
-);
+});

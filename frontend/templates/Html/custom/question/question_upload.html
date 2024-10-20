@@ -1,5 +1,28 @@
 {% comment %} @SPK@include("partials/mainhead.html") {% endcomment %}
 {% include "../../partials/mainhead.html"%}
+<style>
+    /* Styling for the drag-and-drop area */
+    #drop-zone {
+        cursor: pointer;
+        background-color: #f9f9f9;
+        transition: border-color 0.3s ease;
+    }
+    
+    #drop-zone p {
+        font-size: 16px;
+        color: #666;
+        margin-bottom: 10px;
+    }
+    
+    #drop-zone:hover {
+        border-color: #007bff; /* Change color on hover */
+    }
+    
+    #file-name {
+        font-weight: bold;
+        margin-top: 10px;
+    }
+    </style>
 </head>
 
 <body>
@@ -25,9 +48,15 @@
                                 <form method="POST" id="upload-form" enctype="multipart/form-data">
                                     <div class="mb-3">
                                         <label for="file" class="form-label">Select Excel File</label>
-                                        <input type="file" class="form-control" id="file" name="file" accept=".xlsx, .xls">
+                                        
+                                        <!-- Drop zone -->
+                                        <div id="drop-zone" class="border rounded p-5 text-center" style="border: 2px dashed #ccc;">
+                                            <p>Drag and drop your Excel file here, or click to select a file.</p>
+                                            <input type="file" class="form-control d-none" id="file" name="file" accept=".xlsx, .xls">
+                                            <span id="file-name"></span>
+                                        </div>
                                     </div>
-        
+                
                                     <button type="submit" class="btn btn-primary w-100" method="POST">Upload</button>
                                 </form>
                             </div>
