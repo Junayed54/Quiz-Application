@@ -775,27 +775,31 @@ class ExamUploadView(APIView):
             return Response({"error": f"Missing columns: {', '.join(missing_cols)}"}, status=status.HTTP_400_BAD_REQUEST)
 
         question_count = 0
+        duplicate_questions = []
 
         try:
             with transaction.atomic():
                 for _, row in df.iterrows():
-                    question_text = row['Question']
-                    options = [row['Option1'], row['Option2'], row['Option3'], row['Option4']]
-                    correct_answer = row['Answer'].strip().lower().replace(" ", "")  # Normalize answer
+                    # Normalize column access to be case-insensitive
+                    row = {col.lower(): value for col, value in row.items()}
 
-                    # Normalize options
-                    normalized_options = [opt.strip().lower().replace(" ", "") for opt in options]
+                    question_text = row['question']
+                    options = [row['option1'], row['option2'], row['option3'], row['option4']]
 
-                    # Check if the normalized correct answer is in normalized options
-                    if correct_answer not in normalized_options:
-                        return Response({"error": f"Correct answer '{row['Answer']}' does not match any provided options."}, status=status.HTTP_400_BAD_REQUEST)
+                    # Normalize the correct answer (e.g., 'Option 2' becomes 'option2')
+                    correct_answer = row['answer'].strip().lower().replace(" ", "")
 
-                    category_name = row['Category']
+                    # Check if the question already exists for this exam (to avoid duplicates)
+                    if Question.objects.filter(exam=exam, text=question_text).exists():
+                        duplicate_questions.append(question_text)
+                        continue
 
+                    # Handle the difficulty level and category
+                    category_name = row['category']
                     try:
-                        difficulty_level = int(row['Difficulty'])  # Assuming difficulty is an integer
+                        difficulty_level = int(row['difficulty'])  # Assuming difficulty is an integer
                     except ValueError:
-                        return Response({"error": f"Invalid difficulty level '{row['Difficulty']}'. It must be an integer."}, status=status.HTTP_400_BAD_REQUEST)
+                        return Response({"error": f"Invalid difficulty level '{row['difficulty']}'. It must be an integer."}, status=status.HTTP_400_BAD_REQUEST)
 
                     if difficulty_level not in range(1, 7):  # Validate difficulty level
                         return Response({"error": f"Invalid difficulty level {difficulty_level}. It must be between 1 and 6."}, status=status.HTTP_400_BAD_REQUEST)
@@ -803,6 +807,7 @@ class ExamUploadView(APIView):
                     category, created = Category.objects.get_or_create(name=category_name)
                     question_count += 1
 
+                    # Create the question object
                     question = Question.objects.create(
                         exam=exam,
                         text=question_text,
@@ -811,22 +816,30 @@ class ExamUploadView(APIView):
                         difficulty_level=difficulty_level
                     )
 
+                    # Create the options and mark the correct one
                     for i, option_text in enumerate(options, start=1):
-                        option_label = f"option{i}".strip().lower().replace(" ", "")  # Normalize option label
-                        is_correct = (option_label == correct_answer)  # Compare normalized values
+                        normalized_option_label = f"option{i}".strip().lower().replace(" ", "")  # Normalize option label
+                        is_correct = (normalized_option_label == correct_answer)  # Compare normalized values
                         QuestionOption.objects.create(
                             question=question,
                             text=option_text,
                             is_correct=is_correct
                         )
                 
+                # Update the total number of questions in the exam
                 exam.total_questions = question_count
                 exam.save()
 
-            return Response({"message": "All questions created successfully."}, status=status.HTTP_201_CREATED)
+                # Provide feedback on duplicate questions
+                if duplicate_questions:
+                    return Response({"message": "Some questions were duplicates and skipped.", "duplicates": duplicate_questions}, status=status.HTTP_201_CREATED)
+                else:
+                    return Response({"message": "All questions created successfully."}, status=status.HTTP_201_CREATED)
 
         except Exception as e:
             return Response({"error": f"An error occurred: {str(e)}"}, status=status.HTTP_400_BAD_REQUEST)
+
+
 
 
 

@@ -8,12 +8,13 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     // Assuming the exam_id is provided in the URL or you fetch it from the DOM
-    const examId = window.location.pathname.split('/').pop();
+    const examId = window.location.pathname.split('/')[3];
+    console.log(examId);
 
     // Fetch leaderboard data
     async function fetchLeaderboard() {
         try {
-            const response = await fetch(`/quiz/leader_board/${examId}/`, {
+            const response = await fetch(`/quiz/leaderboard/${examId}/`, {
                 method: 'GET',
                 headers: {
                     'Authorization': 'Bearer ' + accessToken,
@@ -35,10 +36,11 @@ document.addEventListener('DOMContentLoaded', function () {
             } else {
                 // Populate leaderboard data
                 leaderboardData.forEach((entry, index) => {
+                    console.log(entry)
                     const row = `
                         <tr>
                             <th scope="row">${index + 1}</th>
-                            <td>${entry.username}</td>
+                            <td>${entry.user}</td>
                             <td>${entry.score}</td>
                         </tr>
                     `;

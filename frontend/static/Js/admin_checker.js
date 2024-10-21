@@ -1,11 +1,10 @@
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
     const accessToken = localStorage.getItem('access_token');
     if (!accessToken) {
         window.location.href = '/login/';
         return;
     }
 
-    // Target the correct containers for teacher exams and reviewed exams
     const teacherExamsContainer = document.getElementById('teacher-exams-container');
     const reviewedExamsContainer = document.getElementById('reviewed-exams-container');
 
@@ -14,10 +13,7 @@ document.addEventListener('DOMContentLoaded', function() {
         return;
     }
 
-    // Fetch Teacher Submitted Exams
     fetchExams('/quiz/status/submitted_to_admin/', 'Teacher Submitted Exams', teacherExamsContainer);
-
-    // Fetch Reviewed Exams
     fetchExams('/quiz/status/reviewed_exams/', 'Reviewed Exams', reviewedExamsContainer);
 
     function fetchExams(apiUrl, headingText, container) {
@@ -27,68 +23,68 @@ document.addEventListener('DOMContentLoaded', function() {
                 'Authorization': 'Bearer ' + accessToken,
             }
         })
-        .then(response => response.json())
-        .then(data => {
-            if (data.length === 0) {
-                const noExamsMessage = document.createElement('p');
-                noExamsMessage.textContent = `No ${headingText.toLowerCase()} available.`;
-                noExamsMessage.classList.add('text-center', 'text-muted');
-                container.appendChild(noExamsMessage);
-                return;
-            }
+            .then(response => response.json())
+            .then(data => {
+                if (data.length === 0) {
+                    const noExamsMessage = document.createElement('p');
+                    noExamsMessage.textContent = `No ${headingText.toLowerCase()} available.`;
+                    noExamsMessage.classList.add('text-center', 'text-muted');
+                    container.appendChild(noExamsMessage);
+                    return;
+                }
 
-            data.forEach(exam => {
-                const examElement = document.createElement('div');
-                examElement.classList.add('col');
+                data.forEach(exam => {
+                    const examElement = document.createElement('div');
+                    examElement.classList.add('col');
 
-                // Determine the correct URL based on the exam status
-                const checkExamUrl = exam.status === 'reviewed' 
-                    ? `/quiz/admin_reviewer/${exam.exam}/` 
-                    : `/quiz/exam_check/${exam.exam}/`;
+                    const checkExamUrl = exam.status === 'reviewed'
+                        ? `/quiz/admin_reviewer/${exam.exam}/`
+                        : `/quiz/exam_check/${exam.exam}/`;
 
-                examElement.innerHTML = `
-                    <div class="card h-100">
-                        <div class="card-body">
-                            <h5 class="card-title">${exam.exam_details['title']}</h5>
-                            <p class="card-text">Teacher: ${exam.exam_details['created_by']}</p>
-                            <p class="card-text">Total Marks: ${exam.exam_details['total_marks']}</p>
-                            <p class="card-text">Last Date: ${exam.exam_details['last_date']}</p>
+                    examElement.innerHTML = `
+                        <div class="card h-100">
+                            <div class="card-body">
+                                <h5 class="card-title">${exam.exam_details['title']}</h5>
+                                <p class="card-text">Teacher: ${exam.exam_details['created_by']}</p>
+                                <p class="card-text">Total Marks: ${exam.exam_details['total_marks']}</p>
+                                <p class="card-text">Last Date: ${exam.exam_details['last_date']}</p>
+                            </div>
+                            <div class="card-footer d-flex flex-column">
+                                <a href="${checkExamUrl}" class="btn btn-primary mb-2">Check Exam</a>
+                                ${exam.status === 'reviewed'
+                            ? `<button class="btn btn-warning mb-2 publish-exam-btn" pk-id="${exam.id}">Publish Exam</button>`
+                            : `<button class="btn btn-success mb-2 assign-teacher-btn" pk-id="${exam.id}" created-by-id="${exam.user}">Assign Teacher</button>`
+                        }
+                                <button class="btn btn-danger delete-btn" data-exam-id="${exam.exam}">Delete Exam</button>
+                            </div>
                         </div>
-                        <div class="card-footer d-flex flex-column">
-                            <a href="${checkExamUrl}" class="btn btn-primary mb-2">Check Exam</a>
-                            ${exam.status === 'reviewed'
-                                ? `<button class="btn btn-warning mb-2 publish-exam-btn" pk-id="${exam.id}">Publish Exam</button>`
-                                : `<button class="btn btn-success mb-2 assign-teacher-btn" pk-id="${exam.id}">Assign Teacher</button>`
-                            }
-                            <button class="btn btn-danger delete-btn" data-exam-id="${exam.exam}">Delete Exam</button>
-                        </div>
-                    </div>
-                `;
-                container.appendChild(examElement);
-            });
+                    `;
+                    container.appendChild(examElement);
+                });
 
-            addEventListeners();
-        })
-        .catch(error => console.error('Error:', error));
+                addEventListeners();
+            })
+            .catch(error => console.error('Error:', error));
     }
 
     function addEventListeners() {
         document.querySelectorAll('.assign-teacher-btn').forEach(button => {
-            button.addEventListener('click', function() {
+            button.addEventListener('click', function () {
                 const pk = this.getAttribute('pk-id');
-                fetchTeachers(pk);
+                const createdById = this.getAttribute('created-by-id');
+                fetchTeachers(pk, createdById);
             });
         });
 
         document.querySelectorAll('.publish-exam-btn').forEach(button => {
-            button.addEventListener('click', function() {
+            button.addEventListener('click', function () {
                 const pk = this.getAttribute('pk-id');
                 publishExam(pk);
             });
         });
 
         document.querySelectorAll('.delete-btn').forEach(button => {
-            button.addEventListener('click', function() {
+            button.addEventListener('click', function () {
                 const examId = this.getAttribute('data-exam-id');
                 if (confirm('Are you sure you want to delete this exam?')) {
                     deleteExam(examId);
@@ -97,74 +93,35 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    function fetchTeachers(pk) {
+    function fetchTeachers(pk, createdById) {
         fetch('/quiz/teachers', {
             method: 'GET',
             headers: {
                 'Authorization': 'Bearer ' + accessToken,
             }
         })
-        .then(response => response.json())
-        .then(teachers => {
-            showTeacherModal(teachers, pk);
-        })
-        .catch(error => console.error('Error fetching teachers:', error));
+            .then(response => response.json())
+            .then(teachers => {
+                showTeacherModal(teachers, pk, createdById);
+            })
+            .catch(error => console.error('Error fetching teachers:', error));
     }
 
-    function deleteExam(examId) {
-        fetch(`/quiz/exams/${examId}/`, {
-            method: 'DELETE',
-            headers: {
-                'Authorization': 'Bearer ' + accessToken,
-                'X-CSRFToken': getCookie('csrftoken')
-            }
-        })
-        .then(response => {
-            if (response.ok) {
-                alert('Exam deleted successfully.');
-                window.location.reload();
-            } else {
-                response.json().then(data => {
-                    alert('Error deleting exam: ' + data.error);
-                });
-            }
-        })
-        .catch(error => console.error('Error:', error));
-    }
-
-    function publishExam(pk) {
-        fetch(`/quiz/status/${pk}/publish_exam/`, {
-            method: 'POST',
-            headers: {
-                'Authorization': 'Bearer ' + accessToken,
-                'X-CSRFToken': getCookie('csrftoken')
-            }
-        })
-        .then(response => {
-            if (response.ok) {
-                alert('Exam published successfully.');
-                window.location.reload();
-            } else {
-                response.json().then(data => {
-                    alert('Error publishing exam: ' + data.error);
-                });
-            }
-        })
-        .catch(error => console.error('Error publishing exam:', error));
-    }
-
-    function showTeacherModal(teachers, pk) {
+    function showTeacherModal(teachers, pk, createdById) {
         const modal = new bootstrap.Modal(document.getElementById('teacherModal'), {});
         const modalBody = document.querySelector('#teacherModal .modal-body');
+
+        // Filter out the teacher who created the exam
+        const filteredTeachers = teachers.filter(teacher => teacher.id !== parseInt(createdById));
         modalBody.innerHTML = `
             <label for="teacher-select">Select Teacher</label>
             <select id="teacher-select" class="form-control">
-                ${teachers.map(teacher => `<option value="${teacher.id}">${teacher.username}</option>`).join('')}
+                ${filteredTeachers.map(teacher => `<option value="${teacher.id}">${teacher.username}</option>`).join('')}
             </select>
             <button class="btn btn-primary mt-3" id="assign-teacher-btn" pk-id="${pk}">Assign</button>
         `;
 
-        document.getElementById('assign-teacher-btn').addEventListener('click', function() {
+        document.getElementById('assign-teacher-btn').addEventListener('click', function () {
             const selectedTeacherId = document.getElementById('teacher-select').value;
             assignTeacherToExam(pk, selectedTeacherId);
             modal.hide();
@@ -179,15 +136,56 @@ document.addEventListener('DOMContentLoaded', function() {
             headers: {
                 'Content-Type': 'application/json',
                 'Authorization': 'Bearer ' + accessToken,
-                // 'X-CSRFToken': getCookie('csrftoken')
             },
             body: JSON.stringify({ reviewer_id: teacherId })
         })
-        .then(response => response.json())
-        .then(data => {
-            alert(data.detail);
+            .then(response => response.json())
+            .then(data => {
+                alert(data.detail);
+            })
+            .catch(error => console.error('Error assigning teacher:', error));
+    }
+
+    function deleteExam(examId) {
+        fetch(`/quiz/exams/${examId}/`, {
+            method: 'DELETE',
+            headers: {
+                'Authorization': 'Bearer ' + accessToken,
+                'X-CSRFToken': getCookie('csrftoken')
+            }
         })
-        .catch(error => console.error('Error assigning teacher:', error));
+            .then(response => {
+                if (response.ok) {
+                    alert('Exam deleted successfully.');
+                    window.location.reload();
+                } else {
+                    response.json().then(data => {
+                        alert('Error deleting exam: ' + data.error);
+                    });
+                }
+            })
+            .catch(error => console.error('Error:', error));
+    }
+
+    function publishExam(pk) {
+        fetch(`/quiz/status/${pk}/publish_exam/`, {
+            method: 'POST',
+            headers: {
+                'Authorization': 'Bearer ' + accessToken,
+                'X-CSRFToken': getCookie('csrftoken')
+            }
+        })
+            .then(response => {
+                if (response.ok) {
+                    alert('Exam published successfully.');
+                    window.location.reload();
+                } else {
+                    response.json().then(data => {
+                        alert('Error publishing exam: ' + data.error);
+                    });
+                }
+            })
+            .catch(error => console.error('Error publishing exam:', error));
     }
 
     function getCookie(name) {

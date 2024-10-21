@@ -12,7 +12,7 @@ User = get_user_model()
 
 class Exam(models.Model):
     exam_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    title = models.CharField(max_length=255)
+    title = models.CharField(max_length=255, unique=True)
     total_questions = models.IntegerField()
     questions_to_generate = models.IntegerField(default=0)
     user = models.ForeignKey(User, related_name='exam', on_delete=models.CASCADE, null=True, blank=True)

@@ -18,7 +18,7 @@ document.addEventListener('DOMContentLoaded', function() {
         })
         .then(response => response.json())
         .then(data => {
-            console.log(data)
+            console.log("The data:", data)
             document.getElementById('exam-info').innerHTML = `
                 <h3 class="text-xl font-bold">${data.title}</h3>
             `;
@@ -117,9 +117,13 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function showQuestion(index) {
         const question = questions[index];
-        document.getElementById('question-text').textContent = question.text;
+        
+        // Display question number and text
+        document.getElementById('question-text').textContent = `Question ${index + 1}: ${question.text}`;
+        
         const optionsContainer = document.getElementById('options-container');
         optionsContainer.innerHTML = '';
+        
         question.options.forEach(option => {
             const optionElement = document.createElement('div');
             optionElement.classList.add('form-check');
@@ -129,10 +133,10 @@ document.addEventListener('DOMContentLoaded', function() {
             `;
             optionsContainer.appendChild(optionElement);
         });
-
+    
         // Make sure question container is visible
         document.getElementById('question-container').classList.remove('d-none');
-
+    
         // Show or hide Previous button based on question index
         document.getElementById('prev-question').classList.toggle('d-none', index === 0);
         
@@ -142,6 +146,7 @@ document.addEventListener('DOMContentLoaded', function() {
         // Show Submit button on last question, hide otherwise
         document.getElementById('submit-exam').classList.toggle('d-none', index !== questions.length - 1);
     }
+    
 
     fetchExamDetails();
 });
