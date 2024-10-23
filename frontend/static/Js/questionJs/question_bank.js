@@ -7,109 +7,177 @@ document.addEventListener('DOMContentLoaded', function () {
         return;
     }
 
-    // Show loader while fetching data
     const loader = document.getElementById('loading');
-    loader.style.display = 'block';  // Show the loader
+    const tableContainer = document.getElementById('table-container');
+    const questionList = document.getElementById('question-list');
+    const downloadBtn = document.getElementById('download-btn');
+    const paginationContainer = document.getElementById('pagination');
 
-    // Fetch approved questions
-    fetch(apiUrl, {
-        method: 'GET',
-        headers: {
-            'Authorization': 'Bearer ' + accessToken,
-        }
-    })
-    .then(response => response.json())
-    .then(data => {
-        console.log(data);
-        // Ensure data is available and is an array
-        if (!Array.isArray(data) || data.length === 0) {
-            console.error('No questions found in the data');
-            document.getElementById('question-list').innerHTML = '<tr><td colspan="9">No questions available</td></tr>';
-            loader.style.display = 'none'; // Hide loader
-            return;
-        }
+    const pageSize = 10; // Number of questions per page
+    let currentPage = 1; // Start on the first page
+    let totalQuestions = 0; // Total number of questions
 
-        // Hide the loader since the data has been fetched
-        loader.style.display = 'none'; 
-        
-        // Select the table body element
-        const questionList = document.getElementById('question-list');
+    function showLoader() {
+        loader.style.display = 'block'; // Show the loader
+        tableContainer.style.display = 'none'; // Hide the table during loading
+    }
 
-        // Clear previous content
-        questionList.innerHTML = '';
+    function hideLoader() {
+        loader.style.display = 'none'; // Hide the loader
+        tableContainer.style.display = 'block'; // Show the table once data is loaded
+    }
 
-        // Iterate over the questions
-        data.forEach((question, index) => {
-            const rowHTML = `
-                <tr>
-                    <td>${index + 1}</td>
-                    <td>${question.text}</td>
-                    <td>${question.options[0]?.text || ''}</td>
-                    <td>${question.options[1]?.text || ''}</td>
-                    <td>${question.options[2]?.text || ''}</td>
-                    <td>${question.options[3]?.text || ''}</td>
-                    <td>${question.options.find(option => option.is_correct)?.text || ''}</td>
-                    <td>${question.options.length}</td>
-                    <td>${question.category_name}</td>
-                    <td>${question.difficulty_level}</td>
-                </tr>
-            `;
-            questionList.innerHTML += rowHTML;
-        });
+    function fetchQuestions(page) {
+        showLoader(); // Show loader before fetching data
 
-        // Show the review container if there are any questions
-        // document.getElementById('review-container').classList.remove('d-none');
-    })
-    .catch(error => {
-        console.error('Error fetching approved questions:', error);
-        loader.style.display = 'none';  // Hide loader in case of an error
-    });
-
-    // Add event listener for the download button
-    document.getElementById('download-btn').addEventListener('click', function() {
-        fetch(apiUrl, {
+        fetch(`${apiUrl}?page=${page}&page_size=${pageSize}`, {
             method: 'GET',
             headers: {
                 'Authorization': 'Bearer ' + accessToken,
             }
         })
-        .then(response => response.json())
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            return response.json();
+        })
         .then(data => {
-            if (!Array.isArray(data) || data.length === 0) {
-                alert('No questions available for download.');
+            hideLoader(); // Hide the loader after data is fetched
+
+            if (!data.results || data.results.length === 0) {
+                questionList.innerHTML = '<tr><td colspan="10">No questions available</td></tr>';
+                
+                totalQuestions = 0; // Reset total questions
+                updatePagination(); // Update pagination
                 return;
             }
 
-            // Prepare the data for Excel
-            const worksheetData = [['Question', 'Option1', 'Option2', 'Option3', 'Option4', 'Answer', 'Options_num', 'Category', 'Difficulty']];
-            data.forEach((question, index) => {
-                const options = question.options.map(option => option.text);
-                const correctAnswer = question.options.find(option => option.is_correct)?.text || '';
-                const optionsCount = question.options.length;
+            totalQuestions = data.count; // Set total questions
+            questionList.innerHTML = '';
 
-                worksheetData.push([
-                    question.text,
-                    options[0] || '',
-                    options[1] || '',
-                    options[2] || '',
-                    options[3] || '',
-                    correctAnswer,
-                    optionsCount,
-                    question.category,
-                    question.difficulty
-                ]);
+            data.results.forEach((question, index) => {
+                const rowHTML = `
+                    <tr>
+                        <td>${(page - 1) * pageSize + index + 1}</td>
+                        <td>${question.text}</td>
+                        <td>${question.options[0]?.text || ''}</td>
+                        <td>${question.options[1]?.text || ''}</td>
+                        <td>${question.options[2]?.text || ''}</td>
+                        <td>${question.options[3]?.text || ''}</td>
+                        <td>${question.options.find(option => option.is_correct)?.text || ''}</td>
+                        <td>${question.options.length}</td>
+                        <td>${question.category_name}</td>
+                        <td>${question.difficulty_level}</td>
+                    </tr>
+                `;
+                questionList.innerHTML += rowHTML;
             });
 
-            // Create Excel file using SheetJS (XLSX)
-            const worksheet = XLSX.utils.aoa_to_sheet(worksheetData);
-            const workbook = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(workbook, worksheet, 'Questions');
-
-            // Generate and download the Excel file
-            XLSX.writeFile(workbook, 'questions.xlsx');
+            updatePagination();
+            document.getElementById('buttons').classList.remove('d-none');
         })
         .catch(error => {
-            console.error('Error downloading questions:', error);
+            console.error('Error fetching questions:', error);
+            hideLoader(); // Hide loader in case of an error
         });
+    }
+
+    function updatePagination() {
+        paginationContainer.innerHTML = ''; // Clear previous pagination
+    
+        const totalPages = Math.ceil(totalQuestions / pageSize); // Calculate total pages
+    
+        if (totalPages <= 1) {
+            return; // No need for pagination if there's only one page
+        }
+    
+        // Create the "Prev" button
+        const prevItem = document.createElement('li');
+        prevItem.className = `page-item ${currentPage === 1 ? 'disabled' : ''}`; // Disable if on first page
+    
+        const prevLink = document.createElement('a');
+        prevLink.className = 'page-link';
+        prevLink.textContent = 'Prev';
+        prevLink.href = 'javascript:void(0);'; // Prevent default link behavior
+        prevLink.addEventListener('click', function (e) {
+            e.preventDefault();
+            if (currentPage > 1) {
+                currentPage--;
+                fetchQuestions(currentPage);
+            }
+        });
+    
+        prevItem.appendChild(prevLink);
+        paginationContainer.appendChild(prevItem);
+    
+        // Create page numbers
+        const maxPagesToShow = 3; // Maximum number of page numbers to display
+        let startPage = Math.max(currentPage - 1, 1);
+        let endPage = Math.min(startPage + maxPagesToShow - 1, totalPages);
+    
+        if (currentPage > 2) {
+            // Add ellipsis if there are pages before the current window
+            const ellipsis = document.createElement('li');
+            ellipsis.className = 'page-item';
+            ellipsis.innerHTML = '<a class="page-link" href="javascript:void(0);">...</a>';
+            paginationContainer.appendChild(ellipsis);
+        }
+    
+        for (let i = startPage; i <= endPage; i++) {
+            const pageItem = document.createElement('li');
+            pageItem.className = `page-item ${i === currentPage ? 'active' : ''}`; // Highlight the current page
+    
+            const pageLink = document.createElement('a');
+            pageLink.className = 'page-link';
+            pageLink.textContent = i;
+            pageLink.href = 'javascript:void(0);'; // Prevent default link behavior
+    
+            pageLink.addEventListener('click', function (e) {
+                e.preventDefault();
+                currentPage = i;
+                fetchQuestions(currentPage);
+            });
+    
+            pageItem.appendChild(pageLink);
+            paginationContainer.appendChild(pageItem);
+        }
+    
+        if (endPage < totalPages) {
+            // Add ellipsis if there are pages after the current window
+            const ellipsis = document.createElement('li');
+            ellipsis.className = 'page-item';
+            ellipsis.innerHTML = '<a class="page-link" href="javascript:void(0);">...</a>';
+            paginationContainer.appendChild(ellipsis);
+        }
+    
+        // Create the "Next" button
+        const nextItem = document.createElement('li');
+        nextItem.className = `page-item ${currentPage === totalPages ? 'disabled' : ''}`; // Disable if on last page
+    
+        const nextLink = document.createElement('a');
+        nextLink.className = 'page-link';
+        nextLink.textContent = 'Next';
+        nextLink.href = 'javascript:void(0);'; // Prevent default link behavior
+        nextLink.addEventListener('click', function (e) {
+            e.preventDefault();
+            if (currentPage < totalPages) {
+                currentPage++;
+                fetchQuestions(currentPage);
+            }
+        });
+    
+        nextItem.appendChild(nextLink);
+        paginationContainer.appendChild(nextItem);
+    }
+
+    
+
+    fetchQuestions(currentPage); // Initial fetch
+    downloadBtn.addEventListener('click', () => {
+        const workbook = XLSX.utils.book_new();
+        const worksheet = XLSX.utils.table_to_sheet(document.querySelector("table"));
+        XLSX.utils.book_append_sheet(workbook, worksheet, "Questions");
+        XLSX.writeFile(workbook, "questions.xlsx");
     });
 });

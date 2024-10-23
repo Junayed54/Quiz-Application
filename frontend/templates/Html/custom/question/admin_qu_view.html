@@ -1,5 +1,28 @@
 {% comment %} @SPK@include("partials/mainhead.html") {% endcomment %}
 {% include "../../partials/mainhead.html"%}
+<style>
+    /* Custom scrollbar for WebKit browsers */
+    #questions-container::-webkit-scrollbar {
+        width: 16px; /* Increase the scrollbar width */
+    }
+
+    /* Track styling */
+    #questions-container::-webkit-scrollbar-track {
+        background: #e0e0e0; /* Light background for the track */
+    }
+
+    /* Handle styling */
+    #questions-container::-webkit-scrollbar-thumb {
+        background-color: #888; /* Darker scrollbar color */
+        border-radius: 10px;    /* Rounded scrollbar */
+        border: 3px solid #f1f1f1; /* Padding around the scrollbar handle */
+    }
+
+    /* Handle hover effect */
+    #questions-container::-webkit-scrollbar-thumb:hover {
+        background: #555; /* Darken the scrollbar when hovered */
+    }
+</style>
 </head>
 
 <body>
@@ -26,12 +49,13 @@
                 <button class="btn btn-primary mt-3" onclick="sendTeacher()">Send Teacher</button>
             
                 <h2 class="mt-5">User Questions</h2>
-                <div id="questions-container" class="card">
+                <div id="questions-container" class="card" style="max-height: 300px; overflow-y: auto;">
                     <div class="card-body">
                         <!-- Questions will be populated here by JavaScript -->
                     </div>
                 </div>
             </div>
+            
 
 
             

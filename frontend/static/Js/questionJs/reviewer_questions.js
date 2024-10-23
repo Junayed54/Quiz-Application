@@ -124,6 +124,7 @@ function submitAllReviews() {
     .then(data => {
         if (data.message) {
             alert(data.message);
+            window.location.href="/quiz/reviewer_list/";
         } else {
             alert('Failed to submit reviews. Please try again.');
         }

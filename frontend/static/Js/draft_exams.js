@@ -29,7 +29,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         <p class="card-text">Last Date: ${exam.exam_details['last_date']}</p>
                         <div class="d-flex justify-content-between">
                             <div class="p-3 bg-primary rounded mt-2">
-                                <a href="/quiz/exam_detail/${exam.exam}/" class="text-white text-decoration-none">View Exam</a>
+                                <a href="/quiz/teacher_exam_details/${exam.exam}/" class="text-white text-decoration-none">View Exam</a>
                             </div>
                             <div class="p-2 bg-secondary rounded mt-2">
                                 <button class="btn send-btn text-white text-decoration-none" status-id="${exam.id}">Send Admin</button>

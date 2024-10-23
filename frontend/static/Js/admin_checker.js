@@ -39,7 +39,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
                     const checkExamUrl = exam.status === 'reviewed'
                         ? `/quiz/admin_reviewer/${exam.exam}/`
-                        : `/quiz/exam_check/${exam.exam}/`;
+                        : `/quiz/teacher_exam_details/${exam.exam}/`;
 
                     examElement.innerHTML = `
                         <div class="card h-100">
@@ -142,6 +142,7 @@ document.addEventListener('DOMContentLoaded', function () {
             .then(response => response.json())
             .then(data => {
                 alert(data.detail);
+                window.location.reload();
             })
             .catch(error => console.error('Error assigning teacher:', error));
     }

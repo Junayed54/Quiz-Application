@@ -28,23 +28,23 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
 
-        exams.forEach(exam => {
-            const examCard = `
-                <div class="col">
-                    <div class="card h-100">
-                        <div class="card-body">
-                            <h5 class="card-title">${exam.exam_details['title']}</h5>
-                            <p class="card-text">
-                                <strong>Total Questions:</strong> ${exam.exam_details['total_questions']}<br>
-                                <strong>Total Marks:</strong> ${exam.exam_details['total_marks']}<br>
-                            </p>
-                            <a href="/quiz/exam_check/${exam.exam}/" class="btn btn-primary">Review Exam</a>
-                        </div>
+        const examCards = exams.map(exam => `
+            <div class="col-12 col-sm-6 col-md-4">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <h5 class="card-title">${exam.exam_details['title']}</h5>
+                        <p class="card-text">
+                            <strong>Total Questions:</strong> ${exam.exam_details['total_questions']}<br>
+                            <strong>Total Marks:</strong> ${exam.exam_details['total_marks']}<br>
+                        </p>
+                        <a href="/quiz/exam_check/${exam.exam}/" class="btn btn-primary">Review Exam</a>
                     </div>
                 </div>
-            `;
-            examsContainer.innerHTML += examCard;
-        });
+            </div>
+        `).join('');
+        
+        examsContainer.innerHTML = examCards;
+        
     }
 
     // Call the function to fetch and display the exams

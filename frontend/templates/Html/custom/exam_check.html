@@ -1,6 +1,29 @@
 {% comment %} @SPK@include("partials/mainhead.html") {% endcomment %}
 {% include "../partials/mainhead.html"%}
+<style>
+    /* Set height and enable scrolling */
+    #questions-list {
+        max-height: 400px; /* Set the maximum height for the questions section */
+        overflow-y: scroll; /* Allow vertical scrolling */
+        padding: 15px;
+        background-color: #f8f9fa; /* Optional: light background for better contrast */
+        border-radius: 5px;
+        border: 1px solid #dee2e6; /* Optional: border to define the scroll area */
+    }
+
+    /* Optional: Add scroll bar styling */
+    #questions-list::-webkit-scrollbar {
+        width: 8px;
+    }
+
+    #questions-list::-webkit-scrollbar-thumb {
+        background-color: #007bff;
+        border-radius: 10px;
+    }
+</style>
 </head>
+
+
 
 <body>
 
@@ -25,14 +48,14 @@
                     </div>
                 </div>
             
-                <div id="exam-info" class="d-none">
+                <div id="exam-info" class="d-none p-3">
                     <p><strong>Created by:</strong> <span id="created-by"></span></p>
                     <p><strong>Exam Title:</strong> <span id="exam-title"></span></p>
                     <p><strong>Total Questions:</strong> <span id="total-questions"></span></p>
                     <p><strong>Generated Questions:</strong> <span id="generated-questions"></span></p>
                 </div>
             
-                <div id="questions-container" class="d-none">
+                <div id="questions-container" class="d-none p-3">
                     <div id="questions-list" class="row"></div>
                 </div>
             </div>

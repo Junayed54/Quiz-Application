@@ -63,7 +63,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
         // Add submit button to send the exam back to the admin
         const submitButton = document.createElement('button');
-        submitButton.classList.add('btn', 'btn-primary', 'mt-4');
+        submitButton.classList.add('btn', 'btn-primary', 'my-4');
         submitButton.textContent = 'Submit Exam to Admin';
         submitButton.onclick = () => submitExamToAdmin(data.status_id); // Pass status_pk
         document.getElementById('questions-container').appendChild(submitButton);

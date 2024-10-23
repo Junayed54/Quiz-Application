@@ -16,10 +16,9 @@ function fetchTeachers() {
         teacherSelect.innerHTML = '<option value="">Select a teacher</option>'; // Add a default option
 
         data.forEach(teacher => {
-            if(parseInt(userid)===teacher.id) return;
+            if(parseInt(userid) === teacher.id) return;
             const option = document.createElement('option');
-            option.value = teacher.id; // Use username for selection
-            console.log(teacher.id);
+            option.value = teacher.id; // Use teacher ID for selection
             option.textContent = teacher.username; // Display username
             teacherSelect.appendChild(option);
         });
@@ -30,7 +29,7 @@ function fetchTeachers() {
 // Variable to hold the fetched question IDs
 let questionIds = [];
 
-// Send selected teacher username and assign them to fetched questions
+// Send selected teacher and assign them to fetched questions
 function sendTeacher() {
     const accessToken = localStorage.getItem('access_token');
     const teacherId = document.getElementById('teacher-select').value;
@@ -69,6 +68,7 @@ function sendTeacher() {
     .then(data => {
         alert('Teacher assigned to all questions successfully.');
         console.log(data);
+        window.location.href="/quiz/admin_qu_review/"; // Reload the page after successful assignment
     })
     .catch(error => console.error('Error sending teacher:', error));
 }
@@ -164,6 +164,7 @@ function fetchUserQuestions() {
     });
 }
 
+// Run functions on page load
 window.onload = () => {
     if (document.getElementById('teacher-select')) {
         fetchTeachers();

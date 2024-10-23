@@ -131,6 +131,7 @@ document.addEventListener('DOMContentLoaded', function() {
             if (response.ok) {
                 questionsSection.classList.add('hidden');
                 alert('Excel file processed successfully!');
+            
                 window.location.href = '/quiz/user_exams/';
             } else {
                 console.error('Error processing Excel file:', result);
@@ -179,6 +180,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const result = await response.json();
             if (response.ok) {
                 alert('Exam generated successfully!');
+                window.location.href = '/quiz/user_exams/';
                 console.log(result.questions);  // List of question IDs
             } else {
                 console.error('Error generating exam:', result);

@@ -26,6 +26,7 @@ from invitation.models import ExamInvite
 import openpyxl
 import random
 import pandas as pd
+from .pagination import CustomPageNumberPagination
 from django.contrib.auth import get_user_model
 User = get_user_model()
 
@@ -503,7 +504,7 @@ class QuestionViewSet(viewsets.ModelViewSet):
         user = User.objects.get(id=user_id)
         # print('Hello')
 
-        user_questions = Question.objects.filter(created_by=user)  # Filter by the logged-in user
+        user_questions = Question.objects.filter(created_by=user, status=submitted_status)  # Filter by the logged-in user
         serializer = self.get_serializer(user_questions, many=True)
         return Response(serializer.data)
 
@@ -707,15 +708,23 @@ class QuestionViewSet(viewsets.ModelViewSet):
         }, status=status.HTTP_200_OK)
 
 
-    @action(detail=False, methods=['get'], permission_classes=[IsAdminOrReadOnly])  # Use detail=False for list actions
+    @action(detail=False, methods=['get'], permission_classes=[IsAdminOrReadOnly])
     def question_bank(self, request):
-        # Get all questions with 'approved' status
-        questions = Question.objects.filter(status='published')
-        # Serialize the updated questions
-        serializer = self.get_serializer(questions, many=True)
+        try:
+            # Get all questions with 'approved' status
+            questions = Question.objects.filter(status='published')
+            paginator = CustomPageNumberPagination()
+            paginated_questions = paginator.paginate_queryset(questions, request)
+            
+            # Serialize the updated questions
+            serializer = self.get_serializer(paginated_questions, many=True)
 
-        return Response(serializer.data, status=status.HTTP_200_OK)
+            return paginator.get_paginated_response(serializer.data)
 
+        except Exception as e:
+            # Log the error message
+            print(f"Error in question_bank view: {e}")
+            return Response({'error': 'An error occurred while fetching questions.'}, status=500)
 
    
     @action(detail=False, methods=['get'], permission_classes=[IsAdminOrReadOnly])
@@ -872,7 +881,7 @@ class QuestionHistoryByMonthView(APIView):
     def get(self, request, format=None):
         year = request.query_params.get('year')
         month = request.query_params.get('month')
-        print(year, month)
+        
 
         # Validate month and year
         if not year or not month:
@@ -890,13 +899,14 @@ class QuestionHistoryByMonthView(APIView):
         start_date = parse_date(f'{year}-{month:02d}-01')
         end_date = start_date.replace(day=28) + timedelta(days=4)
         end_date = end_date - timedelta(days=end_date.day)
-
+        
         # Get teachers and filter questions
         teachers = User.objects.filter(role='teacher')
         teacher_ids = teachers.values_list('id', flat=True)
         
         filters = Q(exam__created_at__date__range=(start_date, end_date), exam__created_by_id__in=teacher_ids)
         questions = Question.objects.filter(filters)
+        print("questions: ", questions)
         serializer = QuestionSerializer(questions, many=True)
 
         return Response(serializer.data, status=status.HTTP_200_OK)
@@ -923,19 +933,20 @@ class QuestionHistoryByTeacherMonthYearView(APIView):
                 raise ValueError
         except (ValueError, TypeError):
             return Response({'detail': 'Invalid year, month, or teacher_id.'}, status=status.HTTP_400_BAD_REQUEST)
-
+        
+        
         # Verify teacher_id is a valid teacher
         if not User.objects.filter(id=teacher_id, role='teacher').exists():
             return Response({'detail': 'Invalid teacher_id.'}, status=status.HTTP_400_BAD_REQUEST)
 
+        
+        
         # Annotating month and year from created_at
         questions = Question.objects.annotate(
             question_month=ExtractMonth('exam__created_at'),
             question_year=ExtractYear('exam__created_at')
         ).filter(
-            question_year=year,
-            question_month=month,
-            exam__created_by_id=teacher_id
+            created_by_id=teacher_id
         )
 
         serializer = QuestionSerializer(questions, many=True)

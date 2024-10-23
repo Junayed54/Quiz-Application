@@ -90,7 +90,8 @@ document.addEventListener('DOMContentLoaded', function () {
                     alert('Error: ' + data.error);
                 } else {
                     alert(data.message);
-                    // Optionally reload or refresh the page or section to reflect the changes
+                    // Auto-reload the page after successful publishing
+                    window.location.href="/quiz/admin_qu_review/";
                 }
             })
             .catch(error => {

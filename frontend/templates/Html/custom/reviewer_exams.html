@@ -1,5 +1,15 @@
 {% comment %} @SPK@include("partials/mainhead.html") {% endcomment %}
 {% include "../partials/mainhead.html"%}
+
+<style>
+    /* Ensure the card does not take full width and has a consistent white background */
+    .card {
+        background-color: white; /* Ensures the card background is white */
+        border-radius: 10px; /* Adds rounded corners */
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Adds a subtle shadow */
+    }
+    
+</style>
 </head>
 
 <body>
@@ -17,11 +27,15 @@
             
             <!-- Bootstrap Modal for Alert -->
             <div class="container mt-5">
-                <h1 class="text-center display-4 mb-4">Check This Exams</h1>
-                <div id="exams-container" class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
-                    <!-- Exams will be populated here -->
+                <h1 class="text-center display-4 mb-4">Check These Exams</h1>
+            
+                <div class="row justify-content-">
+                    <div id="exams-container" class="row g-4">
+                        <!-- Exams will be populated here -->
+                    </div>
                 </div>
             </div>
+            
             
             
 

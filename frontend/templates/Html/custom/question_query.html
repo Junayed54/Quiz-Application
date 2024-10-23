@@ -1,5 +1,15 @@
 {% comment %} @SPK@include("partials/mainhead.html") {% endcomment %}
 {% include "../partials/mainhead.html"%}
+<style>
+    table.table-bordered {
+        border: 2px solid black; /* Sets a thicker black border */
+    }
+    table.table-bordered th,
+    table.table-bordered td {
+        border: 1px solid black; /* Sets borders for the cells */
+    }
+</style>
+
 </head>
 
 <body>
@@ -61,8 +71,8 @@
             
                 <!-- Question History Table -->
                 <div class="table-responsive">
-                    <table class="table table-bordered">
-                        <thead>
+                    <table class="table table-bordered table-striped text-center">
+                        <thead class="thead-light">
                             <tr>
                                 <th>Question Text</th>
                                 <th>Category</th>
