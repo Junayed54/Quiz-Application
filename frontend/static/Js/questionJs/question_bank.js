@@ -111,44 +111,77 @@ document.addEventListener('DOMContentLoaded', function () {
         prevItem.appendChild(prevLink);
         paginationContainer.appendChild(prevItem);
     
-        // Create page numbers
-        const maxPagesToShow = 3; // Maximum number of page numbers to display
-        let startPage = Math.max(currentPage - 1, 1);
-        let endPage = Math.min(startPage + maxPagesToShow - 1, totalPages);
+        const maxPagesToShow = 3; // Number of pages to show in the middle
+        const startPage = Math.max(currentPage - 1, 1);
+        const endPage = Math.min(startPage + maxPagesToShow - 1, totalPages);
     
-        if (currentPage > 2) {
-            // Add ellipsis if there are pages before the current window
-            const ellipsis = document.createElement('li');
-            ellipsis.className = 'page-item';
-            ellipsis.innerHTML = '<a class="page-link" href="javascript:void(0);">...</a>';
-            paginationContainer.appendChild(ellipsis);
-        }
-    
-        for (let i = startPage; i <= endPage; i++) {
+        // Always show the first two pages
+        for (let i = 1; i <= Math.min(2, totalPages); i++) {
             const pageItem = document.createElement('li');
             pageItem.className = `page-item ${i === currentPage ? 'active' : ''}`; // Highlight the current page
-    
             const pageLink = document.createElement('a');
             pageLink.className = 'page-link';
             pageLink.textContent = i;
-            pageLink.href = 'javascript:void(0);'; // Prevent default link behavior
-    
+            pageLink.href = 'javascript:void(0);';
             pageLink.addEventListener('click', function (e) {
                 e.preventDefault();
                 currentPage = i;
                 fetchQuestions(currentPage);
             });
-    
             pageItem.appendChild(pageLink);
             paginationContainer.appendChild(pageItem);
         }
     
-        if (endPage < totalPages) {
-            // Add ellipsis if there are pages after the current window
+        // Add ellipsis if current page window is not adjacent to the first pages
+        if (currentPage > 3) {
             const ellipsis = document.createElement('li');
-            ellipsis.className = 'page-item';
+            ellipsis.className = 'page-item disabled';
             ellipsis.innerHTML = '<a class="page-link" href="javascript:void(0);">...</a>';
             paginationContainer.appendChild(ellipsis);
+        }
+    
+        // Show the pages around the current page
+        for (let i = startPage; i <= endPage; i++) {
+            if (i > 2 && i < totalPages - 1) { // Avoid repeating the first and last pages
+                const pageItem = document.createElement('li');
+                pageItem.className = `page-item ${i === currentPage ? 'active' : ''}`;
+                const pageLink = document.createElement('a');
+                pageLink.className = 'page-link';
+                pageLink.textContent = i;
+                pageLink.href = 'javascript:void(0);';
+                pageLink.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    currentPage = i;
+                    fetchQuestions(currentPage);
+                });
+                pageItem.appendChild(pageLink);
+                paginationContainer.appendChild(pageItem);
+            }
+        }
+    
+        // Add ellipsis before the last two pages
+        if (endPage < totalPages - 2) {
+            const ellipsis = document.createElement('li');
+            ellipsis.className = 'page-item disabled';
+            ellipsis.innerHTML = '<a class="page-link" href="javascript:void(0);">...</a>';
+            paginationContainer.appendChild(ellipsis);
+        }
+    
+        // Always show the last two pages
+        for (let i = Math.max(totalPages - 1, 3); i <= totalPages; i++) {
+            const pageItem = document.createElement('li');
+            pageItem.className = `page-item ${i === currentPage ? 'active' : ''}`;
+            const pageLink = document.createElement('a');
+            pageLink.className = 'page-link';
+            pageLink.textContent = i;
+            pageLink.href = 'javascript:void(0);';
+            pageLink.addEventListener('click', function (e) {
+                e.preventDefault();
+                currentPage = i;
+                fetchQuestions(currentPage);
+            });
+            pageItem.appendChild(pageLink);
+            paginationContainer.appendChild(pageItem);
         }
     
         // Create the "Next" button
@@ -170,6 +203,7 @@ document.addEventListener('DOMContentLoaded', function () {
         nextItem.appendChild(nextLink);
         paginationContainer.appendChild(nextItem);
     }
+    
 
     
 

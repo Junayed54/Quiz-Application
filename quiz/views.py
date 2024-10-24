@@ -23,6 +23,7 @@ from datetime import timedelta
 from django.db.models import Q, Count, Sum
 from random import sample
 from invitation.models import ExamInvite
+from calendar import monthrange
 import openpyxl
 import random
 import pandas as pd
@@ -881,9 +882,7 @@ class QuestionHistoryByMonthView(APIView):
     def get(self, request, format=None):
         year = request.query_params.get('year')
         month = request.query_params.get('month')
-        
 
-        # Validate month and year
         if not year or not month:
             return Response({'detail': 'Year and month are required.'}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -895,22 +894,21 @@ class QuestionHistoryByMonthView(APIView):
         except (ValueError, TypeError):
             return Response({'detail': 'Invalid year or month.'}, status=status.HTTP_400_BAD_REQUEST)
 
-        # Construct the date range for the given month and year
+        # Construct the start and end date for the month
         start_date = parse_date(f'{year}-{month:02d}-01')
-        end_date = start_date.replace(day=28) + timedelta(days=4)
-        end_date = end_date - timedelta(days=end_date.day)
-        
-        # Get teachers and filter questions
-        teachers = User.objects.filter(role='teacher')
-        teacher_ids = teachers.values_list('id', flat=True)
-        
-        filters = Q(exam__created_at__date__range=(start_date, end_date), exam__created_by_id__in=teacher_ids)
-        questions = Question.objects.filter(filters)
-        print("questions: ", questions)
-        serializer = QuestionSerializer(questions, many=True)
+        end_day = start_date.replace(day=28) + timedelta(days=4)  # Get the last day of the month
+        end_date = end_day - timedelta(days=end_day.day)
 
+        # Filter questions that are published and created within the date range
+        questions = Question.objects.filter(
+            created_at__range=(start_date, end_date),
+            status='published'
+        )
+
+        # Serialize the results
+        serializer = QuestionSerializer(questions, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
-    
+
     
 class QuestionHistoryByTeacherMonthYearView(APIView):
     permission_classes = [IsAuthenticated, IsAdminOrReadOnly]

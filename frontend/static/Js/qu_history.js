@@ -33,23 +33,50 @@ document.addEventListener('DOMContentLoaded', function () {
         .then(response => response.json())
         .then(data => {
             console.log(data);
+
             // Clear previous results
             const questionList = document.getElementById('question-list');
+            const totalQuestions = document.getElementById('total-questions');
             questionList.innerHTML = '';
 
             // Check if there are questions
             if (data.length > 0) {
+                totalQuestions.textContent = data.length;  // Set the total question count
+
                 data.forEach(question => {
-                    const listItem = document.createElement('li');
-                    listItem.classList.add('list-group-item');
-                    listItem.textContent = `Question: ${question.text} (Created by: ${question.created_by})`;
-                    questionList.appendChild(listItem);
+                    // Create a row for each question
+                    const row = document.createElement('tr');
+
+                    // Question text
+                    const questionTextCell = document.createElement('td');
+                    questionTextCell.textContent = question.text;
+
+                    // Created by
+                    const createdByCell = document.createElement('td');
+                    createdByCell.textContent = question.created_by;
+
+                    // Created at
+                    const createdAtCell = document.createElement('td');
+                    const createdAtDate = new Date(question.created_at);
+                    createdAtCell.textContent = createdAtDate.toLocaleDateString();
+
+                    // Append cells to row
+                    row.appendChild(questionTextCell);
+                    row.appendChild(createdByCell);
+                    row.appendChild(createdAtCell);
+
+                    // Append row to table body
+                    questionList.appendChild(row);
                 });
             } else {
-                const noDataItem = document.createElement('li');
-                noDataItem.classList.add('list-group-item', 'text-danger');
-                noDataItem.textContent = 'No questions available for the selected month.';
-                questionList.appendChild(noDataItem);
+                totalQuestions.textContent = '0';  // No questions found
+                const noDataRow = document.createElement('tr');
+                const noDataCell = document.createElement('td');
+                noDataCell.colSpan = 3;
+                noDataCell.classList.add('text-danger', 'text-center');
+                noDataCell.textContent = 'No questions available for the selected month.';
+                noDataRow.appendChild(noDataCell);
+                questionList.appendChild(noDataRow);
             }
         })
         .catch(error => {

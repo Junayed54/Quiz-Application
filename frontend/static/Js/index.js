@@ -3,6 +3,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const logout = document.getElementById('logout');
     const teacher = document.getElementById('teacher');
     const admin = document.getElementById('admin');
+    const student = document.getElementById('student');
     const teacher_admin = document.getElementById('teacheradmin');
     const login = document.getElementById('login-btn');
     const logoutBtn = document.getElementById('logout');
@@ -51,6 +52,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 else if(data.role =='admin' || data.role =='teacher'){
                     teacher_admin.classList.remove('d-none');
                     packages.classList.remove('d-none')
+                }
+                else if(data.role == 'student'){
+                    student.classList.remove('d-none');
                 }
                 else{
                     teacher.classList.add('d-none');
