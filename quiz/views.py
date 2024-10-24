@@ -941,8 +941,8 @@ class QuestionHistoryByTeacherMonthYearView(APIView):
         
         # Annotating month and year from created_at
         questions = Question.objects.annotate(
-            question_month=ExtractMonth('exam__created_at'),
-            question_year=ExtractYear('exam__created_at')
+            question_month=ExtractMonth('created_at'),
+            question_year=ExtractYear('created_at')
         ).filter(
             created_by_id=teacher_id
         )
