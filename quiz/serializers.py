@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Exam, Status, ExamDifficulty, Question, QuestionOption, Leaderboard, ExamAttempt, Category
+from .models import Exam, ExamCategory, Status, ExamDifficulty, Question, QuestionUsage, QuestionOption, Leaderboard, ExamAttempt, Category
 # from users.models import User
 from django.contrib.auth import get_user_model
 User = get_user_model()
@@ -16,7 +16,7 @@ class QuestionOptionSerializer(serializers.ModelSerializer):
 class CategorySerializer(serializers.ModelSerializer):
     class Meta:
         model = Category
-        fields = ['id', 'name', 'description', 'reviewed_by']
+        fields = ['id', 'name', 'description']
 
 
 
@@ -30,7 +30,7 @@ class QuestionSerializer(serializers.ModelSerializer):
     reviewed_by = serializers.StringRelatedField(read_only=True) 
     class Meta:
         model = Question
-        fields = ['id', 'text', 'marks', 'exam', 'options', 'status', 'remarks', 'category', 'created_by', 'category_name', 'difficulty_level',  'time_limit', 'reviewed_by', 'updated_at', 'created_at']
+        fields = ['id', 'text', 'marks', 'exam', 'options', 'status', 'remarks', 'category', 'created_by', 'category_name', 'difficulty_level',  'time_limit', 'reviewed_by', 'updated_at', 'created_at', 'subject']
         
     # def get_created_by_name(self, obj):
     #     return obj.created_by if obj.exam and obj.created_by else None
@@ -50,46 +50,58 @@ class QuestionSerializer(serializers.ModelSerializer):
         return question
 
 
-  
+class QuestionUsageSerializer(serializers.ModelSerializer):
+    question_text = serializers.CharField(source='question.text', read_only=True)
+
+    class Meta:
+        model = QuestionUsage
+        fields = ['id', 'question', 'question_text', 'exam', 'year']
+        read_only_fields = ['question_text']
+
+
+
 
 class ExamAttemptSerializer(serializers.ModelSerializer):
-    exam_title = serializers.SerializerMethodField()
-    
+    score = serializers.ReadOnlyField()
+    is_passed = serializers.ReadOnlyField()
+
     class Meta:
         model = ExamAttempt
-        fields = ['exam', 'exam_title', 'user', 'total_correct_answers', 'timestamp']
+        fields = [
+            'id', 'user', 'exam', 'answered', 'wrong_answers',
+            'total_correct_answers', 'score', 'is_passed', 'attempt_time'
+        ]
+        read_only_fields = ['attempt_time', 'score', 'is_passed']
 
-    def get_exam_title(self, obj):
-        return obj.exam.title
-    
-    
+
+
+class ExamCategorySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ExamCategory
+        fields = '__all__'
+
+
+   
 class ExamSerializer(serializers.ModelSerializer):
-    questions = QuestionSerializer(many=True, read_only=True)
-    user_attempt_count = serializers.SerializerMethodField()
-    created_by = serializers.ReadOnlyField(source='created_by.username')
-    status_id = serializers.SerializerMethodField()
+    status = serializers.ReadOnlyField()  # Read-only field to display exam status
+    category_name = serializers.CharField(source='category.name', read_only=True)  # Category name for convenience
+
     class Meta:
         model = Exam
         fields = [
-            'exam_id', 'title', 'total_questions', 'questions_to_generate', 'total_marks', 
-            'correct_answers', 'wrong_answers', 'passed', 'created_at', 
-            'updated_at', 'last_date', 'questions', 'user_attempt_count', 'created_by', 'status_id'
+            'exam_id', 'title', 'total_questions', 'created_by', 'total_mark',
+            'pass_mark', 'negative_mark', 'created_at', 'updated_at',
+            'starting_time', 'last_date', 'category', 'category_name', 'duration', 'status'
         ]
+        read_only_fields = ['created_at', 'updated_at', 'status', 'category_name']
 
-    def get_user_attempt_count(self, obj):
-        user = self.context['request'].user
-        return obj.get_user_attempt_count(user)
-
-    def get_status_id(self, obj):
-        # Access the status_id through the related Status model
-        return obj.exam.id if obj.exam.status else None 
 
 class StatusSerializer(serializers.ModelSerializer):
     exam_details = serializers.SerializerMethodField()
 
     class Meta:
         model = Status
-        fields = ['id', 'exam', 'user', 'status', 'reviewed_by', 'exam_details']
+        fields = '__all__'
 
     def get_exam_details(self, obj):
         return obj.get_exam_details()
@@ -134,3 +146,19 @@ class LeaderboardSerializer(serializers.ModelSerializer):
 
 
 
+
+
+
+class SubjectQuestionCountSerializer(serializers.Serializer):
+    subject_name = serializers.CharField()
+    question_count = serializers.IntegerField()
+
+
+
+
+
+class ResultSerializer(serializers.Serializer):
+    username = serializers.CharField(source='user__username')
+    cumulative_questions = serializers.IntegerField()
+    cumulative_score = serializers.IntegerField()
+    total_correct = serializers.IntegerField()

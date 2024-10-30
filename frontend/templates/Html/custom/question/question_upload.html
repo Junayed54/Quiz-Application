@@ -46,18 +46,34 @@
                                 <h2 class="card-title text-center mb-4">Upload Questions</h2>
                                 
                                 <form method="POST" id="upload-form" enctype="multipart/form-data">
+                                    <!-- CSRF Token for Django security -->
+                                    {% csrf_token %}
+                                    
+                                    <!-- Input for Exam Name -->
+                                    <div class="mb-3">
+                                        <label for="exam_name" class="form-label">Exam Name</label>
+                                        <input type="text" class="form-control" id="exam_name" name="exam_name" placeholder="Enter the exam name" required>
+                                    </div>
+                                    
+                                    <!-- Input for Exam Year -->
+                                    <div class="mb-3">
+                                        <label for="exam_year" class="form-label">Exam Year</label>
+                                        <input type="number" class="form-control" id="exam_year" name="exam_year" placeholder="Enter the year of the exam" required>
+                                    </div>
+            
+                                    <!-- File Upload Section -->
                                     <div class="mb-3">
                                         <label for="file" class="form-label">Select Excel File</label>
                                         
                                         <!-- Drop zone -->
                                         <div id="drop-zone" class="border rounded p-5 text-center" style="border: 2px dashed #ccc;">
                                             <p>Drag and drop your Excel file here, or click to select a file.</p>
-                                            <input type="file" class="form-control d-none" id="file" name="file" accept=".xlsx, .xls">
+                                            <input type="file" class="form-control d-none" id="file" name="file" accept=".xlsx, .xls" required>
                                             <span id="file-name"></span>
                                         </div>
                                     </div>
                 
-                                    <button type="submit" class="btn btn-primary w-100" method="POST">Upload</button>
+                                    <button type="submit" class="btn btn-primary w-100">Upload</button>
                                 </form>
                             </div>
                         </div>

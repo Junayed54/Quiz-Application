@@ -22,6 +22,16 @@
                             <div class="card-body p-5">
                                 <h1 class="card-title h3 mb-4 text-center">Create Exam</h1>
                                 <form id="create-exam-form">
+                                    <div class="mb-3">
+                                        <label for="category" class="form-label">Category</label>
+                                        <select id="category" name="category" class="form-select border border-4" required>
+                                            <option value="" disabled selected>Select Category</option>
+                                            <!-- Categories will be loaded dynamically here -->
+                                            {% comment %} <option value="add_new">Add New Category</option> {% endcomment %}
+                                        </select>
+                                        <!-- New category input, hidden by default -->
+                                        <input type="text" id="new-category-input" name="new_category" class="form-control border border-4 mt-2" placeholder="Enter new category" style="display: none;">
+                                    </div>
                                     <!-- Exam creation fields -->
                                     <div class="mb-3">
                                         <label for="title" class="form-label">Title</label>
@@ -43,6 +53,13 @@
                                         <label for="last_date" class="form-label">Last Date</label>
                                         <input type="date" id="last_date" name="last_date" class="form-control border border-4">
                                     </div>
+            
+                                    <!-- Exam Duration Field -->
+                                    <div class="mb-3">
+                                        <label for="duration" class="form-label">Exam Duration (in minutes)</label>
+                                        <input type="number" id="duration" name="duration" class="form-control border border-4" min="1" required>
+                                    </div>
+
             
                                     <!-- Difficulty percentage fields -->
                                     <div class="border border-light rounded-3 border-5 p-3 mb-3">
@@ -78,7 +95,7 @@
                                             </div>
                                         </div>
                                     </div>                                    
-                                    
+            
                                     <button type="button" id="create-exam-btn" class="btn btn-primary">Create Exam</button>
                                 </form>
             
@@ -88,53 +105,13 @@
                                     <button type="button" id="upload-excel-btn" class="btn btn-primary btn-xs mb-2">Upload Excel</button>
                                     <button type="button" id="generate-questions-btn" class="btn btn-primary btn-xs mb-2">Generate Questions from Question Bank</button>
                                 </div>
-            
-                                <div id="questions-section" class="d-none">
-                                    <h2 class="h4 mb-4 mt-5">Add Questions</h2>
-                                    <div id="questions-container">
-                                        <!-- Initial question form, cloned dynamically -->
-                                        <div class="question-item mb-3 d-none">
-                                            <form class="create-question-form">
-                                                <div class="mb-3">
-                                                    <label for="text" class="form-label">Question Text</label>
-                                                    <input type="text" name="text" class="form-control" required>
-                                                </div>
-                                                <div class="mb-3">
-                                                    <label for="marks" class="form-label">Marks</label>
-                                                    <input type="number" name="marks" class="form-control" required>
-                                                </div>
-                                                <div class="mb-3">
-                                                    <label for="category" class="form-label">Category</label>
-                                                    <select name="category" class="form-select" required>
-                                                        <option value="">Select Category</option>
-                                                        {% for category in categories %}
-                                                            <option value="{{ category.id }}">{{ category.name }}</option>
-                                                        {% endfor %}
-                                                    </select>
-                                                </div>
-                                                <div class="options-container">
-                                                    <h3 class="h6 mb-2">Options</h3>
-                                                    <div class="option-item mb-3">
-                                                        <label for="option_text" class="form-label">Option Text</label>
-                                                        <input type="text" name="option_text" class="form-control" required>
-                                                        <div class="form-check mt-2">
-                                                            <input class="form-check-input" type="checkbox" name="is_correct">
-                                                            <label class="form-check-label" for="is_correct">Is Correct</label>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                                <button type="button" class="add-option-btn btn btn-success mt-2">Add Option</button>
-                                            </form>
-                                        </div>
-                                    </div>
-                                    <button id="add-question-btn" class="btn btn-success w-100 mt-3">Add Question</button>
-                                    <button id="submit-all-btn" class="btn btn-primary w-100 mt-3">Submit All</button>
-                                </div>
+                                
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
+            
             
             
             

@@ -40,6 +40,8 @@ document.addEventListener("DOMContentLoaded", function() {
         .then(response => {
             if (response.ok) {
                 return response.json(); // If the response is ok, parse JSON
+                alert('Package created successfully!');
+                window.location.href= '/all_packages/'
             }
             return response.json().then(errData => {
                 throw new Error(errData.detail || 'Something went wrong!');

@@ -1,7 +1,7 @@
 from django.urls import path, include
 from django.views.generic import TemplateView
 from rest_framework.routers import DefaultRouter
-from .views import ExamViewSet, ExamDetailView, ExamAttemptViewSet, user_attempts_by_month, user_exam_attempts_by_month, LeaderboardListView, QuestionViewSet, QuestionOptionViewSet, UserCreatedExamsView, ExamUploadView, CategoryViewSet, ExamDifficultyView, QuestionHistoryByMonthView, QuestionHistoryByTeacherMonthYearView, TeacherListView, StudentListView, UserQuestionSummaryView #SubmitAnswerView, CalculateResultsView
+from .views import ExamViewSet, CategoryListView, CreateCategoryView, ExamDetailView, ExamAttemptViewSet, user_attempts_by_month, user_exam_attempts_by_month, LeaderboardListView, QuestionViewSet, QuestionOptionViewSet, UserCreatedExamsView, ExamUploadView, CategoryViewSet, ExamDifficultyView, QuestionHistoryByMonthView, QuestionHistoryByTeacherMonthYearView, TeacherListView, StudentListView, UserQuestionSummaryView, ExamSubjectsQuestionCountView, exam_leaderboard_view
 # from .status import SubmitExamToAdminView, SendExamForReviewView, ReviewExamView, ReturnExamToCreatorView, PublishExamView
 from .status import StatusViewSet
 # from .question_status import QuestionStatusViewSet, AssignedQuestionsSummaryAPIView, QuestionsByUserForReviewerView
@@ -33,6 +33,13 @@ urlpatterns = [
     path('teacher-summary/', UserQuestionSummaryView.as_view(), name='teacher-question-summary'),
     
     
+    path("exam_categories/", CategoryListView.as_view(), name="category_list"),
+    path("exam_categories/create/", CreateCategoryView.as_view(), name="create_category"),
+    path('exams/<uuid:exam_id>/subjects/', ExamSubjectsQuestionCountView.as_view(), name='exam_subjects_question_count'),
+    path('exams/<int:exam_id>/result/', exam_leaderboard_view, name='exam_leaderboard'),
+    
+    
+    
     #attempts
     # path('user/user_attempts/', UserExamAttemptsAPIView.as_view(), name='user_exam_attempts'), 
     path('user_attempts_query/', user_attempts_by_month, name='user_attempts_query'),
@@ -45,8 +52,10 @@ urlpatterns = [
     path('teacher_exam_details/<uuid:exam_id>/', TemplateView.as_view(template_name='Html/custom/teacher_exam_details.html'), name='exam_detail'),
 
     path('start_exam/<uuid:exam_id>/', TemplateView.as_view(template_name='Html/custom/start_exam.html'), name='start-exam'),
+    
     path('leader_board/<uuid:exam_id>/', TemplateView.as_view(template_name='Html/custom/leaderboard.html'), name='leader_board'),
-    path('create_exam/', TemplateView.as_view(template_name='Html/icons.html'), name='create_exam'),
+    path('result/<uuid:exam_id>/', TemplateView.as_view(template_name='Html/custom/result.html'), name='result'),
+    path('create_exam/', TemplateView.as_view(template_name='Html/custom/create_exam.html'), name='create_exam'),
     path('user_exams/', TemplateView.as_view(template_name='Html/custom/user_exams.html'), name='user_exams'),
     path('questions_history/', TemplateView.as_view(template_name='Html/custom/questions_history.html'), name='questions_history'),
     path('question_query/', TemplateView.as_view(template_name='Html/custom/question_query.html'), name='question_query'),

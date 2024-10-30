@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Exam, Status, Question, QuestionOption, ExamAttempt, Leaderboard, Category, ExamDifficulty
+from .models import Exam, ExamCategory, Status, Question, QuestionUsage, QuestionOption, ExamAttempt, Leaderboard, Category, ExamDifficulty
 import nested_admin
 
 
@@ -18,20 +18,47 @@ class QuestionInline(nested_admin.NestedTabularInline):
     model = Question
     extra = 0  # Number of extra forms to display in the admin
     inlines = [QuestionOptionInline]
+    
+    
+@admin.register(QuestionUsage)
+class QuestionUsageAdmin(admin.ModelAdmin):
+    list_display = ('question_text', 'exam', 'year')
+    list_filter = ('exam', 'year')
+    search_fields = ('question__text', 'exam')
+
+    def question_text(self, obj):
+        return obj.question.text
+    question_text.short_description = 'Question Text'
+    
+    
 
 @admin.register(Exam)
-class ExamAdmin(nested_admin.NestedModelAdmin):
-    list_display = ('exam_id', 'title', 'user', 'total_questions', 'questions_to_generate', 'total_marks', 'correct_answers', 'wrong_answers', 'passed', 'last_date', 'created_at', 'updated_at')
-    list_filter = ('passed',)
-    search_fields = ('title', 'user__username', 'exam_id')
-    inlines = [QuestionInline]
+class ExamAdmin(admin.ModelAdmin):
+    list_display = ('title', 'category', 'total_questions', 'status', 'created_by', 'created_at', 'starting_time', 'last_date')
+    list_filter = ('category',)  # Filters by category and status
+    search_fields = ('title', 'category__name', 'created_by__username')  # Enables search by title, category name, and creator's username
+    readonly_fields = ('status', 'created_at', 'updated_at')  # Makes non-editable fields read-only
+    ordering = ('-created_at',)
 
-    def save_model(self, request, obj, form, change):
-        super().save_model(request, obj, form, change)
-        if not change:  # Only generate questions when creating a new exam
-            for i in range(obj.total_questions):
-                Question.objects.create(exam=obj, text=f'Question {i+1}', marks=1)
-                
+    def status(self, obj):
+        """Display current status of the exam."""
+        return obj.status  # Uses the `status` property from the model
+    status.short_description = "Exam Status"
+
+
+
+
+@admin.register(ExamCategory)
+class ExamCategoryAdmin(admin.ModelAdmin):
+    list_display = ('name', 'exam_count')  # Display the name and count of exams in each category
+    search_fields = ('name',)  # Allows search by category name
+    ordering = ('name',)  # Orders categories alphabetically
+    readonly_fields = ('exam_count',)  # Makes exam_count a read-only field in admin
+
+    def exam_count(self, obj):
+        """Display number of exams in each category."""
+        return obj.exam_count  # Uses the `exam_count` property from the model
+    exam_count.short_description = "Number of Exams"             
 
 class StatusAdmin(admin.ModelAdmin):
     list_display = ('id', 'exam', 'status', 'reviewed_by')  # Display important fields
@@ -81,9 +108,15 @@ class QuestionOptionAdmin(admin.ModelAdmin):
 
 @admin.register(ExamAttempt)
 class ExamAttemptAdmin(admin.ModelAdmin):
-    list_display = ('exam', 'user', 'total_correct_answers', 'timestamp')
-    search_fields = ('exam__title', 'user__username')
-    list_filter = ('timestamp',)
+    list_display = ('user', 'exam', 'total_correct_answers', 'wrong_answers', 'answered', 'passed', 'attempt_time')
+    list_filter = ('passed', 'exam')
+    search_fields = ('user__username', 'exam__title')
+    readonly_fields = ('score', 'attempt_time')
+    ordering = ('-attempt_time',)
+
+    def score(self, obj):
+        return obj.score  # Uses the `score` property to display the calculated score
+    score.short_description = 'Score'
 
 @admin.register(Leaderboard)
 class LeaderboardAdmin(admin.ModelAdmin):

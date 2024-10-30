@@ -2,6 +2,8 @@
 const dropZone = document.getElementById('drop-zone');
 const fileInput = document.getElementById('file');
 const fileNameDisplay = document.getElementById('file-name');
+const examNameInput = document.getElementById('exam_name');
+const examYearInput = document.getElementById('exam_year');
 
 // Event listener for drop zone click to trigger file input
 dropZone.addEventListener('click', function() {
@@ -48,6 +50,16 @@ fileInput.addEventListener('change', (e) => {
 document.getElementById('upload-form').addEventListener('submit', function(event) {
     event.preventDefault(); // Prevent default form submission
 
+    // Basic validation for the exam name and year
+    if (!examNameInput.value) {
+        alert("Please enter the exam name.");
+        return;
+    }
+    if (!examYearInput.value || isNaN(examYearInput.value) || examYearInput.value.length !== 4) {
+        alert("Please enter a valid 4-digit year.");
+        return;
+    }
+    
     const formData = new FormData(this); // Gather form data
     const accessToken = localStorage.getItem('access_token'); // Retrieve access token
 
