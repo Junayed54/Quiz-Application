@@ -1,5 +1,6 @@
 import uuid
 from django.db import models
+from django.db.models import Sum
 from django.conf import settings
 from django.utils import timezone
 from django.contrib.auth import get_user_model
@@ -151,10 +152,10 @@ class ExamAttempt(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='exam_attempts')
     answered = models.PositiveIntegerField(default=0)
     wrong_answers = models.PositiveIntegerField(default=0)
-    passed = models.BooleanField(default=False)
+    passed = models.BooleanField(default=False, null=True)
     total_correct_answers = models.PositiveIntegerField(default=0)
     attempt_time = models.DateTimeField(auto_now_add=True)
-
+    score = models.FloatField(default=0.0, null=True, blank=True)
     class Meta:
         ordering = ['-attempt_time']
         verbose_name = "Exam Attempt"
@@ -182,6 +183,8 @@ class ExamAttempt(models.Model):
         """Override save to auto-set `passed` based on `is_passed`."""
         self.passed = self.is_passed
         super().save(*args, **kwargs)
+        
+        Leaderboard.update_best_score(self.user, self.exam)
         
         
         
@@ -275,11 +278,18 @@ class Leaderboard(models.Model):
 
     @staticmethod
     def update_best_score(user, exam):
-        # Find the highest score for this user and exam
-        best_score = ExamAttempt.objects.filter(user=user, exam=exam).order_by('-total_correct_answers').first()
-        
-        if best_score:
-            leaderboard_entry, created = Leaderboard.objects.get_or_create(user=user, exam=exam)
-            if leaderboard_entry.score < best_score.total_correct_answers:
-                leaderboard_entry.score = best_score.total_correct_answers
-                leaderboard_entry.save()
+        # Calculate the cumulative total of correct answers across all attempts
+        total_correct = ExamAttempt.objects.filter(user=user, exam=exam).aggregate(
+            total_correct=Sum('total_correct_answers')
+        )['total_correct'] or 0
+
+        # Calculate total answered questions across all attempts for this user and exam
+        total_answered = ExamAttempt.objects.filter(user=user, exam=exam).aggregate(
+            total_answered=Sum('answered')
+        )['total_answered'] or 0
+
+        # Update the leaderboard entry with the cumulative score and total answered questions
+        leaderboard_entry, created = Leaderboard.objects.get_or_create(user=user, exam=exam)
+        leaderboard_entry.score = total_correct
+        leaderboard_entry.total_questions = total_answered
+        leaderboard_entry.save()

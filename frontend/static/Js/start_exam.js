@@ -2,7 +2,8 @@ document.addEventListener('DOMContentLoaded', function() {
     const examId = window.location.pathname.split('/')[3];
     let currentQuestionIndex = 0;
     let questions = [];
-    let answers = []; // Holds selected answers for each question
+    let answers = [];
+    let skippedQuestions = [];
     const accessToken = localStorage.getItem('access_token');
     if (!accessToken) {
         window.location.href = '/login/';
@@ -13,23 +14,20 @@ document.addEventListener('DOMContentLoaded', function() {
     const timeDisplay = document.getElementById('time-remaining');
     let timerInterval;
 
-    // Initialize timer
     function updateTimer() {
         const minutes = Math.floor(timeRemaining / 60);
         const seconds = timeRemaining % 60;
         timeDisplay.textContent = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
-
         if (timeRemaining > 0) {
             timeRemaining--;
         } else {
             clearInterval(timerInterval);
             document.getElementById('submit-exam').disabled = true;
             document.getElementById('submit-exam').textContent = 'Time’s up';
-            submitExam(); // Auto-submit when time is up
+            submitExam();
         }
     }
 
-    // Fetch exam details, including dynamic duration
     function fetchExamDetails() {
         fetch(`/quiz/exams/${examId}/start/`, {
             method: 'GET',
@@ -37,16 +35,14 @@ document.addEventListener('DOMContentLoaded', function() {
         })
         .then(response => response.json())
         .then(data => {
-            const examInfo = document.getElementById('exam-info');
-            examInfo.innerHTML = `<h3 class="text-xl font-bold">${data.title}</h3>`;
-            timeRemaining = data.duration; // Duration in seconds
+            document.getElementById('exam-info').innerHTML = `<h3 class="text-xl font-bold">${data.title}</h3>`;
+            timeRemaining = data.duration;
             timerInterval = setInterval(updateTimer, 1000);
             fetchQuestions();
         })
         .catch(error => console.error('Error fetching exam details:', error));
     }
 
-    // Fetch questions and handle display
     function fetchQuestions() {
         fetch(`/quiz/exams/${examId}/questions/`, {
             method: 'GET',
@@ -55,19 +51,17 @@ document.addEventListener('DOMContentLoaded', function() {
         .then(response => response.json())
         .then(data => {
             questions = data.questions;
-            answers = new Array(questions.length).fill(null); // Initialize answers array
+            answers = new Array(questions.length).fill(null);
             document.getElementById('exam-info').innerHTML += `<p>Total Questions: ${questions.length}</p>`;
+            updateSkippedCount();
             if (questions.length > 0) showQuestion(currentQuestionIndex);
         })
         .catch(error => console.error('Error fetching questions:', error));
     }
 
-    // Display question based on the index
     function showQuestion(index) {
-        const questionText = document.getElementById('question-text');
         const question = questions[index];
-        questionText.textContent = `Question ${index + 1}: ${question.text}`;
-        
+        document.getElementById('question-text').textContent = `Question ${index + 1}: ${question.text}`;
         const optionsContainer = document.getElementById('options-container');
         optionsContainer.innerHTML = '';
         question.options.forEach(option => {
@@ -80,30 +74,40 @@ document.addEventListener('DOMContentLoaded', function() {
             optionsContainer.appendChild(optionElement);
         });
 
-        // Load previously selected answer if exists
         const selectedAnswer = answers[index] && answers[index].option;
         if (selectedAnswer) document.querySelector(`input[name="option"][value="${selectedAnswer}"]`).checked = true;
+        toggleButtonVisibility(index);
+        document.getElementById('next-question').disabled = !selectedAnswer;
+        updateSkipButtonVisibility();
+    }
 
-        // Update button visibility
+    function toggleButtonVisibility(index) {
         document.getElementById('prev-question').classList.toggle('d-none', index === 0);
         document.getElementById('next-question').classList.toggle('d-none', index === questions.length - 1);
         document.getElementById('submit-exam').classList.toggle('d-none', index !== questions.length - 1);
         document.getElementById('skip-question').classList.toggle('d-none', index === questions.length - 1);
-        document.getElementById('next-question').disabled = true;
-
-        // Check if any option is selected and enable Next button accordingly
-        checkNextButton();
     }
 
-    function checkNextButton() {
+    function updateSkipButtonVisibility() {
         const selectedOption = document.querySelector('input[name="option"]:checked');
-        document.getElementById('next-question').disabled = !selectedOption;
+        document.getElementById('skip-question').classList.toggle('d-none', !!selectedOption);
+    }
+
+    function updateReviewSkippedButton() {
+        document.getElementById('review-skipped').classList.toggle('d-none', skippedQuestions.length === 0);
     }
 
     document.addEventListener('change', function(event) {
         if (event.target.name === 'option') {
-            saveAnswer(); // Save selected answer
-            checkNextButton();
+            saveAnswer();
+            updateSkipButtonVisibility();
+            document.getElementById('next-question').disabled = false;
+
+            const index = skippedQuestions.indexOf(currentQuestionIndex);
+            if (index > -1) {
+                skippedQuestions.splice(index, 1);
+                updateSkippedCount();
+            }
         }
     });
 
@@ -113,8 +117,15 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     document.getElementById('skip-question').addEventListener('click', function() {
-        if (currentQuestionIndex < questions.length - 1) currentQuestionIndex++;
-        showQuestion(currentQuestionIndex);
+        if (!skippedQuestions.includes(currentQuestionIndex)) {
+            skippedQuestions.push(currentQuestionIndex);
+            updateSkippedCount();
+        }
+        if (currentQuestionIndex < questions.length - 1) {
+            currentQuestionIndex++;
+            showQuestion(currentQuestionIndex);
+        }
+        updateReviewSkippedButton();
     });
 
     document.getElementById('prev-question').addEventListener('click', function() {
@@ -122,22 +133,23 @@ document.addEventListener('DOMContentLoaded', function() {
         showQuestion(currentQuestionIndex);
     });
 
-    // Submit exam function
-    document.getElementById('submit-exam').addEventListener('click', function() {
-        if (saveAnswer()) {
-            // Check all answers for unanswered questions before submission
-            for (let i = 0; i < questions.length; i++) {
-                if (!answers[i]) {
-                    answers[i] = {
-                        question_id: questions[i].id,
-                        option: 'none'
-                    };
-                }
-            }
-            submitExam();
-        } else {
-            alert("Please select an option before submitting the exam.");
+    document.getElementById('review-skipped').addEventListener('click', function(event) {
+        event.preventDefault();
+        if (skippedQuestions.length > 0) {
+            currentQuestionIndex = skippedQuestions[0];
+            // skippedQuestions.shift();
+            updateSkippedCount();
+            showQuestion(currentQuestionIndex);
         }
+    });
+
+    document.getElementById('submit-exam').addEventListener('click', function() {
+        for (let i = 0; i < questions.length; i++) {
+            if (!answers[i]) {
+                answers[i] = { question_id: questions[i].id, option: 'none' };
+            }
+        }
+        submitExam();
     });
 
     function saveAnswer() {
@@ -154,6 +166,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function submitExam() {
+        clearInterval(timerInterval);
         fetch(`/quiz/exams/${examId}/submit/`, {
             method: 'POST',
             headers: {
@@ -167,29 +180,19 @@ document.addEventListener('DOMContentLoaded', function() {
         .catch(error => console.error('Error submitting exam:', error));
     }
 
+    function updateSkippedCount() {
+        document.getElementById('skipped-questions').textContent = `Skipped Questions: ${skippedQuestions.length}`;
+        updateReviewSkippedButton(); // Update the visibility of the review button
+    }
+
     function displayResults(correctAnswers, wrongAnswers, passed) {
-        const resultContainer = document.getElementById('resultContainer');
-        resultContainer.innerHTML = `
+        document.getElementById('resultContainer').innerHTML = `
             <h3>Exam Submitted!</h3>
             <p>Correct Answers: ${correctAnswers}</p>
             <p>Wrong Answers: ${wrongAnswers}</p>
             <p>Status: ${passed ? 'Passed' : 'Failed'}</p>
+            <p>Skipped Questions: ${skippedQuestions.length}</p>
         `;
-    }
-
-    function getCookie(name) {
-        let cookieValue = null;
-        if (document.cookie && document.cookie !== '') {
-            const cookies = document.cookie.split(';');
-            for (let i = 0; i < cookies.length; i++) {
-                const cookie = cookies[i].trim();
-                if (cookie.substring(0, name.length + 1) === (name + '=')) {
-                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                    break;
-                }
-            }
-        }
-        return cookieValue;
     }
 
     fetchExamDetails();

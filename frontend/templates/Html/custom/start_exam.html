@@ -21,26 +21,34 @@
                 <div class="card shadow-lg mx-auto" style="max-width: 70%;">
                     <div class="card-body">
                         <h2 class="card-title text-center mb-4">Start Exam</h2>
-                        <div id="exam-timer" class="text-center mb-4 text-lg font-semibold text-red-500">
-                            Time Remaining: <span id="time-remaining">00:00:00</span>
+                        <div id="exam-timer" class="text-lg font-semibold text-red-500">
+                            <div>Time Remaining: <span id="time-remaining">00:00:00</span></div>
+                            
                         </div>
-                        <div id="exam-info" class="mb-4">
+                        
+                        <div id="exam-info" class="mb-2">
                             <!-- Exam details will be populated here by JavaScript -->
                             
                         </div>
+                        <p id="skipped-questions" class="mb-2">Skipped Questions: 0</p>
+
+                        
                         <div id="question-container" class="mb-4">
                             <p id="question-text" class="card-text mb-2"></p>
                             <form id="answer-form">
                                 <div id="options-container" class="mb-4">
                                     <!-- Options will be populated here by JavaScript -->
                                 </div>
-                                <div class="d-flex justify-content-between">
+                                <div class="d-flex justify-content-between mb-4">
                                     <button type="button" id="prev-question" class="btn btn-secondary btn-lg d-none">Previous</button>
                                     <button type="button" id="skip-question" class="btn btn-warning btn-lg d-none">Skip</button>
                                     <button type="button" id="next-question" class="btn btn-secondary btn-lg d-none">Next</button>
                                     <button type="button" id="submit-exam" class="btn btn-success btn-lg d-none">Submit</button>
                                     
                                 </div>
+                                {% comment %} <div id="question-navigator" class="question-navigator"></div> {% endcomment %}
+                                <button id="review-skipped" class="btn btn-secondary d-none">Go to Next Skipped Question</button>
+
                                 <div id="resultContainer"></div>
                             </form>
                         </div>

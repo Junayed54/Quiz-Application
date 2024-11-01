@@ -24,7 +24,7 @@ document.addEventListener('DOMContentLoaded', function() {
         console.log(data);
         const examDetails = document.getElementById('exam-details');
         examDetails.innerHTML = `
-            <p><strong>Title:</strong> ${data.title}</p>
+            <h3>${data.title}</h3>
         `;
     }
 
@@ -53,7 +53,7 @@ document.addEventListener('DOMContentLoaded', function() {
         data.forEach(attempt => {
             const row = document.createElement('tr');
             row.innerHTML = `
-                <td>${new Date(attempt.timestamp).toLocaleDateString()}</td>
+                <td>${new Date(attempt.attempt_time).toLocaleDateString()}</td>
                 <td>${attempt.user_name ?? 'N/A'}</td>
                 <td>${attempt.total_questions ?? 'N/A'}</td>
                 <td>${attempt.answered ?? 'N/A'}</td>
@@ -81,6 +81,9 @@ document.addEventListener('DOMContentLoaded', function() {
     function renderLeaderboard(data) {
         console.log("data", data);
         const leaderboardContainer = document.getElementById('leaderboard');
+        leaderboardContainer.addEventListener("click", function() {
+            window.location.href = "/quiz/user_summary/";
+        });
         leaderboardContainer.innerHTML = ''; // Clear existing rows
 
         if (data.length === 0) {
@@ -88,15 +91,29 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
 
-        data.forEach(entry => {
-            const row = document.createElement('tr');
-            row.innerHTML = `
-                <td>${entry.user}</td>
-                <td>${entry.cumulative_questions}</td>
-                <td>${entry.score}</td>
-                
+        data.forEach((entry, index) => {
+            // Create the card structure
+            // const card = document.createElement('div');
+            // card.className = 'list-group-item d-flex align-items-center border-0';
+            const percentage = entry.total_questions > 0 ? ((entry.score / entry.total_questions) * 100).toFixed(2) : 0;
+            const position = index + 1;
+            // Define the inner HTML with icon and user data
+            leaderboardContainer.innerHTML = `
+                <div class="">
+                    <img src="../../../static/images/user_9071610.png" alt="User Icon" class="rounded-circle" width="40" height="40">
+                </div>
+                <div>
+                    <h4 class="m-0">${entry.user}</h4>
+                    <small>Position: <span class="text-muted">${position}</span></small><br>
+                    <small><span>Top Level</span><br></small>
+                    <small>Total Questions: <span class="text-muted">${entry.total_questions}</span></small><br>
+                    <small>Total Score: <span class="text-muted">${entry.score}</span></small>
+                    <small>Percentage: <span class="text-muted">${percentage}%</span></small>
+                </div>
             `;
-            leaderboardContainer.appendChild(row);
+        
+            // Append the card to the leaderboard container
+            // leaderboardContainer.appendChild(card);
         });
     }
 

@@ -1,5 +1,16 @@
 {% comment %} @SPK@include("partials/mainhead.html") {% endcomment %}
 {% include "../partials/mainhead.html"%}
+<style>
+    /* CSS for hover effect to show it's clickable */
+    .clickable-div {
+        cursor: pointer; /* Show pointer cursor */
+        transition: background-color 0.2s ease; /* Smooth transition for background color */
+    }
+
+    .clickable-div:hover {
+        background-color: #f0f0f0; /* Light background on hover */
+    }
+</style>
 </head>
 
 <body>
@@ -19,23 +30,24 @@
             
             <div class="container mt-5">
                 <!-- Exam Title and Print Button -->
-                <div class="mb-4">
+                <div class="mb-4 text-center">
                     <h2 id="exam-title">Exam Details</h2>
-                    <button id="print-questions-btn" class="btn btn-primary p-2">Print Questions</button>
+                    
                 </div>
         
                 <!-- Exam Details Section -->
-                <div id="exam-details" class="mb-5">
+                <div id="exam-details">
                     <!-- Exam details will be dynamically inserted here -->
                 </div>
+                <button id="print-questions-btn" class="btn btn-primary mb-4">Print Questions</button>
         
                 <!-- Main Content: User Attempts and Leaderboard -->
                 <div class="row">
                     <!-- User Attempts on the left -->
                     <div class="col-md-8">
                         <h4>User Attempts</h4>
-                        <table class="table table-striped">
-                            <thead>
+                        <table class="table table-striped table-border text-center">
+                            <thead class="bg-green">
                                 <tr>
                                     <th>Date</th>
                                     <th>Name</th>
@@ -53,22 +65,31 @@
                     </div>
         
                     <!-- Leaderboard on the right -->
-                    <div class="col-md-4">
-                        <h4>Leaderboard</h4>
-                        <table class="table table-striped">
-                            <thead>
-                                <tr>
-                                    <th>User</th>
-                                    <th>Total Questions</th>
-                                    <th>Total Score</th>
-                                    <th>Correct Answers</th>
-                                </tr>
-                            </thead>
-                            <tbody id="leaderboard">
-                                <!-- Leaderboard entries will be dynamically inserted here -->
-                            </tbody>
-                        </table>
+                    <div class="col-md-4 my-4">
+                        <h4>Top 10 Scorer</h4>
+                        <div class="card">
+                            <div class="card-body ">
+                                <div class="list-group ">
+                                    <!-- Example Leaderboard Entry -->
+                                    <div class="list-group-item d-flex align-items-start border border-secondary gap-2  clickable-div" id="leaderboard" style="width:200px; height:170px">
+                                        <!-- User Icon -->
+                                        <div class="">
+                                            <img src="../../../static/images/user_9071610.png" alt="User Icon" class="rounded-circle" width="40" height="40">
+                                        </div>
+                                        
+                                        <!-- User Data -->
+                                        <div>
+                                            <h6>Username</h6>
+                                            <small>Total Questions: <span class="text-muted">XX</span></small><br>
+                                            <small>Total Score: <span class="text-muted">YY</span></small>
+                                        </div>
+                                    </div>
+                                    <!-- Additional entries can follow the same structure -->
+                                </div>
+                            </div>
+                        </div>
                     </div>
+                    
                 </div>
             </div>
             

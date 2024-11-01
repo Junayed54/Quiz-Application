@@ -108,7 +108,7 @@ class QuestionOptionAdmin(admin.ModelAdmin):
 
 @admin.register(ExamAttempt)
 class ExamAttemptAdmin(admin.ModelAdmin):
-    list_display = ('user', 'exam', 'total_correct_answers', 'wrong_answers', 'answered', 'passed', 'attempt_time')
+    list_display = ('user', 'exam', 'total_correct_answers', 'wrong_answers', 'answered', 'passed', 'attempt_time', 'score')
     list_filter = ('passed', 'exam')
     search_fields = ('user__username', 'exam__title')
     readonly_fields = ('score', 'attempt_time')

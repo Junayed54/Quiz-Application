@@ -4,6 +4,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const teacher = document.getElementById('teacher');
     const admin = document.getElementById('admin');
     const student = document.getElementById('student');
+    const student1 = document.getElementById('student1');
     const teacher_admin = document.getElementById('teacheradmin');
     const login = document.getElementById('login-btn');
     const logoutBtn = document.getElementById('logout');
@@ -55,6 +56,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
                 else if(data.role == 'student'){
                     student.classList.remove('d-none');
+                    student1.classList.remove('d-none');
                 }
                 else{
                     teacher.classList.add('d-none');

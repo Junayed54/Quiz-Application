@@ -11,6 +11,8 @@ import os
 from decouple import config
 import django.core.management.commands.runserver as runserver
 
+
+
 runserver.Command.default_port = config('WebServer_Port', default = "8001")
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -138,24 +140,24 @@ CHANNEL_LAYERS = {
 #     'x-requested-with',
 # ]
 # Database configuration (SQLite for simplicity)
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
-    }
-}
-
-
 # DATABASES = {
 #     'default': {
-#         'ENGINE': 'django.db.backends.mysql',
-#         'NAME': 'quiz_application',  # Your database name
-#         'USER': 'bridgers',     # The new user you just created
-#         'PASSWORD': 'Bridgers@123',  # The password for the new user
-#         'HOST': 'localhost',
-#         'PORT': '3306',  # Default MySQL port
+#         'ENGINE': 'django.db.backends.sqlite3',
+#         'NAME': BASE_DIR / 'db.sqlite3',
 #     }
 # }
+
+
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': 'quiz_application',  # Your database name
+        'USER': 'bridgers',     # The new user you just created
+        'PASSWORD': 'Bridgers@123',  # The password for the new user
+        'HOST': 'localhost',
+        'PORT': '3306',  # Default MySQL port
+    }
+}
 
 
 
@@ -219,3 +221,12 @@ SIMPLE_JWT = {
 
 
 # DEFAULT_FROM_EMAIL = 'your-email@example.com'
+
+
+# Celery settings
+CELERY_BROKER_URL = 'redis://127.0.0.1:6379/0'
+CELERY_RESULT_BACKEND = 'redis://127.0.0.1:6379/0'
+CELERY_ACCEPT_CONTENT = ['json']
+CELERY_TASK_SERIALIZER = 'json'
+CELERY_RESULT_SERIALIZER = 'json'
+CELERY_TIMEZONE = 'UTC'

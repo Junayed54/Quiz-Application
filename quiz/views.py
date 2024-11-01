@@ -5,6 +5,7 @@ from rest_framework.decorators import action
 from rest_framework.views import APIView
 from rest_framework.generics import ListAPIView
 from .serializers import LeaderboardSerializer, ResultSerializer, ExamSerializer, ExamCategorySerializer, QuestionSerializer, QuestionOptionSerializer, CategorySerializer, ExamDifficultySerializer, ExamAttemptSerializer, SubjectQuestionCountSerializer
+from .tasks import auto_submit_exam
 from users.serializers import UserSerializer
 from .models import Exam, ExamCategory, Status, ExamDifficulty, Question, QuestionOption, Subject, QuestionUsage, Leaderboard, ExamAttempt, Category
 from .permissions import IsAdminOrReadOnly, IsAdmin
@@ -19,6 +20,7 @@ from django.db.models.functions import ExtractMonth, ExtractYear
 from django.db import transaction, IntegrityError
 from django.contrib.auth.decorators import login_required
 from rest_framework.decorators import api_view, permission_classes
+from rest_framework.exceptions import ValidationError
 from datetime import timedelta
 from django.db.models import Q, Count, Sum
 from random import sample
@@ -30,6 +32,7 @@ import random
 import pandas as pd
 from .pagination import CustomPageNumberPagination
 from django.contrib.auth import get_user_model
+
 User = get_user_model()
 
 now = timezone.now()
@@ -102,7 +105,7 @@ class ExamViewSet(viewsets.ModelViewSet):
 
     
     def perform_create(self, serializer):
-        print('Hello')
+        # print('Hello')
         # Check if the 'last_date' is provided in the validated data
         # last_date = self.request.data.get('last_date', None)
         # print("hello");
@@ -120,6 +123,7 @@ class ExamViewSet(viewsets.ModelViewSet):
 
         # Create the status for the exam
         Status.objects.create(exam=exam, status=status, user=self.request.user)
+        Leaderboard.objects.create(exam=exam, score=0)
         return Response({'exam_id': exam.exam_id})
     
     @action(detail=False, methods=['get'], permission_classes=[IsAuthenticated], authentication_classes=[JWTAuthentication])
@@ -220,7 +224,7 @@ class ExamViewSet(viewsets.ModelViewSet):
         user = request.user
         exam = self.get_object()
 
-        # Retrieve or create a new attempt
+        # Create a new attempt
         attempt = ExamAttempt.objects.create(
             exam=exam,
             user=user,
@@ -235,31 +239,37 @@ class ExamViewSet(viewsets.ModelViewSet):
         if not isinstance(answers, list):
             return Response({"error": "Answers should be a list."}, status=status.HTTP_400_BAD_REQUEST)
 
-        # Initialize counters for correct and wrong answers
+        # Initialize counters
         total_correct = 0
         total_wrong = 0
         answered_count = 0
 
-        # Process each answer submitted by the user
+        # Process each answer
         for answer in answers:
+            if answer is None:
+                continue  # Skip if answer is None
+
             question_id = answer.get('question_id')
-            selected_option = answer.get('option')
-            
-            question = get_object_or_404(Question, id=question_id)
-            selected_option = get_object_or_404(QuestionOption, id=int(selected_option))
-            
+            selected_option_id = answer.get('option')
+
+            if question_id is None or selected_option_id == 'none':
+                continue  # Skip if either question_id or selected_option is missing
+
+            try:
+                question = Question.objects.get(id=question_id)
+                selected_option = QuestionOption.objects.get(id=int(selected_option_id))
+            except (Question.DoesNotExist, QuestionOption.DoesNotExist, ValueError):
+                raise ValidationError({"error": "Invalid question or option ID."})
+
             correct_answer = question.get_correct_answer()
 
-            # Check if an option was selected
-            if selected_option and selected_option != 'none':
-                
-                answered_count += 1  # Count as answered
-                
-                if selected_option.is_correct:
-                    # print(selected_option)
-                    total_correct += 1
-                else:
-                    total_wrong += 1
+            # Count as answered
+            answered_count += 1
+
+            if selected_option.is_correct:
+                total_correct += 1
+            else:
+                total_wrong += 1
 
         # Update the attempt with results
         attempt.answered = answered_count
@@ -267,6 +277,9 @@ class ExamViewSet(viewsets.ModelViewSet):
         attempt.wrong_answers = total_wrong
         attempt.passed = total_correct >= exam.pass_mark  # Adjust pass logic as needed
         attempt.save()
+
+        # Schedule auto-submit task
+        auto_submit_exam.apply_async(args=[attempt.id], countdown=10)
 
         return JsonResponse({
             'status': 'submitted',
@@ -1117,21 +1130,30 @@ class ExamAttemptViewSet(viewsets.ViewSet):
     @action(detail=False, methods=['get'], permission_classes=[IsAuthenticated])
     def all_attempts(self, request):
         user = self.request.user
+        time_period = request.query_params.get('time_period', 'all')
 
         # Query to get all the exams the user has attempted
-        user_attempts = ExamAttempt.objects.filter(user=user).select_related('exam')
+        user_attempts = ExamAttempt.objects.filter(user=user)
+
+        # Filter by time period
+        if time_period == 'weekly':
+            user_attempts = user_attempts.filter(attempt_time__gte=timezone.now() - timedelta(weeks=1))
+        elif time_period == 'monthly':
+            user_attempts = user_attempts.filter(attempt_time__gte=timezone.now() - timedelta(days=30))
+        elif time_period == 'yearly':
+            user_attempts = user_attempts.filter(attempt_time__gte=timezone.now() - timedelta(days=365))
 
         if not user_attempts.exists():
             return Response({"message": "No exam attempts found for this user."}, status=status.HTTP_404_NOT_FOUND)
 
-        # Aggregate the number of attempts and include exam_id, exam title, and count of attempts per exam
-        exams_summary = user_attempts.values('exam_id', 'exam__title').annotate(
-            num_attempts=Count('id'),
-        ).order_by('-num_attempts')
+        # Map attempts to a list of dictionaries for the response
+        attempts_data = user_attempts.values(
+            'exam__title',
+            'attempt_time',
+            'total_correct_answers',
+        )
 
-        # Return the data in the response
-        return Response(exams_summary, status=status.HTTP_200_OK)
-    
+        return Response(attempts_data, status=status.HTTP_200_OK)
 
     @action(detail=False, methods=['get'], permission_classes=[IsAuthenticated])
     def user_attempts(self, request):
@@ -1282,3 +1304,55 @@ def exam_leaderboard_view(request, exam_id):
     # Serialize data
     serializer = ResultSerializer(leaderboard, many=True)
     return Response(serializer.data)
+
+
+
+
+
+
+
+
+#User summury data
+
+
+class UserExamSummaryAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        user = request.user
+        
+        
+        # Get all attempts by the user
+        attempts = ExamAttempt.objects.filter(user=user)
+       
+        # Aggregated data
+        total_attempts = attempts.count()
+        total_passed = attempts.filter(passed=True).count()
+        total_failed = total_attempts - total_passed
+
+        # Calculate total questions by multiplying the exam's total questions by the number of times the user attempted each exam
+        unique_exams = set(attempt.exam for attempt in attempts)
+        total_questions = sum(exam.total_questions * attempts.filter(exam=exam).count() for exam in unique_exams)
+               
+        total_answered = attempts.aggregate(total=Sum('answered'))['total'] or 0
+        total_correct_answers = attempts.aggregate(total=Sum('total_correct_answers'))['total'] or 0
+        total_wrong_answers = attempts.aggregate(total=Sum('wrong_answers'))['total'] or 0
+
+        # Calculate unanswered questions
+        total_unanswered = total_questions - total_answered
+
+        # Structure the data for response
+        data = {
+            "username": user.username,
+            "total_attempts": total_attempts,
+            "total_passed": total_passed,
+            "total_failed": total_failed,
+            "total_questions": total_questions,
+            "total_answered": total_answered,
+            "total_correct_answers": total_correct_answers,
+            "total_wrong_answers": total_wrong_answers,
+            "total_unanswered": total_unanswered,
+        }
+
+        return Response(data)
+

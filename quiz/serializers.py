@@ -64,14 +64,28 @@ class QuestionUsageSerializer(serializers.ModelSerializer):
 class ExamAttemptSerializer(serializers.ModelSerializer):
     score = serializers.ReadOnlyField()
     is_passed = serializers.ReadOnlyField()
+    user_name = serializers.CharField(source='user.username', read_only=True)  # User's name
+    total_questions = serializers.IntegerField(source='exam.total_questions', read_only=True)  # Total questions in the exam
+    pass_mark = serializers.IntegerField(source='exam.pass_mark', read_only=True)  # Total questions in the exam
+    exam_title = serializers.StringRelatedField(source='exam.title', read_only=True) #
 
     class Meta:
         model = ExamAttempt
         fields = [
-            'id', 'user', 'exam', 'answered', 'wrong_answers',
-            'total_correct_answers', 'score', 'is_passed', 'attempt_time'
+            'id', 'user', 'user_name', 'exam', 'total_questions', 'answered', 'pass_mark',
+            'wrong_answers', 'total_correct_answers', 'score', 'is_passed', 'attempt_time', 'score', 'exam_title'
         ]
         read_only_fields = ['attempt_time', 'score', 'is_passed']
+
+    def to_representation(self, instance):
+        representation = super().to_representation(instance)
+        representation['user_name'] = instance.user.username
+        representation['total_questions'] = instance.exam.total_questions
+        representation['pass_mark'] = instance.exam.pass_mark
+        representation['exam_title'] = instance.exam.title
+        
+        
+        return representation
 
 
 
@@ -142,7 +156,7 @@ class LeaderboardSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Leaderboard
-        fields = ['user', 'exam', 'score']
+        fields = '__all__'
 
 
 
