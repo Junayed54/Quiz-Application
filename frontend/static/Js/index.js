@@ -3,6 +3,8 @@ document.addEventListener('DOMContentLoaded', function() {
     const logout = document.getElementById('logout');
     const teacher = document.getElementById('teacher');
     const admin = document.getElementById('admin');
+    const pk_admin = document.getElementById('pk_admin');
+    console.log(admin);
     const student = document.getElementById('student');
     const student1 = document.getElementById('student1');
     const teacher_admin = document.getElementById('teacheradmin');
@@ -42,13 +44,18 @@ document.addEventListener('DOMContentLoaded', function() {
             .then(data => {
                 // console.log(data);
                 user_name.innerText = data.username
-                role.innerHTML = data.role
+               
+                role.innerHTML = data.role;
                 if (data.role === 'teacher') {
                     teacher.classList.remove('d-none');
                     
                 }
+
                 else if(data.role === 'admin'){
+                    
                     admin.classList.remove('d-none');
+                    pk_admin.classList.remove('d-none');
+                    
                 }
                 else if(data.role =='admin' || data.role =='teacher'){
                     teacher_admin.classList.remove('d-none');
