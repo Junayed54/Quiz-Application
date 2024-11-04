@@ -164,6 +164,20 @@ class ExamAttempt(models.Model):
     def __str__(self):
         return f"{self.user.username} - {self.exam.title} - {self.total_correct_answers} correct answers"
 
+    def get_answered_questions(self):
+        return self.user_answers.filter(selected_option__isnull=False)
+
+    def get_unanswered_questions(self):
+        all_questions = self.exam.questions.all()
+        answered_questions_ids = self.user_answers.values_list('question', flat=True)
+        return all_questions.exclude(id__in=answered_questions_ids)
+
+    def get_wrong_answers(self):
+        return self.user_answers.filter(is_correct=False)
+    
+    
+    
+    
     @property
     def score(self):
         """Calculate and return the user's score."""
@@ -185,8 +199,9 @@ class ExamAttempt(models.Model):
         super().save(*args, **kwargs)
         
         Leaderboard.update_best_score(self.user, self.exam)
-        
-        
+
+
+      
         
 class Category(models.Model):
     name = models.CharField(max_length=255, unique=True)
@@ -265,6 +280,17 @@ class QuestionOption(models.Model):
     def __str__(self):
         return self.text
 
+
+
+class UserAnswer(models.Model):
+    exam_attempt = models.ForeignKey(ExamAttempt, related_name='user_answers', on_delete=models.CASCADE)
+    question = models.ForeignKey(Question, on_delete=models.CASCADE)
+    selected_option = models.ForeignKey(QuestionOption, on_delete=models.SET_NULL, null=True, blank=True)
+    is_correct = models.BooleanField(default=False)
+
+  
+
+
 class Leaderboard(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='leaderboard', null=True)
     score = models.IntegerField(default=0)
@@ -293,3 +319,5 @@ class Leaderboard(models.Model):
         leaderboard_entry.score = total_correct
         leaderboard_entry.total_questions = total_answered
         leaderboard_entry.save()
+        
+        

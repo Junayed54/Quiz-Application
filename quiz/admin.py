@@ -124,9 +124,4 @@ class LeaderboardAdmin(admin.ModelAdmin):
     search_fields = ('user__username', 'exam__title')
     list_filter = ('exam', 'score')
 
-# @admin.register(QuestionStatus)
-# class QuestionStatusAdmin(admin.ModelAdmin):
-#     list_display =' __all__'
-    
-    
-# admin.site.register(QuestionStatus)
+

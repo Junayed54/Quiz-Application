@@ -252,7 +252,7 @@ document.addEventListener('DOMContentLoaded', async function() {
                 console.log(result.questions);
             } else {
                 console.error('Error generating exam:', result);
-                alert('Failed to generate exam.');
+                alert(result);
             }
         } catch (error) {
             console.error('Error:', error);

@@ -4,10 +4,10 @@ from rest_framework.response import Response
 from rest_framework.decorators import action
 from rest_framework.views import APIView
 from rest_framework.generics import ListAPIView
-from .serializers import LeaderboardSerializer, ResultSerializer, ExamSerializer, ExamCategorySerializer, QuestionSerializer, QuestionOptionSerializer, CategorySerializer, ExamDifficultySerializer, ExamAttemptSerializer, SubjectQuestionCountSerializer
+from .serializers import LeaderboardSerializer, ResultSerializer, UserAnswerSerializer, ExamSerializer, ExamCategorySerializer, QuestionSerializer, QuestionOptionSerializer, CategorySerializer, ExamDifficultySerializer, ExamAttemptSerializer, SubjectQuestionCountSerializer
 from .tasks import auto_submit_exam
 from users.serializers import UserSerializer
-from .models import Exam, ExamCategory, Status, ExamDifficulty, Question, QuestionOption, Subject, QuestionUsage, Leaderboard, ExamAttempt, Category
+from .models import Exam, ExamCategory, Status, ExamDifficulty, Question, QuestionOption, UserAnswer, Subject, QuestionUsage, Leaderboard, ExamAttempt, Category
 from .permissions import IsAdminOrReadOnly, IsAdmin
 from django.utils import timezone
 from rest_framework.pagination import PageNumberPagination
@@ -262,14 +262,25 @@ class ExamViewSet(viewsets.ModelViewSet):
                 raise ValidationError({"error": "Invalid question or option ID."})
 
             correct_answer = question.get_correct_answer()
+            is_correct = selected_option.is_correct
 
             # Count as answered
             answered_count += 1
 
-            if selected_option.is_correct:
+            if is_correct:
                 total_correct += 1
             else:
                 total_wrong += 1
+
+            # Create or update UserAnswer entry for the question and attempt
+            UserAnswer.objects.update_or_create(
+                exam_attempt=attempt,
+                question=question,
+                defaults={
+                    'selected_option': selected_option,
+                    'is_correct': is_correct
+                }
+            )
 
         # Update the attempt with results
         attempt.answered = answered_count
@@ -278,7 +289,7 @@ class ExamViewSet(viewsets.ModelViewSet):
         attempt.passed = total_correct >= exam.pass_mark  # Adjust pass logic as needed
         attempt.save()
 
-        # Schedule auto-submit task
+        # Schedule auto-submit task (if needed)
         auto_submit_exam.apply_async(args=[attempt.id], countdown=10)
 
         return JsonResponse({
@@ -288,8 +299,9 @@ class ExamViewSet(viewsets.ModelViewSet):
             'wrong_answers': total_wrong,
             'passed': attempt.passed
         }, status=status.HTTP_200_OK)
-
-    
+        
+        
+        
     
     @action(detail=True, methods=['post'])
     def generate_exam(self, request, pk=None):
@@ -1181,6 +1193,42 @@ class ExamAttemptViewSet(viewsets.ViewSet):
         return Response(serializer.data, status=status.HTTP_200_OK)
     
     
+    
+    @action(detail=False, methods=['get'], permission_classes=[IsAuthenticated])
+    def highest_attempts(self, request):
+        user = self.request.user
+
+        # Query for exams the user has attempted
+        attempted_exams = Exam.objects.filter(attempts__user=user).distinct()
+
+        exams_data = []
+        
+        for exam in attempted_exams:
+            # Get all attempts by the user for this exam
+            attempts = ExamAttempt.objects.filter(user=user, exam=exam)
+
+            # Find the attempt with the highest correct answers
+            highest_attempt = attempts.order_by('-total_correct_answers').first()
+
+            # Add the highest attempt details to the response data
+            exams_data.append({
+                'exam_id': exam.exam_id,
+                'exam_title': exam.title,
+                'total_questions': exam.total_questions,
+                'passed_marks':exam.pass_mark,
+                'highest_attempt': {
+                    'attempt_id': highest_attempt.id,
+                    'answered': highest_attempt.answered,
+                    'total_correct_answers': highest_attempt.total_correct_answers,
+                    'wrong_answers': highest_attempt.wrong_answers,
+                    'passed': highest_attempt.passed,
+                    'attempt_time': highest_attempt.attempt_time,
+                }
+            })
+
+        return Response({'exams': exams_data}, status=status.HTTP_200_OK)
+
+    
 
 @login_required
 @api_view(['GET'])
@@ -1356,3 +1404,26 @@ class UserExamSummaryAPIView(APIView):
 
         return Response(data)
 
+class UserAnswerViewSet(viewsets.ViewSet):
+    permission_classes = [IsAuthenticated]
+
+    @action(detail=False, methods=['get'], url_path='all-submitted-questions')
+    def all_submitted_questions(self, request):
+        user = request.user
+
+        # Fetch all UserAnswer instances for the user
+        answered_questions = UserAnswer.objects.filter(exam_attempt__user=user)
+
+        # Filter for correct and incorrect answers
+        correct_answers = answered_questions.filter(is_correct=True)
+        wrong_answers = answered_questions.filter(is_correct=False)
+
+        # Serialize the data
+        correct_answers_data = UserAnswerSerializer(correct_answers, many=True, context={'include_options': True}).data
+        wrong_answers_data = UserAnswerSerializer(wrong_answers, many=True, context={'include_options': True}).data
+        submitted_questions_data = UserAnswerSerializer(answered_questions, many=True, context={'include_options': True}).data
+        return Response({
+            "submitted_questions": submitted_questions_data,
+            "correct_answers": correct_answers_data,
+            "wrong_answers": wrong_answers_data
+        }, status=status.HTTP_200_OK)

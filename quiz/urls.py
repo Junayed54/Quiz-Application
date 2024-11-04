@@ -1,7 +1,7 @@
 from django.urls import path, include
 from django.views.generic import TemplateView
 from rest_framework.routers import DefaultRouter
-from .views import ExamViewSet, CategoryListView, CreateCategoryView, ExamDetailView, ExamAttemptViewSet, user_attempts_by_month, user_exam_attempts_by_month, LeaderboardListView, QuestionViewSet, QuestionOptionViewSet, UserCreatedExamsView, ExamUploadView, CategoryViewSet, ExamDifficultyView, QuestionHistoryByMonthView, QuestionHistoryByTeacherMonthYearView, TeacherListView, StudentListView, UserQuestionSummaryView, ExamSubjectsQuestionCountView, exam_leaderboard_view, UserExamSummaryAPIView
+from .views import ExamViewSet, CategoryListView, CreateCategoryView, ExamDetailView, ExamAttemptViewSet, user_attempts_by_month, user_exam_attempts_by_month, LeaderboardListView, QuestionViewSet, QuestionOptionViewSet, UserCreatedExamsView, ExamUploadView, CategoryViewSet, ExamDifficultyView, QuestionHistoryByMonthView, QuestionHistoryByTeacherMonthYearView, TeacherListView, StudentListView, UserQuestionSummaryView, ExamSubjectsQuestionCountView, exam_leaderboard_view, UserExamSummaryAPIView, UserAnswerViewSet
 # from .status import SubmitExamToAdminView, SendExamForReviewView, ReviewExamView, ReturnExamToCreatorView, PublishExamView
 from .status import StatusViewSet
 # from .question_status import QuestionStatusViewSet, AssignedQuestionsSummaryAPIView, QuestionsByUserForReviewerView
@@ -14,6 +14,7 @@ router.register(r'questions', QuestionViewSet, basename='questions')
 router.register(r'question-options', QuestionOptionViewSet)
 router.register(r'categories', CategoryViewSet)
 router.register(r'status', StatusViewSet, basename='status')
+router.register(r'user-answers', UserAnswerViewSet, basename='user-answer')
 # router.register(r'question-status', QuestionStatusViewSet)
 # router.register(r'question_upload', QuestionUplaodViewset)
 

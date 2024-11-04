@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Exam, ExamCategory, Status, ExamDifficulty, Question, QuestionUsage, QuestionOption, Leaderboard, ExamAttempt, Category
+from .models import Exam, ExamCategory, Status, ExamDifficulty, Question, QuestionUsage, QuestionOption, Leaderboard, ExamAttempt, Category, QuestionUsage, UserAnswer
 # from users.models import User
 from django.contrib.auth import get_user_model
 User = get_user_model()
@@ -21,7 +21,7 @@ class CategorySerializer(serializers.ModelSerializer):
 
 
 class QuestionSerializer(serializers.ModelSerializer):
-    options = QuestionOptionSerializer(many=True)
+    options = QuestionOptionSerializer(many=True, read_only=True)
     exam = serializers.PrimaryKeyRelatedField(queryset=Exam.objects.all(), write_only=True)
     category = serializers.PrimaryKeyRelatedField(queryset=Category.objects.all(), write_only=True)
     category_name = serializers.SerializerMethodField()
@@ -176,3 +176,24 @@ class ResultSerializer(serializers.Serializer):
     cumulative_questions = serializers.IntegerField()
     cumulative_score = serializers.IntegerField()
     total_correct = serializers.IntegerField()
+
+
+
+class QuestionUsageSerializer(serializers.ModelSerializer):
+    question_text = serializers.CharField(source='question.text', read_only=True)
+
+    class Meta:
+        model = QuestionUsage
+        fields = ['id', 'question', 'question_text', 'exam', 'year']
+        read_only_fields = ['id', 'question_text']
+        
+        
+class UserAnswerSerializer(serializers.ModelSerializer):
+    question_text = serializers.CharField(source='question.text', read_only=True)
+    selected_option_text = serializers.CharField(source='selected_option.text', read_only=True)
+    question = QuestionSerializer()
+    selected_option = QuestionOptionSerializer()  
+
+    class Meta:
+        model = UserAnswer
+        fields = ['id', 'exam_attempt', 'question', 'question_text', 'selected_option', 'selected_option_text', 'is_correct']

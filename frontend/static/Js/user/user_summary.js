@@ -185,7 +185,9 @@ document.addEventListener('DOMContentLoaded', function() {
                         title: {
                             display: true,
                             text: 'Attempt Date'
-                        }
+                        },
+                        
+                        reverse: true
                     },
                     y: {
                         beginAtZero: true,
@@ -216,6 +218,191 @@ document.addEventListener('DOMContentLoaded', function() {
 
 
 
+async function loadExams() {
+    try {
+        const response = await fetch('/quiz/attempts/highest_attempts/', {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${localStorage.getItem('access_token')}`,  // Add authentication token if needed
+                'Content-Type': 'application/json'
+            }
+        });
+
+        if (!response.ok) {
+            throw new Error('Failed to fetch exam attempts.');
+        }
+
+        const data = await response.json();
+        const examList = document.getElementById('examList');
+        examList.innerHTML = ''; // Clear previous content
+        console.log(data);
+        data.exams.forEach((exam, index) => {
+            const examItem = document.createElement('div');
+            examItem.className = 'accordion-item';
+
+            // Exam Header with Toggle Button
+            examItem.innerHTML = `
+                <h2 class="accordion-header" id="heading${index}">
+                    <button class="accordion-button collapsed bg-secondary text-white" type="button" data-bs-toggle="collapse" data-bs-target="#collapse${index}" aria-expanded="false" aria-controls="collapse${index}">
+                        Exam title: ${exam.exam_title}
+                    </button>
+                </h2>
+                <div id="collapse${index}" class="accordion-collapse collapse" aria-labelledby="heading${index}" data-bs-parent="#examList">
+                    <div class="accordion-body">
+                        <div class="row">
+                            <div class="col-6 mb-2">
+                                <li class="list-group-item">Total questions: ${exam.total_questions}</li>
+                            </div>
+                            <div class="col-6 mb-2">
+                                <li class="list-group-item">Answered: ${exam.highest_attempt.answered}</li>
+                            </div>
+                            <div class="col-6 mb-2">
+                                <li class="list-group-item">Total Correct Answers: ${exam.highest_attempt.total_correct_answers}</li>
+                            </div>
+                            <div class="col-6 mb-2">
+                                <li class="list-group-item">Wrong Answers: ${exam.highest_attempt.wrong_answers}</li>
+                            </div>
+                            <div class="col-6 mb-2">
+                                <li class="list-group-item">Passed Mark: ${exam.passed_marks}</li>
+                            </div>
+                            <div class="col-6 mb-2">
+                                <li class="list-group-item">Attempt Time: ${new Date(exam.highest_attempt.attempt_time).toLocaleString()}</li>
+                            </div>
+                        </div>
+                    </div>
 
 
-// Fetch the data from the API endpoint
+                </div>
+            `;
+
+            // Append the exam item to the exam list
+            examList.appendChild(examItem);
+        });
+    } catch (error) {
+        console.error(error);
+        alert('Error loading exams. Please try again.');
+    }
+}
+
+// Load exams when the page is loaded
+document.addEventListener('DOMContentLoaded', loadExams);
+
+
+//Quistions
+document.addEventListener("DOMContentLoaded", function () {
+    fetchSubmittedQuestions();
+});
+
+// Fetch submitted questions and update UI
+function fetchSubmittedQuestions() {
+    fetch('/quiz/user-answers/all-submitted-questions/', {
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + localStorage.getItem('access_token')
+        }
+    })
+    .then(response => {
+        if (!response.ok) throw new Error('Network response was not ok');
+        return response.json();
+    })
+    .then(data => {
+        console.log("Fetched data:", data);
+        
+        updateQuestionCounts(data);
+        setupClickListeners(data);
+    })
+    .catch(error => console.error('Error fetching questions:', error));
+}
+
+// Update counts of questions
+function updateQuestionCounts(data) {
+    document.getElementById('total-questions').innerText = data.submitted_questions.length;
+    document.getElementById('total-answered').innerText = data.submitted_questions.length;
+    document.getElementById('total-correct-answers').innerText = data.correct_answers.length;
+    document.getElementById('total-wrong-answers').innerText = data.wrong_answers.length;
+}
+
+// Set up click listeners for question rows
+function setupClickListeners(data) {
+    document.querySelectorAll('.question-row').forEach(row => {
+        row.addEventListener('click', function () {
+            const type = this.getAttribute('data-type');
+            let questionsToDisplay = [];
+
+            // Determine which questions to display
+            switch (type) {
+                case 'all':
+                case 'answered':
+                    questionsToDisplay = data.submitted_questions;
+                    break;
+                case 'correct':
+                    questionsToDisplay = data.correct_answers;
+                    break;
+                case 'wrong':
+                    questionsToDisplay = data.wrong_answers;
+                    break;
+                default:
+                    console.error("Unknown question type:", type);
+                    return;
+            }
+
+            displayQuestions(questionsToDisplay, type);
+        });
+    });
+}
+
+// Display questions in the container with options
+function displayQuestions(questions, type) {
+    const questionListContainer = document.getElementById("questionListContainer");
+    const chart = document.getElementById('chart');
+    chart.classList.add('d-none');
+    const questions_show = document.getElementById('questions');
+    questions_show.classList.remove('d-none');
+    questionListContainer.innerHTML = '';
+
+    if (questions.length === 0) {
+        questionListContainer.innerHTML = '<p>No questions to display.</p>';
+        return;
+    }
+
+    questions.forEach(item => {
+        const { question, selected_option, is_correct } = item;
+        const options = question.options.map(opt => {
+            let className = '';
+            // Highlight selected option in red if wrong
+            if (type === 'wrong' && opt.id === selected_option.id) {
+                className = 'text-danger'; // User's wrong answer
+            }
+            // Highlight correct answer in green
+            if (opt.is_correct) {
+                className = 'text-success'; // Correct answer
+            }
+            return `
+                <li class="list-group-item ${className}">
+                    ${opt.text}
+                </li>
+            `;
+        }).join('');
+
+        const questionCard = `
+            <div class="card mb-2">
+                <div class="card-header">
+                    <h5>${question.text}</h5>
+                </div>
+                <div class="card-body">
+                    <p><strong>Your Answer:</strong> ${selected_option.text || "Not answered"}</p>
+                    <p><strong>Status:</strong> <span class="${is_correct ? 'text-success' : 'text-danger'}">
+                        ${is_correct ? 'Correct' : 'Wrong'}
+                    </span></p>
+                    <p><strong>Options:</strong></p>
+                    <ul class="list-group">
+                        ${options}
+                    </ul>
+                </div>
+            </div>
+        `;
+
+        questionListContainer.insertAdjacentHTML('beforeend', questionCard);
+    });
+}

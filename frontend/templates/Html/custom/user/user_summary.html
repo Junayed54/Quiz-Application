@@ -65,19 +65,19 @@
                             <div class="px-4 mb-4">
                                 <table class="table mb-3 rounded-3 text-start">
                                     <tbody>
-                                        <tr class="bg-success text-white">
+                                        <tr class="bg-success text-white question-row" data-type="all">
                                             <th>Questions</th>
                                             <td id="total-questions" class="total-question">0</td>
                                         </tr>
-                                        <tr>
-                                            <th>Answers:</th>
+                                        <tr class="question-row" data-type="answered">
+                                            <th>Answers</th>
                                             <td id="total-answered" class="text-muted">0</td>
                                         </tr>
-                                        <tr>
+                                        <tr class="question-row" data-type="correct">
                                             <th>Right Ans</th>
                                             <td id="total-correct-answers" class="text-muted">0</td>
                                         </tr>
-                                        <tr>
+                                        <tr class="question-row" data-type="wrong">
                                             <th>Wrong Ans</th>
                                             <td id="total-wrong-answers" class="text-muted">0</td>
                                         </tr>
@@ -116,18 +116,33 @@
             
                     <!-- Chart Card -->
                     <div class="col-12 col-lg-6">
-                        <div class="card w-100">
-                            <div class="mb-3">
-                                <canvas id="correctAnswersChart" width="400" height="200"></canvas>
-                                <div class="time-period-selector d-flex justify-content-center align-items-center gap-2 mt-2">
-                                    <label><input type="radio" name="timePeriod" value="all" checked> All</label>
-                                    <label><input type="radio" name="timePeriod" value="weekly"> Weekly</label>
-                                    <label><input type="radio" name="timePeriod" value="monthly"> Monthly</label>
-                                    <label><input type="radio" name="timePeriod" value="yearly"> Yearly</label>
+                        <div class="" id="chart">
+                            <div class="card w-100">
+                                <div class="mb-3">
+                                    <canvas id="correctAnswersChart" width="400" height="200"></canvas>
+                                    <div class="time-period-selector d-flex justify-content-center align-items-center gap-2 mt-2">
+                                        <label><input type="radio" name="timePeriod" value="all" checked> All</label>
+                                        <label><input type="radio" name="timePeriod" value="weekly"> Weekly</label>
+                                        <label><input type="radio" name="timePeriod" value="monthly"> Monthly</label>
+                                        <label><input type="radio" name="timePeriod" value="yearly"> Yearly</label>
+                                    </div>
                                 </div>
                             </div>
+
+                            <div class="container mt-5">
+                                <h1 class="text-center">Exams and Attempts</h1>
+                                <div id="examList" class="accordion my-4"></div>
+                            </div>
+                        </div>
+                        <div class="container mt-5 d-none" id="questions">
+                            <h2 class="mb-4">Submitted Questions</h2>
+                            <div id="questionListContainer" class="mt-4"></div>
+                            
                         </div>
                     </div>
+
+                    
+                    
                 </div>
             </div>
             
