@@ -224,7 +224,7 @@ document.addEventListener('DOMContentLoaded', async function() {
     const generateQuestionsBtn = document.getElementById('generate-questions-btn');
     generateQuestionsBtn.addEventListener('click', async function() {
         const examId = document.getElementById('create-exam-form').dataset.examId;
-        const totalQuestions = document.getElementById('questions_to_generate').value;
+        const totalQuestions = document.getElementById('total_questions').value;
         const difficultyData = collectDifficultyData(examId, document.querySelectorAll('input[id^="difficulty"]'));
 
         if (!examId || !totalQuestions) {

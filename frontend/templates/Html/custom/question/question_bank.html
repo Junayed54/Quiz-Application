@@ -50,12 +50,12 @@
     }
 
     .custom-bordered {
-        border: 1px solid black; /* Outer border */
+        border: 2px solid #808080; /* Outer border */
         border-collapse: collapse; /* Collapse borders */
     }
     .custom-bordered th,
     .custom-bordered td {
-        border: 1px solid black; /* Inner borders */
+        border: 2px solid #808080; /* Inner borders */
     }
 </style>
 
@@ -77,9 +77,14 @@
             <div class="container py-5">
                 <div class="row justify-content-center">
                     <div class="col-md-12">
-                        <div class="card shadow-sm">
+                        <div class="card custom-card">
+                            <div class="card-header justify-content-between">
+                                <div class="card-title">
+                                    Question Bank
+                                </div>
+                            </div>
                             <div class="card-body">
-                                <h2 class="card-title text-center mb-4">Question Bank</h2>
+                                
 
                                 <!-- Loader -->
                                 <div class="text-center" id="loading" style="display:none;">

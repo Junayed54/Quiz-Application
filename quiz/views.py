@@ -168,7 +168,7 @@ class ExamViewSet(viewsets.ModelViewSet):
         exam = self.get_object()
         # questions_to_generate = exam.questions_to_generate
         questions = Question.objects.filter(exam=exam)
-        print(questions[0].text)
+        # print(questions[0].text)
         # print(questions)
         # try:
         #     difficulty = ExamDifficulty.objects.get(exam=exam)

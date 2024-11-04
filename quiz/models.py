@@ -266,7 +266,7 @@ class QuestionOption(models.Model):
         return self.text
 
 class Leaderboard(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='leaderboard')
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='leaderboard', null=True)
     score = models.IntegerField(default=0)
     exam = models.ForeignKey(Exam, on_delete=models.CASCADE, related_name='leaderboards')
     total_questions = models.IntegerField(default=0, null=True)
