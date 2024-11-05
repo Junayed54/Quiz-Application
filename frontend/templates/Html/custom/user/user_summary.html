@@ -10,6 +10,15 @@
     .time-period-selector label {
         font-size: 0.9rem;
     }
+
+    .clickable-row {
+        cursor: pointer;
+        transition: background-color 0.3s;
+    }
+    
+    .clickable-row:hover {
+        background-color: #6082B6; /* Light gray background on hover */
+    }
 </style>
 
 </head>
@@ -69,15 +78,15 @@
                                             <th>Questions</th>
                                             <td id="total-questions" class="total-question">0</td>
                                         </tr>
-                                        <tr class="question-row" data-type="answered">
+                                        <tr class="question-row clickable-row" data-type="answered">
                                             <th>Answers</th>
                                             <td id="total-answered" class="text-muted">0</td>
                                         </tr>
-                                        <tr class="question-row" data-type="correct">
+                                        <tr class="question-row clickable-row" data-type="correct">
                                             <th>Right Ans</th>
                                             <td id="total-correct-answers" class="text-muted">0</td>
                                         </tr>
-                                        <tr class="question-row" data-type="wrong">
+                                        <tr class="question-row clickable-row" data-type="wrong">
                                             <th>Wrong Ans</th>
                                             <td id="total-wrong-answers" class="text-muted">0</td>
                                         </tr>

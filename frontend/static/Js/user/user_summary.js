@@ -317,6 +317,7 @@ function fetchSubmittedQuestions() {
 
 // Update counts of questions
 function updateQuestionCounts(data) {
+    
     document.getElementById('total-questions').innerText = data.submitted_questions.length;
     document.getElementById('total-answered').innerText = data.submitted_questions.length;
     document.getElementById('total-correct-answers').innerText = data.correct_answers.length;
@@ -332,7 +333,7 @@ function setupClickListeners(data) {
 
             // Determine which questions to display
             switch (type) {
-                case 'all':
+                
                 case 'answered':
                     questionsToDisplay = data.submitted_questions;
                     break;
@@ -366,7 +367,7 @@ function displayQuestions(questions, type) {
         return;
     }
 
-    questions.forEach(item => {
+    questions.forEach((item, index) => { // Add index as a parameter
         const { question, selected_option, is_correct } = item;
         const options = question.options.map(opt => {
             let className = '';
@@ -384,14 +385,14 @@ function displayQuestions(questions, type) {
                 </li>
             `;
         }).join('');
-
+    
         const questionCard = `
             <div class="card mb-2">
                 <div class="card-header">
-                    <h5>${question.text}</h5>
+                    <h5>Question ${index + 1}: ${question.text}</h5> <!-- Add question index -->
                 </div>
                 <div class="card-body">
-                    <p><strong>Your Answer:</strong> ${selected_option.text || "Not answered"}</p>
+                    <p><strong>Your Answer:</strong> ${selected_option ? selected_option.text : "Not answered"}</p>
                     <p><strong>Status:</strong> <span class="${is_correct ? 'text-success' : 'text-danger'}">
                         ${is_correct ? 'Correct' : 'Wrong'}
                     </span></p>
@@ -402,7 +403,6 @@ function displayQuestions(questions, type) {
                 </div>
             </div>
         `;
-
         questionListContainer.insertAdjacentHTML('beforeend', questionCard);
     });
 }

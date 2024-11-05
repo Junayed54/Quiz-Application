@@ -99,13 +99,14 @@ class ExamCategorySerializer(serializers.ModelSerializer):
 class ExamSerializer(serializers.ModelSerializer):
     status = serializers.ReadOnlyField()  # Read-only field to display exam status
     category_name = serializers.CharField(source='category.name', read_only=True)  # Category name for convenience
-
+    questions = QuestionSerializer(many=True, read_only=True)  
+    
     class Meta:
         model = Exam
         fields = [
             'exam_id', 'title', 'total_questions', 'created_by', 'total_mark',
             'pass_mark', 'negative_mark', 'created_at', 'updated_at',
-            'starting_time', 'last_date', 'category', 'category_name', 'duration', 'status'
+            'starting_time', 'last_date', 'category', 'category_name', 'duration', 'status', 'questions'
         ]
         read_only_fields = ['created_at', 'updated_at', 'status', 'category_name']
 

@@ -24,7 +24,7 @@ document.addEventListener('DOMContentLoaded', function () {
         .then(response => response.json())
         .then(data => {
             if (data) {
-                console.log(data);
+                console.log("dtata", data);
                 
                 // Populate Exam Details
                 document.getElementById('exam-title').textContent = data.title;
@@ -42,7 +42,9 @@ document.addEventListener('DOMContentLoaded', function () {
                 // Populate Questions Table
                 const questionsList = document.getElementById('questions-list');
                 questionsList.innerHTML = ''; // Clear previous data
+                console.log(data.questions);
                 data.questions.forEach((question, index) => {
+                    
                     const optionsHTML = question.options.map(option => `<li>${option.text}</li>`).join('');
                     const rowHTML = `
                         <tr>
