@@ -110,6 +110,7 @@ class ExamSerializer(serializers.ModelSerializer):
         ]
         read_only_fields = ['created_at', 'updated_at', 'status', 'category_name']
 
+#
 
 class StatusSerializer(serializers.ModelSerializer):
     exam_details = serializers.SerializerMethodField()

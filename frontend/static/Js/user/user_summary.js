@@ -323,7 +323,7 @@ function updateQuestionCounts(data) {
     document.getElementById('total-correct-answers').innerText = data.correct_answers.length;
     document.getElementById('total-wrong-answers').innerText = data.wrong_answers.length;
 }
-
+//
 // Set up click listeners for question rows
 function setupClickListeners(data) {
     document.querySelectorAll('.question-row').forEach(row => {
