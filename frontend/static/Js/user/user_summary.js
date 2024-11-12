@@ -354,7 +354,18 @@ function setupClickListeners(data) {
 }
 
 // Display questions in the container with options
-function displayQuestions(questions, type) {
+// Set the number of items per page
+// Set the number of questions to display per page
+// Set the number of questions to display per page
+const itemsPerPage = 5;
+let currentPage = 1;
+let globalQuestions = []; // Store questions globally as an array
+let globalType = ''; // Store type globally
+
+function displayQuestions(questions = [], type) {
+    globalQuestions = Array.isArray(questions) ? questions : [];
+    globalType = type;
+
     const questionListContainer = document.getElementById("questionListContainer");
     const chart = document.getElementById('chart');
     chart.classList.add('d-none');
@@ -362,34 +373,41 @@ function displayQuestions(questions, type) {
     questions_show.classList.remove('d-none');
     questionListContainer.innerHTML = '';
 
-    if (questions.length === 0) {
+    if (globalQuestions.length === 0) {
         questionListContainer.innerHTML = '<p>No questions to display.</p>';
         return;
     }
 
-    questions.forEach((item, index) => { // Add index as a parameter
+    // Calculate pagination
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+    const paginatedQuestions = globalQuestions.slice(startIndex, endIndex);
+
+    paginatedQuestions.forEach((item, index) => {
         const { question, selected_option, is_correct } = item;
         const options = question.options.map(opt => {
-            let className = '';
-            // Highlight selected option in red if wrong
+            let className = 'option-item'; // Base class for all options
+            let bgColor = 'bg-light'; // Default background color
+
             if (type === 'wrong' && opt.id === selected_option.id) {
-                className = 'text-danger'; // User's wrong answer
+                className += ' text-danger';
+                bgColor = 'bg-warning'; // Highlight wrong selected option
             }
-            // Highlight correct answer in green
             if (opt.is_correct) {
-                className = 'text-success'; // Correct answer
+                className += ' text-white';
+                bgColor = 'bg-success'; // Correct answer background color
             }
             return `
-                <li class="list-group-item ${className}">
+                <li class="list-group-item ${className} ${bgColor}">
                     ${opt.text}
                 </li>
             `;
         }).join('');
-    
+
         const questionCard = `
             <div class="card mb-2">
                 <div class="card-header">
-                    <h5>Question ${index + 1}: ${question.text}</h5> <!-- Add question index -->
+                    <h5>Question ${startIndex + index + 1}: ${question.text}</h5>
                 </div>
                 <div class="card-body">
                     <p><strong>Your Answer:</strong> ${selected_option ? selected_option.text : "Not answered"}</p>
@@ -397,7 +415,7 @@ function displayQuestions(questions, type) {
                         ${is_correct ? 'Correct' : 'Wrong'}
                     </span></p>
                     <p><strong>Options:</strong></p>
-                    <ul class="list-group">
+                    <ul class="list-group list-group-horizontal row-options">
                         ${options}
                     </ul>
                 </div>
@@ -405,4 +423,34 @@ function displayQuestions(questions, type) {
         `;
         questionListContainer.insertAdjacentHTML('beforeend', questionCard);
     });
+
+    updatePaginationControls(globalQuestions.length);
 }
+
+function updatePaginationControls(totalItems) {
+    const totalPages = Math.ceil(totalItems / itemsPerPage);
+
+    const prevButton = document.getElementById("prevPage");
+    const nextButton = document.getElementById("nextPage");
+    const pageInfo = document.getElementById("pageInfo");
+
+    prevButton.disabled = currentPage === 1;
+    nextButton.disabled = currentPage === totalPages;
+
+    pageInfo.innerText = `Page ${currentPage} of ${totalPages}`;
+}
+
+function changePage(direction) {
+    currentPage += direction;
+    displayQuestions(globalQuestions, globalType);
+}
+
+// Sample Pagination Controls in HTML
+document.getElementById("questions").insertAdjacentHTML('beforeend', `
+    <div class="pagination-container mt-4">
+        <button id="prevPage" class="btn btn-secondary" onclick="changePage(-1)" disabled>Previous</button>
+        <span id="pageInfo" class="mx-2">Page 1</span>
+        <button id="nextPage" class="btn btn-secondary" onclick="changePage(1)">Next</button>
+    </div>
+`);
+

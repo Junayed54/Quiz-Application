@@ -1,7 +1,7 @@
 from django.urls import path, include
 from django.views.generic import TemplateView
 from rest_framework.routers import DefaultRouter
-from .views import ExamViewSet, CategoryListView, CreateCategoryView, ExamDetailView, ExamAttemptViewSet, user_attempts_by_month, user_exam_attempts_by_month, LeaderboardListView, QuestionViewSet, QuestionOptionViewSet, UserCreatedExamsView, ExamUploadView, CategoryViewSet, ExamDifficultyView, QuestionHistoryByMonthView, QuestionHistoryByTeacherMonthYearView, TeacherListView, StudentListView, UserQuestionSummaryView, ExamSubjectsQuestionCountView, exam_leaderboard_view, UserExamSummaryAPIView, UserAnswerViewSet
+from .views import ExamCreateView, ExamViewSet, CategoryListView, CreateCategoryView, ExamDetailView, ExamAttemptViewSet, user_attempts_by_month, user_exam_attempts_by_month, LeaderboardListView, QuestionViewSet, QuestionOptionViewSet, UserCreatedExamsView, ExamUploadView, CategoryViewSet, ExamDifficultyView, QuestionHistoryByMonthView, QuestionHistoryByTeacherMonthYearView, TeacherListView, StudentListView, UserQuestionSummaryView, ExamSubjectsQuestionCountView, exam_leaderboard_view, UserExamSummaryAPIView, UserAnswerViewSet
 # from .status import SubmitExamToAdminView, SendExamForReviewView, ReviewExamView, ReturnExamToCreatorView, PublishExamView
 from .status import StatusViewSet
 # from .question_status import QuestionStatusViewSet, AssignedQuestionsSummaryAPIView, QuestionsByUserForReviewerView
@@ -33,6 +33,9 @@ urlpatterns = [
     path('teacher-history/', QuestionHistoryByTeacherMonthYearView.as_view(), name='teacher-history'),
     path('teacher-summary/', UserQuestionSummaryView.as_view(), name='teacher-question-summary'),
     
+    
+    path('create-exam/', ExamCreateView.as_view(), name='create_exam'),
+    path('2create_exam/', TemplateView.as_view(template_name="Html/custom/2create_exam.html"), name='2create_exam'),
     
     path("exam_categories/", CategoryListView.as_view(), name="category_list"),
     path("exam_categories/create/", CreateCategoryView.as_view(), name="create_category"),

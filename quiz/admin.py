@@ -82,8 +82,8 @@ class ExamDifficultyAdmin(admin.ModelAdmin):
 
 
 class QuestionAdmin(admin.ModelAdmin):
-    list_display = ('id', 'text', 'exam', 'remarks', 'category', 'difficulty_level', 'marks', 'status', 'created_by', 'reviewed_by', 'created_at', 'updated_at')
-    list_filter = ('difficulty_level', 'status', 'category', 'exam')
+    list_display = ('id', 'text', 'remarks', 'category', 'difficulty_level', 'marks', 'status', 'created_by', 'reviewed_by', 'created_at', 'updated_at')
+    list_filter = ('difficulty_level', 'status', 'category')
     search_fields = ('text', 'remarks')
     # ordering = ('-created_at',)
     readonly_fields = ('created_at', 'updated_at')
@@ -103,7 +103,7 @@ admin.site.register(Question, QuestionAdmin)
 @admin.register(QuestionOption)
 class QuestionOptionAdmin(admin.ModelAdmin):
     list_display = ('text', 'question', 'is_correct')
-    list_filter = ('question__exam', 'is_correct')
+    list_filter = ('is_correct',)
     search_fields = ('text', 'question__text')
 
 @admin.register(ExamAttempt)

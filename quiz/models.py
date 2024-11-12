@@ -234,7 +234,7 @@ class Question(models.Model):
         ('rejected', 'Rejected'),
     ]
     
-    exam = models.ForeignKey(Exam, related_name='questions', on_delete=models.CASCADE, null=True, blank=True)
+    exams = models.ManyToManyField('Exam', related_name='questions', blank=True)
     text = models.CharField(max_length=255, unique=True)
     marks = models.IntegerField()
     category = models.ForeignKey(Category, related_name='questions', on_delete=models.CASCADE, null=True, blank=True)

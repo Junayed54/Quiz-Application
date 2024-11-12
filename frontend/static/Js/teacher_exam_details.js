@@ -30,7 +30,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 document.getElementById('exam-title').textContent = data.title;
                 document.getElementById('exam-total-questions').textContent = data.total_questions;
                 document.getElementById('exam-question-generator').textContent = data.questions_to_generate;
-                document.getElementById('exam-total-marks').textContent = data.total_marks;
+                document.getElementById('exam-total-marks').textContent = data.total_mark;
                 document.getElementById('exam-created-by').textContent = data.created_by;
                 document.getElementById('exam-last-date').textContent = new Date(data.last_date).toLocaleDateString();
                 document.getElementById('exam-negative-marks').textContent = data.negative_marks || 'N/A';

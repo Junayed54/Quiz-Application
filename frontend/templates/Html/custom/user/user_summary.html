@@ -19,6 +19,36 @@
     .clickable-row:hover {
         background-color: #6082B6; /* Light gray background on hover */
     }
+
+    /* Option styling */
+    .row-options {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: space-between;
+        gap: 10px;
+    }
+
+    .option-item {
+        padding: 10px;
+        border-radius: 5px;
+
+        min-width: 100px;
+        text-align: center;
+    }
+
+    /* Background color classes */
+    .bg-light {
+        background-color: #f8f9fa;
+    }
+
+    .bg-warning {
+        background-color: #ffc107;
+    }
+
+    .bg-success {
+        background-color: #28a745;
+    }
+
 </style>
 
 </head>
@@ -144,9 +174,9 @@
                                 <div id="examList" class="accordion my-4"></div>
                             </div>
                         </div>
-                        <div class="container mt-5 d-none" id="questions">
-                            <h2 class="mb-4">Submitted Questions</h2>
-                            <div id="questionListContainer" class="mt-4"></div>
+                        <div class="container d-none" id="questions">
+                            {% comment %} <h2 class="mb-4">Submitted Questions</h2> {% endcomment %}
+                            <div id="questionListContainer" class=""></div>
                             
                         </div>
                     </div>

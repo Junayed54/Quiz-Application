@@ -1308,7 +1308,7 @@ class ExamSubjectsQuestionCountView(APIView):
         
         # Get subjects and question counts for the specified exam
         subjects_with_question_count = (
-            Question.objects.filter(exam=exam)
+            Question.objects.filter(exams=exam)
             .values('subject__name')  # Group by subject name
             .annotate(question_count=Count('id'))  # Count questions per subject
         )
@@ -1321,6 +1321,7 @@ class ExamSubjectsQuestionCountView(APIView):
 
         # Serialize the results
         serializer = SubjectQuestionCountSerializer(results, many=True)
+        
         return Response(serializer.data)
     
     
@@ -1427,3 +1428,178 @@ class UserAnswerViewSet(viewsets.ViewSet):
             "correct_answers": correct_answers_data,
             "wrong_answers": wrong_answers_data
         }, status=status.HTTP_200_OK)
+        
+        
+        
+        
+        
+        
+        
+# Exam Create
+
+class ExamCreateView(APIView):
+    permission_classes = [IsAuthenticated]
+    authentication_classes = [JWTAuthentication]
+
+    def post(self, request, *args, **kwargs):
+        exam_title = request.data.get('exam_title')
+        total_questions = int(request.data.get('total_questions', 10))  # Default 10 questions
+        total_marks = int(request.data.get('total_marks', 100))  # Default 100 marks
+        pass_mark = int(request.data.get('pass_mark', 50))  # Default 50% pass mark
+        last_date = request.data.get('last_date', None)
+        duration = int(request.data.get('duration', 60))  # Duration in minutes
+        negative_marks = request.data.get('negative_marks', 0)
+        starting_time = request.data.get('starting_time', None)
+        exam_type = request.data.get('exam_type', 'question_bank')  # Default type is 'question_bank'
+        difficulty_levels = request.data.get('difficulty_levels', {})
+        # print("difficulty: ", type(difficulty_levels))
+        
+        category_name = request.data.get('category')
+        
+        # Basic validations for required fields
+        if not exam_title:
+            return Response({"error": "Exam title is required."}, status=status.HTTP_400_BAD_REQUEST)
+        if not exam_type:
+            return Response({"error": "Exam type is required (either 'file' or 'question_bank')."}, status=status.HTTP_400_BAD_REQUEST)
+        
+        category = None
+        if category_name:
+            exam_category, _ = ExamCategory.objects.get_or_create(name=category_name)
+        
+        
+        selected_questions = []
+
+        # Process exam questions based on exam type
+        if exam_type == 'file':
+            selected_questions = self._process_file_upload(request)
+        elif exam_type == 'question_bank':
+            selected_questions = self._fetch_questions_from_bank(total_questions, difficulty_levels)
+        else:
+            return Response({"error": "Invalid exam type. Choose either 'file' or 'question_bank'."}, status=status.HTTP_400_BAD_REQUEST)
+
+        if isinstance(selected_questions, Response):  # Handle error response from helper functions
+            return selected_questions
+
+        duration_minutes = timedelta(minutes=duration)
+        # Step 2: Create the Exam
+        exam = Exam.objects.create(
+            title=exam_title,
+            total_questions=len(selected_questions),
+            total_mark=total_marks,
+            pass_mark=pass_mark,
+            last_date=last_date,
+            duration=duration_minutes,  # Convert minutes to seconds
+            negative_mark=negative_marks,
+            starting_time=parse_datetime(starting_time) if starting_time else None,
+            created_by=request.user,
+            category=exam_category
+        )
+
+        
+        # Step 3: Associate Questions with the Exam
+        exam.questions.set(selected_questions)
+
+        # Step 4: Set Exam Status and Initialize Leaderboard
+        Status.objects.create(exam=exam, status='draft', user=request.user)
+        Leaderboard.objects.create(exam=exam, score=0)
+
+        # Set status to 'student' if the user is a student
+        if request.user.role == 'student':
+            Status.objects.create(exam=exam, status='student', user=request.user)
+            return Response({'exam_id': exam.exam_id}, status=status.HTTP_201_CREATED)
+
+        return Response({"message": f"Exam '{exam.title}' created successfully with {len(selected_questions)} questions."}, status=status.HTTP_201_CREATED)
+
+    def _process_file_upload(self, request):
+        """Handles the 'file' type exam creation by processing an uploaded Excel file."""
+        if 'file' not in request.FILES:
+            return Response({"error": "No file provided."}, status=status.HTTP_400_BAD_REQUEST)
+
+        file = request.FILES['file']
+        try:
+            df = pd.read_excel(file)
+        except Exception as e:
+            return Response({"error": f"Error reading file: {str(e)}"}, status=status.HTTP_400_BAD_REQUEST)
+
+        required_columns = ['Question', 'Option1', 'Option2', 'Option3', 'Option4', 'Answer', 'Options_num', 'Category', 'Difficulty', 'Subject']
+        missing_cols = [col for col in required_columns if col.lower() not in [col.lower() for col in df.columns]]
+        if missing_cols:
+            return Response({"error": f"Missing columns: {', '.join(missing_cols)}"}, status=status.HTTP_400_BAD_REQUEST)
+
+        selected_questions = []
+        for _, row in df.iterrows():
+            row = {col.lower(): value for col, value in row.items()}
+            try:
+                question = self._create_question_from_row(row)
+                selected_questions.append(question)
+            except ValueError as e:
+                return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+        return selected_questions
+
+    def _create_question_from_row(self, row):
+        """Creates a question and its options from a given row in the DataFrame."""
+        question_text = row['question']
+        options = [row['option1'], row['option2'], row['option3'], row['option4']]
+        correct_answer = row['answer'].strip().lower().replace(" ", "")
+        
+        subject, _ = Subject.objects.get_or_create(name=row['subject'])
+        category, _ = Category.objects.get_or_create(name=row['category'])
+        try:
+            difficulty_level = int(row['difficulty'])
+           
+            if difficulty_level not in range(1, 7):
+                raise ValueError(f"Invalid difficulty level {difficulty_level}. It must be between 1 and 6.")
+        except ValueError:
+            raise ValueError(f"Invalid difficulty level '{row['difficulty']}'. It must be an integer between 1 and 6.")
+
+        question = Question.objects.create(
+            text=question_text,
+            marks=1,
+            category=category,
+            difficulty_level=difficulty_level,
+            subject=subject
+        )
+        # print("hdfksjfkjsdfkjasdlkfjdfj")
+        for i, option_text in enumerate(options, start=1):
+            is_correct = (f"option{i}".strip().lower() == correct_answer)
+            QuestionOption.objects.create(question=question, text=option_text, is_correct=is_correct)
+        
+        return question
+
+    def _fetch_questions_from_bank(self, num_questions, difficulty_levels):
+        """Fetches a set number of questions from the question bank based on difficulty levels."""
+        
+        try:
+            with transaction.atomic():
+                
+                # Ensure percentages add up to 100
+                if sum(difficulty_levels.values()) != 100:
+                    return Response({"error": "Difficulty percentages must add up to 100%."}, status=status.HTTP_400_BAD_REQUEST)
+
+                selected_questions = []
+               
+                for level, percentage in difficulty_levels.items():
+                    # Calculate the number of questions to fetch for this level
+                    num_level_questions = round(num_questions * (percentage / 100))
+
+                    # Filter questions by difficulty level and randomly order them
+                    level_questions = Question.objects.filter(difficulty_level=level).order_by('?')[:num_level_questions]
+
+                    # Check if we have enough questions at this difficulty level
+                    if level_questions.count() < num_level_questions:
+                        return Response(
+                            {"error": f"Not enough questions available for difficulty level '{level}' to meet the requested number."},
+                            status=status.HTTP_400_BAD_REQUEST
+                        )
+
+                    selected_questions.extend(level_questions)
+
+                # Shuffle selected questions for random order
+                random.shuffle(selected_questions)
+                
+                # Ensure the total number of selected questions does not exceed `num_questions`
+                return selected_questions[:num_questions]
+
+        except Exception as e:
+            return Response({"error": f"An error occurred while fetching questions: {str(e)}"}, status=status.HTTP_400_BAD_REQUEST)

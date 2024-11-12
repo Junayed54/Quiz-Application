@@ -25,7 +25,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     <div class="card-body">
                         <h2 class="card-title">${exam.title}</h2>
                         <p class="card-text">Total Questions: ${exam.total_questions}</p>
-                        <p class="card-text">Total Marks: ${exam.total_marks}</p>
+                        <p class="card-text">Total Marks: ${exam.total_mark}</p>
                         <p class="card-text">Last Date: ${exam.last_date}</p>
                         <div class="d-flex justify-content-between">
                             <div class="p-3 bg-primary rounded mt-2">
