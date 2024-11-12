@@ -167,7 +167,7 @@ class ExamViewSet(viewsets.ModelViewSet):
     def get_questions(self, request, pk=None):
         exam = self.get_object()
         # questions_to_generate = exam.questions_to_generate
-        questions = Question.objects.filter(exam=exam)
+        questions = exam.questions.all()
         # print(questions[0].text)
         # print(questions)
         # try:
