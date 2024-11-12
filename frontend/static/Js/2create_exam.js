@@ -60,18 +60,12 @@ document.getElementById('category').addEventListener('change', function() {
 });
 
 // Form submission
-document.getElementById('examForm').addEventListener('submit', function(e) {
+document.getElementById('examForm').addEventListener('submit', async function (e) {
     e.preventDefault();
 
-    // Collect form data as an object
     const formData = new FormData(this);
-    const formObject = {};
 
-    formData.forEach((value, key) => {
-        formObject[key] = value;
-    });
-
-    // Validate and collect difficulty levels
+    // If the exam type is 'question_bank', validate and collect difficulty levels
     if (document.getElementById('exam_type').value === 'question_bank') {
         let totalPercentage = 0;
         const difficultyLevels = {};
@@ -90,29 +84,29 @@ document.getElementById('examForm').addEventListener('submit', function(e) {
             return;
         }
 
-        // Add difficulty_levels to form data object
-        formObject.difficulty_levels = difficultyLevels;
+        // Append difficulty levels as JSON string
+        formData.append('difficulty_levels', JSON.stringify(difficultyLevels));
     }
 
-    // Send form data as JSON
-    fetch('/quiz/create-exam/', {
-        method: 'POST',
-        body: JSON.stringify(formObject),
-        headers: {
-            'Content-Type': 'application/json',
-            'Authorization': 'Bearer ' + accessToken,
-        }
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.message) {
+    // Send form data with file support
+    try {
+        const response = await fetch('/quiz/create-exam/', {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'Authorization': 'Bearer ' + accessToken,
+            }
+        });
+
+        const data = await response.json();
+        if (response.ok) {
             alert('Success: ' + data.message);
+            window.location.href = '/quiz/user_exams/';
         } else {
             alert('Error: ' + (data.error || 'Failed to create exam.'));
         }
-    })
-    .catch(error => {
+    } catch (error) {
         alert('Error: Failed to create exam.');
         console.error('Error:', error);
-    });
+    }
 });

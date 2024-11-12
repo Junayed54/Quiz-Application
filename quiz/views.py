@@ -1485,7 +1485,7 @@ class ExamCreateView(APIView):
         exam = Exam.objects.create(
             title=exam_title,
             total_questions=len(selected_questions),
-            total_mark=total_marks,
+            total_mark=len(selected_questions),
             pass_mark=pass_mark,
             last_date=last_date,
             duration=duration_minutes,  # Convert minutes to seconds
@@ -1500,17 +1500,15 @@ class ExamCreateView(APIView):
         exam.questions.set(selected_questions)
 
         # Step 4: Set Exam Status and Initialize Leaderboard
-        Status.objects.create(exam=exam, status='draft', user=request.user)
-        Leaderboard.objects.create(exam=exam, score=0)
+        status_label = 'student' if request.user.role == 'student' else 'draft'
+        Status.objects.create(exam=exam, status=status_label, user=request.user)
 
-        # Set status to 'student' if the user is a student
-        if request.user.role == 'student':
-            Status.objects.create(exam=exam, status='student', user=request.user)
-            return Response({'exam_id': exam.exam_id}, status=status.HTTP_201_CREATED)
+        Leaderboard.objects.create(exam=exam, score=0)
 
         return Response({"message": f"Exam '{exam.title}' created successfully with {len(selected_questions)} questions."}, status=status.HTTP_201_CREATED)
 
     def _process_file_upload(self, request):
+        print(request.FILES)
         """Handles the 'file' type exam creation by processing an uploaded Excel file."""
         if 'file' not in request.FILES:
             return Response({"error": "No file provided."}, status=status.HTTP_400_BAD_REQUEST)
@@ -1553,18 +1551,20 @@ class ExamCreateView(APIView):
         except ValueError:
             raise ValueError(f"Invalid difficulty level '{row['difficulty']}'. It must be an integer between 1 and 6.")
 
-        question = Question.objects.create(
+        question, created = Question.objects.get_or_create(
             text=question_text,
-            marks=1,
             category=category,
-            difficulty_level=difficulty_level,
-            subject=subject
+            subject=subject,
+            defaults={'marks': 1, 'difficulty_level': difficulty_level}
         )
-        # print("hdfksjfkjsdfkjasdlkfjdfj")
-        for i, option_text in enumerate(options, start=1):
-            is_correct = (f"option{i}".strip().lower() == correct_answer)
-            QuestionOption.objects.create(question=question, text=option_text, is_correct=is_correct)
-        
+
+        if created:
+            for i, option_text in enumerate(options, start=1):
+                is_correct = (f"option{i}".strip().lower() == correct_answer)
+                QuestionOption.objects.create(question=question, text=option_text, is_correct=is_correct)
+        else:
+            print(f"Question '{question_text}' already exists in the database.")
+
         return question
 
     def _fetch_questions_from_bank(self, num_questions, difficulty_levels):

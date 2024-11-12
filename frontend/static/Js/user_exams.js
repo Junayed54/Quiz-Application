@@ -16,6 +16,7 @@ document.addEventListener('DOMContentLoaded', function() {
     })
     .then(response => response.json())
     .then(data => {
+        console.log(data);
         const examsContainer = document.getElementById('exams-container');
         data.forEach(exam => {
             const examElement = document.createElement('div');

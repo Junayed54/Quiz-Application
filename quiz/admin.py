@@ -30,7 +30,9 @@ class QuestionUsageAdmin(admin.ModelAdmin):
         return obj.question.text
     question_text.short_description = 'Question Text'
     
-    
+class QuestionInline(admin.TabularInline):
+    model = Exam.questions.through  # Assuming a Many-to-Many relationship
+    extra = 0  # No extra empty fields 
 
 @admin.register(Exam)
 class ExamAdmin(admin.ModelAdmin):
@@ -40,6 +42,8 @@ class ExamAdmin(admin.ModelAdmin):
     readonly_fields = ('status', 'created_at', 'updated_at')  # Makes non-editable fields read-only
     ordering = ('-created_at',)
 
+
+    inlines = [QuestionInline]
     def status(self, obj):
         """Display current status of the exam."""
         return obj.status  # Uses the `status` property from the model

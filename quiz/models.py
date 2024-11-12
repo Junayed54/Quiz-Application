@@ -300,7 +300,7 @@ class Leaderboard(models.Model):
         ordering = ['-score']  # Order by score descending
 
     def __str__(self):
-        return f'{self.user.username} - {self.score}'
+        return f'{self.user} - {self.score}'
 
     @staticmethod
     def update_best_score(user, exam):
