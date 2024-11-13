@@ -29,6 +29,7 @@ from calendar import monthrange
 from django.http import JsonResponse
 import openpyxl
 import random
+import json
 import pandas as pd
 from .pagination import CustomPageNumberPagination
 from django.contrib.auth import get_user_model
@@ -1572,6 +1573,7 @@ class ExamCreateView(APIView):
         
         try:
             with transaction.atomic():
+                difficulty_levels = json.loads(difficulty_levels)
                 
                 # Ensure percentages add up to 100
                 if sum(difficulty_levels.values()) != 100:
