@@ -52,7 +52,7 @@ document.addEventListener('DOMContentLoaded', function () {
                             <div class="card-footer d-flex flex-column">
                                 <a href="${checkExamUrl}" class="btn btn-primary mb-2">Check Exam</a>
                                 ${exam.status === 'reviewed'
-                            ? `<button class="btn btn-warning mb-2 publish-exam-btn" pk-id="${exam.id}">Publish Exam</button>`
+                            ? ``
                             : `<button class="btn btn-success mb-2 assign-teacher-btn" pk-id="${exam.id}" created-by-id="${exam.user}">Assign Teacher</button>`
                         }
                                 <button class="btn btn-danger delete-btn" data-exam-id="${exam.exam}">Delete Exam</button>

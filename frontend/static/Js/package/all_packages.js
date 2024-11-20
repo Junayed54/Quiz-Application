@@ -11,7 +11,7 @@ document.addEventListener("DOMContentLoaded", function() {
 
     // Function to fetch all packages and display in the card layout
     function fetchPackages() {
-        fetch('/packages/', {
+        fetch('/packages/', {  // Use the appropriate API URL for your package list
             headers: {
                 'Authorization': `Bearer ${accessToken}`
             }
@@ -39,8 +39,7 @@ document.addEventListener("DOMContentLoaded", function() {
                                     <li>Expert: ${pkg.expert_percentage}%</li>
                                 </ul>
                                 <div class="d-flex justify-content-between">
-                                    <button class="btn btn-primary" onclick="editPackage(${pkg.id})">Buy Now</button>
-                                    
+                                    <button class="btn btn-primary" onclick="buyPackage(${pkg.id})">Buy Now</button>
                                 </div>
                             </div>
                         </div>
@@ -52,10 +51,35 @@ document.addEventListener("DOMContentLoaded", function() {
         .catch(error => console.error('Error fetching packages:', error));
     }
 
-    // Function to handle package deletion
-    function deletePackage(id) {
+    // Function to handle buying a package
+    window.buyPackage = function(packageId) {
+        fetch('/buy-package/', {  // Assuming this is the API endpoint for purchasing
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${accessToken}`,
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ package_id: packageId })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.message) {
+                alert(data.message);
+                fetchPackages(); // Refresh the package list after purchase
+            } else if (data.error) {
+                alert(data.error);
+            }
+        })
+        .catch(error => {
+            console.error('Error buying package:', error);
+            alert('There was an error with your purchase.');
+        });
+    };
+
+    // Optional: Function to handle package deletion
+    window.deletePackage = function(id) {
         if (confirm('Are you sure you want to delete this package?')) {
-            fetch(`/packages/${id}/`, {
+            fetch(`/packages/${id}/`, {  // Adjust the endpoint for package deletion
                 method: 'DELETE',
                 headers: {
                     'Authorization': `Bearer ${accessToken}`
@@ -71,7 +95,7 @@ document.addEventListener("DOMContentLoaded", function() {
             })
             .catch(error => console.error('Error deleting package:', error));
         }
-    }
+    };
 
     // Fetch packages on page load
     fetchPackages();

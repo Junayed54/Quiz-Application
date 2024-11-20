@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from .models import Exam, ExamCategory, Status, ExamDifficulty, Question, QuestionUsage, QuestionOption, Leaderboard, ExamAttempt, Category, QuestionUsage, UserAnswer
 # from users.models import User
+from collections import Counter
 from django.contrib.auth import get_user_model
 User = get_user_model()
 class QuestionOptionSerializer(serializers.ModelSerializer):
@@ -100,18 +101,25 @@ class ExamSerializer(serializers.ModelSerializer):
     status_id = serializers.IntegerField(source='exam.id', read_only=True)
     status = serializers.ReadOnlyField()  # Read-only field to display exam status
     category_name = serializers.CharField(source='category.name', read_only=True)  # Category name for convenience
-    questions = QuestionSerializer(many=True, read_only=True)  
-    
+    questions = QuestionSerializer(many=True, read_only=True)
+    subjects = serializers.SerializerMethodField()  # Custom field for subjects with question count
+    creater_name = serializers.CharField(source='created_by.username', read_only=True) 
     class Meta:
         model = Exam
         fields = [
-            'exam_id', 'title', 'total_questions', 'created_by', 'total_mark',
+            'exam_id', 'title', 'total_questions', 'created_by', 'creater_name', 'total_mark',
             'pass_mark', 'negative_mark', 'created_at', 'updated_at',
-            'starting_time', 'last_date', 'category', 'category_name', 'duration', 'status', 'questions', 'status_id'
+            'starting_time', 'last_date', 'category', 'category_name', 
+            'duration', 'status', 'questions', 'status_id', 'subjects'
         ]
         read_only_fields = ['created_at', 'updated_at', 'status', 'category_name']
-
-#
+    
+    def get_subjects(self, obj):
+        # Assuming each question has a subject attribute (e.g., question.subject.name)
+        question_subjects = [question.subject.name for question in obj.questions.all()]
+        subject_count = Counter(question_subjects)
+        # Convert to a list of dictionaries for serialization
+        return [{'subject': subject, 'question_count': count} for subject, count in subject_count.items()]
 
 class StatusSerializer(serializers.ModelSerializer):
     exam_details = serializers.SerializerMethodField()

@@ -1,6 +1,6 @@
 from django.db import models
 from django.contrib.auth import get_user_model
-from quiz.models import Exam
+# from quiz.models import Exam
 from django.contrib.auth import get_user_model
 from django.template.loader import render_to_string
 from django.template import Context
@@ -12,7 +12,7 @@ from django.urls import reverse
 
 import uuid
 class ExamInvite(models.Model):
-    exam = models.ForeignKey(Exam, on_delete=models.CASCADE, related_name='exams')
+    exam = models.ForeignKey('quiz.Exam', on_delete=models.CASCADE, related_name='exams')
     invited_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name='sent_invites')
     invited_user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='received_invites', null=True)
     token = models.UUIDField(default=uuid.uuid4, editable=False)

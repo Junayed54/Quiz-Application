@@ -5,7 +5,7 @@ from .views import ExamCreateView, ExamViewSet, CategoryListView, CreateCategory
 # from .status import SubmitExamToAdminView, SendExamForReviewView, ReviewExamView, ReturnExamToCreatorView, PublishExamView
 from .status import StatusViewSet
 # from .question_status import QuestionStatusViewSet, AssignedQuestionsSummaryAPIView, QuestionsByUserForReviewerView
-
+from .attampts import BestAttemptsView, UserAttemptsView
 
 router = DefaultRouter()
 router.register(r'exams', ExamViewSet, basename='exam')
@@ -97,4 +97,12 @@ urlpatterns = [
     
     
     path('exam_room/<uuid:exam_id>/', TemplateView.as_view(template_name='Html/custom/invitation/exam_room.html'), name='exam_room'),
+    
+    
+
+    
+    
+] + [
+    path('attempts/user_best_attempts/', BestAttemptsView.as_view(), name='user_best_attempts'),
+    path('attempts/user_attempts/', UserAttemptsView.as_view(), name='user_attempts'),
 ]

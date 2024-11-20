@@ -1,8 +1,11 @@
+
+let statusId = 0;
+const accessToken = window.localStorage.getItem('access_token');
 document.addEventListener('DOMContentLoaded', function () {
             const examId = window.location.pathname.split("/")[3];
-            const accessToken = window.localStorage.getItem('access_token');
+            
             const apiUrl = `/quiz/exams/exam_detail/${examId}/`;
-
+            
             if (!accessToken) {
                 window.location.href = '/login/';
                 return;
@@ -18,6 +21,8 @@ document.addEventListener('DOMContentLoaded', function () {
             .then(response => response.json())
             .then(data => {
                 console.log(data);
+                statusId = data.status_id;
+                console.log(statusId);
                 // Hide loading spinner
                 document.getElementById('loading').classList.add('d-none');
 
@@ -67,7 +72,8 @@ document.addEventListener('DOMContentLoaded', function () {
 
         // Handle Publish and Return buttons
         document.getElementById('publish-exam-btn').addEventListener('click', function () {
-            alert('Exam Published');
+            publishExam(statusId);
+            window.location.href = '/quiz/admin_checker/'
             // You can implement the backend call for publishing here
         });
 
@@ -75,3 +81,28 @@ document.addEventListener('DOMContentLoaded', function () {
             alert('Exam Returned to Maker');
             // You can implement the backend call for returning to exam maker here
         });
+
+
+        function publishExam(pk) {
+            fetch(`/quiz/status/${pk}/publish_exam/`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': 'Bearer ' + accessToken,
+                    
+                }
+            })
+                .then(response => {
+                    if (response.ok) {
+                        alert('Exam published successfully.');
+                        
+                    } else {
+                        response.json().then(data => {
+                            alert('Error publishing exam: ' + data.error);
+                        });
+                    }
+                })
+                .catch(error => console.error('Error publishing exam:', error));
+        }
+
+
+        

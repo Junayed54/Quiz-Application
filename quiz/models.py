@@ -6,8 +6,9 @@ from django.utils import timezone
 from django.contrib.auth import get_user_model
 from django.core.exceptions import ValidationError
 from datetime import date
+from invitation.models import ExamInvite
 # from django.contrib.auth import get_user_model
-
+from subscription.models import SubscriptionPackage, UserSubscription, UsageTracking
 User = get_user_model()
 
 
@@ -43,7 +44,9 @@ class Exam(models.Model):
     last_date = models.DateField(null=True, blank=True)
     category = models.ForeignKey(ExamCategory, related_name='exams', on_delete=models.SET_NULL, null=True, blank=True)
     duration = models.DurationField(null=True, blank=True, help_text="Duration in format: HH:MM:SS (e.g., 1:30:00 for 1 hour 30 minutes)")
-
+    
+    
+    
     def __str__(self):
         return f"{self.title} (Category: {self.category.name if self.category else 'Uncategorized'})"
 
@@ -68,6 +71,41 @@ class Exam(models.Model):
         """Get the number of attempts by a specific user."""
         return ExamAttempt.objects.filter(user=user, exam=self).count()
 
+    def can_user_access(self, user):
+        """
+        Determines if a user can access the exam based on ownership, invitation, or subscription usage.
+        """
+        # Allow access if the user is the creator of the exam
+        if self.created_by == user:
+            return True
+
+        # Allow access if the user has an accepted invitation
+        if ExamInvite.objects.filter(exam=self, invited_user=user, is_accepted=True).exists():
+            return True
+
+        # Get the user's active subscription
+        subscription = UserSubscription.objects.filter(user=user, status='active').first()
+        if not subscription or not subscription.is_active():
+            return False
+        print("1")
+        # Check usage tracking for the user's subscription
+        usage = UsageTracking.objects.filter(user=user, package=subscription.package).first()
+        if not usage:
+            return False
+        print("2")
+        # Ensure the user has not exceeded their exam-taking limit
+        if not usage.can_take_exam():
+            return False
+
+        print("hello world")
+        # Ensure other conditions, such as exam category matching or subscription specifics, are met
+        # Example: If exams are categorized by the subscription package
+        if self.category and self.category not in subscription.package.allowed_categories:
+            return False
+
+        return True
+
+    
     class Meta:
         ordering = ['-created_at']
         verbose_name = "Exam"
@@ -93,6 +131,7 @@ class Status(models.Model):
 
     def __str__(self):
         return f"{self.exam.title} - {self.status}"
+
 
     def get_exam_details(self):
         """
@@ -196,6 +235,7 @@ class ExamAttempt(models.Model):
     def save(self, *args, **kwargs):
         """Override save to auto-set `passed` based on `is_passed`."""
         self.passed = self.is_passed
+        # self.score = self.score
         super().save(*args, **kwargs)
         
         Leaderboard.update_best_score(self.user, self.exam)

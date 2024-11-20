@@ -50,6 +50,8 @@ document.addEventListener('DOMContentLoaded', function() {
         })
         .then(response => response.json())
         .then(data => {
+            
+            console.log(data);
             questions = data.questions;
             answers = new Array(questions.length).fill(null);
             document.getElementById('exam-info').innerHTML += `<p>Total Questions: ${questions.length}</p>`;
@@ -166,6 +168,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function submitExam() {
+        
         clearInterval(timerInterval);
         fetch(`/quiz/exams/${examId}/submit/`, {
             method: 'POST',
@@ -176,7 +179,7 @@ document.addEventListener('DOMContentLoaded', function() {
             body: JSON.stringify({ answers: answers })
         })
         .then(response => response.json())
-        .then(data => displayResults(data.correct_answers, data.wrong_answers, data.passed))
+        .then(data => displayResults(data.correct_answers, data.wrong_answers, data.passed, data))
         .catch(error => console.error('Error submitting exam:', error));
     }
 
@@ -185,7 +188,8 @@ document.addEventListener('DOMContentLoaded', function() {
         updateReviewSkippedButton(); // Update the visibility of the review button
     }
 
-    function displayResults(correctAnswers, wrongAnswers, passed) {
+    function displayResults(correctAnswers, wrongAnswers, passed, data) {
+        console.log(data);
         document.getElementById('resultContainer').innerHTML = `
             <h3>Exam Submitted!</h3>
             <p>Correct Answers: ${correctAnswers}</p>

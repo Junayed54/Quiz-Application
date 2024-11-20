@@ -13,7 +13,7 @@ import django.core.management.commands.runserver as runserver
 
 
 
-runserver.Command.default_port = config('WebServer_Port', default = "8001")
+runserver.Command.default_port = config('WebServer_Port', default = "8000")
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -151,8 +151,8 @@ CHANNEL_LAYERS = {
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'quiz_application',  # Your database name
-        'USER': 'bridgers',     # The new user you just created
+        'NAME': 'quiz_portal',  # Your database name
+        'USER': 'root',     # The new user you just created
         'PASSWORD': 'Bridgers@123',  # The password for the new user
         'HOST': 'localhost',
         'PORT': '3306',  # Default MySQL port

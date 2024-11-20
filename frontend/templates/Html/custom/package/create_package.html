@@ -24,6 +24,7 @@
                             <option value="basic">Basic</option>
                             <option value="standard">Standard</option>
                             <option value="premium">Premium</option>
+                            <option value="free">Free</option>
                         </select>
                     </div>
                     <div class="form-group">
@@ -38,35 +39,40 @@
                         <label for="maxExams">Max Exams</label>
                         <input type="number" id="maxExams" class="form-control" required>
                     </div>
-                    <h5>Difficulty Distribution</h5>
                     <div class="form-group">
-                        <label for="veryEasy">Very Easy (%)</label>
-                        <input type="number" id="veryEasy" class="form-control" value="10" required>
+                        <label for="maxAttampts">Max Attempts</label>
+                        <input type="number" id="maxAttampts" class="form-control" required>
+                    </div>
+                    <h5>Difficulty Distribution (Range)</h5>
+                    <div class="form-group">
+                        <label for="veryEasyRange">Very Easy (%)</label>
+                        <input type="text" id="veryEasyRange" class="form-control" placeholder="e.g., 10-20" required>
                     </div>
                     <div class="form-group">
-                        <label for="easy">Easy (%)</label>
-                        <input type="number" id="easy" class="form-control" value="50" required>
+                        <label for="easyRange">Easy (%)</label>
+                        <input type="text" id="easyRange" class="form-control" placeholder="e.g., 20-30" required>
                     </div>
                     <div class="form-group">
-                        <label for="medium">Medium (%)</label>
-                        <input type="number" id="medium" class="form-control" value="10" required>
+                        <label for="mediumRange">Medium (%)</label>
+                        <input type="text" id="mediumRange" class="form-control" placeholder="e.g., 30-40" required>
                     </div>
                     <div class="form-group">
-                        <label for="hard">Hard (%)</label>
-                        <input type="number" id="hard" class="form-control" value="10" required>
+                        <label for="hardRange">Hard (%)</label>
+                        <input type="text" id="hardRange" class="form-control" placeholder="e.g., 40-50" required>
                     </div>
                     <div class="form-group">
-                        <label for="veryHard">Very Hard (%)</label>
-                        <input type="number" id="veryHard" class="form-control" value="10" required>
+                        <label for="veryHardRange">Very Hard (%)</label>
+                        <input type="text" id="veryHardRange" class="form-control" placeholder="e.g., 50-60" required>
                     </div>
                     <div class="form-group">
-                        <label for="expert">Expert (%)</label>
-                        <input type="number" id="expert" class="form-control" value="10" required>
+                        <label for="expertRange">Expert (%)</label>
+                        <input type="text" id="expertRange" class="form-control" placeholder="e.g., 60-70" required>
                     </div>
                     <button type="submit" class="btn btn-primary">Create Package</button>
                 </form>
                 <div id="responseMessage" class="mt-3"></div>
             </div>
+            
         
 
 

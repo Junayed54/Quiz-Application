@@ -8,6 +8,7 @@ from .serializers import LeaderboardSerializer, ResultSerializer, UserAnswerSeri
 from .tasks import auto_submit_exam
 from users.serializers import UserSerializer
 from .models import Exam, ExamCategory, Status, ExamDifficulty, Question, QuestionOption, UserAnswer, Subject, QuestionUsage, Leaderboard, ExamAttempt, Category
+from subscription.models import *
 from .permissions import IsAdminOrReadOnly, IsAdmin
 from django.utils import timezone
 from rest_framework.pagination import PageNumberPagination
@@ -33,6 +34,7 @@ import json
 import pandas as pd
 from .pagination import CustomPageNumberPagination
 from django.contrib.auth import get_user_model
+from django.core.exceptions import PermissionDenied
 
 User = get_user_model()
 
@@ -88,6 +90,17 @@ class ExamDetailView(generics.RetrieveAPIView):
         context.update({"request": self.request})
         return context
     
+    
+    def get(self, request, *args, **kwargs):
+        # Retrieve the exam instance
+        exam = self.get_object()
+
+        # Check if the user can access the exam
+        
+
+        
+        # Proceed with the default behavior if access is allowed
+        return super().get(request, *args, **kwargs)
 
 
 class CategoryViewSet(viewsets.ModelViewSet):
@@ -124,15 +137,69 @@ class ExamViewSet(viewsets.ModelViewSet):
 
         # Create the status for the exam
         Status.objects.create(exam=exam, status=status, user=self.request.user)
-        Leaderboard.objects.create(exam=exam, score=0)
+        # Leaderboard.objects.create(exam=exam, score=0)
         return Response({'exam_id': exam.exam_id})
     
     @action(detail=False, methods=['get'], permission_classes=[IsAuthenticated], authentication_classes=[JWTAuthentication])
     def exam_list(self, request):
-        # print(request.user.role)
-        # Filter exams where status is 'draft' and created_by is the current user
+        """
+        Get exams filtered by difficulty ranges based on the user's subscription package.
+        """
+        # Fetch the active subscription for the user
+        active_subscription = UserSubscription.objects.filter(user=request.user, status='active', end_date__gte=now.date()).first()
+        
+        if not active_subscription or not active_subscription.package:
+            return Response({"error": "You do not have an active subscription package."}, status=400)
+
+        # Retrieve the subscription package
+        subscription_package = active_subscription.package
+
+        # Retrieve exams with published status
         exams = Exam.objects.filter(exam__status='published')
-        serializer = self.get_serializer(exams, many=True)
+        filtered_exams = []
+
+        def parse_range(range_str):
+            """
+            Helper function to parse range strings like "10-20" into min and max integers.
+            """
+            try:
+                range_parts = range_str.split('-')
+                if len(range_parts) != 2:
+                    raise ValueError
+                return int(range_parts[0].strip()), int(range_parts[1].strip())
+            except ValueError:
+                raise ValueError(f"Invalid range format: {range_str}")
+
+        try:
+            # Parse range values from the subscription package
+            very_easy_min, very_easy_max = parse_range(subscription_package.very_easy_percentage)
+            easy_min, easy_max = parse_range(subscription_package.easy_percentage)
+            medium_min, medium_max = parse_range(subscription_package.medium_percentage)
+            hard_min, hard_max = parse_range(subscription_package.hard_percentage)
+            very_hard_min, very_hard_max = parse_range(subscription_package.very_hard_percentage)
+            expert_min, expert_max = parse_range(subscription_package.expert_percentage)
+        except ValueError as e:
+            return Response({"error": str(e)}, status=400)
+
+        for exam in exams:
+            # Ensure the exam has a related difficulty instance
+            difficulty = getattr(exam, 'difficulty', None)
+            if not difficulty:
+                continue
+
+            # Validate difficulty percentages against subscription ranges
+            if (
+                very_easy_min <= difficulty.difficulty1_percentage <= very_easy_max
+                and easy_min <= difficulty.difficulty2_percentage <= easy_max
+                and medium_min <= difficulty.difficulty3_percentage <= medium_max
+                and hard_min <= difficulty.difficulty4_percentage <= hard_max
+                and very_hard_min <= difficulty.difficulty5_percentage <= very_hard_max
+                and expert_min <= difficulty.difficulty6_percentage <= expert_max
+            ):
+                filtered_exams.append(exam)
+
+        # Serialize the filtered exams
+        serializer = self.get_serializer(filtered_exams, many=True)
         return Response(serializer.data)
     
     
@@ -147,57 +214,86 @@ class ExamViewSet(viewsets.ModelViewSet):
     
     @action(detail=True, methods=['get'], url_path='start', permission_classes=[IsAuthenticated])
     def start_exam(self, request, pk=None):
+        # Fetch the exam instance
         exam = self.get_object()
-        status = Status.objects.filter(exam=exam).first()
+
+        # Retrieve the exam's status
+        status_instance = Status.objects.filter(exam=exam).first()
+        # print(status_instance)
+        # Fetch the user's usage tracking and subscription package
+        usage_tracking = UsageTracking.objects.filter(user=request.user).first()
         
-        if status and status.status in ['published', 'student']:
-            start_time = timezone.now()
-            # end_time = start_time + (exam.duration or timezone.timedelta())
-            
+        
+        
+        if not usage_tracking or not usage_tracking.package:
+            return JsonResponse({"error": "You do not have an active subscription package."}, status=403)
+
+        # Check if the user can take the exam
+        if not usage_tracking.can_take_exam(exam.exam_id):
+            return JsonResponse({"error": "Exam limit exceeded for this subscription."}, status=403)
+
+        # Check if the user can attempt this specific exam
+        if not usage_tracking.can_attempt_exam(exam.exam_id):
+            return JsonResponse({"error": "Maximum attempts for this exam exceeded."}, status=403)
+
+        # Validate exam status
+        if status_instance and status_instance.status in ['published', 'student']:
+            # Record the exam start time
+            start_time = now
+
+            # Optional: Calculate end time if `duration` exists
+            end_time = start_time + (exam.duration or timezone.timedelta())
+
+            # Increment usage and attempts
+            try:
+                
+                # Increment attempt count for this specific exam
+                exam_attempts = usage_tracking.exam_attempts
+                # exam_attempts[str(exam.exam_id)] = exam_attempts.get(str(exam.exam_id), {"attempts": 0})
+                # exam_attempts[str(exam.exam_id)]["attempts"] += 1
+                usage_tracking.exam_attempts = exam_attempts
+                # usage_tracking.total_attempts_taken += 1 
+                usage_tracking.save()
+            except ValueError as e:
+                return JsonResponse({"error": str(e)}, status=403)
+
             return Response({
                 'exam_id': exam.exam_id,
                 'title': exam.title,
                 'total_questions': exam.total_questions,
                 'duration': exam.duration,
-                
+                'start_time': start_time,
+                'end_time': end_time,
             })
-        
-        return Response({"message": "The exam is not published."}, status=status.HTTP_403_FORBIDDEN)
+
+        return Response({"error": "The exam is not published."}, status=status.HTTP_403_FORBIDDEN)
+
 
     @action(detail=True, methods=['get'], url_path='questions', permission_classes=[IsAuthenticated])
     def get_questions(self, request, pk=None):
         exam = self.get_object()
-        # questions_to_generate = exam.questions_to_generate
+
+        # Fetch the user's usage tracking
+        usage_tracking = UsageTracking.objects.filter(user=request.user).first()
+        if not usage_tracking or not usage_tracking.package:
+            return JsonResponse({"error": "You do not have an active subscription package."}, status=403)
+
+
+        if not usage_tracking.can_take_exam(pk):
+            return JsonResponse({"error": "Exam limit exceeded for this subscription."}, status=403)
+
+        # Check if the user has started the exam
+        # if not usage_tracking.exam_attempts.get(str(exam.exam_id)):
+        #     return JsonResponse({"error": "You have not started this exam yet."}, status=403)
+
+        usage_tracking.increment_exam(pk)
+        # if usage_tracking.total:
+        #     return JsonResponse({"error": "Exam limit exceeded for this subscription."}, status=403)
+        
+        # Fetch and serialize the questions
         questions = exam.questions.all()
-        # print(questions[0].text)
-        # print(questions)
-        # try:
-        #     difficulty = ExamDifficulty.objects.get(exam=exam)
-        # except ExamDifficulty.DoesNotExist:
-        #     return Response({"error": "Difficulty settings not found for this exam."}, status=status.HTTP_404_NOT_FOUND)
-
-        # difficulty_distribution = {
-        #     1: round(difficulty.difficulty1_percentage / 100 * questions_to_generate),
-        #     2: round(difficulty.difficulty2_percentage / 100 * questions_to_generate),
-        #     3: round(difficulty.difficulty3_percentage / 100 * questions_to_generate),
-        #     4: round(difficulty.difficulty4_percentage / 100 * questions_to_generate),
-        #     5: round(difficulty.difficulty5_percentage / 100 * questions_to_generate),
-        #     6: round(difficulty.difficulty6_percentage / 100 * questions_to_generate),
-        # }
-
-        # selected_questions = []
-        # question_ids_selected = set()
-
-        # for difficulty_level, count in difficulty_distribution.items():
-        #     if count > 0:
-        #         questions = Question.objects.filter(exam=exam, difficulty_level=difficulty_level)
-        #         count = min(count, questions.count())
-        #         question_sample = random.sample(list(questions), count)
-        #         selected_questions.extend(question_sample)
-        #         question_ids_selected.update(q.id for q in question_sample)
-
         serializer = QuestionSerializer(questions, many=True)
-        # print(serializer)
+
         return Response({
             "questions": serializer.data,
             "skipped_questions": []  # Initially empty, will hold skipped question IDs as user skips questions
@@ -224,7 +320,20 @@ class ExamViewSet(viewsets.ModelViewSet):
     def submit_exam(self, request, pk=None):
         user = request.user
         exam = self.get_object()
-
+        usage_tracking = UsageTracking.objects.filter(user=request.user).first()
+        
+        package = usage_tracking.package
+        
+        if not usage_tracking.exam_attempts.get(str(pk)):
+            return JsonResponse({"error": "You have not started this exam yet."}, status=403)
+        
+        max_attempts = package.max_attampts
+        if usage_tracking.exam_attempts[str(pk)]["attempts"] >= max_attempts+1:
+            return JsonResponse({"error":"You need to update your package"})
+        
+        if usage_tracking.total_exams_taken >= package.max_exams+1:
+            return JsonResponse({"error":"You need to update your package"})
+        
         # Create a new attempt
         attempt = ExamAttempt.objects.create(
             exam=exam,
@@ -290,6 +399,7 @@ class ExamViewSet(viewsets.ModelViewSet):
         attempt.passed = total_correct >= exam.pass_mark  # Adjust pass logic as needed
         attempt.save()
 
+        Leaderboard.update_best_score(user, exam)
         # Schedule auto-submit task (if needed)
         auto_submit_exam.apply_async(args=[attempt.id], countdown=10)
 
@@ -1183,7 +1293,7 @@ class ExamAttemptViewSet(viewsets.ViewSet):
             return Response({"error": "Exam not found."}, status=status.HTTP_404_NOT_FOUND)
 
         # Fetch all attempts by the user for the specific exam
-        user_attempts = ExamAttempt.objects.filter(user=user, exam=exam)
+        user_attempts = ExamAttempt.objects.filter(exam=exam)
 
         if not user_attempts.exists():
             return Response({"message": "No attempts found for this exam."}, status=status.HTTP_404_NOT_FOUND)
@@ -1456,6 +1566,20 @@ class ExamCreateView(APIView):
         # print("difficulty: ", type(difficulty_levels))
         
         category_name = request.data.get('category')
+       
+        try:
+            difficulty_levels = json.loads(difficulty_levels)
+            print(difficulty_levels)
+        except (TypeError, json.JSONDecodeError):
+            return Response({"error": "Difficulty levels are invalid."}, status=status.HTTP_400_BAD_REQUEST)
+        
+        # Only validate difficulty percentages if exam type is 'question_bank'
+        if exam_type == 'question_bank':
+            # Ensure percentages add up to 100
+            total_percentage = sum(difficulty_levels.values())
+            if total_percentage != 100:
+                return Response({"error": f"The total percentage of difficulty levels must equal 100, but got {total_percentage}."}, status=status.HTTP_400_BAD_REQUEST)
+
         
         # Basic validations for required fields
         if not exam_title:
@@ -1474,6 +1598,7 @@ class ExamCreateView(APIView):
         if exam_type == 'file':
             selected_questions = self._process_file_upload(request)
         elif exam_type == 'question_bank':
+            print(type(difficulty_levels))
             selected_questions = self._fetch_questions_from_bank(total_questions, difficulty_levels)
         else:
             return Response({"error": "Invalid exam type. Choose either 'file' or 'question_bank'."}, status=status.HTTP_400_BAD_REQUEST)
@@ -1497,14 +1622,34 @@ class ExamCreateView(APIView):
         )
 
         
+        
         # Step 3: Associate Questions with the Exam
         exam.questions.set(selected_questions)
 
-        # Step 4: Set Exam Status and Initialize Leaderboard
+       
+        print(difficulty_levels)
+
+        # Step 5
+        difficulty_percentages = {
+            'difficulty1_percentage': difficulty_levels.get('1', 0),
+            'difficulty2_percentage': difficulty_levels.get('2', 0),
+            'difficulty3_percentage': difficulty_levels.get('3', 0),
+            'difficulty4_percentage': difficulty_levels.get('4', 0),
+            'difficulty5_percentage': difficulty_levels.get('5', 0),
+            'difficulty6_percentage': difficulty_levels.get('6', 0)
+        }
+
+        # Create ExamDifficulty object
+        ExamDifficulty.objects.create(
+            exam=exam,
+            **difficulty_percentages
+        )
+        
+        # Step 5: Set Exam Status and Initialize Leaderboard
         status_label = 'student' if request.user.role == 'student' else 'draft'
         Status.objects.create(exam=exam, status=status_label, user=request.user)
 
-        Leaderboard.objects.create(exam=exam, score=0)
+        # Leaderboard.objects.create(exam=exam, score=0)
 
         return Response({"message": f"Exam '{exam.title}' created successfully with {len(selected_questions)} questions."}, status=status.HTTP_201_CREATED)
 
@@ -1573,8 +1718,8 @@ class ExamCreateView(APIView):
         
         try:
             with transaction.atomic():
-                difficulty_levels = json.loads(difficulty_levels)
-                
+                # difficulty_levels = json.loads(difficulty_levels)
+
                 # Ensure percentages add up to 100
                 if sum(difficulty_levels.values()) != 100:
                     return Response({"error": "Difficulty percentages must add up to 100%."}, status=status.HTTP_400_BAD_REQUEST)

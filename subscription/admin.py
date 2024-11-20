@@ -14,7 +14,7 @@ from .models import (
 
 @admin.register(SubscriptionPackage)
 class SubscriptionPackageAdmin(admin.ModelAdmin):
-    list_display = ('name', 'price', 'duration_in_days', 'max_exams')
+    list_display = ('id', 'name', 'price', 'duration_in_days', 'max_exams')
     list_filter = ('name', 'price')
     search_fields = ('name',)
 
@@ -32,7 +32,7 @@ class PaymentAdmin(admin.ModelAdmin):
 
 @admin.register(UsageTracking)
 class UsageTrackingAdmin(admin.ModelAdmin):
-    list_display = ('user', 'package', 'total_exams_taken', 'total_allowed_exams')
+    list_display = ('user', 'package', 'total_exams_taken', 'total_attempts_taken')
     search_fields = ('user__username', 'package__name')
 
 @admin.register(SubscriptionHistory)

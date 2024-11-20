@@ -1,5 +1,29 @@
 const accessToken = localStorage.getItem('access_token');
+let userRole = '';
 
+// Fetch User Role
+async function fetchUserRole() {
+    try {
+        const response = await fetch('/auth/user-role/', {
+            method: 'GET',
+            headers: {
+                'Authorization': 'Bearer ' + accessToken,
+            }
+        });
+        const data = await response.json();
+
+        if (response.ok) {
+            userRole = data.role;  // Assume 'role' is returned in the response
+        } else {
+            console.error('Failed to fetch user role');
+        }
+    } catch (error) {
+        console.error('Error fetching user role:', error);
+    }
+}
+
+// Initialize user role before form submission
+fetchUserRole();
 // Toggle display based on exam type selection
 document.getElementById('exam_type').addEventListener('change', function() {
     const examType = this.value;
@@ -101,7 +125,8 @@ document.getElementById('examForm').addEventListener('submit', async function (e
         const data = await response.json();
         if (response.ok) {
             alert('Success: ' + data.message);
-            window.location.href = '/quiz/user_exams/';
+            const redirectUrl = userRole === 'teacher' ? '/quiz/draft_exams/' : '/quiz/user_exams/';
+            window.location.href = redirectUrl;
         } else {
             alert('Error: ' + (data.error || 'Failed to create exam.'));
         }

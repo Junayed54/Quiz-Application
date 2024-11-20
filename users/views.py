@@ -11,8 +11,11 @@ from django.contrib.auth import get_user_model
 from .serializers import CustomTokenObtainPairSerializer, UserSerializer
 from django.core.exceptions import ObjectDoesNotExist 
 from .models import CustomUser
+from subscription.models import SubscriptionPackage, UserSubscription
 from .serializers import UserSerializer
 User = get_user_model()
+from django.utils import timezone
+from datetime import timedelta
 
 class SignupView(generics.CreateAPIView):
     queryset = User.objects.all()
@@ -24,7 +27,22 @@ class SignupView(generics.CreateAPIView):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         user = serializer.save()
+        if user.role == 'student':  # Assuming `role` is a field on the User model
+            # Retrieve the "Free" subscription package
+            free_package = SubscriptionPackage.objects.filter(name="free")[0]
 
+            # Set the subscription end date (for example, 30 days from now)
+            end_date = timezone.now() + timedelta(days=30)
+
+            # Create the user subscription for the "Free" package
+            UserSubscription.objects.create(
+                user=user,
+                package=free_package,
+                start_date=timezone.now(),
+                end_date=end_date,
+                status='active',
+                auto_renew=True
+            )
         # Generate JWT tokens for the newly created user
         refresh = RefreshToken.for_user(user)
         return Response({

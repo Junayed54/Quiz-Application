@@ -32,12 +32,19 @@ document.addEventListener('DOMContentLoaded', function() {
             <div class="col-12 col-sm-6 col-md-4">
                 <div class="card h-100">
                     <div class="card-body">
-                        <h5 class="card-title">${exam.exam_details['title']}</h5>
-                        <p class="card-text">
-                            <strong>Total Questions:</strong> ${exam.exam_details['total_questions']}<br>
-                            <strong>Total Marks:</strong> ${exam.exam_details['total_marks']}<br>
-                        </p>
-                        <a href="/quiz/exam_check/${exam.exam}/" class="btn btn-primary">Review Exam</a>
+                       
+                        <h5 class="card-title" style="color:#5ca904;">${exam.exam_details['title']}</h5>
+                        
+                        <div class="d-flex my-4" style="gap:5px;">
+                            <div class="p-2 rounded text-white" style="background-color: #808080">${exam.exam_details['total_questions']} Ques.</div>
+                            <div class="p-2 rounded text-white" style="background-color: #808080">${exam.exam_details['total_marks']} Marks</div>
+                            <div class="p-2 rounded text-white" style="background-color: #808080">${exam.exam_details['duration']} Sec</div>
+                        </div>
+
+                        
+                        <h6 class="text-muted">Examiner: <span class="text-secondary" style="font-weight:bold;">${exam.exam_details['created_by']}</span></h6>
+                        <h6 class="text-muted">Package: <span class="text-info">${exam.exam_details['title']}</span></h6>
+                        <a href="/quiz/exam_check/${exam.exam}/" class="btn btn-primary mt-3">Review Exam</a>
                     </div>
                 </div>
             </div>

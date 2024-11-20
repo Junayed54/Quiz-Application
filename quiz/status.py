@@ -3,7 +3,7 @@ from rest_framework.response import Response
 from rest_framework.decorators import action
 from django.shortcuts import get_object_or_404
 from .models import Status, Exam
-from .serializers import StatusSerializer
+from .serializers import StatusSerializer, ExamSerializer
 from rest_framework.permissions import IsAuthenticated
 from .permissions import IsAdminOrReadOnly, IsAdmin
 from rest_framework.permissions import IsAdminUser
