@@ -49,7 +49,24 @@
                                 {% comment %} <div id="question-navigator" class="question-navigator"></div> {% endcomment %}
                                 <button id="review-skipped" class="btn btn-secondary d-none">Go to Next Skipped Question</button>
 
-                                <div id="resultContainer"></div>
+                                <!-- Results Modal -->
+                                <div class="modal fade" id="resultsModal" tabindex="-1" aria-labelledby="resultsModalLabel" aria-hidden="true">
+                                    <div class="modal-dialog modal-dialog-centered">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                        <h5 class="modal-title" id="resultsModalLabel">Exam Results</h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                        </div>
+                                        <div class="modal-body" id="resultContainer">
+                                        <!-- Dynamic content will be injected here -->
+                                        </div>
+                                        <div class="modal-footer">
+                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                        </div>
+                                    </div>
+                                    </div>
+                                </div>
+  
                             </form>
                         </div>
                         <div id="result-container" class="d-none mb-4">

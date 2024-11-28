@@ -89,6 +89,7 @@ class SubscriptionPackageSerializer(serializers.ModelSerializer):
         """
         Override update method to handle updating of an existing SubscriptionPackage instance.
         """
+        
         for attr, value in validated_data.items():
             setattr(instance, attr, value)
 

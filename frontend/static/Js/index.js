@@ -4,7 +4,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const teacher = document.getElementById('teacher');
     const admin = document.getElementById('admin');
     const pk_admin = document.getElementById('pk_admin');
-    console.log(admin);
+    // console.log(admin);
     const student = document.getElementById('student');
     const student1 = document.getElementById('student1');
     const teacher_admin = document.getElementById('teacheradmin');

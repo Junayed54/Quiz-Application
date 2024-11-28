@@ -3,7 +3,13 @@ document.addEventListener("DOMContentLoaded", function() {
 
     // Fetch access token
     const accessToken = localStorage.getItem('access_token'); // Replace with actual token retrieval
+    if (!accessToken) {
+        window.location.href = '/login/';
+        return;
+    }
 
+
+    
     // Function to capitalize the first letter of each word
     function capitalizeWords(str) {
         return str.replace(/\b\w/g, char => char.toUpperCase());
@@ -38,8 +44,11 @@ document.addEventListener("DOMContentLoaded", function() {
                                     <li>Very Hard: ${pkg.very_hard_percentage}%</li>
                                     <li>Expert: ${pkg.expert_percentage}%</li>
                                 </ul>
-                                <div class="d-flex justify-content-between">
+                                <div id="student" class="d-flex justify-content-between">
                                     <button class="btn btn-primary" onclick="buyPackage(${pkg.id})">Buy Now</button>
+                                </div>
+                                <div id="admin" class="d-flex justify-content-between mt-2">
+                                    <button class="btn btn-primary" onclick="updatePackage(${pkg.id})">Update package</button>
                                 </div>
                             </div>
                         </div>
@@ -50,6 +59,9 @@ document.addEventListener("DOMContentLoaded", function() {
         })
         .catch(error => console.error('Error fetching packages:', error));
     }
+
+
+    
 
     // Function to handle buying a package
     window.buyPackage = function(packageId) {
@@ -76,27 +88,67 @@ document.addEventListener("DOMContentLoaded", function() {
         });
     };
 
-    // Optional: Function to handle package deletion
-    window.deletePackage = function(id) {
-        if (confirm('Are you sure you want to delete this package?')) {
-            fetch(`/packages/${id}/`, {  // Adjust the endpoint for package deletion
-                method: 'DELETE',
-                headers: {
-                    'Authorization': `Bearer ${accessToken}`
-                }
-            })
-            .then(response => {
-                if (response.ok) {
-                    alert('Package deleted successfully.');
-                    fetchPackages(); // Refresh the package list after deletion
-                } else {
-                    console.error('Error deleting package:', response.statusText);
-                }
-            })
-            .catch(error => console.error('Error deleting package:', error));
-        }
+    window.updatePackage = function(packageId) {
+        window.location.href = `/update_package/${packageId}/`;  // Redirect to update page
     };
+    
+
+    // Optional: Function to handle package deletion
+    // window.deletePackage = function(id) {
+    //     if (confirm('Are you sure you want to delete this package?')) {
+    //         fetch(`/packages/${id}/`, {  // Adjust the endpoint for package deletion
+    //             method: 'DELETE',
+    //             headers: {
+    //                 'Authorization': `Bearer ${accessToken}`
+    //             }
+    //         })
+    //         .then(response => {
+    //             if (response.ok) {
+    //                 alert('Package deleted successfully.');
+    //                 fetchPackages(); // Refresh the package list after deletion
+    //             } else {
+    //                 console.error('Error deleting package:', response.statusText);
+    //             }
+    //         })
+    //         .catch(error => console.error('Error deleting package:', error));
+    //     }
+    // };
 
     // Fetch packages on page load
     fetchPackages();
+    if (accessToken) {
+            
+        // Fetch the user role
+        fetch('/auth/user-role/', {
+            method: 'GET',
+            headers: {
+                'Authorization': 'Bearer ' + accessToken,
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            // console.log(data);
+            const admin = docoment.getElementById('admin');
+            const student = docoment.getElementById('student');
+
+            if(data.role === 'admin'){
+                
+                admin.classList.remove('d-none');
+                student.classList.add('d-none');
+                
+            }
+            
+            else if(data.role == 'student'){
+                student.classList.remove('d-none');
+                
+            }
+            
+        })
+        .catch(error => console.error('Error:', error));
+
+    }
+
+
 });
+
+

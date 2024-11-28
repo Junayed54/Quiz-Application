@@ -10,7 +10,19 @@
     .clickable-div:hover {
         background-color: #f0f0f0; /* Light background on hover */
     }
+
+    .border-primary {
+        border: 2px solid #007bff; /* Highlight user icon */
+    }
+    .d-flex {
+        border-radius: 10px;
+    }
+    .text-success {
+        font-weight: bold;
+        color: #28a745 !important;
+    }
 </style>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
 
 </head>
 
@@ -41,19 +53,21 @@
                 <div id="exam-details">
                     <!-- Exam details will be dynamically inserted here -->
                 </div>
-                <button id="print-questions-btn" class="btn btn-primary mb-4">Print Questions</button>
+                <button id="print-questions-btn" class="btn btn-primary mb-4">
+                    <i class="bi bi-printer"></i>
+                </button>
         
                 <!-- Main Content: User Attempts and Leaderboard -->
                 <div class="row">
-                    <!-- User Attempts on the left -->
-                    <div class="col-md-8">
-                        <h4>User Attempts</h4>
+                    <!-- User Attempts Section -->
+                    <div class="col-lg-8 col-md-12 overflow-auto">
+                        <h4 class="mb-3">User Attempts</h4>
                         <table class="table table-striped table-bordered text-center">
-                            <thead class="bg-green">
-                                <tr class="text-white">
+                            <thead class="bg-green text-white">
+                                <tr>
                                     <th>Date</th>
                                     <th>Name</th>
-                                    <th>Number of Questions</th>
+                                    <th>Questions</th>
                                     <th>Answered</th>
                                     <th>Right</th>
                                     <th>Wrong</th>
@@ -62,23 +76,24 @@
                                 </tr>
                             </thead>
                             <tbody id="user-attempts">
-                                <!-- User attempts will be dynamically inserted here -->
+                                <!-- Dynamically populated -->
                             </tbody>
                         </table>
                     </div>
-                    
-                    <!-- Modal for showing detailed attempts -->
+                
+                    <!-- Detailed Attempt Modal -->
                     <div class="modal fade" id="attempt-details-modal" tabindex="-1" aria-labelledby="attemptDetailsModalLabel" aria-hidden="true">
                         <div class="modal-dialog modal-lg">
                             <div class="modal-content">
                                 <div class="modal-header">
-                                    <h5 class="modal-title" id="attemptDetailsModalLabel">User Attempt Details</h5>
+                                    <h5 class="modal-title" id="attemptDetailsModalLabel">Attempt Details</h5>
                                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                                 </div>
-                                <div class="modal-body">
-                                    <table class="table table-striped table-bordered text-center">
-                                        <thead class="bg-green">
-                                            <tr class="text-white">
+                                <div class="modal-body overflow-auto">
+                                    <table class="table table-striped text-center overflow-hidden">
+                                        <thead class="bg-green text-white">
+                                            <tr>
+                                                <th>Attempt Date</th>
                                                 <th>Attempt Time</th>
                                                 <th>Total Questions</th>
                                                 <th>Answered</th>
@@ -88,43 +103,32 @@
                                             </tr>
                                         </thead>
                                         <tbody id="user-attempts-details">
-                                            <!-- Dynamic rows will be added here -->
+                                            <!-- Dynamically populated -->
                                         </tbody>
                                     </table>
+
+                                    <div class="my-4">
+                                        <canvas id="attemptChart"></canvas>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                
+                    <!-- Leaderboard Section -->
+                    <div class="col-lg-3 col-md-12 mt-4">
+                        <h4>Top 10 Scorers</h4>
+                        <div class="card">
+                            <div class="card-body">
+                                <div id="leaderboard" class="row row-cols-2 row-cols-md-2 row-cols-lg-1 g-4">
+                                    <!-- Dynamic Entries will be inserted here -->
                                 </div>
                                 
                             </div>
                         </div>
                     </div>
-                    
-        
-                    <!-- Leaderboard on the right -->
-                    <div class="col-md-4 my-4">
-                        <h4>Top 10 Scorer</h4>
-                        <div class="card">
-                            <div class="card-body ">
-                                <div class="list-group ">
-                                    <!-- Example Leaderboard Entry -->
-                                    <div class="list-group-item d-flex align-items-start border border-secondary gap-2  clickable-div" id="leaderboard" style="width:200px; height:170px">
-                                        <!-- User Icon -->
-                                        <div class="">
-                                            <img src="../../../static/images/user_9071610.png" alt="User Icon" class="rounded-circle" width="40" height="40">
-                                        </div>
-                                        
-                                        <!-- User Data -->
-                                        <div>
-                                            <h6>Username</h6>
-                                            <small>Total Questions: <span class="text-muted">XX</span></small><br>
-                                            <small>Total Score: <span class="text-muted">YY</span></small>
-                                        </div>
-                                    </div>
-                                    <!-- Additional entries can follow the same structure -->
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    
                 </div>
+                
             </div>
             
             
@@ -152,8 +156,10 @@
     <script src="../../../static/assets/js/custom.js"></script>
 
     <!-- My exam js -->
-     <script src = "../../../static/Js/result.js"></script>
-     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src = "../../../static/Js/result.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 
 </body>

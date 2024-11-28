@@ -190,14 +190,27 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function displayResults(correctAnswers, wrongAnswers, passed, data) {
         console.log(data);
+        
+        // Populate the modal content dynamically
         document.getElementById('resultContainer').innerHTML = `
-            <h3>Exam Submitted!</h3>
-            <p>Correct Answers: ${correctAnswers}</p>
-            <p>Wrong Answers: ${wrongAnswers}</p>
-            <p>Status: ${passed ? 'Passed' : 'Failed'}</p>
-            <p>Skipped Questions: ${skippedQuestions.length}</p>
+            <h4 class="text-center">Exam Submitted!</h4>
+            <p><strong>Correct Answers:</strong> ${correctAnswers}</p>
+            <p><strong>Wrong Answers:</strong> ${wrongAnswers}</p>
+            <p><strong>Status:</strong> ${passed ? '<span class="text-success">Passed</span>' : '<span class="text-danger">Failed</span>'}</p>
+            <p><strong>Skipped Questions:</strong> ${skippedQuestions.length}</p>
         `;
+        
+        // Open the modal using Bootstrap's JavaScript API
+        const modalElement = document.getElementById('resultsModal');
+        const modal = new bootstrap.Modal(modalElement);
+        modal.show();
+
+        modalElement.addEventListener('hidden.bs.modal', function() {
+            // const examId = window.location.pathname.split('/')[3];
+            window.location.href = `/quiz/exam_detail/${examId}/`;
+        });
     }
+    
 
     fetchExamDetails();
 });

@@ -299,22 +299,7 @@ class ExamViewSet(viewsets.ModelViewSet):
             "skipped_questions": []  # Initially empty, will hold skipped question IDs as user skips questions
         })
 
-    @action(detail=True, methods=['post'], url_path='skip', permission_classes=[IsAuthenticated])
-    def skip_question(self, request, pk=None):
-        exam = self.get_object()
-        skipped_question_id = request.data.get('question_id')
-
-        if not skipped_question_id:
-            return Response({"error": "Question ID is required."}, status=status.HTTP_400_BAD_REQUEST)
-
-        # Add skipped question ID to session or cache for the current user-exam attempt
-        skipped_questions = request.session.get(f"skipped_questions_{exam.exam_id}", [])
-        
-        if skipped_question_id not in skipped_questions:
-            skipped_questions.append(skipped_question_id)
-            request.session[f"skipped_questions_{exam.exam_id}"] = skipped_questions
-
-        return Response({"message": f"Question {skipped_question_id} skipped."})
+    
 
     @action(detail=True, methods=['post'], url_path='submit', permission_classes=[IsAuthenticated])
     def submit_exam(self, request, pk=None):
@@ -412,7 +397,22 @@ class ExamViewSet(viewsets.ModelViewSet):
         }, status=status.HTTP_200_OK)
         
         
+    @action(detail=True, methods=['post'], url_path='skip', permission_classes=[IsAuthenticated])
+    def skip_question(self, request, pk=None):
+        exam = self.get_object()
+        skipped_question_id = request.data.get('question_id')
+
+        if not skipped_question_id:
+            return Response({"error": "Question ID is required."}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Add skipped question ID to session or cache for the current user-exam attempt
+        skipped_questions = request.session.get(f"skipped_questions_{exam.exam_id}", [])
         
+        if skipped_question_id not in skipped_questions:
+            skipped_questions.append(skipped_question_id)
+            request.session[f"skipped_questions_{exam.exam_id}"] = skipped_questions
+
+        return Response({"message": f"Question {skipped_question_id} skipped."})
     
     @action(detail=True, methods=['post'])
     def generate_exam(self, request, pk=None):
@@ -1256,7 +1256,7 @@ class ExamAttemptViewSet(viewsets.ViewSet):
         time_period = request.query_params.get('time_period', 'all')
 
         # Query to get all the exams the user has attempted
-        user_attempts = ExamAttempt.objects.filter(user=user)
+        user_attempts = ExamAttempt.objects.filter(user=user).prefetch_related('exam__questions')
 
         # Filter by time period
         if time_period == 'weekly':
@@ -1269,20 +1269,42 @@ class ExamAttemptViewSet(viewsets.ViewSet):
         if not user_attempts.exists():
             return Response({"message": "No exam attempts found for this user."}, status=status.HTTP_404_NOT_FOUND)
 
-        # Map attempts to a list of dictionaries for the response
-        attempts_data = user_attempts.values(
-            'exam__title',
-            'attempt_time',
-            'total_correct_answers',
-        )
+        # Prepare detailed data for each attempt
+        attempts_data = []
+        for attempt in user_attempts:
+            exam = attempt.exam
+            total_questions = exam.questions.count()
+            correct_answers = attempt.total_correct_answers
+            wrong_answers = total_questions - correct_answers  # Assuming no skipped questions
+            
+            # Calculate obtained marks and percentage
+            total_marks = sum(question.marks for question in exam.questions.all())
+            obtained_marks = correct_answers * (total_marks / total_questions)  # Assuming equal marks per question
+            percentage = (obtained_marks / total_marks) * 100
+
+            attempt_detail = {
+                'exam_title': exam.title,
+                'attempt_time': attempt.attempt_time,
+                'total_questions': total_questions,
+                'correct_answers': correct_answers,
+                'wrong_answers': wrong_answers,
+                'total_marks': total_marks,
+                'obtained_marks': obtained_marks,
+                'percentage': round(percentage, 2),
+            }
+
+            attempts_data.append(attempt_detail)
 
         return Response(attempts_data, status=status.HTTP_200_OK)
-
+    
+    
     @action(detail=False, methods=['get'], permission_classes=[IsAuthenticated])
     def user_attempts(self, request):
         user = self.request.user
-        exam_id = request.query_params.get('exam_id', None)  # Get 'exam_id' from the query parameters
-        # exam_id = pk
+        exam_id = request.query_params.get('exam_id', None) # Get 'exam_id' from the query parameters
+        user_id = request.query_params.get('user_id', None)
+        # user = User.objects.get(id=user_id)
+        print(user_id)
         if not exam_id:
             return Response({"error": "exam_id parameter is required."}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -1293,7 +1315,7 @@ class ExamAttemptViewSet(viewsets.ViewSet):
             return Response({"error": "Exam not found."}, status=status.HTTP_404_NOT_FOUND)
 
         # Fetch all attempts by the user for the specific exam
-        user_attempts = ExamAttempt.objects.filter(exam=exam)
+        user_attempts = ExamAttempt.objects.filter(exam=exam, user=user)
 
         if not user_attempts.exists():
             return Response({"message": "No attempts found for this exam."}, status=status.HTTP_404_NOT_FOUND)

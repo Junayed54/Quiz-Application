@@ -164,7 +164,7 @@ class ExamDifficultySerializer(serializers.ModelSerializer):
 class LeaderboardSerializer(serializers.ModelSerializer):
     user = serializers.ReadOnlyField(source='user.username')
     exam = serializers.ReadOnlyField(source='exam.title')
-
+    user_id = serializers.ReadOnlyField(source='user.id')
     class Meta:
         model = Leaderboard
         fields = '__all__'

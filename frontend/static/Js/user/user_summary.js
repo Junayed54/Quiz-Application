@@ -129,13 +129,17 @@ document.addEventListener('DOMContentLoaded', function() {
         .then(data => {
             console.log("API Response:", data);
 
-            // Extracting labels, correct answers, and titles for tooltips
+            // Extract labels and detailed data for tooltips
             const labels = data.map(attempt => new Date(attempt.attempt_time).toLocaleDateString());
-            const correctAnswers = data.map(attempt => attempt.total_correct_answers);
-            const examTitles = data.map(attempt => attempt.exam__title);
+            const correctAnswers = data.map(attempt => attempt.correct_answers);
+            const examTitles = data.map(attempt => attempt.exam_title);
+            const obtainedMarks = data.map(attempt => attempt.obtained_marks);
+            const percentages = data.map(attempt => attempt.percentage);
+            const total_questions = data.map(attempt => attempt.total_questions) ;
+            const wrong_answers = data.map(attempt => attempt.wrong_answers) ;
 
             if (labels.length > 0 && correctAnswers.length > 0) {
-                createCorrectAnswersLineChart(labels, correctAnswers, examTitles);
+                createCorrectAnswersLineChart(labels, correctAnswers, examTitles, obtainedMarks, percentages, total_questions, wrong_answers);
             } else {
                 console.error('No exam attempts data available for the selected time period.');
             }
@@ -143,8 +147,8 @@ document.addEventListener('DOMContentLoaded', function() {
         .catch(error => console.error('Error fetching exam attempts:', error));
     }
 
-    // Initialize the line chart with tooltips showing exam titles
-    function createCorrectAnswersLineChart(labels, data, examTitles) {
+    // Initialize the line chart with tooltips showing detailed exam information
+    function createCorrectAnswersLineChart(labels, correctAnswers, examTitles, obtainedMarks, percentages, total_questions, wrong_answers) {
         const ctx = document.getElementById('correctAnswersChart').getContext('2d');
 
         // Destroy previous chart instance if it exists
@@ -158,7 +162,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 labels: labels,
                 datasets: [{
                     label: 'Correct Answers per Attempt',
-                    data: data,
+                    data: correctAnswers,
                     borderColor: 'blue',
                     backgroundColor: 'rgba(0, 123, 255, 0.2)',
                     borderWidth: 2,
@@ -169,24 +173,34 @@ document.addEventListener('DOMContentLoaded', function() {
                 plugins: {
                     tooltip: {
                         callbacks: {
-                            // Customize tooltip to include the exam title
+                            // Customize tooltip to include detailed exam information
                             label: function(tooltipItem) {
                                 const index = tooltipItem.dataIndex;
                                 const title = examTitles[index];
-                                const correctAnswers = tooltipItem.raw;
-                                return `Exam: ${title}, Correct Answers: ${correctAnswers}`;
+                                const correct = correctAnswers[index];
+                                const marks = obtainedMarks[index];
+                                const percentage = percentages[index];
+                                const totalquestions = total_questions[index];
+                                const wronganswers = wrong_answers[index];
+                                return [
+                                    `Exam: ${title}`,
+                                    `Correct: ${correct}`,
+                                    `Marks: ${marks}`,
+                                    `Percentage: ${percentage}%`,
+                                    `Total questions: ${totalquestions}`,
+                                    `Wrong answers: ${wronganswers}`,
+
+                                ];
                             }
                         }
                     }
                 },
                 scales: {
                     x: {
-                        beginAtZero: true,
                         title: {
                             display: true,
                             text: 'Attempt Date'
                         },
-                        
                         reverse: true
                     },
                     y: {
@@ -213,6 +227,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 });
+
 
 
 

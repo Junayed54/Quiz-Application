@@ -34,18 +34,23 @@ class SubscriptionPackageListCreateView(generics.ListCreateAPIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
+
+
+
 class SubscriptionPackageDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset = SubscriptionPackage.objects.all()
     serializer_class = SubscriptionPackageSerializer
 
     def update(self, request, *args, **kwargs):
+        
         instance = self.get_object()
         serializer = self.get_serializer(instance, data=request.data, partial=True)
-
+        
         if serializer.is_valid():
+            # print("hello, world")
             try:
                 package = SubscriptionPackage(**serializer.validated_data)
-                package.validate_percentages()  # Validate total percentage
+                # package.validate_percentages()  # Validate total percentage
                 self.perform_update(serializer)
                 return Response(serializer.data)
             except ValueError as e:

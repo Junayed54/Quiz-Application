@@ -11,4 +11,5 @@ urlpatterns = [
     
     path('create_package/', TemplateView.as_view(template_name='Html/custom/package/create_package.html'), name='create_package'),
     path('all_packages/', TemplateView.as_view(template_name='Html/custom/package/all_packages.html'), name = 'all_packages'),
+    path('update_package/<int:pk>/', TemplateView.as_view(template_name='Html/custom/package/update_package.html'), name = 'update_package'),
 ]
