@@ -48,7 +48,7 @@ urlpatterns = [
     # path('user/user_attempts/', UserExamAttemptsAPIView.as_view(), name='user_exam_attempts'), 
     path('user_attempts_query/', user_attempts_by_month, name='user_attempts_query'),
     path('admin_user_attempts/', user_exam_attempts_by_month, name='admin_user_attempts_by_month'),
-    path('user-exam-summary/', UserExamSummaryAPIView.as_view(), name='user_summary'),
+    path('user-exam-summary/<int:id>/', UserExamSummaryAPIView.as_view(), name='user_summary'),
     # templates urls
     path('student_exams/', TemplateView.as_view(template_name='Html/custom/student_exams.html'), name = 'student_exams'),
     path('exam_list/', TemplateView.as_view(template_name='Html/custom/exam_list.html'), name='exam-list'),
@@ -93,7 +93,7 @@ urlpatterns = [
     path('exam_attempts/<uuid:exam_id>/', TemplateView.as_view(template_name='Html/custom/remark_attampts/exam_attempts.html'), name='exam_attempts'),
     path('users_attempts_query/', TemplateView.as_view(template_name='Html/custom/remark_attampts/user_attempts_query.html'), name='user_attempt_query'),
     path('admin_users_attempts_query/', TemplateView.as_view(template_name='Html/custom/remark_attampts/admin_user_attempts_query.html'), name='admin_user_attempts_query'),
-    path('user_summary/', TemplateView.as_view(template_name='Html/custom/user/user_summary.html'), name='user_summary'),
+    path('user_summary/<int:id>/', TemplateView.as_view(template_name='Html/custom/user/user_summary.html'), name='user_summary'),
     
     
     path('exam_room/<uuid:exam_id>/', TemplateView.as_view(template_name='Html/custom/invitation/exam_room.html'), name='exam_room'),

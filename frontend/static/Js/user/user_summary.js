@@ -1,6 +1,8 @@
 document.addEventListener('DOMContentLoaded', function() {
     // URL to the API endpoint
-    const apiUrl = '/quiz/user-exam-summary/';
+    let userId = window.location.href.split('/')[5];
+    // console.log(userId);
+    const apiUrl = `/quiz/user-exam-summary/${userId}`;
     
     // Fetch data from API
     fetch(apiUrl, {
@@ -8,7 +10,10 @@ document.addEventListener('DOMContentLoaded', function() {
         headers: {
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${localStorage.getItem('access_token')}` // Use the JWT token if required
-        }
+        },
+        // body: JSON.stringify({  // Send userId in the request body
+        //     user_id: userId
+        // })
     })
     .then(response => response.json())
     .then(data => {
@@ -115,15 +120,20 @@ document.addEventListener('DOMContentLoaded', function() {
 // Function to create the line chart for correct answers
 document.addEventListener('DOMContentLoaded', function() {
     const apiUrl = '/quiz/attempts/all_attempts/';
+    let user_id = window.location.href.split('/')[5];
 
     // Fetch data and update chart based on the selected time period
     function fetchDataAndCreateChart(timePeriod = 'all') {
         fetch(`${apiUrl}?time_period=${timePeriod}`, {
-            method: 'GET',
+            method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${localStorage.getItem('access_token')}`
-            }
+            },
+            body: JSON.stringify({  // Send userId in the request body
+                    user_id: user_id
+            })
+
         })
         .then(response => response.json())
         .then(data => {
@@ -235,12 +245,16 @@ document.addEventListener('DOMContentLoaded', function() {
 
 async function loadExams() {
     try {
+        let user_id = window.location.href.split('/')[5];
         const response = await fetch('/quiz/attempts/highest_attempts/', {
-            method: 'GET',
+            method: 'POST',
             headers: {
                 'Authorization': `Bearer ${localStorage.getItem('access_token')}`,  // Add authentication token if needed
                 'Content-Type': 'application/json'
-            }
+            },
+            body: JSON.stringify({  // Send userId in the request body
+                    user_id: user_id
+            })
         });
 
         if (!response.ok) {
@@ -310,12 +324,16 @@ document.addEventListener("DOMContentLoaded", function () {
 
 // Fetch submitted questions and update UI
 function fetchSubmittedQuestions() {
+    let user_id = window.location.href.split('/')[5];
     fetch('/quiz/user-answers/all-submitted-questions/', {
-        method: 'GET',
+        method: 'POST',
         headers: {
             'Content-Type': 'application/json',
             'Authorization': 'Bearer ' + localStorage.getItem('access_token')
-        }
+        },
+        body: JSON.stringify({  // Send userId in the request body
+            user_id: user_id
+        })
     })
     .then(response => {
         if (!response.ok) throw new Error('Network response was not ok');

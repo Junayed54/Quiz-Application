@@ -69,7 +69,8 @@ class UserRoleView(APIView):
     def get(self, request):
         role = request.user.role
         # role = role.capitalize()
-        return Response({'role': role, 'username': request.user.username})
+        user_id = request.user.id
+        return Response({'role': role, 'username': request.user.username, 'user_id': user_id})
     
 class UserDetailView(APIView):
     permission_classes = [IsAuthenticated]

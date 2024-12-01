@@ -1,3 +1,4 @@
+
 document.addEventListener('DOMContentLoaded', function() {
     const accessToken = localStorage.getItem('access_token');
     const logout = document.getElementById('logout');
@@ -13,6 +14,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const user_name = document.getElementById('user_name');
     const role = document.getElementById('role');
     const packages = document.getElementById('packages')
+    
 
     if (!accessToken) {
         window.location.href = '/login/';
@@ -42,7 +44,7 @@ document.addEventListener('DOMContentLoaded', function() {
             })
             .then(response => response.json())
             .then(data => {
-                // console.log(data);
+                console.log(data);
                 user_name.innerText = data.username
                
                 role.innerHTML = data.role;
@@ -64,6 +66,22 @@ document.addEventListener('DOMContentLoaded', function() {
                 else if(data.role == 'student'){
                     student.classList.remove('d-none');
                     student1.classList.remove('d-none');
+                    const userSummaryDivs = document.getElementsByClassName('user-summary');
+    
+    // Convert the HTMLCollection to an array and add event listeners
+                    Array.from(userSummaryDivs).forEach(function(div) {
+                        div.addEventListener('click', function() {
+                            // Assume 'data-user-id' is a custom attribute storing the user ID
+                            // const userId = div.getAttribute('data-user-id');
+                            
+                            // Construct the URL
+                            const url = `/quiz/user_summary/${data.user_id}`;
+                            
+                            // Redirect to the URL
+                            window.location.href = url;
+                        });
+                    });
+
                 }
                 else{
                     teacher.classList.add('d-none');
@@ -80,4 +98,14 @@ document.addEventListener('DOMContentLoaded', function() {
         
         console.error('Required elements are missing from the DOM');
     }
+
 });
+
+
+
+document.addEventListener('DOMContentLoaded', function() {
+    // Get all elements with the class 'user-summary'
+    
+});
+
+

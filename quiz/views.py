@@ -1250,9 +1250,11 @@ class ExamAttemptViewSet(viewsets.ViewSet):
     permission_classes = []
     
     
-    @action(detail=False, methods=['get'], permission_classes=[IsAuthenticated])
+    @action(detail=False, methods=['post'], permission_classes=[IsAuthenticated])
     def all_attempts(self, request):
-        user = self.request.user
+        id = request.data.get('user_id', None)
+        user = User.objects.get(id=id)
+        print(id)
         time_period = request.query_params.get('time_period', 'all')
 
         # Query to get all the exams the user has attempted
@@ -1327,9 +1329,11 @@ class ExamAttemptViewSet(viewsets.ViewSet):
     
     
     
-    @action(detail=False, methods=['get'], permission_classes=[IsAuthenticated])
+    @action(detail=False, methods=['post'], permission_classes=[IsAuthenticated])
     def highest_attempts(self, request):
-        user = self.request.user
+        # user = self.request.user
+        id = request.data.get('user_id', None)
+        user = User.objects.get(id=id)
 
         # Query for exams the user has attempted
         attempted_exams = Exam.objects.filter(attempts__user=user).distinct()
@@ -1500,10 +1504,12 @@ def exam_leaderboard_view(request, exam_id):
 class UserExamSummaryAPIView(APIView):
     permission_classes = [IsAuthenticated]
 
-    def get(self, request):
-        user = request.user
+    def get(self, request, id):
+        # userid = request.body.get('user_id')
+        print(id)
+        user = User.objects.get(id=id)
         
-        
+        print(user)
         # Get all attempts by the user
         attempts = ExamAttempt.objects.filter(user=user)
        
@@ -1541,9 +1547,10 @@ class UserExamSummaryAPIView(APIView):
 class UserAnswerViewSet(viewsets.ViewSet):
     permission_classes = [IsAuthenticated]
 
-    @action(detail=False, methods=['get'], url_path='all-submitted-questions')
+    @action(detail=False, methods=['post'], url_path='all-submitted-questions')
     def all_submitted_questions(self, request):
-        user = request.user
+        id = request.data.get('user_id')
+        user = User.objects.get(id=id)
 
         # Fetch all UserAnswer instances for the user
         answered_questions = UserAnswer.objects.filter(exam_attempt__user=user)

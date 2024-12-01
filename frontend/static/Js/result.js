@@ -216,7 +216,7 @@ document.addEventListener('DOMContentLoaded', function () {
             const position = index + 1;
             leaderboardContainer.innerHTML += `
                 <div class="col">
-                    <div class="border border-secondary rounded d-flex align-items-center gap-3 p-3 shadow-sm h-100">
+                    <div class="border border-secondary rounded d-flex align-items-center gap-3 p-3 shadow-sm h-100 clickable-div" data-user-id="${entry.user_id}">
                         <!-- User Icon -->
                         <div class="flex-shrink-0">
                             <img src="../../../static/images/user_9071610.png" alt="User Icon" class="rounded-circle border border-primary" width="50" height="50">
@@ -236,6 +236,13 @@ document.addEventListener('DOMContentLoaded', function () {
             `;
 
 
+        });
+
+        document.querySelectorAll('.clickable-div').forEach(div => {
+            div.addEventListener('click', function() {
+                const userId = this.getAttribute('data-user-id');  // Get user ID from data attribute
+                window.location.href = `/quiz/user_summary/${userId}/`;  // Redirect to the URL with the user ID
+            });
         });
     }
 
