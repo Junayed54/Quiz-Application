@@ -359,5 +359,15 @@ class Leaderboard(models.Model):
         leaderboard_entry.score = total_correct
         leaderboard_entry.total_questions = total_answered
         leaderboard_entry.save()
-        
+    
+    def get_position(self):
+        # Fetch all leaderboard entries for the exam ordered by score
+        ordered_leaderboard = Leaderboard.objects.filter(exam=self.exam).order_by('-score')
+        # Generate a list of users with their ranks
+        position = 1
+        for entry in ordered_leaderboard:
+            if entry.user == self.user:
+                return position
+            position += 1
+        return None
         

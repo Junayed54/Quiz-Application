@@ -1,7 +1,8 @@
 document.addEventListener('DOMContentLoaded', function () {
     const examId = window.location.pathname.split('/')[3]; // Replace with the actual exam ID
     const accessToken = localStorage.getItem('access_token'); // Assumes the token is stored in local storage
-
+    
+    
     if (!accessToken) {
         alert('You must be logged in to view this page.');
         window.location.href = '/login/';
@@ -43,6 +44,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     function renderBestAttempts(data) {
         // console.log("attempts", data);
+        
         const attemptsContainer = document.getElementById('user-attempts');
         attemptsContainer.innerHTML = '';
 
@@ -62,7 +64,10 @@ document.addEventListener('DOMContentLoaded', function () {
                 <td>${attempt.wrong_answers || 'N/A'}</td>
                 <td>${attempt.pass_mark || 'N/A'}</td>
                 <td>
-                    <button class="btn btn-info" data-user-id="${attempt.user}">All attampts</button>
+                    <button class="btn btn-info" data-user-id="${attempt.user}">
+                        <img src="${imagePath}" alt="Attempts" style="width: 26px; height: 26px; margin-right: 5px;">
+                        
+                    </button>
                 </td>
             `;
             attemptsContainer.appendChild(row);

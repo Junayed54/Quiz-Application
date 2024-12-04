@@ -165,10 +165,21 @@ class LeaderboardSerializer(serializers.ModelSerializer):
     user = serializers.ReadOnlyField(source='user.username')
     exam = serializers.ReadOnlyField(source='exam.title')
     user_id = serializers.ReadOnlyField(source='user.id')
+    position = serializers.SerializerMethodField()
     class Meta:
         model = Leaderboard
         fields = '__all__'
-
+        
+    
+    def get_position(self, obj):
+        # Calculate position dynamically
+        ordered_leaderboard = Leaderboard.objects.filter(exam=obj.exam).order_by('-score')
+        position = 1
+        for entry in ordered_leaderboard:
+            if entry.user == obj.user:
+                return position
+            position += 1
+        return None
 
 
 

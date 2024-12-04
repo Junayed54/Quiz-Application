@@ -241,19 +241,17 @@ document.addEventListener('DOMContentLoaded', function() {
 
 
 
-
-
 async function loadExams() {
     try {
         let user_id = window.location.href.split('/')[5];
         const response = await fetch('/quiz/attempts/highest_attempts/', {
             method: 'POST',
             headers: {
-                'Authorization': `Bearer ${localStorage.getItem('access_token')}`,  // Add authentication token if needed
+                'Authorization': `Bearer ${localStorage.getItem('access_token')}`,
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify({  // Send userId in the request body
-                    user_id: user_id
+                user_id: user_id
             })
         });
 
@@ -264,7 +262,8 @@ async function loadExams() {
         const data = await response.json();
         const examList = document.getElementById('examList');
         examList.innerHTML = ''; // Clear previous content
-        console.log(data);
+        console.log("exam and attempts", data);
+
         data.exams.forEach((exam, index) => {
             const examItem = document.createElement('div');
             examItem.className = 'accordion-item';
@@ -297,21 +296,219 @@ async function loadExams() {
                             <div class="col-6 mb-2">
                                 <li class="list-group-item">Attempt Time: ${new Date(exam.highest_attempt.attempt_time).toLocaleString()}</li>
                             </div>
+                            <div class="col-6 mb-2">
+                                <li class="list-group-item">Participated: ${exam.unique_participants}</li>
+                            </div>
+                            <div class="col-6 mb-2">
+                                <li class="list-group-item">Position: ${exam.highest_attempt.position}</li>
+                            </div>
+                        </div>
+                        <!-- Create a canvas for the chart -->
+                        <div class="row mt-3">
+                            <div class="col-12">
+                                <canvas id="attemptChart" width="400" height="200"></canvas>
+                            </div>
                         </div>
                     </div>
-
-
                 </div>
             `;
 
             // Append the exam item to the exam list
             examList.appendChild(examItem);
+
+            // Fetch the user attempts details for each exam
+            viewUserAttemptsDetails(user_id, exam.exam_id, index);
         });
     } catch (error) {
         console.error(error);
         alert('Error loading exams. Please try again.');
     }
 }
+
+function viewUserAttemptsDetails(userId, examId, index) {
+    const accessToken = localStorage.getItem('access_token');  // Get token
+    fetch(`/quiz/attempts/user_attempts/?exam_id=${examId}&user_id=${userId}`, {
+        method: 'GET',
+        headers: {
+            'Authorization': `Bearer ${accessToken}`
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        // Call the function to create a chart for this exam's attempts
+        showUserAttemptsDetails(data);
+    })
+    .catch(error => console.error('Error fetching user attempts details:', error));
+}
+
+
+let attemptChart; // Variable to hold the chart instance
+
+function showUserAttemptsDetails(data) {
+    // const attemptsDetailsContainer = document.getElementById('user-attempts-details');
+    // attemptsDetailsContainer.innerHTML = '';
+
+    // // Check if data exists
+    // if (data.length === 0) {
+    //     attemptsDetailsContainer.innerHTML = `
+    //         <tr>
+    //             <td colspan="7" class="text-center text-muted">No detailed attempts found.</td>
+    //         </tr>`;
+    //     return;
+    // }
+
+    // // Populate Table Rows
+    // data.forEach(attempt => {
+    //     const row = document.createElement('tr');
+    //     row.innerHTML = `
+    //         <td>${new Date(attempt.attempt_time).toLocaleDateString()}</td>
+    //         <td>${new Date(attempt.attempt_time).toLocaleTimeString()}</td>
+    //         <td>${attempt.total_questions}</td>
+    //         <td>${attempt.answered}</td>
+    //         <td>${attempt.total_correct_answers}</td>
+    //         <td>${attempt.wrong_answers}</td>
+    //         <td>${attempt.pass_mark}</td>
+    //     `;
+    //     attemptsDetailsContainer.appendChild(row);
+    // });
+
+    // Extract data for the chart
+    const labels = data.map(attempt => new Date(attempt.attempt_time).toLocaleDateString());
+    const correctData = data.map(attempt => attempt.total_correct_answers);
+    const wrongData = data.map(attempt => attempt.wrong_answers);
+
+    // Destroy previous chart instance if it exists
+    if (attemptChart) {
+        attemptChart.destroy();
+    }
+
+    // Create a new chart instance
+    const ctx = document.getElementById('attemptChart').getContext('2d');
+    attemptChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: labels,
+            datasets: [
+                {
+                    label: 'Correct Answers',
+                    data: correctData,
+                    backgroundColor: 'rgba(0, 128, 0, 0.6)',
+                    borderColor: 'green',
+                    borderWidth: 1,
+                    barThickness: 20
+                },
+                {
+                    label: 'Wrong Answers',
+                    data: wrongData,
+                    backgroundColor: 'rgba(255, 0, 0, 0.6)',
+                    borderColor: 'red',
+                    borderWidth: 1,
+                    barThickness: 20
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        stepSize: 1
+                    }
+                }
+            },
+            plugins: {
+                legend: {
+                    position: 'top'
+                }
+            }
+        }
+    });
+
+    // Open the modal using Bootstrap's JavaScript API
+    const modal = new bootstrap.Modal(document.getElementById('attempt-details-modal'));
+    modal.show();
+}
+
+
+
+
+
+// async function loadExams() {
+//     try {
+//         let user_id = window.location.href.split('/')[5];
+//         const response = await fetch('/quiz/attempts/highest_attempts/', {
+//             method: 'POST',
+//             headers: {
+//                 'Authorization': `Bearer ${localStorage.getItem('access_token')}`,  // Add authentication token if needed
+//                 'Content-Type': 'application/json'
+//             },
+//             body: JSON.stringify({  // Send userId in the request body
+//                     user_id: user_id
+//             })
+//         });
+
+//         if (!response.ok) {
+//             throw new Error('Failed to fetch exam attempts.');
+//         }
+
+//         const data = await response.json();
+//         const examList = document.getElementById('examList');
+//         examList.innerHTML = ''; // Clear previous content
+//         console.log("exam and attempts", data);
+//         data.exams.forEach((exam, index) => {
+//             const examItem = document.createElement('div');
+//             examItem.className = 'accordion-item';
+
+//             // Exam Header with Toggle Button
+//             examItem.innerHTML = `
+//                 <h2 class="accordion-header" id="heading${index}">
+//                     <button class="accordion-button collapsed bg-secondary text-white" type="button" data-bs-toggle="collapse" data-bs-target="#collapse${index}" aria-expanded="false" aria-controls="collapse${index}">
+//                         Exam title: ${exam.exam_title}
+//                     </button>
+//                 </h2>
+//                 <div id="collapse${index}" class="accordion-collapse collapse" aria-labelledby="heading${index}" data-bs-parent="#examList">
+//                     <div class="accordion-body">
+//                         <div class="row">
+//                             <div class="col-6 mb-2">
+//                                 <li class="list-group-item">Total questions: ${exam.total_questions}</li>
+//                             </div>
+//                             <div class="col-6 mb-2">
+//                                 <li class="list-group-item">Answered: ${exam.highest_attempt.answered}</li>
+//                             </div>
+//                             <div class="col-6 mb-2">
+//                                 <li class="list-group-item">Total Correct Answers: ${exam.highest_attempt.total_correct_answers}</li>
+//                             </div>
+//                             <div class="col-6 mb-2">
+//                                 <li class="list-group-item">Wrong Answers: ${exam.highest_attempt.wrong_answers}</li>
+//                             </div>
+//                             <div class="col-6 mb-2">
+//                                 <li class="list-group-item">Passed Mark: ${exam.passed_marks}</li>
+//                             </div>
+//                             <div class="col-6 mb-2">
+//                                 <li class="list-group-item">Attempt Time: ${new Date(exam.highest_attempt.attempt_time).toLocaleString()}</li>
+//                             </div>
+//                             <div class="col-6 mb-2">
+//                                 <li class="list-group-item">Participated: ${exam.unique_participants}</li>
+//                             </div>
+//                             <div class="col-6 mb-2">
+//                                 <li class="list-group-item">Position: ${exam.highest_attempt.position}</li>
+//                             </div>
+//                         </div>
+//                     </div>
+
+
+//                 </div>
+//             `;
+
+//             // Append the exam item to the exam list
+//             examList.appendChild(examItem);
+//         });
+//     } catch (error) {
+//         console.error(error);
+//         alert('Error loading exams. Please try again.');
+//     }
+// }
 
 // Load exams when the page is loaded
 document.addEventListener('DOMContentLoaded', loadExams);

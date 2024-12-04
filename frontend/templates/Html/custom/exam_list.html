@@ -3,7 +3,7 @@
 </head>
 
 <body>
-
+    {% load static %}
     {% comment %} @SPK@include("partials/switcher.html") {% endcomment %}
     {% include "../partials/switcher.html" %}
     <div class="page">
@@ -44,7 +44,10 @@
     <script src="../../../static/assets/js/custom.js"></script>
 
     <!-- My exam js -->
-     <script src = "../../../static/Js/exam_list.js"></script>
+    <script src = "../../../static/Js/exam_list.js"></script>
+    <script>
+        const details_icon = "{% static 'images/icons/details.png' %}";
+    </script>
 
 </body>
 

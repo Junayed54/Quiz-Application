@@ -35,7 +35,8 @@ import pandas as pd
 from .pagination import CustomPageNumberPagination
 from django.contrib.auth import get_user_model
 from django.core.exceptions import PermissionDenied
-
+from django.db.models import F, Window
+from django.db.models.functions import Rank
 User = get_user_model()
 
 now = timezone.now()
@@ -1342,17 +1343,24 @@ class ExamAttemptViewSet(viewsets.ViewSet):
         
         for exam in attempted_exams:
             # Get all attempts by the user for this exam
-            attempts = ExamAttempt.objects.filter(user=user, exam=exam)
-
+            # attempts = ExamAttempt.objects.filter(user=user, exam=exam)
+            attempts = ExamAttempt.objects.filter(user=user, exam=exam).annotate(
+                position=Window(
+                    expression=Rank(),
+                    order_by=F('total_correct_answers').desc()
+                )
+            )
             # Find the attempt with the highest correct answers
             highest_attempt = attempts.order_by('-total_correct_answers').first()
-
+            unique_participants_count = ExamAttempt.objects.filter(exam=exam).values('user').distinct().count()
+            
             # Add the highest attempt details to the response data
             exams_data.append({
                 'exam_id': exam.exam_id,
                 'exam_title': exam.title,
                 'total_questions': exam.total_questions,
                 'passed_marks':exam.pass_mark,
+                'unique_participants': unique_participants_count,
                 'highest_attempt': {
                     'attempt_id': highest_attempt.id,
                     'answered': highest_attempt.answered,
@@ -1360,6 +1368,7 @@ class ExamAttemptViewSet(viewsets.ViewSet):
                     'wrong_answers': highest_attempt.wrong_answers,
                     'passed': highest_attempt.passed,
                     'attempt_time': highest_attempt.attempt_time,
+                    'position': highest_attempt.position
                 }
             })
 

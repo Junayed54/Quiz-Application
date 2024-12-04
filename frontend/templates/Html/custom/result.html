@@ -27,7 +27,7 @@
 </head>
 
 <body>
-
+    {% load static %}
     {% comment %} @SPK@include("partials/switcher.html") {% endcomment %}
     {% include "../partials/switcher.html" %}
     <div class="page">
@@ -36,15 +36,16 @@
         {% comment %} @SPK@include("partials/sidebar.html") {% endcomment %}
         {% include "../partials/sidebar.html" %}
         <!-- Start::app-content -->
+         
         <div class="main-content app-content">
 
             
             <!-- Bootstrap Modal for Alert -->
-            <div class="d-flex my-4 mx-4">
-                <button onclick="history.back()" class="btn btn-secondary">
-                    <i class="fas fa-arrow-left"></i> Back
+            {% comment %} <div class="d-flex my-4"> {% endcomment %}
+                <button onclick="history.back()" class="btn">
+                    <img src="{% static 'images/icons/back.png' %}" alt="Back" style="width: 26px; height: 26px; margin-right: 5px;">
                 </button>
-            </div>
+            {% comment %} </div> {% endcomment %}
             <div class="container mt-5">
                 <!-- Exam Title and Print Button -->
                 
@@ -53,8 +54,11 @@
                 <div id="exam-details">
                     <!-- Exam details will be dynamically inserted here -->
                 </div>
-                <button id="print-questions-btn" class="btn btn-primary mb-4">
+                {% comment %} <button id="print-questions-btn" class="btn ">
                     <i class="bi bi-printer"></i>
+                </button> {% endcomment %}
+                <button class="btn btn-info mb-4" id="print-questions-btn">
+                    <img src="{% static 'images/icons/print.png' %}" alt="print" style="width: 26px; height: 26px;">
                 </button>
         
                 <!-- Main Content: User Attempts and Leaderboard -->
@@ -160,6 +164,7 @@
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>const imagePath = "{% static 'images/icons/challenge.png' %}";</script>
 
 
 </body>

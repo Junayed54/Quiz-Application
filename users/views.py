@@ -138,3 +138,16 @@ class VerifyOTPView(APIView):
 
         except ObjectDoesNotExist:
             return Response({"error": "Phone number does not exist."}, status=status.HTTP_404_NOT_FOUND)
+
+
+
+class Validate_token(APIView):
+    authentication_classes = [JWTAuthentication]  # JWT authentication
+    permission_classes = [IsAuthenticated]  # User must be authenticated
+
+    def get(self, request):
+        print("hello")
+        return Response({
+            'message': 'Access granted. You are authenticated!',
+            'user': request.user.username
+        }, status=status.HTTP_200_OK)

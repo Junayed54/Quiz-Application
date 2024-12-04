@@ -1,7 +1,7 @@
 from django.urls import path
 from .views import SignupView, LogoutView, UserRoleView
 from rest_framework_simplejwt.views import TokenRefreshView, TokenObtainPairView
-from .views import UserDetailView, RequestOTPView, VerifyOTPView
+from .views import UserDetailView, RequestOTPView, VerifyOTPView, Validate_token
 from django.views.generic import TemplateView
 
 urlpatterns = [
@@ -12,6 +12,7 @@ urlpatterns = [
     path('user-role/', UserRoleView.as_view(), name='get_user_role'),
     path('request-otp/', RequestOTPView.as_view(), name='request_otp'),
     path('verify-otp/', VerifyOTPView.as_view(), name='verify_otp'),
+    path('validate-token/', Validate_token.as_view(), name='protected_endpoint'),
     
     path('user/me/', UserDetailView.as_view(), name='user_detail'),
     

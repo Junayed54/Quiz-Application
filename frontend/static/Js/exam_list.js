@@ -43,8 +43,10 @@ document.addEventListener('DOMContentLoaded', function() {
                             </div>
                         </div>
                     </div>
-                    <div class="card-footer text-start">
-                        <button class="btn btn-primary" onclick="viewExamDetail('${exam.exam_id}')">View Details</button>
+                    <div class="card-footer text-start d-flex justify-content-end">
+                        <button class="btn btn-primary" onclick="viewExamDetail('${exam.exam_id}')">
+                            <img src="${details_icon}" alt="details" style="width: 26px; height: 26px; margin-right: 5px;"> View Details
+                        </button>
                     </div>
                 </div>
             </div>

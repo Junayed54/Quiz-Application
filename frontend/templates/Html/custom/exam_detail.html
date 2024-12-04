@@ -2,9 +2,7 @@
 {% include "../partials/mainhead.html"%}
 <style>
     /* Make the leaderboard button container smaller */
-    .leaderboard-container {
-        max-width: 200px;
-    }
+   
 
     .question-table-container::-webkit-scrollbar {
         height: 15px; /* Height for horizontal scrollbar */
@@ -56,7 +54,7 @@
 </head>
 
 <body>
-
+    {% load static %}
     {% comment %} @SPK@include("partials/switcher.html") {% endcomment %}
     {% include "../partials/switcher.html" %}
     <div class="page">
@@ -135,10 +133,22 @@
                             </div>
                         </div>
 
-                        <div class="leaderboard-container p-3">
-                            <button id="start-exam" class="btn btn-info btn-sm mb-2" style="">Start Exam</button>
-                            <button id="leaderboard-btn" class="btn btn-primary btn-sm w-100 mb-2 w-2 text-right">View Leaderboard</button>
-                            <button id="result-btn" class="btn btn-success btn-sm w-100">View Result</button>
+                        <div class="leaderboard-container grid gap-3">
+                            <button id="start-exam" class="btn btn-info p-2 g-col-3 md-col-6" style="">
+                                <img src="{% static 'images/icons/exam.png' %}" alt="exam" style="width: 26px; height: 26px;"> Start Exam
+                            </button>
+
+                            
+                                
+                            </button>
+                            <button id="leaderboard-btn" class="btn btn-primary p-2 g-col-3 g-col-md-6">
+                                <img src="{% static 'images/icons/leaderboard.png' %}" alt="exam" style="width: 26px; height: 26px;">
+                                    View Leaderboard
+                            </button>
+                            <button id="result-btn" class="btn btn-success p-2 g-col-3 g-col-md-6">
+                                <img src="{% static 'images/icons/results.png' %}" alt="exam" style="width: 26px; height: 26px;">
+                                 View Result
+                            </button>
 
                         </div>
                     </div>
