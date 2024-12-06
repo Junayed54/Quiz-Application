@@ -516,6 +516,7 @@ class ExamViewSet(viewsets.ModelViewSet):
     
     @action(detail=True, methods=['get'], permission_classes=[IsAuthenticated])
     def user_attempts(self, request, pk=None):
+        print(pk)
         # Get the exam by its primary key (UUID)
         try:
             exam = Exam.objects.get(exam_id=pk)
@@ -1304,10 +1305,11 @@ class ExamAttemptViewSet(viewsets.ViewSet):
     @action(detail=False, methods=['get'], permission_classes=[IsAuthenticated])
     def user_attempts(self, request):
         user = self.request.user
+        print()
         exam_id = request.query_params.get('exam_id', None) # Get 'exam_id' from the query parameters
         user_id = request.query_params.get('user_id', None)
         # user = User.objects.get(id=user_id)
-        print(user_id)
+        # print(user_id, exam_id)
         if not exam_id:
             return Response({"error": "exam_id parameter is required."}, status=status.HTTP_400_BAD_REQUEST)
 

@@ -13,7 +13,7 @@ document.addEventListener('DOMContentLoaded', function() {
     })
     .then(response => response.json())
     .then(data => {
-        console.log(data);
+        // console.log(data);
         const examsList = document.getElementById('exams-list');
         examsList.innerHTML = data.map(exam => `
             <div class="col-md-6 mb-4">
@@ -43,16 +43,17 @@ document.addEventListener('DOMContentLoaded', function() {
                             </div>
                         </div>
                     </div>
-                    <div class="card-footer text-start d-flex justify-content-end">
-                        <button class="btn btn-primary" onclick="viewExamDetail('${exam.exam_id}')">
+                    <div class="card-footer text-start d-flex justify-content-between">
+                        <button class="btn btn-light" onclick="viewExamDetail('${exam.exam_id}')">
                             <img src="${details_icon}" alt="details" style="width: 26px; height: 26px; margin-right: 5px;"> View Details
+                        </button>
+                        <button class="btn btn-light" onclick="shareExam('${exam.title}', '${window.location.origin}/quiz/exam_detail/${exam.exam_id}/')">
+                            <img src="${share_icon}" alt="share" style="width: 26px; height: 26px; margin-right: 5px;"> Share
                         </button>
                     </div>
                 </div>
             </div>
         `).join('');
-        
-        
     })
     .catch(error => console.error('Error:', error));
 });
@@ -60,3 +61,20 @@ document.addEventListener('DOMContentLoaded', function() {
 function viewExamDetail(examId) {
     window.location.href = `/quiz/exam_detail/${examId}/`;
 }
+
+function shareExam(title, url) {
+    const shareData = {
+        title: title,
+        text: `Check out this exam: ${title}`,
+        url: url
+    };
+
+    if (navigator.share) {
+        navigator.share(shareData)
+            .then(() => console.log('Shared successfully'))
+            .catch(err => console.error('Error sharing:', err));
+    } else {
+        alert('Sharing is not supported on this device. Copy this link to share: ' + url);
+    }
+}
+

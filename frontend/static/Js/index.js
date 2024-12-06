@@ -21,6 +21,7 @@ document.addEventListener('DOMContentLoaded', function() {
         return;
     }
 
+
     // 2. Function to validate token with the backend
     function validateToken() {
         fetch('/auth/validate-token/', {  // Endpoint for validating token
@@ -60,6 +61,8 @@ document.addEventListener('DOMContentLoaded', function() {
         })
         .then(response => response.json())
         .then(data => {
+            logout.classList.remove('d-none');
+            login.classList.add('d-none');
             user_name.innerText = data.username;
             role.innerText = data.role;
 

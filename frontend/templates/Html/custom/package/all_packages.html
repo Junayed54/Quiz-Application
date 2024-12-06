@@ -3,6 +3,7 @@
 </head>
 
 <body>
+    {% load static %}
 
     {% comment %} @SPK@include("partials/switcher.html") {% endcomment %}
     {% include "../../partials/switcher.html" %}
@@ -52,6 +53,7 @@
     <!-- My exam js -->
      <script src = "../../../../static/Js/package/all_packages.js"></script>
      <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+     <script>const subscription = "{% static 'images/icons/subscription.png' %}";</script>
 
 </body>
 

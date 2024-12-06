@@ -64,7 +64,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 <td>${attempt.wrong_answers || 'N/A'}</td>
                 <td>${attempt.pass_mark || 'N/A'}</td>
                 <td>
-                    <button class="btn btn-info" data-user-id="${attempt.user}">
+                    <button class="btn btn-light details-btn" data-user-id="${attempt.user}">
                         <img src="${imagePath}" alt="Attempts" style="width: 26px; height: 26px; margin-right: 5px;">
                         
                     </button>
@@ -79,7 +79,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // Event listener for "Details" buttons
     function addDetailsButtonListeners() {
-        const buttons = document.querySelectorAll('.btn-info');
+        const buttons = document.querySelectorAll('.details-btn');
         buttons.forEach(button => {
             button.addEventListener('click', function () {
                 const userId = button.getAttribute('data-user-id');
@@ -106,6 +106,7 @@ document.addEventListener('DOMContentLoaded', function () {
     let attemptChart = null;  // Initialize as null
 
     function showUserAttemptsDetails(data) {
+        console.log("data nof ",data);
         const attemptsDetailsContainer = document.getElementById('user-attempts-details');
         attemptsDetailsContainer.innerHTML = '';
 

@@ -20,18 +20,27 @@ class CategorySerializer(serializers.ModelSerializer):
         fields = ['id', 'name', 'description']
 
 
+class QuestionUsageSerializer(serializers.ModelSerializer):
+    question_text = serializers.CharField(source='question.text', read_only=True)
+
+    class Meta:
+        model = QuestionUsage
+        fields = ['id', 'question', 'question_text', 'exam', 'year']
+        read_only_fields = ['question_text']
+
+
 
 class QuestionSerializer(serializers.ModelSerializer):
     options = QuestionOptionSerializer(many=True, read_only=True)
     exam = serializers.PrimaryKeyRelatedField(queryset=Exam.objects.all(), write_only=True)
     category = serializers.PrimaryKeyRelatedField(queryset=Category.objects.all(), write_only=True)
     category_name = serializers.SerializerMethodField()
-
+    question_usage_years = serializers.SerializerMethodField()
     created_by = serializers.StringRelatedField(read_only=True)  # Use username or any identifier as per your requirement
     reviewed_by = serializers.StringRelatedField(read_only=True) 
     class Meta:
         model = Question
-        fields = ['id', 'text', 'marks', 'exam', 'options', 'status', 'remarks', 'category', 'created_by', 'category_name', 'difficulty_level',  'time_limit', 'reviewed_by', 'updated_at', 'created_at', 'subject']
+        fields = ['id', 'text', 'marks', 'exam', 'options', 'status', 'remarks', 'category', 'created_by', 'category_name', 'difficulty_level',  'time_limit', 'reviewed_by', 'updated_at', 'created_at', 'subject', 'question_usage_years']
         
     # def get_created_by_name(self, obj):
     #     return obj.created_by if obj.exam and obj.created_by else None
@@ -42,6 +51,11 @@ class QuestionSerializer(serializers.ModelSerializer):
     # def get_created_at(self, obj):
     #     return obj.exam.created_at if obj.exam and obj.exam.created_at else None
     
+    def get_question_usage_years(self, obj):
+        # Get the years from the related QuestionUsage entries
+        years = obj.usages.values_list('year', flat=True).distinct()
+        return ", ".join(map(str, years)) if years else "No uses"
+
 
     def create(self, validated_data):
         options_data = validated_data.pop('options', [])
@@ -50,14 +64,6 @@ class QuestionSerializer(serializers.ModelSerializer):
             QuestionOption.objects.create(question=question, **option_data)
         return question
 
-
-class QuestionUsageSerializer(serializers.ModelSerializer):
-    question_text = serializers.CharField(source='question.text', read_only=True)
-
-    class Meta:
-        model = QuestionUsage
-        fields = ['id', 'question', 'question_text', 'exam', 'year']
-        read_only_fields = ['question_text']
 
 
 

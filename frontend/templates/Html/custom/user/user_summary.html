@@ -54,7 +54,7 @@
 </head>
 
 <body>
-
+    {% load static %}
     {% comment %} @SPK@include("partials/switcher.html") {% endcomment %}
     {% include "../../partials/switcher.html" %}
     <div class="page">
@@ -65,9 +65,9 @@
         <!-- Start::app-content -->
         <div class="main-content app-content">
 
-            <div class="d-flex mx-4 my-4">
-                <button onclick="history.back()" class="btn btn-secondary">
-                    <i class="fas fa-arrow-left"></i> Back
+            <div class=" my-4">
+                <button onclick="history.back()" class="btn">
+                    <img src="{% static 'images/icons/back.png' %}" alt="back" style="width: 26px; height: 26px; margin-right: 5px;">
                 </button>
             </div>
             <div class="container mt-4">

@@ -60,8 +60,15 @@ class Exam(models.Model):
             if now < self.starting_time:
                 return "Upcoming"
             elif self.starting_time <= now <= end_time:
+                return "active"
+            
+        if self.last_date:
+            now = now = timezone.now().date()
+            if now <= self.last_date:
                 return "Ongoing"
-        return "Closed"
+            
+
+        return "archived"
 
     def calculate_pass_fail(self, correct_answers):
         """Determine if the user has passed or failed based on correct answers."""

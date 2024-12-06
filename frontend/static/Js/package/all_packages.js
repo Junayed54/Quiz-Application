@@ -8,6 +8,35 @@ document.addEventListener("DOMContentLoaded", function() {
         return;
     }
 
+    let update_package_btn = 0;
+
+    fetchPackages();
+    if (accessToken) {
+            
+        // Fetch the user role
+        fetch('/auth/user-role/', {
+            method: 'GET',
+            headers: {
+                'Authorization': 'Bearer ' + accessToken,
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+
+            if(data.role === 'admin'){
+                update_package_btn = 1
+                
+                // admin.classList.remove('d-none');
+                // student.classList.add('d-none');
+                
+            }
+            
+            
+            
+        })
+        .catch(error => console.error('Error:', error));
+
+    }
 
     
     // Function to capitalize the first letter of each word
@@ -24,6 +53,7 @@ document.addEventListener("DOMContentLoaded", function() {
         })
         .then(response => response.json())
         .then(data => {
+            console.log(update_package_btn);
             packagesContainer.innerHTML = ''; // Clear the container
             data.forEach(pkg => {
                 const capitalizedName = capitalizeWords(pkg.name); // Capitalize the package name
@@ -45,10 +75,16 @@ document.addEventListener("DOMContentLoaded", function() {
                                     <li>Expert: ${pkg.expert_percentage}%</li>
                                 </ul>
                                 <div id="student" class="d-flex justify-content-between">
-                                    <button class="btn btn-primary" onclick="buyPackage(${pkg.id})">Buy Now</button>
+                                    ${update_package_btn === 1 ? '' : `
+                                    <button class="btn btn-light" onclick="buyPackage(${pkg.id})">
+                                        <img src="${subscription}" alt="share" style="width: 26px; height: 26px; margin-right: 5px;"> Buy Now
+                                    </button>
+                                    `}
                                 </div>
                                 <div id="admin" class="d-flex justify-content-between mt-2">
-                                    <button class="btn btn-primary" onclick="updatePackage(${pkg.id})">Update package</button>
+                                    ${update_package_btn === 1 ? `
+                                    <button class="btn btn-light" onclick="updatePackage(${pkg.id})">Update package</button>
+                                    ` : ''}
                                 </div>
                             </div>
                         </div>
@@ -57,6 +93,7 @@ document.addEventListener("DOMContentLoaded", function() {
                 packagesContainer.innerHTML += card;
             });
         })
+        
         .catch(error => console.error('Error fetching packages:', error));
     }
 
@@ -115,38 +152,7 @@ document.addEventListener("DOMContentLoaded", function() {
     // };
 
     // Fetch packages on page load
-    fetchPackages();
-    if (accessToken) {
-            
-        // Fetch the user role
-        fetch('/auth/user-role/', {
-            method: 'GET',
-            headers: {
-                'Authorization': 'Bearer ' + accessToken,
-            }
-        })
-        .then(response => response.json())
-        .then(data => {
-            // console.log(data);
-            const admin = docoment.getElementById('admin');
-            const student = docoment.getElementById('student');
-
-            if(data.role === 'admin'){
-                
-                admin.classList.remove('d-none');
-                student.classList.add('d-none');
-                
-            }
-            
-            else if(data.role == 'student'){
-                student.classList.remove('d-none');
-                
-            }
-            
-        })
-        .catch(error => console.error('Error:', error));
-
-    }
+    
 
 
 });

@@ -64,6 +64,8 @@ document.addEventListener('DOMContentLoaded', function() {
     function showQuestion(index) {
         const question = questions[index];
         document.getElementById('question-text').textContent = `Question ${index + 1}: ${question.text}`;
+        const usesSection = document.getElementById('uses-section');
+        usesSection.innerHTML = `<strong>Uses:</strong> (${question.question_usage_years})`;
         const optionsContainer = document.getElementById('options-container');
         optionsContainer.innerHTML = '';
         question.options.forEach(option => {

@@ -41,84 +41,8 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 
-// document.addEventListener('DOMContentLoaded', function() {
-//     const apiUrl = '/quiz/user-exam-summary/';
-
-//     fetch(apiUrl, {
-//         method: 'GET',
-//         headers: {
-//             'Content-Type': 'application/json',
-//             'Authorization': `Bearer ${localStorage.getItem('access_token')}`
-//         }
-//     })
-//     .then(response => response.json())
-//     .then(data => {
-//         const examTitles = [];
-//         const correctAnswers = [];
-
-//         data.forEach(attempt => {
-//             examTitles.push(attempt.exam.title); // Adjust based on your data structure
-//             correctAnswers.push(attempt.total_correct_answers);
-//         });
-
-//         console.log('Exam Titles:', examTitles);
-//         console.log('Correct Answers:', correctAnswers);
-
-//         if (examTitles.length > 0 && correctAnswers.length > 0) {
-//             createCorrectAnswersLineChart(examTitles, correctAnswers);
-//         } else {
-//             console.error('No exam attempts data available for chart.');
-//         }
-//     })
-//     .catch(error => console.error('Error fetching exam attempts:', error));
-// });
-
-// function createCorrectAnswersLineChart(examTitles, correctAnswers) {
-//     const ctx = document.getElementById('correctAnswersChart').getContext('2d');
-//     new Chart(ctx, {
-//         type: 'line',
-//         data: {
-//             labels: examTitles,
-//             datasets: [{
-//                 label: 'Total Correct Answers per Exam',
-//                 data: correctAnswers,
-//                 backgroundColor: 'rgba(0, 123, 255, 0.2)',
-//                 borderColor: 'rgba(0, 123, 255, 1)',
-//                 borderWidth: 2,
-//                 tension: 0.4
-//             }]
-//         },
-//         options: {
-//             responsive: true,
-//             scales: {
-//                 y: {
-//                     beginAtZero: true,
-//                     title: {
-//                         display: true,
-//                         text: 'Total Correct Answers'
-//                     }
-//                 },
-//                 x: {
-//                     title: {
-//                         display: true,
-//                         text: 'Exams'
-//                     }
-//                 }
-//             },
-//             plugins: {
-//                 legend: {
-//                     display: true,
-//                     position: 'top',
-//                 }
-//             }
-//         }
-//     });
-// }
-
-
-
 // Function to create the line chart for correct answers
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
     const apiUrl = '/quiz/attempts/all_attempts/';
     let user_id = window.location.href.split('/')[5];
 
@@ -130,10 +54,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${localStorage.getItem('access_token')}`
             },
-            body: JSON.stringify({  // Send userId in the request body
-                    user_id: user_id
-            })
-
+            body: JSON.stringify({ user_id: user_id }) // Send userId in the request body
         })
         .then(response => response.json())
         .then(data => {
@@ -145,11 +66,28 @@ document.addEventListener('DOMContentLoaded', function() {
             const examTitles = data.map(attempt => attempt.exam_title);
             const obtainedMarks = data.map(attempt => attempt.obtained_marks);
             const percentages = data.map(attempt => attempt.percentage);
-            const total_questions = data.map(attempt => attempt.total_questions) ;
-            const wrong_answers = data.map(attempt => attempt.wrong_answers) ;
+            const totalQuestions = data.map(attempt => attempt.total_questions);
+            const wrongAnswers = data.map(attempt => attempt.wrong_answers);
 
-            if (labels.length > 0 && correctAnswers.length > 0) {
-                createCorrectAnswersLineChart(labels, correctAnswers, examTitles, obtainedMarks, percentages, total_questions, wrong_answers);
+            // Reverse the data for reversed X-axis
+            const reversedLabels = labels.reverse();
+            const reversedCorrectAnswers = correctAnswers.reverse();
+            const reversedExamTitles = examTitles.reverse();
+            const reversedObtainedMarks = obtainedMarks.reverse();
+            const reversedPercentages = percentages.reverse();
+            const reversedTotalQuestions = totalQuestions.reverse();
+            const reversedWrongAnswers = wrongAnswers.reverse();
+
+            if (reversedLabels.length > 0 && reversedCorrectAnswers.length > 0) {
+                createCorrectAnswersLineChart(
+                    reversedLabels,
+                    reversedCorrectAnswers,
+                    reversedExamTitles,
+                    reversedObtainedMarks,
+                    reversedPercentages,
+                    reversedTotalQuestions,
+                    reversedWrongAnswers
+                );
             } else {
                 console.error('No exam attempts data available for the selected time period.');
             }
@@ -158,7 +96,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // Initialize the line chart with tooltips showing detailed exam information
-    function createCorrectAnswersLineChart(labels, correctAnswers, examTitles, obtainedMarks, percentages, total_questions, wrong_answers) {
+    function createCorrectAnswersLineChart(labels, correctAnswers, examTitles, obtainedMarks, percentages, totalQuestions, wrongAnswers) {
         const ctx = document.getElementById('correctAnswersChart').getContext('2d');
 
         // Destroy previous chart instance if it exists
@@ -169,10 +107,10 @@ document.addEventListener('DOMContentLoaded', function() {
         window.correctAnswersChart = new Chart(ctx, {
             type: 'line',
             data: {
-                labels: labels,
+                labels: labels, // Reversed labels
                 datasets: [{
                     label: 'Correct Answers per Attempt',
-                    data: correctAnswers,
+                    data: correctAnswers, // Reversed correct answers
                     borderColor: 'blue',
                     backgroundColor: 'rgba(0, 123, 255, 0.2)',
                     borderWidth: 2,
@@ -184,22 +122,21 @@ document.addEventListener('DOMContentLoaded', function() {
                     tooltip: {
                         callbacks: {
                             // Customize tooltip to include detailed exam information
-                            label: function(tooltipItem) {
+                            label: function (tooltipItem) {
                                 const index = tooltipItem.dataIndex;
                                 const title = examTitles[index];
                                 const correct = correctAnswers[index];
                                 const marks = obtainedMarks[index];
                                 const percentage = percentages[index];
-                                const totalquestions = total_questions[index];
-                                const wronganswers = wrong_answers[index];
+                                const total = totalQuestions[index];
+                                const wrong = wrongAnswers[index];
                                 return [
                                     `Exam: ${title}`,
                                     `Correct: ${correct}`,
                                     `Marks: ${marks}`,
                                     `Percentage: ${percentage}%`,
-                                    `Total questions: ${totalquestions}`,
-                                    `Wrong answers: ${wronganswers}`,
-
+                                    `Total Questions: ${total}`,
+                                    `Wrong Answers: ${wrong}`,
                                 ];
                             }
                         }
@@ -211,7 +148,7 @@ document.addEventListener('DOMContentLoaded', function() {
                             display: true,
                             text: 'Attempt Date'
                         },
-                        reverse: true
+                        reverse: true // Reverse X-axis order
                     },
                     y: {
                         beginAtZero: true,
@@ -232,7 +169,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Add event listeners for the time period radio buttons
     const radioButtons = document.getElementsByName('timePeriod');
     radioButtons.forEach(radio => {
-        radio.addEventListener('change', function() {
+        radio.addEventListener('change', function () {
             fetchDataAndCreateChart(this.value);
         });
     });
@@ -306,7 +243,7 @@ async function loadExams() {
                         <!-- Create a canvas for the chart -->
                         <div class="row mt-3">
                             <div class="col-12">
-                                <canvas id="attemptChart" width="400" height="200"></canvas>
+                                <canvas id="attemptChart${index}" width="400" height="200"></canvas>
                             </div>
                         </div>
                     </div>
@@ -316,8 +253,12 @@ async function loadExams() {
             // Append the exam item to the exam list
             examList.appendChild(examItem);
 
-            // Fetch the user attempts details for each exam
-            viewUserAttemptsDetails(user_id, exam.exam_id, index);
+            // Add event listener to the collapse event (when the accordion expands)
+            const collapseElement = document.getElementById(`collapse${index}`);
+            collapseElement.addEventListener('show.bs.collapse', function () {
+                // Trigger the API call when the accordion is expanded
+                viewUserAttemptsDetails(user_id, exam.exam_id, index);
+            });
         });
     } catch (error) {
         console.error(error);
@@ -326,6 +267,7 @@ async function loadExams() {
 }
 
 function viewUserAttemptsDetails(userId, examId, index) {
+    // console.log("index", index);
     const accessToken = localStorage.getItem('access_token');  // Get token
     fetch(`/quiz/attempts/user_attempts/?exam_id=${examId}&user_id=${userId}`, {
         method: 'GET',
@@ -335,8 +277,10 @@ function viewUserAttemptsDetails(userId, examId, index) {
     })
     .then(response => response.json())
     .then(data => {
+        console.log(data);
         // Call the function to create a chart for this exam's attempts
-        showUserAttemptsDetails(data);
+        showUserAttemptsDetails(data, index);
+
     })
     .catch(error => console.error('Error fetching user attempts details:', error));
 }
@@ -344,35 +288,7 @@ function viewUserAttemptsDetails(userId, examId, index) {
 
 let attemptChart; // Variable to hold the chart instance
 
-function showUserAttemptsDetails(data) {
-    // const attemptsDetailsContainer = document.getElementById('user-attempts-details');
-    // attemptsDetailsContainer.innerHTML = '';
-
-    // // Check if data exists
-    // if (data.length === 0) {
-    //     attemptsDetailsContainer.innerHTML = `
-    //         <tr>
-    //             <td colspan="7" class="text-center text-muted">No detailed attempts found.</td>
-    //         </tr>`;
-    //     return;
-    // }
-
-    // // Populate Table Rows
-    // data.forEach(attempt => {
-    //     const row = document.createElement('tr');
-    //     row.innerHTML = `
-    //         <td>${new Date(attempt.attempt_time).toLocaleDateString()}</td>
-    //         <td>${new Date(attempt.attempt_time).toLocaleTimeString()}</td>
-    //         <td>${attempt.total_questions}</td>
-    //         <td>${attempt.answered}</td>
-    //         <td>${attempt.total_correct_answers}</td>
-    //         <td>${attempt.wrong_answers}</td>
-    //         <td>${attempt.pass_mark}</td>
-    //     `;
-    //     attemptsDetailsContainer.appendChild(row);
-    // });
-
-    // Extract data for the chart
+function showUserAttemptsDetails(data, index) {
     const labels = data.map(attempt => new Date(attempt.attempt_time).toLocaleDateString());
     const correctData = data.map(attempt => attempt.total_correct_answers);
     const wrongData = data.map(attempt => attempt.wrong_answers);
@@ -382,8 +298,8 @@ function showUserAttemptsDetails(data) {
         attemptChart.destroy();
     }
 
-    // Create a new chart instance
-    const ctx = document.getElementById('attemptChart').getContext('2d');
+    // Create a new chart instance with dynamic canvas ID for each exam
+    const ctx = document.getElementById(`attemptChart${index}`).getContext('2d');
     attemptChart = new Chart(ctx, {
         type: 'bar',
         data: {
@@ -429,6 +345,7 @@ function showUserAttemptsDetails(data) {
     const modal = new bootstrap.Modal(document.getElementById('attempt-details-modal'));
     modal.show();
 }
+
 
 
 
