@@ -1,7 +1,7 @@
 from django.urls import path
 from .views import SignupView, LogoutView, UserRoleView
 from rest_framework_simplejwt.views import TokenRefreshView, TokenObtainPairView
-from .views import UserDetailView, RequestOTPView, VerifyOTPView, Validate_token
+from .views import UserDetailView, RequestOTPView, VerifyOTPView, Validate_token, DashboardView
 from django.views.generic import TemplateView
 
 urlpatterns = [
@@ -16,6 +16,9 @@ urlpatterns = [
     
     path('user/me/', UserDetailView.as_view(), name='user_detail'),
     
+    
+    path('api/dashboard/', DashboardView.as_view(), name='dashboard'),
+    path('dashboard/', TemplateView.as_view(template_name='Html/custom/dashboard.html'), name='dashboard'),
     
     path('user_profile/', TemplateView.as_view(template_name='Html/custom/user/profile.html'), name='profile'),
     path('reset_password/', TemplateView.as_view(template_name='Html/custom/user/reset_password.html'), name='reset_password'),

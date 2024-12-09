@@ -485,116 +485,105 @@
         </div>
     </div> {% endcomment %}
     <!-- End Switcher -->
-
+    {% load socialaccount %}
     <div class="row justify-content-center authentication">
-
         <div class="col-xxl-7 col-xl-7 col-lg-12">
             <div class="row justify-content-center align-items-center h-100">
                 <div class="col-xxl-6 col-xl-7 col-lg-7 col-md-7 col-sm-8 col-12 custom-blur my-4 w-75">
                     <div class="px-5 py-3">
-                        {% comment %} <div class="mb-3">
-                            <a href="index.html">
-                                <img src="../../static/assets/images/brand-logos/desktop-logo.png" alt="" class="authentication-brand desktop-logo">
-                                <img src="../../static/assets/images/brand-logos/desktop-dark.png" alt="" class="authentication-brand desktop-dark">
-                            </a>
-                        </div> {% endcomment %}
                         <p class="h5 fw-bold mb-2 text-center text-dark">Sign Up</p>
-                        <p class="mb-3 text-white op-7 fw-normal text-center">Welcome & Join us by creating a free account !</p>
-                        <div class="btn-list d-flex justify-content-center">
-                            <button class="btn btn-light"><svg class="google-svg" xmlns="http://www.w3.org/2000/svg" width="2443" height="2500" preserveAspectRatio="xMidYMid" viewBox="0 0 256 262"><path fill="#4285F4" d="M255.878 133.451c0-10.734-.871-18.567-2.756-26.69H130.55v48.448h71.947c-1.45 12.04-9.283 30.172-26.69 42.356l-.244 1.622 38.755 30.023 2.685.268c24.659-22.774 38.875-56.282 38.875-96.027"/><path fill="#34A853" d="M130.55 261.1c35.248 0 64.839-11.605 86.453-31.622l-41.196-31.913c-11.024 7.688-25.82 13.055-45.257 13.055-34.523 0-63.824-22.773-74.269-54.25l-1.531.13-40.298 31.187-.527 1.465C35.393 231.798 79.49 261.1 130.55 261.1"/><path fill="#FBBC05" d="M56.281 156.37c-2.756-8.123-4.351-16.827-4.351-25.82 0-8.994 1.595-17.697 4.206-25.82l-.073-1.73L15.26 71.312l-1.335.635C5.077 89.644 0 109.517 0 130.55s5.077 40.905 13.925 58.602l42.356-32.782"/><path fill="#EB4335" d="M130.55 50.479c24.514 0 41.05 10.589 50.479 19.438l36.844-35.974C195.245 12.91 165.798 0 130.55 0 79.49 0 35.393 29.301 13.925 71.947l42.211 32.783c10.59-31.477 39.891-54.251 74.414-54.251"/></svg>Sign up with google</button>
-                            <button class="btn btn-icon btn-light"><i class="ri-facebook-fill"></i></button>
-                            <button class="btn btn-icon btn-light"><i class="ri-twitter-fill"></i></button>
+                        <p class="mb-3 text-white op-7 fw-normal text-center">
+                            Welcome & Join us by creating a free account!
+                        </p>
+    
+                        <!-- Social Signup Buttons -->
+                        <div class="btn-list d-flex justify-content-center mb-3">
+                            <a href="{% provider_login_url 'google' %}" class="btn btn-light">
+                                <svg class="google-svg" xmlns="http://www.w3.org/2000/svg" width="2443" height="2500" preserveAspectRatio="xMidYMid" viewBox="0 0 256 262">
+                                    <path fill="#4285F4" d="M255.878 133.451c0-10.734-.871-18.567-2.756-26.69H130.55v48.448h71.947c-1.45 12.04-9.283 30.172-26.69 42.356l-.244 1.622 38.755 30.023 2.685.268c24.659-22.774 38.875-56.282 38.875-96.027" />
+                                    <path fill="#34A853" d="M130.55 261.1c35.248 0 64.839-11.605 86.453-31.622l-41.196-31.913c-11.024 7.688-25.82 13.055-45.257 13.055-34.523 0-63.824-22.773-74.269-54.25l-1.531.13-40.298 31.187-.527 1.465C35.393 231.798 79.49 261.1 130.55 261.1" />
+                                    <path fill="#FBBC05" d="M56.281 156.37c-2.756-8.123-4.351-16.827-4.351-25.82 0-8.994 1.595-17.697 4.206-25.82l-.073-1.73L15.26 71.312l-1.335.635C5.077 89.644 0 109.517 0 130.55s5.077 40.905 13.925 58.602l42.356-32.782" />
+                                    <path fill="#EB4335" d="M130.55 50.479c24.514 0 41.05 10.589 50.479 19.438l36.844-35.974C195.245 12.91 165.798 0 130.55 0 79.49 0 35.393 29.301 13.925 71.947l42.211 32.783c10.59-31.477 39.891-54.251 74.414-54.251" />
+                                </svg>
+                                Sign up with Google
+                            </a>
                         </div>
+    
                         <div class="text-center my-3 authentication-barrier">
                             <span class='text-dark'>OR</span>
                         </div>
-                        <div class="row">
-                            <!-- Left side (3 inputs) -->
-                            <div class="col-lg-6">
-                              <div class="row gy-2">
-                                <!-- Username -->
-                                <div class="col-xl-12">
-                                  <label for="username" class="form-label text-dark fw-bold">Username</label>
-                                  <input type="text" class="form-control form-control-lg" id="username" placeholder="User name">
-                                  <p id="username-error" class="text-red-500 text-xs italic mt-2"></p>
+    
+                        <!-- Manual Signup Form -->
+                        <form method="POST" action="{% url 'signup' %}">
+                            {% csrf_token %}
+                            <div class="row">
+                                <!-- Left side (3 inputs) -->
+                                <div class="col-lg-6">
+                                    <div class="row gy-2">
+                                        <!-- Username -->
+                                        <div class="col-xl-12">
+                                            <label for="username" class="form-label text-dark fw-bold">Username</label>
+                                            <input type="text" class="form-control form-control-lg" id="username" name="username" placeholder="User name">
+                                        </div>
+    
+                                        <!-- Phone number -->
+                                        <div class="col-xl-12">
+                                            <label for="phone_number" class="form-label text-dark fw-bold">Phone number</label>
+                                            <input type="text" class="form-control form-control-lg" id="phone_number" name="phone_number" placeholder="Phone number">
+                                        </div>
+    
+                                        <!-- Email -->
+                                        <div class="col-xl-12">
+                                            <label for="email" class="form-label text-dark fw-bold">Email</label>
+                                            <input type="email" class="form-control form-control-lg" id="email" name="email" placeholder="Email address">
+                                        </div>
+                                    </div>
                                 </div>
-                          
-                                <!-- Phone number -->
-                                <div class="col-xl-12">
-                                  <label for="phone_number" class="form-label text-dark fw-bold">Phone number</label>
-                                  <input type="text" class="form-control form-control-lg" id="phone_number" placeholder="Phone number">
-                                  <p id="phone-number-error" class="text-red-500 text-xs italic mt-2"></p>
-                                </div>
-                          
-                                <!-- Email -->
-                                <div class="col-xl-12">
-                                  <label for="email" class="form-label text-dark fw-bold">Email</label>
-                                  <input type="email" class="form-control form-control-lg" id="email" placeholder="Email address">
-                                  <p id="email-error" class="text-red-500 text-xs italic mt-2"></p>
-                                </div>
-                              </div>
-                            </div>
-                          
-                            <!-- Right side (Password and Role) -->
-                            <div class="col-lg-6">
-                              <div class="row gy-2">
-                                <!-- Password -->
-                                <div class="col-xl-12">
-                                  <label for="password" class="form-label text-dark fw-bold">Password</label>
-                                  <div class="input-group">
-                                    <input type="password" class="form-control form-control-lg" id="password" placeholder="Password">
-                                    <button class="btn btn-primary" onclick="createpassword('password',this)" type="button" id="button-addon2">
-                                      <i class="ri-eye-off-line"></i>
-                                    </button>
-                                  </div>
-                                  <p id="password-error" class="text-red-500 text-xs italic mt-2"></p>
-                                </div>
-                          
-                                <!-- Role -->
-                                <div class="col-xl-12">
-                                  <label for="role" class="form-label text-dark fw-bold">Role</label>
-                                  <div class="input-group">
-                                    <select class="form-control form-control-lg" id="role">
-                                      <option value="">Select Role</option>
-                                      <option value="admin">Admin</option>
-                                      <option value="teacher">Teacher</option>
-                                      <option value="student">Student</option>
-                                    </select>
-                                  </div>
-                                  <p id="role-error" class="text-danger text-xs italic mt-2"></p>
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-                          
-                        
-
-                            <div class="col-xl-12 mb-3">
-                                {% comment %} <label for="signup-confirmpassword" class="form-label text-default">Confirm Password</label>
-                                <div class="input-group">
-                                    <input type="password" class="form-control form-control-lg" id="signup-confirmpassword" placeholder="confirm password">
-                                    <button class="btn btn-light" onclick="createpassword('signup-confirmpassword',this)" type="button" id="button-addon21"><i class="ri-eye-off-line align-middle"></i></button>
-                                </div> {% endcomment %}
-                                <div class="form-check mt-3">
-                                    <input class="form-check-input" type="checkbox" value="" id="defaultCheck1">
-                                    <label class="form-check-label text-white fw-normal" for="defaultCheck1">
-                                        By creating a account you agree to our <a href="terms_conditions.html" class="text-success"><u>Terms & Conditions</u></a> and <a class="text-success"><u>Privacy Policy</u></a>
-                                    </label>
+    
+                                <!-- Right side (Password and Role) -->
+                                <div class="col-lg-6">
+                                    <div class="row gy-2">
+                                        <!-- Password -->
+                                        <div class="col-xl-12">
+                                            <label for="password" class="form-label text-dark fw-bold">Password</label>
+                                            <div class="input-group">
+                                                <input type="password" class="form-control form-control-lg" id="password" name="password" placeholder="Password">
+                                                <button class="btn btn-primary" type="button" id="button-addon2">
+                                                    <i class="ri-eye-off-line"></i>
+                                                </button>
+                                            </div>
+                                        </div>
+    
+                                        <!-- Role -->
+                                        <div class="col-xl-12">
+                                            <label for="role" class="form-label text-dark fw-bold">Role</label>
+                                            <select class="form-control form-control-lg" id="role" name="role">
+                                                <option value="">Select Role</option>
+                                                <option value="admin">Admin</option>
+                                                <option value="teacher">Teacher</option>
+                                                <option value="student">Student</option>
+                                            </select>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
+    
                             <div class="col-xl-12 d-grid mt-2">
-                                <button class="btn btn-lg btn-secondary active" onclick="register()">Create Account</button>
+                                <button type="submit" class="btn btn-lg btn-secondary active">Create Account</button>
                             </div>
-                            <p id="error-message" class="text-red-500 text-xs italic mt-3"></p>
-
-                        </div>
+                        </form>
+    
                         <div class="text-center">
-                            <p class="fs-12 text-dark">Already have an account? <a href="/login/" class="text-secondary">Sign In</a></p>
+                            <p class="fs-12 text-dark">
+                                Already have an account? <a href="{% url 'login' %}" class="text-secondary">Sign In</a>
+                            </p>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
+    </div>
+    
         {% comment %} <div class="col-xxl-5 col-xl-5 col-lg-5 d-none px-0">
             <div class="authentication-cover">
                 <div class="aunthentication-cover-content rounded">

@@ -65,6 +65,7 @@ class CustomUser(AbstractUser):
     linkedin_profile = models.URLField(blank=True, null=True)
     bio = models.TextField(blank=True, null=True)
     preferences = models.JSONField(blank=True, null=True)
+    # created_at = models.DateTimeField(auto_now_add=True)
 
     
     otp = models.CharField(max_length=6, blank=True, null=True)

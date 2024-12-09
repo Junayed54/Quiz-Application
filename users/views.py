@@ -14,8 +14,12 @@ from .models import CustomUser
 from subscription.models import SubscriptionPackage, UserSubscription
 from .serializers import UserSerializer
 User = get_user_model()
+from django.db.models import Count, CharField
 from django.utils import timezone
 from datetime import timedelta
+from django.db.models.functions import TruncDate, Cast
+from django.utils.timezone import now
+from quiz.models import Question, SubscriptionPackage
 
 class SignupView(generics.CreateAPIView):
     queryset = User.objects.all()
@@ -151,3 +155,125 @@ class Validate_token(APIView):
             'message': 'Access granted. You are authenticated!',
             'user': request.user.username
         }, status=status.HTTP_200_OK)
+        
+        
+        
+class DashboardStatisticsView(APIView):
+    permission_classes = [IsAuthenticated]  # Ensures only authenticated users can access this view
+
+    def get(self, request, *args, **kwargs):
+        User = get_user_model()
+
+        # Count the number of questions
+        question_count = Question.objects.count()
+        
+        # Count the number of users with the role "student"
+        student_count = User.objects.filter(role='student').count()
+        
+        # Count the number of users using non-free packages
+        package_user_count = User.objects.filter(
+            subscription_package__name__in=['basic', 'standard', 'premium']
+        ).distinct().count()
+
+        # Prepare the response data
+        data = {
+            'question_count': question_count,
+            'student_count': student_count,
+            'package_user_count': package_user_count,
+        }
+        
+        return Response(data)
+
+
+
+
+
+
+
+class DashboardView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, *args, **kwargs):
+        User = get_user_model()
+
+        # Count total students
+        total_students = User.objects.filter(role='student').count()
+
+        # Count total package users (non-free users)
+        total_package_users = UserSubscription.objects.filter(
+            package__name__in=['basic', 'standard', 'premium'],
+            status='active'
+        ).count()
+
+        # Count total questions
+        total_questions = Question.objects.count()
+
+        # Date range (e.g., last 7 days)
+        today = now().date()
+        last_week = today - timedelta(days=6)
+        dates = [last_week + timedelta(days=i) for i in range(7)]
+
+        # Questions published by date
+        question_counts = (
+            Question.objects.annotate(created_date=Cast('created_at', output_field=CharField()))
+            .filter(created_date__range=(last_week, today))
+            .values('created_date')
+            .annotate(count=Count('id'))
+        )
+        question_data = {q['created_date']: q['count'] for q in question_counts}
+
+        # Users by date
+        user_counts = (
+            User.objects.annotate(joined_date=Cast('date_joined', output_field=CharField()))
+            .filter(joined_date__range=(last_week, today))
+            .values('joined_date')
+            .annotate(count=Count('id'))
+        )
+        user_data = {u['joined_date']: u['count'] for u in user_counts}
+
+        # Package users by date
+        package_user_counts = (
+            User.objects.filter(
+                usersubscription__package__name__in=["basic", "standard", "premium"],
+                usersubscription__status='active',
+            )
+            .annotate(joined_date=Cast('date_joined', output_field=CharField()))
+            .filter(joined_date__range=(last_week, today))
+            .values('joined_date')
+            .annotate(count=Count('id'))
+        )
+        package_user_data = {u['joined_date']: u['count'] for u in package_user_counts}
+
+        # Align counts with dates
+        def get_date_counts(data):
+            return [data.get(date, 0) for date in dates]
+
+        response_data = {
+            "summary": {
+                "total_students": total_students,
+                "total_package_users": total_package_users,
+                "total_questions": total_questions,
+            },
+            "chart_data": {
+                "labels": [date.strftime("%Y-%m-%d") for date in dates],
+                "datasets": [
+                    {
+                        "label": "Questions Published",
+                        "data": get_date_counts(question_data),
+                        "backgroundColor": "#FF6384",
+                    },
+                    {
+                        "label": "Users Joined",
+                        "data": get_date_counts(user_data),
+                        "backgroundColor": "#36A2EB",
+                    },
+                    {
+                        "label": "Package Users Joined",
+                        "data": get_date_counts(package_user_data),
+                        "backgroundColor": "#FFCE56",
+                    },
+                ],
+            },
+        }
+
+        return Response(response_data)

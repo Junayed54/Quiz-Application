@@ -72,10 +72,15 @@ document.addEventListener('DOMContentLoaded', function() {
             const optionElement = document.createElement('div');
             optionElement.classList.add('form-check');
             optionElement.innerHTML = `
-                <input type="radio" name="option" value="${option.id}" class="form-check-input" id="option${option.id}">
-                <label class="form-check-label" for="option${option.id}">${option.text}</label>
+                <input type="radio" name="option" value="${option.id}" id="option${option.id}" class="hidden">
+                <label for="option${option.id}" 
+                    class="block cursor-pointer p-3 text-center rounded border border-gray-300 hover:bg-blue-100"
+                    style="background:#57A6A1; width: 100%; height: 60px; display: flex; align-items: center; justify-content: center;">
+                    ${option.text}
+                </label>
             `;
             optionsContainer.appendChild(optionElement);
+            
         });
 
         const selectedAnswer = answers[index] && answers[index].option;
