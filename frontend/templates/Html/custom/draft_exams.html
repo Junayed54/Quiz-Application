@@ -1,5 +1,102 @@
 {% comment %} @SPK@include("partials/mainhead.html") {% endcomment %}
 {% include "../partials/mainhead.html"%}
+<style>
+/* Custom styles for the loader background */
+#loader-container {
+    z-index: 1050; /* Ensures the loader is above other content */
+    top: 0;
+    left: 0;
+}
+
+/* Container for the exam cards */
+#exams-container {
+    padding: 20px;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 15px;
+    background-color: #f4f7fc; /* Light gray background */
+}
+
+/* Card styling */
+.card {
+    background-color: #ffffff;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    transition: transform 0.2s ease-in-out;
+}
+
+/* Hover effect for the card */
+.card:hover {
+    transform: translateY(-10px);
+}
+
+/* Title styling */
+.card-title {
+    font-size: 1.5rem;
+    color: #333;
+}
+
+/* Text styling for card content */
+.card-text {
+    color: #555;
+}
+
+/* Button Styles 
+button, .btn {
+    cursor: pointer;
+    border: none;
+    border-radius: 6px;
+    padding: 10px 15px;
+    font-size: 14px;
+    font-weight: bold;
+    transition: background-color 0.3s ease;
+}
+
+
+.bg-primary {
+    background-color: #007bff; /* Primary blue */
+}
+
+.bg-secondary {
+    background-color: #28a745; /* Green */
+}
+
+.bg-danger {
+    background-color: #dc3545; /* Red */
+}
+
+/* Button text color */
+.text-white {
+    color: white;
+}
+
+/* Button hover effects */
+.bg-primary:hover {
+    background-color: #0056b3; /* Darker blue */
+}
+
+.bg-secondary:hover {
+    background-color: #218838; /* Darker green */
+}
+
+.bg-danger:hover {
+    background-color: #c82333; /* Darker red */
+}
+
+/* Additional spacing for buttons */
+{% comment %} .d-flex {
+    display: flex;
+    gap: 15px;
+    justify-content: space-between;
+} {% endcomment %}
+
+/* Responsive layout for small screens */
+@media (max-width: 768px) {
+    #exams-container {
+        grid-template-columns: 1fr;
+    }
+}
+</style>
 </head>
 
 <body>
@@ -17,8 +114,8 @@
             
             <!-- Bootstrap Modal for Alert -->
             <div class="container mt-5">
-                <h1 class="text-center display-4 mb-4">Draft Exams</h1>
-                <div id="exams-container" class="row-cols-md-2">
+                <h4 class="font-xl text-muted text-center display-4 mb-4">Draft Exams</h4>
+                <div id="exams-container" class="row-cols-md-12">
                     <!-- Exams will be populated here -->
                 </div>
             </div>

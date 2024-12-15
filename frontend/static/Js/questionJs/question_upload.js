@@ -6,9 +6,9 @@ const loader = document.getElementById('loader');
 const uploadForm = document.getElementById('upload-form');
 const examNameInput = document.getElementById('exam_name');
 const examYearInput = document.getElementById('exam_year');
-
+// showToast('Success', 'Questions uploaded successfully.', 'success', '/quiz/user_questions/'); // Show success toast
 // Show file dialog when drop zone is clicked
-dropZone.addEventListener('click', () => fileInput.click());
+
 
 // Highlight drop zone on drag enter/over, reset on leave
 ['dragenter', 'dragover'].forEach(eventType => {
@@ -74,19 +74,48 @@ uploadForm.addEventListener('submit', (e) => {
     .then(response => response.json())
     .then(data => {
         loader.style.display = 'none'; // Hide loader on response
+    
         if (data.error) {
-            alert(`Error: ${data.error}`);
+            showToast('Error', data.error, 'danger'); // Show error toast
         } else {
             loader.classList.remove('d-flex');
             loader.classList.add('d-none');
-            alert('Questions uploaded successfully.');
-            window.location.href = '/quiz/user_questions/';
-
+            showToast('Success', 'Questions uploaded successfully.', 'success', '/quiz/user_questions/'); // Show success toast
+            // setTimeout(() => {
+            //     window.location.href = '/quiz/user_questions/';
+            // }, 2000); // Redirect after 2 seconds
         }
     })
+    
     .catch(error => {
         loader.style.display = 'none'; // Hide loader on error
         alert('An error occurred while uploading questions.');
         console.error(error);
     });
 });
+
+
+
+function showToast(message, type) {
+    // Update the message in the toast
+    const toastBody = document.getElementById('toast-body');
+    toastBody.textContent = message;
+
+    
+    // Update the icon based on the type
+    const toastIcon = document.getElementById('toast-icon');
+    toastIcon.className = ''; // Clear any existing classes
+    if (type === 'success') {
+        toastIcon.innerHTML = '✔️'; // Success icon
+        toastIcon.classList.add('text-success');
+    } else if (type === 'danger') {
+        toastIcon.innerHTML = '⚠️'; // Danger icon
+        toastIcon.classList.add('text-danger');
+    }
+
+    // Initialize and show the toast
+    const toastElement = document.getElementById('toast-message');
+    const toast = new bootstrap.Toast(toastElement);
+    toast.show();
+}
+

@@ -208,7 +208,7 @@ async function loadExams() {
             // Exam Header with Toggle Button
             examItem.innerHTML = `
                 <h2 class="accordion-header" id="heading${index}">
-                    <button class="accordion-button collapsed bg-secondary text-white" type="button" data-bs-toggle="collapse" data-bs-target="#collapse${index}" aria-expanded="false" aria-controls="collapse${index}">
+                    <button class="accordion-button collapsed" type="button" style="background:#B7E0FF;" data-bs-toggle="collapse" data-bs-target="#collapse${index}" aria-expanded="false" aria-controls="collapse${index}">
                         Exam title: ${exam.exam_title}
                     </button>
                 </h2>

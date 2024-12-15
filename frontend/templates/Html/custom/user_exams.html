@@ -1,56 +1,37 @@
-{% comment %} @SPK@include("partials/mainhead.html") {% endcomment %}
-{% include "../partials/mainhead.html"%}
+{% include "../partials/mainhead.html" %}
 </head>
 
-<body>
-
-    {% comment %} @SPK@include("partials/switcher.html") {% endcomment %}
+<body class="bg-gray-100 font-sans">
     {% include "../partials/switcher.html" %}
     <div class="page">
-        {% comment %} @SPK@include("partials/header.html") {% endcomment %}
-        {% include "../partials/header.html"%}
-        {% comment %} @SPK@include("partials/sidebar.html") {% endcomment %}
+        {% include "../partials/header.html" %}
         {% include "../partials/sidebar.html" %}
-        <!-- Start::app-content -->
-        <div class="main-content app-content">
 
-            
-            <!-- Bootstrap Modal for Alert -->
-            <div class="container mt-5">
-                <h1 class="text-center display-4 mb-4">My Exams</h1>
-                <div id="exams-container" class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
-                    <!-- Exams will be populated here -->
+        <!-- Main Content -->
+        <div class="main-content app-content">
+            <div class="container mx-auto mt-10 px-6 lg:px-8">
+                <!-- Page Title -->
+                <div class="text-center mb-8">
+                    <h1 class="text-4xl font-bold text-gray-800">My Exams</h1>
+                    <p class="text-gray-500 mt-2">View and manage your exams with ease</p>
+                </div>
+
+                <!-- Exams Grid -->
+                <div id="exams-container" 
+                     class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                    <!-- Exams dynamically loaded here -->
                 </div>
             </div>
-            
-            
-
-            <!-- MY custom macq-->
-
-
-
-            
         </div>
-        <!-- End::app-content -->
 
-        {% comment %} @SPK@include("partials/headersearch_modal.html") {% endcomment %}
-        {% include "../partials/headersearch_modal.html"%}
-        {% comment %} @SPK@include("partials/footer.html") {% endcomment %}
         {% include "../partials/footer.html" %}
     </div>
 
-    {% comment %} @SPK@include("partials/commonjs.html") {% endcomment %}
-    {% include "../partials/commonjs.html"%}
+    {% include "../partials/commonjs.html" %}
+    {% include "../partials/custom_switcherjs.html" %}
 
-    {% comment %} @SPK@include("partials/custom_switcherjs.html") {% endcomment %}
-    {% include "../partials/custom_switcherjs.html"%}
     <!-- Custom JS -->
     <script src="../../../static/assets/js/custom.js"></script>
-
-    <!-- My exam js -->
-     <script src = "../../../static/Js/user_exams.js"></script>
-
-
+    <script src="../../../static/Js/user_exams.js"></script>
 </body>
-
 </html>

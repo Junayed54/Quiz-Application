@@ -211,7 +211,8 @@ document.addEventListener('DOMContentLoaded', function () {
         leaderboardContainer.innerHTML = ''; // Clear existing rows
 
         if (data.length === 0) {
-            leaderboardContainer.innerHTML = '<tr><td colspan="4" class="text-center">No leaderboard data available.</td></tr>';
+            leaderboardContainer.classList.add('my-2', 'text-center');
+            leaderboardContainer.innerHTML = '<p class="text-center" style="margin: 4px auto;">No leaderboard data available.</p>';
             return;
         }
 

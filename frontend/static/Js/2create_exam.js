@@ -1,3 +1,25 @@
+// Function to show toast messages
+function showToast(message, isError = false) {
+    const toastElement = document.getElementById('dynamic-toast');
+    const toastBody = document.getElementById('toast-body');
+
+    // Update the message
+    toastBody.textContent = message;
+
+    // Add success or error class based on the message type
+    if (isError) {
+        toastElement.classList.add('bg-danger', 'text-white');
+        toastElement.classList.remove('bg-success');
+    } else {
+        toastElement.classList.add('bg-success', 'text-white');
+        toastElement.classList.remove('bg-danger');
+    }
+
+    // Show the toast
+    const bootstrapToast = new bootstrap.Toast(toastElement);
+    bootstrapToast.show();
+}
+
 const accessToken = localStorage.getItem('access_token');
 let userRole = '';
 
@@ -8,28 +30,30 @@ async function fetchUserRole() {
             method: 'GET',
             headers: {
                 'Authorization': 'Bearer ' + accessToken,
-            }
+            },
         });
         const data = await response.json();
 
         if (response.ok) {
-            userRole = data.role;  // Assume 'role' is returned in the response
+            userRole = data.role; // Assume 'role' is returned in the response
         } else {
-            console.error('Failed to fetch user role');
+            showToast('Failed to fetch user role.', true);
         }
     } catch (error) {
+        showToast('Error fetching user role.', true);
         console.error('Error fetching user role:', error);
     }
 }
 
 // Initialize user role before form submission
 fetchUserRole();
+
 // Toggle display based on exam type selection
-document.getElementById('exam_type').addEventListener('change', function() {
+document.getElementById('exam_type').addEventListener('change', function () {
     const examType = this.value;
     const difficultySection = document.getElementById('difficulty-section');
     const fileUploadSection = document.getElementById('file-upload-section');
-    
+
     if (examType === 'file') {
         difficultySection.style.display = 'none';
         fileUploadSection.style.display = 'block';
@@ -46,7 +70,7 @@ async function loadCategories() {
             method: 'GET',
             headers: {
                 'Authorization': 'Bearer ' + accessToken,
-            }
+            },
         });
         const categories = await response.json();
 
@@ -58,15 +82,17 @@ async function loadCategories() {
                 option.textContent = category.name;
                 categorySelect.appendChild(option);
             });
+
             // Add 'Add New Category' option
             const addNewCategoryOption = document.createElement('option');
             addNewCategoryOption.value = 'new';
             addNewCategoryOption.textContent = 'Add New Category';
             categorySelect.appendChild(addNewCategoryOption);
         } else {
-            console.error('Failed to load categories');
+            showToast('Failed to load categories.', true);
         }
     } catch (error) {
+        showToast('Error fetching categories.', true);
         console.error('Error fetching categories:', error);
     }
 }
@@ -74,7 +100,7 @@ async function loadCategories() {
 loadCategories();
 
 // Handle category selection
-document.getElementById('category').addEventListener('change', function() {
+document.getElementById('category').addEventListener('change', function () {
     const newCategoryInput = document.getElementById('new-category-input');
     if (this.value === 'new') {
         newCategoryInput.style.display = 'block';
@@ -86,6 +112,10 @@ document.getElementById('category').addEventListener('change', function() {
 // Form submission
 document.getElementById('examForm').addEventListener('submit', async function (e) {
     e.preventDefault();
+
+    const loaderContainer = document.getElementById('loader-container');
+    loaderContainer.classList.remove('d-none');
+    loaderContainer.classList.add('d-flex');
 
     const formData = new FormData(this);
 
@@ -104,7 +134,9 @@ document.getElementById('examForm').addEventListener('submit', async function (e
 
         // Validate the total percentage
         if (totalPercentage !== 100) {
-            alert('The total percentage of difficulty levels must be 100.');
+            loaderContainer.classList.remove('d-flex');
+            loaderContainer.classList.add('d-none');
+            showToast('The total percentage of difficulty levels must be 100.', true);
             return;
         }
 
@@ -112,26 +144,33 @@ document.getElementById('examForm').addEventListener('submit', async function (e
         formData.append('difficulty_levels', JSON.stringify(difficultyLevels));
     }
 
-    // Send form data with file support
     try {
         const response = await fetch('/quiz/create-exam/', {
             method: 'POST',
             body: formData,
             headers: {
                 'Authorization': 'Bearer ' + accessToken,
-            }
+            },
         });
 
         const data = await response.json();
+
+        loaderContainer.classList.remove('d-flex');
+        loaderContainer.classList.add('d-none');
+
         if (response.ok) {
-            alert('Success: ' + data.message);
+            showToast(data.message, false);
             const redirectUrl = userRole === 'teacher' ? '/quiz/draft_exams/' : '/quiz/user_exams/';
-            window.location.href = redirectUrl;
+            setTimeout(() => {
+                window.location.href = redirectUrl;
+            }, 2000); // Redirect after 2 seconds
         } else {
-            alert('Error: ' + (data.error || 'Failed to create exam.'));
+            showToast(data.error || 'Failed to create exam.', true);
         }
     } catch (error) {
-        alert('Error: Failed to create exam.');
+        loaderContainer.classList.remove('d-flex');
+        loaderContainer.classList.add('d-none');
+        showToast('Error: Failed to create exam.', true);
         console.error('Error:', error);
     }
 });

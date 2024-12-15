@@ -36,6 +36,9 @@
         align-items: center;
     }
     
+    
+      
+    
     </style>
 </head>
 
@@ -51,6 +54,17 @@
         <!-- Start::app-content -->
         <div class="main-content app-content">
 
+            <div class="toast-container position-fixed top-2 start-50 translate-middle-x p-3" style="z-index: 1055;">
+                <div id="toast-message" class="toast align-items-center" role="alert" aria-live="assertive" aria-atomic="true" data-bs-delay="3000">
+                    <div class="d-flex justify-content-between">
+                        <div id="toast-icon" class="me-2 align-self-center fs-4"></div>
+                        <div class="toast-body" id="toast-body">
+                            <!-- Message will be dynamically updated -->
+                        </div>
+                        <button type="button" class="btn-close me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+                    </div>
+                </div>
+            </div>
             
             <div class="container py-5">
 
@@ -60,13 +74,17 @@
                     </div>
                 </div>
 
+                <!-- Toast Container -->
+                
+
+                  
                 <div class="row justify-content-center">
                     <div class="col-md-6">
                         <div class="card shadow-sm">
-                            <div class="card-body">
-                                <h2 class="card-title text-center mb-4">Upload Questions</h2>
+                            <div class="card-body m-2">
+                                <h2 class="card-title text-center mb-4 text-muted">Upload Questions</h2>
                                 
-                                <form method="POST" id="upload-form" enctype="multipart/form-data">
+                                <form method="POST" id="upload-form" enctype="multipart/form-data" style="font-size:15px;">
                                     <!-- CSRF Token for Django security -->
                                     {% csrf_token %}
                                     
@@ -94,7 +112,11 @@
                                         </div>
                                     </div>
                 
-                                    <button type="submit" class="btn btn-primary w-100">Upload</button>
+                                    <button type="submit" class="btn btn-sm w-auto border border-1 border-primary d-flex align-items-center justify-content-center text-muted" style="border-color: #1E201E;">
+                                        <i class="fa-solid fa-cloud-arrow-up me-2"></i> <!-- Upload icon -->
+                                        Upload Question <small>(csv.)</small>
+                                    </button>
+                                    
                                 </form>
                             </div>
                         </div>
@@ -128,6 +150,7 @@
     <!-- My exam js -->
      <script src = "../../../../static/Js/questionJs/question_upload.js"></script>
 
+    
 
 </body>
 

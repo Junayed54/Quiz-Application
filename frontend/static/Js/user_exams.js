@@ -1,13 +1,10 @@
 document.addEventListener('DOMContentLoaded', function() {
     const accessToken = localStorage.getItem('access_token');
-    // console.log(accessToken);
     if (!accessToken) {
         window.location.href = '/login/';
         return;
     }
 
-    // const authLink = document.getElementById('auth-link');
-    
     fetch('/quiz/user_exams_list/', {
         method: 'GET',
         headers: {
@@ -16,36 +13,53 @@ document.addEventListener('DOMContentLoaded', function() {
     })
     .then(response => response.json())
     .then(data => {
-        console.log(data);
         const examsContainer = document.getElementById('exams-container');
-        data.forEach(exam => {
+        // Assuming `data` is the array of exam objects fetched from an API or backend
+        // Dynamically load exams with fade-in animation
+        data.forEach((exam, index) => {
             const examElement = document.createElement('div');
-            examElement.classList.add('p-4', 'bg-white', 'shadow-md', 'rounded');
+            examElement.classList.add(
+                'bg-white', 
+                'rounded-lg', 
+                'shadow-lg', 
+                'p-6', 
+                'transition', 
+                'transform', 
+                'hover:scale-105', 
+                'hover:shadow-2xl', 
+                'hover:bg-gray-50', 
+                'opacity-0', 
+                'translate-y-6'
+            );
+            examElement.style.transition = `opacity 0.3s ease ${index * 0.1}s, transform 0.3s ease ${index * 0.1}s`;
+        
             examElement.innerHTML = `
-                <div class="card mb-3">
-                    <div class="card-body">
-                        <h2 class="card-title">${exam.title}</h2>
-                        <p class="card-text">Total Questions: ${exam.total_questions}</p>
-                        <p class="card-text">Total Marks: ${exam.total_mark}</p>
-                        <p class="card-text">Last Date: ${exam.last_date}</p>
-                        <div class="d-flex justify-content-between">
-                            <div class="p-3 bg-primary rounded mt-2">
-                                <a href="/quiz/teacher_exam_details/${exam.exam_id}/" class="text-white text-decoration-none">View Exam</a>
-                            </div>
-
-                            
-
-                            <div class="p-2 bg-danger rounded mt-2">
-                                <button class=" btn delete-btn text-white text-decoration-none" data-exam-id="${exam.exam_id}">Delete Exam</button>
-                            </div>
-                        </div>
-                    </div>
+                <h5 class="text-lg font-semibold text-gray-800 mb-2">${exam.title}</h5>
+                <p class="text-sm text-gray-600"><strong>Total Questions:</strong> ${exam.total_questions}</p>
+                <p class="text-sm text-gray-600"><strong>Total Marks:</strong> ${exam.total_marks}</p>
+                <p class="text-sm text-gray-600 mb-4"><strong>Last Date:</strong> ${exam.last_date}</p>
+                <div class="flex gap-4">
+                    <!-- View Exam Button -->
+                    <a href="/quiz/teacher_exam_details/${exam.exam_id}/" class="btn btn-sm bg-blue-500 text-white rounded-full py-2 px-4 hover:bg-blue-600 transition">Details</a>
+                    <!-- Delete Exam Button -->
+                    <button class="btn btn-sm bg-red-500 text-white rounded-full py-2 px-4 hover:bg-red-600 transition" data-exam-id="${exam.exam_id}">Delete</button>
                 </div>
-
             `;
+        
+            // Add exam element to the container with animation
+            setTimeout(() => {
+                examElement.classList.remove('opacity-0', 'translate-y-6');
+                examElement.classList.add('opacity-100', 'translate-y-0');
+            }, 50);
+        
             examsContainer.appendChild(examElement);
         });
+        
+        
 
+
+
+        // Attach event listeners to delete buttons
         document.querySelectorAll('.delete-btn').forEach(button => {
             button.addEventListener('click', function() {
                 const examId = this.getAttribute('data-exam-id');
@@ -70,8 +84,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             });
         });
-
-        
     })
     .catch(error => console.error('Error:', error));
 });

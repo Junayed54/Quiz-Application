@@ -10,7 +10,8 @@ urlpatterns = [
     path('nested_admin/', include('nested_admin.urls')),
     path('', include('frontend.urls')),
     path("api-auth/", include("rest_framework.urls")),
-    path('auth/', include('users.urls')),  # Custom user-related URLs
+    path('auth/', include('users.urls')),
+    path('accounts/', include('allauth.urls')),
     path('quiz/', include('quiz.urls')),  # Quiz-related URLs
     path('api/', include('invitation.urls')),
     path('', include('subscription.urls')), # Subcription-related URLs

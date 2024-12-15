@@ -2,6 +2,7 @@
 # import django
 # django.setup()
 # Import necessary modules
+
 from pathlib import Path
 from datetime import timedelta
 import dj_database_url
@@ -10,10 +11,13 @@ from django.core.management.utils import get_random_secret_key
 import os
 from decouple import config
 import django.core.management.commands.runserver as runserver
+from dotenv import load_dotenv
+
+# Load environment variables from .env file
+load_dotenv()
 
 
-
-runserver.Command.default_port = config('WebServer_Port', default = "8000")
+runserver.Command.default_port = config('WebServer_Port', default = "8001")
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -40,7 +44,7 @@ EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 EMAIL_HOST_USER = 'jonaetshanto8@gmail.com'
-EMAIL_HOST_PASSWORD = 'nkyg zrps jmrt zbay'
+EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD')
 
 ALLOWED_HOSTS = ['127.0.0.1','localhost', '217.76.63.211']
 
@@ -55,7 +59,13 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    
     'nested_admin',
+    'django.contrib.sites',  # Add this for Django Allauth
+    'allauth',
+    'allauth.account',
+    'allauth.socialaccount',
+    'allauth.socialaccount.providers.google',
     # Third-party apps
     'rest_framework',
     'rest_framework.authtoken',
@@ -64,6 +74,7 @@ INSTALLED_APPS = [
     'dj_rest_auth.registration',
     # Your apps
     'users',
+    
     'quiz',
     'frontend',
     'invitation',
@@ -71,6 +82,15 @@ INSTALLED_APPS = [
     
     
 ]
+
+
+AUTHENTICATION_BACKENDS = (
+    'django.contrib.auth.backends.ModelBackend',  # Default
+    'allauth.account.auth_backends.AuthenticationBackend',  # Allauth backend
+)
+
+
+
 
 # Middleware settings
 MIDDLEWARE = [
@@ -83,6 +103,8 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'django.middleware.locale.LocaleMiddleware',
+    'allauth.account.middleware.AccountMiddleware',
+    
 ]
 
 # Root URL configuration
@@ -120,6 +142,36 @@ TEMPLATES = [
         },
     },
 ]
+
+
+
+
+# Now you can access the values from the .env file
+GOOGLE_OAUTH_CLIENT_ID = os.getenv('GOOGLE_OAUTH_CLIENT_ID')
+GOOGLE_OAUTH_CLIENT_ID = os.getenv('GOOGLE_OAUTH_CLIENT_SECRET')
+
+SOCIALACCOUNT_PROVIDERS = {
+    'google': {
+        'APP': {
+            'client_id': GOOGLE_OAUTH_CLIENT_ID,
+            'secret': GOOGLE_OAUTH_CLIENT_ID,
+          
+        },
+        'SCOPE': ['profile','email',],
+         'AUTH_PARAMS': {'access_type': 'online'},
+        'METHOD': 'oauth2',
+        'VERIFIED_EMAIL': True,
+    },
+   
+}
+
+SITE_ID = 1
+
+SOCIALACCOUNT_LOGIN_ON_GET = True
+
+LOGIN_REDIRECT_URL = 'success'
+SOCIALACCOUNT_AUTO_SIGNUP = True
+ACCOUNT_LOGOUT_REDIRECT_URL = "/login/"
 
 # WSGI application
 # WSGI_APPLICATION = 'quiz_portal.wsgi.application'
@@ -196,9 +248,9 @@ STATICFILES_STORAGE = "whitenoise.storage.CompressedStaticFilesStorage"
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # Allauth settings
-ACCOUNT_USER_MODEL_USERNAME_FIELD = None
-ACCOUNT_AUTHENTICATION_METHOD = 'phone_number'
-ACCOUNT_EMAIL_REQUIRED = False
+ACCOUNT_USER_MODEL_USERNAME_FIELD = 'phone_number'
+ACCOUNT_AUTHENTICATION_METHOD = 'username_email'
+ACCOUNT_EMAIL_REQUIRED = True
 ACCOUNT_USERNAME_REQUIRED = False
 ACCOUNT_UNIQUE_EMAIL = True
 

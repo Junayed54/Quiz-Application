@@ -1,5 +1,30 @@
 {% comment %} @SPK@include("partials/mainhead.html") {% endcomment %}
 {% include "../../partials/mainhead.html"%}
+<style>
+    /* Ribbon Style */
+    .ribbon {
+        position: absolute;
+        right: 12px;
+        
+        width: 150px;
+        height: 30px;
+        background: #54E346;
+        color: white;
+        text-align: center;
+        line-height: 30px;
+        font-size: 12px;
+         /* Rotate the ribbon */
+        box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2); /* Shadow for depth */
+        z-index: 10;
+    }
+
+    /* Card Container Positioning */
+    .col-md-4 {
+        position: relative; /* Ensure the card container positions the ribbon correctly */
+    }
+</style>
+
+
 </head>
 
 <body>

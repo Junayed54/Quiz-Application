@@ -12,7 +12,6 @@ document.addEventListener("DOMContentLoaded", function() {
 
     fetchPackages();
     if (accessToken) {
-            
         // Fetch the user role
         fetch('/auth/user-role/', {
             method: 'GET',
@@ -22,23 +21,13 @@ document.addEventListener("DOMContentLoaded", function() {
         })
         .then(response => response.json())
         .then(data => {
-
-            if(data.role === 'admin'){
-                update_package_btn = 1
-                
-                // admin.classList.remove('d-none');
-                // student.classList.add('d-none');
-                
+            if (data.role === 'admin') {
+                update_package_btn = 1;
             }
-            
-            
-            
         })
         .catch(error => console.error('Error:', error));
-
     }
 
-    
     // Function to capitalize the first letter of each word
     function capitalizeWords(str) {
         return str.replace(/\b\w/g, char => char.toUpperCase());
@@ -53,12 +42,13 @@ document.addEventListener("DOMContentLoaded", function() {
         })
         .then(response => response.json())
         .then(data => {
-            console.log(update_package_btn);
             packagesContainer.innerHTML = ''; // Clear the container
             data.forEach(pkg => {
                 const capitalizedName = capitalizeWords(pkg.name); // Capitalize the package name
+                const isPurchased = pkg.is_purchased; // Assuming `is_purchased` is a boolean field indicating if the package is purchased
                 const card = `
-                    <div class="col-md-4 mb-4">
+                    <div class="col-md-4 mb-4 position-relative">
+                        ${isPurchased ? '<div class="ribbon">Purchased</div>' : ''}
                         <div class="card border-primary">
                             <div class="card-body">
                                 <h2 class="card-title text-center">${capitalizedName}</h2>
@@ -93,12 +83,8 @@ document.addEventListener("DOMContentLoaded", function() {
                 packagesContainer.innerHTML += card;
             });
         })
-        
         .catch(error => console.error('Error fetching packages:', error));
     }
-
-
-    
 
     // Function to handle buying a package
     window.buyPackage = function(packageId) {
@@ -128,33 +114,4 @@ document.addEventListener("DOMContentLoaded", function() {
     window.updatePackage = function(packageId) {
         window.location.href = `/update_package/${packageId}/`;  // Redirect to update page
     };
-    
-
-    // Optional: Function to handle package deletion
-    // window.deletePackage = function(id) {
-    //     if (confirm('Are you sure you want to delete this package?')) {
-    //         fetch(`/packages/${id}/`, {  // Adjust the endpoint for package deletion
-    //             method: 'DELETE',
-    //             headers: {
-    //                 'Authorization': `Bearer ${accessToken}`
-    //             }
-    //         })
-    //         .then(response => {
-    //             if (response.ok) {
-    //                 alert('Package deleted successfully.');
-    //                 fetchPackages(); // Refresh the package list after deletion
-    //             } else {
-    //                 console.error('Error deleting package:', response.statusText);
-    //             }
-    //         })
-    //         .catch(error => console.error('Error deleting package:', error));
-    //     }
-    // };
-
-    // Fetch packages on page load
-    
-
-
 });
-
-

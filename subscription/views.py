@@ -16,7 +16,15 @@ class SubscriptionPackageListCreateView(generics.ListCreateAPIView):
     queryset = SubscriptionPackage.objects.all()
     serializer_class = SubscriptionPackageSerializer
     authentication_classes = [JWTAuthentication]
-    # permission_classes = [IsAdmin]
+    permission_classes = [IsAuthenticated]
+    
+    def get_serializer_context(self):
+        """
+        Include the user in the serializer context so we can use it in the `is_purchased` field.
+        """
+        context = super().get_serializer_context()
+        context['user'] = self.request.user  # Add the user to the context
+        return context
     
     def create(self, request, *args, **kwargs):
         print("Request Data:", request.data)  # Debug incoming data

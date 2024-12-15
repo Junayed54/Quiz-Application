@@ -1,5 +1,64 @@
 {% comment %} @SPK@include("partials/mainhead.html") {% endcomment %}
 {% include "../partials/mainhead.html" %}
+
+<style>
+    /* Custom Scrollbar Styling */
+    .custom-scrollbar::-webkit-scrollbar {
+        width: 10px;
+        height: 10px;
+    }
+
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+        background-color: #007bff;
+        border-radius: 5px;
+    }
+
+    .custom-scrollbar::-webkit-scrollbar-track {
+        background-color: #f1f1f1;
+    }
+
+    /* Custom Card Styling */
+    .custom-card {
+        border-radius: 10px;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .custom-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 6px 15px rgba(0, 0, 0, 0.2);
+    }
+
+    /* Section Headers */
+    .section-header {
+        font-weight: 600;
+        color: #333;
+        border-bottom: 2px solid #007bff;
+        padding-bottom: 5px;
+        margin-bottom: 20px;
+    }
+
+    /* Modal Styling */
+    .modal-header {
+        background-color: #007bff;
+        color: #fff;
+    }
+
+    .modal-title {
+        font-weight: 600;
+    }
+    
+    .btn-sm {
+        font-size: 0.8rem;
+        padding: 0.25rem 0.5rem;
+    }
+    
+    .w-auto {
+        width: auto !important;
+    }
+    
+</style>
+
 </head>
 
 <body>
@@ -11,44 +70,61 @@
         {% include "../partials/header.html" %}
         {% comment %} @SPK@include("partials/sidebar.html") {% endcomment %}
         {% include "../partials/sidebar.html" %}
+
         <!-- Start::app-content -->
         <div class="main-content app-content">
 
             <div class="container mt-5">
-                <h1 class="text-center display-4 mb-4">Exams Overview</h1>
+                <h1 class="text-center display-4 mb-5">Exams Overview</h1>
 
                 <!-- Section for Teacher-Submitted Exams -->
                 <div id="teacher-exams-section" class="mb-5">
-                    <h2 class="mb-4">Teacher Submitted Exams</h2>
-                    <div id="teacher-exams-container" class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+                    <h2 class="section-header">Teacher Submitted Exams</h2>
+                    <div  class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
                         <!-- Teacher-submitted exams will be populated here -->
+                        <div class="col card custom-card">
+                            <div class="col-md-4 m-4" id="teacher-exams-container">
+                                
+                            </div>
+                        </div>
                     </div>
                 </div>
 
                 <!-- Section for Reviewed Exams -->
                 <div id="reviewed-exams-section" class="mb-5">
-                    <h2 class="mb-4">Reviewed Exams</h2>
-                    <div id="reviewed-exams-container" class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+                    <h2 class="section-header">Reviewed Exams</h2>
+                    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
                         <!-- Reviewed exams will be populated here -->
+                        
+                        <div class="col card custom-card">
+                            <div class="col-md-4 m-4" id="reviewed-exams-container">
+                                
+                            </div>
+                        </div>
                     </div>
                 </div>
-                
-                <!-- Modal for assigning teacher (optional) -->
+
+                <!-- Modal for Assigning Teacher -->
                 <div class="modal fade" id="teacherModal" tabindex="-1" role="dialog" aria-labelledby="teacherModalLabel" aria-hidden="true">
                     <div class="modal-dialog" role="document">
                         <div class="modal-content">
                             <div class="modal-header">
                                 <h5 class="modal-title" id="teacherModalLabel">Assign Teacher</h5>
-                                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                                    <span aria-hidden="true">&times;</span>
-                                </button>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                             </div>
                             <div class="modal-body">
-                                <!-- Modal content here -->
+                                <form>
+                                    <div class="mb-3">
+                                        <label for="teacherName" class="form-label">Teacher Name</label>
+                                        <input type="text" class="form-control" id="teacherName" placeholder="Enter teacher's name">
+                                    </div>
+                                    <button type="submit" class="btn btn-primary">Assign</button>
+                                </form>
                             </div>
                         </div>
                     </div>
                 </div>
+
             </div>
 
         </div>
@@ -65,10 +141,11 @@
 
     {% comment %} @SPK@include("partials/custom_switcherjs.html") {% endcomment %}
     {% include "../partials/custom_switcherjs.html" %}
+
     <!-- Custom JS -->
     <script src="../../../static/assets/js/custom.js"></script>
 
-    <!-- Custom JS for populating exams -->
+    <!-- Custom JS for Populating Exams -->
     <script src="../../../static/Js/admin_checker.js"></script>
 
 </body>

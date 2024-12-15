@@ -1,134 +1,59 @@
-{% comment %} @SPK@include("partials/mainhead.html") {% endcomment %}
-{% include "../partials/mainhead.html"%}
-<style>
+{% comment %} Include Main Header {% endcomment %}
+{% include "../partials/mainhead.html" %}
 
-    /* Scrollbar customizations */
+<style>
+    /* Custom scrollbar styling */
     .question-table-container::-webkit-scrollbar {
         height: 8px;
         width: 8px;
     }
-
     .question-table-container::-webkit-scrollbar-thumb {
         background-color: #0056b3;
         border-radius: 5px;
     }
-
     .question-table-container::-webkit-scrollbar-track {
         background-color: #f0f0f0;
     }
 
-    /* Responsive table styling */
-    .responsive-table {
-        width: 100%; /* Table takes full width */
-        max-width: 400px; /* Restrict table width to 400px */
-        border-collapse: collapse;
-        border-spacing: 0;
-        margin-left: 0; /* Align the table to the left */
-    }
-
-    .responsive-table th, .responsive-table td {
-        text-align: left;
-        padding: 10px;
-        border: 1px solid #dee2e6;
-        white-space: nowrap;
-    }
-
-    /* Adjust cell padding and font size */
-    table.responsive-table th,
-    table.responsive-table td {
-        padding: 8px;
-        font-size: 13px;
-    }
-
-    /* Adjust border */
-    table.responsive-table th, 
-    table.responsive-table td {
-        border: 1px solid #ccc;
-    }
-
-    /* Table container styling for scrollable content */
-    .question-table-container {
-        max-height: 250px; /* Limit table container height */
-        overflow-y: auto; /* Enable vertical scrolling */
-        border: 1px solid #dee2e6;
-        border-radius: 5px;
-        margin-left: 0; /* Align the container to the left */
-    }
-
-    /* Sticky table header */
-    table.responsive-table thead th {
-        position: sticky;
-        top: 0;
-        background-color: #e9ecef;
-        z-index: 1;
-        font-weight: bold;
-    }
-
-    /* Table container */
-    .question-table-container {
-        max-width: 400px; /* Set a maximum width */
-        margin-left: 0; /* Align to the left side */
-        padding: 10px; /* Add some padding for aesthetics */
-    }
-
-    /* Optional: Add some space around the container */
-    .table-container {
-        display: flex;
-        justify-content: flex-start; /* Align content to the left */
-        margin: 20px; /* Add space around the table */
-    }
-
-    /* Optional: Card customization for better visual */
+    /* Custom card shadow */
     .custom-card {
         border-radius: 10px;
         box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
     }
-
-    .custom-card .card-header {
-        background-color: #f8f9fa;
-        border-bottom: 1px solid #dee2e6;
-        font-weight: bold;
-    }
-
-    .custom-card .card-title {
-        font-size: 1.25rem;
-    }
 </style>
-
-
 
 </head>
 
 <body>
     {% load static %}
-    {% comment %} @SPK@include("partials/switcher.html") {% endcomment %}
+
+    {% comment %} Include Switcher, Header, and Sidebar {% endcomment %}
     {% include "../partials/switcher.html" %}
     <div class="page">
-        {% comment %} @SPK@include("partials/header.html") {% endcomment %}
-        {% include "../partials/header.html"%}
-        {% comment %} @SPK@include("partials/sidebar.html") {% endcomment %}
+        {% include "../partials/header.html" %}
         {% include "../partials/sidebar.html" %}
-        <!-- Start::app-content -->
-        <div class="main-content app-content" >
 
-            <div class="container mt-4"
-                <!-- Back button -->
+        <!-- Start:: Main Content -->
+        <div class="main-content app-content" >
+            <div class="container mt-4">
+                <!-- Back Button -->
                 <button onclick="history.back()" class="btn btn-outline-secondary mb-3">
                     <img src="{% static 'images/icons/back.png' %}" alt="Back" style="width: 26px; height: 26px;"> Back
                 </button>
-            
-                <!-- Exam Details Section -->
-                <div class="card custom-card" style="">
+
+                <!-- Exam Details Card -->
+                <div class="card custom-card">
                     <div class="card-header d-flex justify-content-between align-items-center">
-                        <span class="card-title">Exam Details</span>
+                        <h4 class="card-title">Details</h4>
                     </div>
                     <div class="card-body">
+                        <!-- Exam Information -->
                         <h5>Title: <span id="exam-title" class="text-primary"></span></h5>
                         <p>Category: <span id="exam-category" class="text-secondary"></span></p>
                         <p>Status: <span id="exam-status" class="badge bg-success"></span></p>
-            
+
                         <!-- Exam Details Table -->
-                        <table class="table table-bordered responsive-table">
+                        <table class="table table-bordered responsive-table" style="max-width:50%; border-color: #A59D84">
                             <tbody>
                                 <tr>
                                     <th>Total Questions</th>
@@ -156,56 +81,44 @@
                                 </tr>
                             </tbody>
                         </table>
-            
-                        <!-- Subject Question Count Section -->
+
+                        <!-- Subjects Section -->
                         <div id="subject-question-count" class="mt-4">
                             <h5>Subjects:</h5>
-                            <div id="subject-list" class="d-flex gap-3">
-                                <!-- Dynamic content -->
+                            <div id="subject-list" class="d-flex flex-wrap gap-3">
+                                <!-- Dynamic subject content here -->
                             </div>
                         </div>
                     </div>
-            
-                    <!-- Buttons Section -->
-                    <div class="card-footer leaderboard-container d-flex gap-3 justify-content-start">
-                        <button id="start-exam" class="btn btn-info">
-                            <img src="{% static 'images/icons/exam.png' %}" alt="exam" style="width: 26px; height: 26px;"> Start Exam
+
+                    <!-- Action Buttons -->
+                    <div class="card-footer d-flex gap-3">
+                        <button id="start-exam" class="btn btn-sm border-dark" style="background:#C4D7FF;">
+                            <img src="{% static 'images/icons/exam.png' %}" alt="Exam" style="width: 16px; height: 16px;"> Start Exam
                         </button>
-                        <button id="leaderboard-btn" class="btn btn-primary">
-                            <img src="{% static 'images/icons/leaderboard.png' %}" alt="leaderboard" style="width: 26px; height: 26px;"> View Leaderboard
+                        <button id="leaderboard-btn" class="btn  btn-sm border-dark" style="background:#C4D7FF;">
+                            <i class="fa fa-list-alt" aria-hidden="true"></i> Leaderboard
                         </button>
-                        <button id="result-btn" class="btn btn-success">
-                            <img src="{% static 'images/icons/results.png' %}" alt="results" style="width: 26px; height: 26px;"> View Result
+                        <button id="result-btn" class="btn btn-sm border-dark" style="background:#C4D7FF;">
+                            <i class="fa fa-bar-chart" aria-hidden="true"></i> Result
                         </button>
                     </div>
                 </div>
             </div>
-            
-
-
-
-            
         </div>
-        <!-- End::app-content -->
+        <!-- End:: Main Content -->
 
-        {% comment %} @SPK@include("partials/headersearch_modal.html") {% endcomment %}
-        {% include "../partials/headersearch_modal.html"%}
-        {% comment %} @SPK@include("partials/footer.html") {% endcomment %}
+        {% comment %} Include Footer and Modals {% endcomment %}
         {% include "../partials/footer.html" %}
+        {% include "../partials/headersearch_modal.html" %}
     </div>
 
-    {% comment %} @SPK@include("partials/commonjs.html") {% endcomment %}
-    {% include "../partials/commonjs.html"%}
+    {% comment %} Include Common Scripts {% endcomment %}
+    {% include "../partials/commonjs.html" %}
+    {% include "../partials/custom_switcherjs.html" %}
 
-    {% comment %} @SPK@include("partials/custom_switcherjs.html") {% endcomment %}
-    {% include "../partials/custom_switcherjs.html"%}
-    <!-- Custom JS -->
-    <script src="../../../static/assets/js/custom.js"></script>
-
-    <!-- My exam js -->
-     <script src = "../../../static/Js/exam_detail.js"></script>
-
-
+    <!-- Custom Scripts -->
+    <script src="{% static 'assets/js/custom.js' %}"></script>
+    <script src="{% static 'Js/exam_detail.js' %}"></script>
 </body>
-
 </html>

@@ -5,8 +5,6 @@ document.addEventListener('DOMContentLoaded', function() {
         return;
     }
 
-    // const authLink = document.getElementById('auth-link');
-    
     fetch('/quiz/status/draft_exams/', {
         method: 'GET',
         headers: {
@@ -19,36 +17,35 @@ document.addEventListener('DOMContentLoaded', function() {
         console.log(data);
         data.forEach(exam => {
             const examElement = document.createElement('div');
-            examElement.classList.add('p-4', 'bg-white', 'shadow-md', 'rounded');
+            examElement.classList.add( 'bg-white', 'shadow-md', 'rounded');
             examElement.innerHTML = `
                 <div class="card mb-3">
                     <div class="card-body">
-                        <h2 class="card-title">${exam.exam_details['title']}</h2>
+                        <h2 class="card-title text-muted">${exam.exam_details['title']}</h2>
                         <p class="card-text">Total Questions: ${exam.exam_details['total_questions']}</p>
                         <p class="card-text">Total Marks: ${exam.exam_details['total_marks']}</p>
                         <p class="card-text">Last Date: ${exam.exam_details['last_date']}</p>
-                        <div class="d-flex justify-content-between">
-                            <div class="p-3 bg-primary rounded mt-2">
-                                <a href="/quiz/teacher_exam_details/${exam.exam}/" class="text-white text-decoration-none">View Exam</a>
-                            </div>
-                            <div class="p-2 bg-secondary rounded mt-2">
-                                <button class="btn send-btn text-white text-decoration-none" status-id="${exam.id}">Send Admin</button>
-                            </div>
-                            <div class="p-2 bg-danger rounded mt-2">
-                                <button class=" btn delete-btn text-white text-decoration-none" data-exam-id="${exam.exam}">Delete Exam</button>
-                            </div>
+                        <div class="d-flex text-center justify-content-between">
+                            <button class="btn btn-sm border border-2 border-primary w-auto" onclick="location.href='/quiz/teacher_exam_details/${exam.exam}/'">
+                                View Exam
+                            </button>
+                            
+                            <button class="btn send-btn btn-sm border border-2 border-secondary w-auto" status-id="${exam.id}">Send Admin</button>
+                            
+                           
+                            <button class="btn delete-btn btn-sm border border-2 border-danger  w-auto" data-exam-id="${exam.exam}">Delete Exam</button>
+                            
                         </div>
                     </div>
                 </div>
-
             `;
             examsContainer.appendChild(examElement);
         });
 
+        // Handle "Send to Admin" button click
         document.querySelectorAll('.send-btn').forEach(button => {
             button.addEventListener('click', function() {
                 const statusId = this.getAttribute('status-id');
-                console.log(accessToken);
                 if (confirm('Are you sure you want to send this exam to admin?')) {
                     fetch(`/quiz/status/${statusId}/submit_to_admin/`, {
                         method: 'POST',
@@ -58,7 +55,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     })
                     .then(response => {
                         if (response.ok) {
-                            alert('Exam Send to Admin successfully.');
+                            alert('Exam sent to Admin successfully.');
                             window.location.reload();
                         } else {
                             response.json().then(data => {
@@ -71,6 +68,7 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         });
 
+        // Handle "Delete Exam" button click
         document.querySelectorAll('.delete-btn').forEach(button => {
             button.addEventListener('click', function() {
                 const examId = this.getAttribute('data-exam-id');

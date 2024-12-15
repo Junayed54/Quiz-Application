@@ -7,6 +7,7 @@ from .models import (
     Coupon
 )
 import re
+from datetime import date
 class SubscriptionPackageSerializer(serializers.ModelSerializer):
     # Declare individual fields for the percentages (these are directly input fields)
     very_easy_percentage = serializers.CharField(max_length=10, required=True)
@@ -15,7 +16,7 @@ class SubscriptionPackageSerializer(serializers.ModelSerializer):
     hard_percentage = serializers.CharField(max_length=10, required=True)
     very_hard_percentage = serializers.CharField(max_length=10, required=True)
     expert_percentage = serializers.CharField(max_length=10, required=True)
-
+    is_purchased = serializers.SerializerMethodField()
     class Meta:
         model = SubscriptionPackage
         fields = [
@@ -30,7 +31,8 @@ class SubscriptionPackageSerializer(serializers.ModelSerializer):
             'medium_percentage',
             'hard_percentage',
             'very_hard_percentage',
-            'expert_percentage'
+            'expert_percentage',
+            'is_purchased'
         ]
 
     def validate(self, attrs):
@@ -97,6 +99,23 @@ class SubscriptionPackageSerializer(serializers.ModelSerializer):
         instance.save()
 
         return instance
+
+    def get_is_purchased(self, obj):
+        user = self.context.get('user')  # Get the user from the context
+
+        if user:
+            # Check if the user has an active subscription for this package
+            active_subscription = UserSubscription.objects.filter(
+                user=user, 
+                package=obj, 
+                status='active', 
+                start_date__lte=date.today(), 
+                end_date__gte=date.today()
+            ).first()
+            
+            return active_subscription is not None
+        return False
+
 
 class UserSubscriptionSerializer(serializers.ModelSerializer):
     class Meta:
