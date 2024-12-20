@@ -13,7 +13,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const scoreElement = document.getElementById('score'); // Display user score
     const userScoresList = document.getElementById('user-scores-list'); // List for user scores
 
-    const wsUrl = `ws://127.0.0.1:8000/ws/exam/${examId}/`; // WebSocket URL without token
+    const wsUrl = `ws://127.0.0.1:8001/ws/exam/${examId}/`; // WebSocket URL without token
     let socket;
 
     // Initialize WebSocket

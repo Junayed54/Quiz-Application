@@ -101,4 +101,15 @@ document.addEventListener('DOMContentLoaded', function () {
     result.addEventListener('click', function () {
         window.location.href = `/quiz/result/${examId}/`;
     });
+
+    const live_exam = document.getElementById('live-exam');
+    live_exam.addEventListener('click', function () {
+        window.location.href = `/quiz/live-exam/${examId}/`;
+    });
+
+
+    const exam_room = document.getElementById('exam-room');
+    exam_room.addEventListener('click', function () {
+        window.location.href = `/quiz/exam_room/${examId}/`;
+    });
 });

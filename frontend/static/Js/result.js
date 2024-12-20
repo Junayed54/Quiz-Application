@@ -64,8 +64,8 @@ document.addEventListener('DOMContentLoaded', function () {
                 <td>${attempt.wrong_answers || 'N/A'}</td>
                 <td>${attempt.pass_mark || 'N/A'}</td>
                 <td>
-                    <button class="btn btn-light details-btn" data-user-id="${attempt.user}">
-                        <img src="${imagePath}" alt="Attempts" style="width: 26px; height: 26px; margin-right: 5px;">
+                    <button class="btn btn-light details-btn h3" data-user-id="${attempt.user}">
+                        <i class="fa fa-list-alt" aria-hidden="true"></i>
                         
                     </button>
                 </td>

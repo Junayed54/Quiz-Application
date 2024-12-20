@@ -56,6 +56,7 @@ urlpatterns = [
     path('teacher_exam_details/<uuid:exam_id>/', TemplateView.as_view(template_name='Html/custom/teacher_exam_details.html'), name='exam_detail'),
 
     path('start_exam/<uuid:exam_id>/', TemplateView.as_view(template_name='Html/custom/start_exam.html'), name='start-exam'),
+    path('live-exam/<uuid:exam_id>/', TemplateView.as_view(template_name='Html/custom/live_exam.html'), name='live-exam'),
     
     path('leader_board/<uuid:exam_id>/', TemplateView.as_view(template_name='Html/custom/leaderboard.html'), name='leader_board'),
     path('result/<uuid:exam_id>/', TemplateView.as_view(template_name='Html/custom/result.html'), name='result'),
