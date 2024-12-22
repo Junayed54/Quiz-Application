@@ -11,7 +11,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const questionNumberElement = document.getElementById('question-number'); // Display question number
     const totalQuestionsElement = document.getElementById('total-questions'); // Display total number of questions
     const scoreElement = document.getElementById('score'); // Display user score
-    const userScoresList = document.getElementById('user-scores-list'); // List for user scores
+    const userScoresList = document.getElementById('active-users-table-body'); // List for user scores
 
     const wsUrl = `ws://127.0.0.1:8001/ws/exam/${examId}/`; // WebSocket URL without token
     let socket;
@@ -108,6 +108,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Update the user scores list
     function updateUserScores(data) {
+        // console.log(data);
         userScoresList.innerHTML = ''; // Clear existing scores
         data.scores.forEach(user => {
             const scoreItem = document.createElement('li');

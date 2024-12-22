@@ -198,7 +198,8 @@ class ExamViewSet(viewsets.ModelViewSet):
                 and expert_min <= difficulty.difficulty6_percentage <= expert_max
             ):
                 filtered_exams.append(exam)
-
+        
+        
         # Serialize the filtered exams
         serializer = self.get_serializer(filtered_exams, many=True)
         return Response(serializer.data)
