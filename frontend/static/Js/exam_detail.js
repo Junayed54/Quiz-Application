@@ -76,7 +76,8 @@ document.addEventListener('DOMContentLoaded', function () {
                 subjectList.innerHTML = ''; // Clear previous data
                 data.forEach(subject => {
                     const subjectDiv = document.createElement('div');
-                    subjectDiv.className = 'subject-item'; // Add a class for styling (optional)
+                    subjectDiv.style = "background-color: #5C7285; color: white;";
+                    subjectDiv.className = 'subject-item p-2 rounded-pill'; // Add a class for styling (optional)
                     subjectDiv.textContent = `${subject.subject_name}: ${subject.question_count}`;
                     subjectList.appendChild(subjectDiv);
                 });

@@ -18,6 +18,7 @@
     
     .clickable-row:hover {
         background-color: #6082B6; /* Light gray background on hover */
+        color: white;
     }
 
     /* Option styling */
@@ -46,7 +47,7 @@
     }
 
     .bg-success {
-        background-color: #28a745;
+        background-color: #51829B;
     }
 
 </style>
@@ -65,11 +66,7 @@
         <!-- Start::app-content -->
         <div class="main-content app-content">
 
-            <div class=" my-4">
-                <button onclick="history.back()" class="btn">
-                    <img src="{% static 'images/icons/back.png' %}" alt="back" style="width: 26px; height: 26px; margin-right: 5px;">
-                </button>
-            </div>
+            
             <div class="container mt-4">
                 <div class="row gy-4">
                     <!-- User Summary Card -->
@@ -114,19 +111,19 @@
                                         </tr>
                                         <tr class="question-row clickable-row" data-type="answered">
                                             <th>Answers</th>
-                                            <td id="total-answered" class="text-muted">0</td>
+                                            <td id="total-answered" class="">0</td>
                                         </tr>
                                         <tr class="question-row clickable-row" data-type="correct">
                                             <th>Right Ans</th>
-                                            <td id="total-correct-answers" class="text-muted">0</td>
+                                            <td id="total-correct-answers" class="">0</td>
                                         </tr>
                                         <tr class="question-row clickable-row" data-type="wrong">
                                             <th>Wrong Ans</th>
-                                            <td id="total-wrong-answers" class="text-muted">0</td>
+                                            <td id="total-wrong-answers" class="">0</td>
                                         </tr>
                                         <tr>
                                             <th>No Ans</th>
-                                            <td id="total-unanswered" class="text-muted">0</td>
+                                            <td id="total-unanswered" class="">0</td>
                                         </tr>
                                     </tbody>
                                 </table>

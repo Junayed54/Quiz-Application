@@ -159,7 +159,10 @@ class Status(models.Model):
             'reviewed_by': self.reviewed_by.username if self.reviewed_by else None,
             'user': self.user.username if self.user else None,
         }
+        
+        
 
+    
 class ExamDifficulty(models.Model):
     exam = models.OneToOneField(Exam, on_delete=models.CASCADE, related_name='difficulty')
     difficulty1_percentage = models.IntegerField(default=0)  # Difficulty 1 (0-100%)
@@ -283,6 +286,7 @@ class Question(models.Model):
     
     exams = models.ManyToManyField('Exam', related_name='questions', blank=True)
     text = models.CharField(max_length=255, unique=True)
+    explanation = models.TextField(null=True, blank=True)
     marks = models.IntegerField()
     category = models.ForeignKey(Category, related_name='questions', on_delete=models.CASCADE, null=True, blank=True)
     difficulty_level = models.IntegerField(choices=DIFFICULTY_LEVEL_CHOICES, default=1)
@@ -294,6 +298,7 @@ class Question(models.Model):
     subject = models.ForeignKey(Subject, related_name='questions', on_delete=models.CASCADE, null=True, blank=True)
     created_at = models.DateField(auto_now_add=True, null=True)
     updated_at = models.DateField(auto_now=True, null=True)
+    
     def get_options(self):
         return self.options.all()
 
@@ -378,3 +383,67 @@ class Leaderboard(models.Model):
             position += 1
         return None
         
+
+
+
+
+
+# past exams models
+# ******><*******
+
+class Organization(models.Model):
+    name = models.CharField(max_length=255, unique=True)
+    address = models.TextField(null=True, blank=True)
+    def __str__(self):
+        return self.name
+    
+class Department(models.Model):
+    name = models.CharField(max_length=255)
+    organization = models.ForeignKey(Organization, on_delete=models.CASCADE, related_name="departments")
+
+    def __str__(self):
+        return f"{self.name} - {self.organization.name}"
+
+
+class Position(models.Model):
+    title = models.CharField(max_length=255)
+
+    def __str__(self):
+        return self.title
+
+class PastExam(models.Model):
+    title = models.CharField(max_length=255)  # Exam Name
+    organization = models.ForeignKey(Organization, on_delete=models.CASCADE, related_name="exams")
+    department = models.ForeignKey(Department, on_delete=models.SET_NULL, null=True, blank=True, related_name="exams")
+    position = models.ForeignKey(Position, on_delete=models.CASCADE, related_name="exams")
+    exam_date = models.DateField()  # When the exam was conducted
+    duration = models.IntegerField(null=True, blank=True)
+    is_published = models.BooleanField(default=True)  # Admin controls visibility
+    questions = models.ManyToManyField('Question', related_name="past_exams")  # Many-to-Many with Question
+
+    def __str__(self):
+        return f"{self.title} ({self.organization.name})"
+
+
+
+class PastExamAttempt(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    past_exam = models.ForeignKey(PastExam, on_delete=models.CASCADE, related_name="exam_attempts")
+    attempt_time = models.DateTimeField(auto_now_add=True)
+    total_questions = models.PositiveIntegerField()
+    answered_questions = models.PositiveIntegerField(default=0)
+    correct_answers = models.PositiveIntegerField(default=0)
+    wrong_answers = models.PositiveIntegerField(default=0)
+    score = models.FloatField(default=0.0)  # Store the final score
+
+    class Meta:
+        unique_together = ('user', 'past_exam')  # Prevents duplicate attempts for the same user-exam pair
+
+    def calculate_score(self):
+        """ Example score calculation method """
+        if self.total_questions > 0:
+            self.score = (self.correct_answers / self.total_questions) * 100  # Percentage score
+            self.save()
+
+    def __str__(self):
+        return f"{self.user.username} - {self.past_exam.title} (Score: {self.score})"

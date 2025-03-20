@@ -154,14 +154,14 @@ document.addEventListener('DOMContentLoaded', function () {
                         label: 'Correct Answers',
                         data: correctData,
                         backgroundColor: 'rgba(0, 128, 0, 0.6)',
-                        borderColor: 'green',
+                        borderColor: '#A1DD70',
                         borderWidth: 1
                     },
                     {
                         label: 'Wrong Answers',
                         data: wrongData,
-                        backgroundColor: 'rgba(255, 0, 0, 0.6)',
-                        borderColor: 'red',
+                        backgroundColor: 'rgba(250, 112, 112, 1)',
+                        borderColor: '#FA7070',
                         borderWidth: 1
                     }
                 ]
@@ -223,20 +223,20 @@ document.addEventListener('DOMContentLoaded', function () {
             const position = index + 1;
             leaderboardContainer.innerHTML += `
                 <div class="col">
-                    <div class="border border-secondary rounded d-flex align-items-center gap-3 p-3 shadow-sm h-100 clickable-div" data-user-id="${entry.user_id}">
+                    <div style="background-color: #51829B;" class="border border-secondary rounded d-flex align-items-center gap-3 p-3 shadow-sm h-100 clickable-div" data-user-id="${entry.user_id}">
                         <!-- User Icon -->
                         <div class="flex-shrink-0">
                             <img src="../../../static/images/user_9071610.png" alt="User Icon" class="rounded-circle border border-primary" width="50" height="50">
                         </div>
 
                         <!-- User Data -->
-                        <div class="flex-grow-1 overflow-hidden">
-                            <h5 class="m-0 text-truncate text-primary">${entry.user}</h5>
-                            <small class="d-block">Position: <span class="text-muted">${position}</span></small>
-                            <small class="d-block text-success fw-bold">Top Level</small>
-                            <small class="d-block">Total Questions: <span class="text-muted">${entry.total_questions}</span></small>
-                            <small class="d-block">Total Score: <span class="text-muted">${entry.score}</span></small>
-                            <small class="d-block">Percentage: <span class="text-muted">${percentage}%</span></small>
+                        <div class="flex-grow-1 overflow-hidden text-white">
+                            <h5 class="m-0 text-truncate" style="color: #FFB200;">${entry.user}</h5>
+                            <small class="d-block">Position: <span class="" style="color: #FE4F2D;">${position}</span></small>
+                            <small class="d-block fw-bold" style="color: #F6995C;">Top Level</small>
+                            <small class="d-block">Total Questions: <span class="" style="color: #FE4F2D;">${entry.total_questions}</span></small>
+                            <small class="d-block">Total Score: <span class="" style="color: #FE4F2D">${entry.score}</span></small>
+                            <small class="d-block">Percentage: <span class="" style="color: #FE4F2D">${percentage}%</span></small>
                         </div>
                     </div>
                 </div>

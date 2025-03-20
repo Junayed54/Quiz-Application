@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Exam, ExamCategory, Status, ExamDifficulty, Question, QuestionUsage, QuestionOption, Leaderboard, ExamAttempt, Category, QuestionUsage, UserAnswer
+from .models import *
 # from users.models import User
 from collections import Counter
 from django.contrib.auth import get_user_model
@@ -40,7 +40,7 @@ class QuestionSerializer(serializers.ModelSerializer):
     reviewed_by = serializers.StringRelatedField(read_only=True) 
     class Meta:
         model = Question
-        fields = ['id', 'text', 'marks', 'exam', 'options', 'status', 'remarks', 'category', 'created_by', 'category_name', 'difficulty_level',  'time_limit', 'reviewed_by', 'updated_at', 'created_at', 'subject', 'question_usage_years']
+        fields = ['id', 'text', 'explanation', 'marks', 'exam', 'options', 'status', 'remarks', 'category', 'created_by', 'category_name', 'difficulty_level',  'time_limit', 'reviewed_by', 'updated_at', 'created_at', 'subject', 'question_usage_years']
         
     # def get_created_by_name(self, obj):
     #     return obj.created_by if obj.exam and obj.created_by else None
@@ -225,3 +225,83 @@ class UserAnswerSerializer(serializers.ModelSerializer):
     class Meta:
         model = UserAnswer
         fields = ['id', 'exam_attempt', 'question', 'question_text', 'selected_option', 'selected_option_text', 'is_correct']
+
+
+
+
+class OrganizationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Organization
+        fields = ["id", "name", "address"]
+        
+        
+class DepartmentSerializer(serializers.ModelSerializer):
+    organization = serializers.PrimaryKeyRelatedField(queryset=Organization.objects.all())
+
+    class Meta:
+        model = Department
+        fields = ["id", "name", "organization"]
+    
+    def create(self, validated_data):
+        organization = validated_data.pop('organization')  # This pops out the organization related data
+        department = Department.objects.create(organization=organization, **validated_data)
+        return department
+        
+class PositionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Position
+        fields = ["id", "title"]
+
+
+class PastExamSerializer(serializers.ModelSerializer):
+    organization_name = serializers.CharField(source="organization.name", read_only=True)
+    department_name = serializers.CharField(source="department.name", read_only=True, allow_null=True)
+    position_name = serializers.CharField(source="position.title", read_only=True)
+    questions_count = serializers.SerializerMethodField()
+    questions = QuestionSerializer(many=True, read_only=True)  # Detailed questions list
+
+    class Meta:
+        model = PastExam
+        fields = [
+            "id", "title", "organization_name", "department_name", "position_name", "duration",
+            "exam_date", "is_published", "questions_count", "questions"
+        ]
+
+    def get_questions_count(self, obj):
+        return obj.questions.count()
+
+
+
+
+class PastExamCreateSerializer(serializers.ModelSerializer):
+    organization = serializers.PrimaryKeyRelatedField(
+        queryset=Organization.objects.all(), write_only=True
+    )
+    department = serializers.PrimaryKeyRelatedField(
+        queryset=Department.objects.all(), write_only=True, required=False, allow_null=True
+    )
+    position = serializers.PrimaryKeyRelatedField(
+        queryset=Position.objects.all(), write_only=True
+    )
+    file = serializers.FileField(required=False, write_only=True)  # For file upload; not stored on model
+
+    class Meta:
+        model = PastExam
+        fields = [
+            "id",
+            "title",
+            "organization",
+            "department",
+            "position",
+            "exam_date",
+            "duration",
+            "is_published",
+            "file",
+        ]
+
+    def create(self, validated_data):
+        # Remove file key (model doesn't have it)
+        validated_data.pop("file", None)
+        # Create the PastExam instance using the validated data
+        instance = PastExam.objects.create(**validated_data)
+        return instance

@@ -1,7 +1,7 @@
 from django.urls import path, include
 from django.views.generic import TemplateView
 from rest_framework.routers import DefaultRouter
-from .views import ExamCreateView, ExamViewSet, CategoryListView, CreateCategoryView, ExamDetailView, ExamAttemptViewSet, user_attempts_by_month, user_exam_attempts_by_month, LeaderboardListView, QuestionViewSet, QuestionOptionViewSet, UserCreatedExamsView, ExamUploadView, CategoryViewSet, ExamDifficultyView, QuestionHistoryByMonthView, QuestionHistoryByTeacherMonthYearView, TeacherListView, StudentListView, UserQuestionSummaryView, ExamSubjectsQuestionCountView, exam_leaderboard_view, UserExamSummaryAPIView, UserAnswerViewSet
+from .views import *
 # from .status import SubmitExamToAdminView, SendExamForReviewView, ReviewExamView, ReturnExamToCreatorView, PublishExamView
 from .status import StatusViewSet
 # from .question_status import QuestionStatusViewSet, AssignedQuestionsSummaryAPIView, QuestionsByUserForReviewerView
@@ -17,6 +17,13 @@ router.register(r'status', StatusViewSet, basename='status')
 router.register(r'user-answers', UserAnswerViewSet, basename='user-answer')
 # router.register(r'question-status', QuestionStatusViewSet)
 # router.register(r'question_upload', QuestionUplaodViewset)
+
+router.register(r'organizations', OrganizationViewSet, basename="organization")
+router.register(r'departments', DepartmentViewSet, basename="department")
+router.register(r'positions', PositionViewSet, basename="position")
+router.register(r'past-exams', PastExamViewSet, basename="past_exam")
+
+
 
 urlpatterns = [
     path('', include(router.urls)),
@@ -100,10 +107,26 @@ urlpatterns = [
     path('exam_room/<uuid:exam_id>/', TemplateView.as_view(template_name='Html/custom/invitation/exam_room.html'), name='exam_room'),
     
     
+    
+    
+    
+    path('update-question-explanation/', UpdateQuestionExplanationView.as_view(), name='update-question-explanation'),
 
     
     
 ] + [
     path('attempts/user_best_attempts/', BestAttemptsView.as_view(), name='user_best_attempts'),
     path('attempts/user_attempts/', UserAttemptsView.as_view(), name='user_attempts'),
+]
+
+
+
+# past exam 
+
+urlpatterns += [
+    path('past-exams/', PastExamListView.as_view(), name='past-exam-list'),
+    path("past-exams/<int:pk>/", PastExamDetailView.as_view(), name="past-exam-detail"),
+    path("past-exams/<int:exam_id>/submit/", SubmitPastExamAttemptView.as_view(), name="past-exam-submit"),
+    path('past_exam_create/', TemplateView.as_view(template_name='Html/custom/past_exam_create.html'), name='past_exam_create'),
+    path('past_exam_start/<int:pk>/', TemplateView.as_view(template_name='Html/custom/past_exam_start.html'), name='past_exam_start'),
 ]

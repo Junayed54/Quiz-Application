@@ -111,8 +111,8 @@ document.addEventListener('DOMContentLoaded', function () {
                 datasets: [{
                     label: 'Correct Answers per Attempt',
                     data: correctAnswers, // Reversed correct answers
-                    borderColor: 'blue',
-                    backgroundColor: 'rgba(0, 123, 255, 0.2)',
+                    borderColor: ' #faed26',
+                    backgroundColor: 'white',
                     borderWidth: 2,
                     fill: true
                 }]

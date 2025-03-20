@@ -4,10 +4,10 @@ from rest_framework.response import Response
 from rest_framework.decorators import action
 from rest_framework.views import APIView
 from rest_framework.generics import ListAPIView
-from .serializers import LeaderboardSerializer, ResultSerializer, UserAnswerSerializer, ExamSerializer, ExamCategorySerializer, QuestionSerializer, QuestionOptionSerializer, CategorySerializer, ExamDifficultySerializer, ExamAttemptSerializer, SubjectQuestionCountSerializer
+from .serializers import *
 from .tasks import auto_submit_exam
 from users.serializers import UserSerializer
-from .models import Exam, ExamCategory, Status, ExamDifficulty, Question, QuestionOption, UserAnswer, Subject, QuestionUsage, Leaderboard, ExamAttempt, Category
+from .models import *
 from subscription.models import *
 from .permissions import IsAdminOrReadOnly, IsAdmin
 from django.utils import timezone
@@ -1791,3 +1791,272 @@ class ExamCreateView(APIView):
 
         except Exception as e:
             return Response({"error": f"An error occurred while fetching questions: {str(e)}"}, status=status.HTTP_400_BAD_REQUEST)
+        
+        
+        
+        
+class OrganizationViewSet(viewsets.ModelViewSet):
+    queryset = Organization.objects.all()
+    serializer_class = OrganizationSerializer
+    
+class DepartmentViewSet(viewsets.ModelViewSet):
+    queryset = Department.objects.all()
+    serializer_class = DepartmentSerializer
+    
+class PositionViewSet(viewsets.ModelViewSet):
+    queryset = Position.objects.all()
+    serializer_class = PositionSerializer
+    
+
+
+
+
+class PastExamViewSet(viewsets.ModelViewSet):
+    queryset = PastExam.objects.all().order_by("-exam_date")
+    parser_classes = [MultiPartParser, FormParser]
+
+    def get_serializer_class(self):
+        if self.action in ["create", "update"]:
+            return PastExamCreateSerializer
+        return PastExamSerializer
+
+    def create(self, request, *args, **kwargs):
+        print("hello")
+        serializer = PastExamCreateSerializer(data=request.data)
+       
+        if serializer.is_valid():
+            past_exam = serializer.save()  # Create PastExam
+
+            # Handle file upload if provided
+            if "file" in request.FILES:
+                file = request.FILES["file"]
+                result = self.process_questions(file, past_exam)
+                if "error" in result:
+                    print(result)
+                    return Response(result, status=status.HTTP_400_BAD_REQUEST)
+
+            return Response(PastExamSerializer(past_exam).data, status=status.HTTP_201_CREATED)
+
+        if serializer.errors:
+            print(serializer.errors)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def process_questions(self, file, past_exam):
+        """Processes the uploaded Excel file and gets or creates questions."""
+        try:
+            df = pd.read_excel(file)
+        except Exception as e:
+            return {"error": f"Error reading file: {str(e)}"}
+
+        required_columns = ["Question", "Option1", "Option2", "Option3", "Option4", "Answer", "Difficulty", "Subject"]
+        df_columns_lower = [col.lower() for col in df.columns]
+
+        # Check if 'Category' exists in the uploaded file
+        has_category = "category" in df_columns_lower
+        if has_category:
+            required_columns.append("Category")
+
+        # Find missing columns
+        missing_cols = [col for col in required_columns if col.lower() not in df_columns_lower]
+        if missing_cols:
+            return {"error": f"Missing columns: {', '.join(missing_cols)}"}
+
+        question_count = 0
+        updated_questions = 0
+
+        try:
+            with transaction.atomic():
+                for _, row in df.iterrows():
+                    row = {col.lower(): value for col, value in row.items()}  # Normalize column access
+
+                    question_text = row["question"]
+                    options = [row["option1"], row["option2"], row["option3"], row["option4"]]
+                    correct_answer = row["answer"].strip().lower().replace(" ", "")
+
+                    # Validate difficulty level
+                    try:
+                        difficulty_level = int(row["difficulty"])
+                    except ValueError:
+                        return {"error": f"Invalid difficulty level '{row['difficulty']}'. Must be an integer."}
+
+                    if difficulty_level not in range(1, 7):
+                        return {"error": f"Invalid difficulty level {difficulty_level}. Must be between 1 and 6."}
+
+                    # Get or create the Subject
+                    subject, _ = Subject.objects.get_or_create(name=row["subject"])
+
+                    # Handle category (if present)
+                    category = None
+                    if has_category and row.get("category"):
+                        category, _ = Category.objects.get_or_create(name=row["category"])
+
+                    # Get or create the Question
+                    question, created = Question.objects.get_or_create(
+                        text=question_text,
+                        defaults={
+                            "marks": 1,
+                            "category": category,
+                            "difficulty_level": difficulty_level,
+                            "subject": subject,
+                        }
+                    )
+
+                    # Associate the question with the past exam (if not already linked)
+                    if not question.past_exams.filter(id=past_exam.id).exists():
+                        question.past_exams.add(past_exam)
+                        if created:
+                            question_count += 1
+                        else:
+                            updated_questions += 1
+
+                    # Remove old options and add new ones if the question was just created
+                    if created:
+                        question.options.all().delete()  # Clear existing options
+                        for i, option_text in enumerate(options, start=1):
+                            is_correct = option_text.strip().lower().replace(" ", "") == correct_answer
+                            QuestionOption.objects.create(question=question, text=option_text, is_correct=is_correct)
+
+                return {
+                    "message": f"{question_count} new questions added, {updated_questions} existing questions linked."
+                }
+
+        except Exception as e:
+            return {"error": f"An error occurred: {str(e)}"}
+
+
+
+    @action(detail=False, methods=["get"])
+    def list_by_organization(self, request):
+        """List past exams filtered by organization ID."""
+        organization_id = request.query_params.get("organization_id")
+        if not organization_id:
+            return Response({"error": "organization_id is required"}, status=status.HTTP_400_BAD_REQUEST)
+
+        exams = PastExam.objects.filter(organization_id=organization_id)
+        serializer = self.get_serializer(exams, many=True)
+        return Response(serializer.data)
+
+    @action(detail=True, methods=["get"])
+    def questions(self, request, pk=None):
+        """Retrieve questions for a specific past exam."""
+        past_exam = get_object_or_404(PastExam, pk=pk)
+        questions = past_exam.questions.all()
+        return Response({"questions": [q.text for q in questions]})
+
+
+
+
+class PastExamListView(generics.ListAPIView):
+    """
+    API view to list all past exams.
+    """
+    queryset = PastExam.objects.all().order_by("-exam_date")
+    serializer_class = PastExamSerializer
+    permission_classes = [IsAuthenticated]
+    
+class PastExamDetailView(generics.RetrieveAPIView):
+    """
+    API view to get details of a single past exam.
+    """
+    queryset = PastExam.objects.all()
+    serializer_class = PastExamSerializer
+    permission_classes = [IsAuthenticated]
+    
+    
+class SubmitPastExamAttemptView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, exam_id):
+        user = request.user
+        past_exam = get_object_or_404(PastExam, id=exam_id)
+
+        attempt, created = PastExamAttempt.objects.get_or_create(
+            user=user,
+            past_exam=past_exam,
+            defaults={'total_questions': past_exam.questions.count()}
+        )
+
+        if not created:
+            return Response({"message": "You have already attempted this exam."}, status=status.HTTP_400_BAD_REQUEST)
+
+        submitted_answers = request.data.get("answers", [])
+
+        correct_count = 0
+        wrong_count = 0
+        answered_count = 0
+
+        with transaction.atomic():
+            for answer in submitted_answers:
+                question_id = answer.get("question_id")
+                selected_option_id = answer.get("selected_option_id")
+
+                question = past_exam.questions.filter(id=question_id).first()
+                if not question:
+                    continue
+
+                answered_count += 1  
+
+                correct_options = question.options.filter(is_correct=True).values_list("id", flat=True)
+
+                if selected_option_id in correct_options:
+                    correct_count += 1
+                else:
+                    wrong_count += 1
+
+            attempt.answered_questions = answered_count  # Save the number of answered questions
+            attempt.correct_answers = correct_count
+            attempt.wrong_answers = wrong_count
+            attempt.calculate_score()
+            attempt.save()
+
+        return Response({
+            "message": "Exam submitted successfully!",
+            "total_questions": past_exam.questions.count(),
+            "answered_questions": answered_count,
+            "correct_answers": correct_count,
+            "wrong_answers": wrong_count,
+            "score": attempt.score
+        }, status=status.HTTP_200_OK)
+
+
+class UpdateQuestionExplanationView(APIView):
+    parser_classes = (MultiPartParser, FormParser)
+    permission_classes = [IsAuthenticated]  # Only admin can upload
+
+    def post(self, request, *args, **kwargs):
+        file = request.FILES.get('file')
+        if not file:
+            return JsonResponse({"error": "No file provided"}, status=400)
+
+        try:
+            # Read the Excel file
+            df = pd.read_excel(file, engine='openpyxl')
+
+            # Ensure required columns exist
+            required_columns = {"text", "explanation"}
+            if not required_columns.issubset(df.columns):
+                return JsonResponse({"error": f"Missing required columns: {required_columns - set(df.columns)}"}, status=400)
+
+            updated_questions = 0
+
+            for _, row in df.iterrows():
+                question_text = str(row["text"]).strip()
+                explanation = str(row["explanation"]).strip() if pd.notna(row["explanation"]) else None
+
+                try:
+                    question = Question.objects.get(text=question_text)
+                    if not question.explanation and explanation:
+                        question.explanation = explanation
+                        question.save()
+                        updated_questions += 1
+
+                except ObjectDoesNotExist:
+                    # If question doesn't exist, skip it (or create a new one if needed)
+                    pass
+
+            return JsonResponse({"message": f"{updated_questions} questions updated."})
+
+        except Exception as e:
+            return JsonResponse({"error": str(e)}, status=500)
+        
+        

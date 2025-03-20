@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Exam, ExamCategory, Status, Question, QuestionUsage, QuestionOption, ExamAttempt, Leaderboard, Category, ExamDifficulty
+from .models import *
 import nested_admin
 
 
@@ -129,3 +129,40 @@ class LeaderboardAdmin(admin.ModelAdmin):
     list_filter = ('exam', 'score')
 
 
+class PastExamAttemptInline(admin.TabularInline):
+    model = PastExamAttempt
+    extra = 1  # Number of empty rows displayed in the inline formset
+
+# PastExamAdmin
+class PastExamAdmin(admin.ModelAdmin):
+    list_display = ('title', 'organization', 'department', 'position', 'exam_date', 'is_published', 'duration')
+    list_filter = ('organization', 'department', 'position', 'is_published')
+    search_fields = ('title', 'organization__name')
+    ordering = ('exam_date',)
+    inlines = [PastExamAttemptInline]  # Show related attempts inline
+
+    # Fields displayed on the form when adding/editing a PastExam
+    fieldsets = (
+        (None, {
+            'fields': ('title', 'organization', 'department', 'position', 'exam_date', 'duration', 'is_published')
+        }),
+        ('Questions', {
+            'fields': ('questions',)
+        }),
+    )
+
+# PastExamAttemptAdmin
+class PastExamAttemptAdmin(admin.ModelAdmin):
+    list_display = ('user', 'past_exam', 'attempt_time', 'score', 'answered_questions', 'correct_answers', 'wrong_answers')
+    list_filter = ('past_exam', 'user')
+    search_fields = ('user__username', 'past_exam__title')
+    ordering = ('-attempt_time',)
+
+    def save_model(self, request, obj, form, change):
+        """ Recalculate score before saving the PastExamAttempt """
+        obj.calculate_score()
+        super().save_model(request, obj, form, change)
+
+# Registering the models and admin classes
+admin.site.register(PastExam, PastExamAdmin)
+admin.site.register(PastExamAttempt, PastExamAttemptAdmin)

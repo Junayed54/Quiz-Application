@@ -456,8 +456,11 @@ document.addEventListener("DOMContentLoaded", function () {
     submitButton.addEventListener("click", () => submitExam());
 
     function submitExam() {
+        questionContainer.classList.add('d-none');
+        submitButton.disabled = true;
         socket.send(JSON.stringify({ action: "submit_exam" }));
         alert("Exam submitted successfully.");
+        
         // Trigger the exam complete action from the server side
     }
 

@@ -29,37 +29,28 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function fetchExamDetails() {
-        fetch(`/quiz/exams/${examId}/start/`, {
+        fetch(`/quiz/past-exams/${examId}/`, {
             method: 'GET',
             headers: { 'Authorization': `Bearer ${accessToken}` }
         })
         .then(response => response.json())
         .then(data => {
-            document.getElementById('exam-info').innerHTML = `<h3 class="text-xl font-bold">${data.title}</h3>`;
-            timeRemaining = data.duration;
-            timerInterval = setInterval(updateTimer, 1000);
-            fetchQuestions();
-        })
-        .catch(error => console.error('Error fetching exam details:', error));
-    }
-
-    function fetchQuestions() {
-        fetch(`/quiz/exams/${examId}/questions/`, {
-            method: 'GET',
-            headers: { 'Authorization': `Bearer ${accessToken}` }
-        })
-        .then(response => response.json())
-        .then(data => {
-            
             console.log(data);
+            document.getElementById('exam-info').innerHTML = `<h3 class="text-xl font-bold">${data.title}</h3>`;
+            
+            // Convert the duration (in minutes) to seconds
+            timeRemaining = data.duration * 60;  // Multiply by 60 to convert minutes to seconds
+            
+            timerInterval = setInterval(updateTimer, 1000);
             questions = data.questions;
             answers = new Array(questions.length).fill(null);
             document.getElementById('exam-info').innerHTML += `<p>Total Questions: ${questions.length}</p>`;
             updateSkippedCount();
             if (questions.length > 0) showQuestion(currentQuestionIndex);
         })
-        .catch(error => console.error('Error fetching questions:', error));
+        .catch(error => console.error('Error fetching exam details:', error));
     }
+    
 
     function showQuestion(index) {
         const question = questions[index];
@@ -68,7 +59,6 @@ document.addEventListener('DOMContentLoaded', function() {
         
         usesSection.innerHTML = `<strong>Uses:</strong> (${question.question_usage_years})`;
         const optionsContainer = document.getElementById('options-container');
-        // optionsContainer.classList.remove('d-none');
         optionsContainer.innerHTML = '';
         question.options.forEach(option => {
             const optionElement = document.createElement('div');
@@ -83,7 +73,6 @@ document.addEventListener('DOMContentLoaded', function() {
             `;
             
             optionsContainer.appendChild(optionElement);
-            
         });
 
         const selectedAnswer = answers[index] && answers[index].option;
@@ -149,7 +138,6 @@ document.addEventListener('DOMContentLoaded', function() {
         event.preventDefault();
         if (skippedQuestions.length > 0) {
             currentQuestionIndex = skippedQuestions[0];
-            // skippedQuestions.shift();
             updateSkippedCount();
             showQuestion(currentQuestionIndex);
         }
@@ -178,30 +166,34 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function submitExam() {
-        
         clearInterval(timerInterval);
-        fetch(`/quiz/exams/${examId}/submit/`, {
+        
+        // Preparing the answers array with correct key names
+        const formattedAnswers = answers.map(answer => ({
+            question_id: answer.question_id,
+            selected_option_id: answer.option // Changed from `option` to `selected_option_id`
+        }));
+    
+        fetch(`/quiz/past-exams/${examId}/submit/`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${accessToken}`
             },
-            body: JSON.stringify({ answers: answers })
+            body: JSON.stringify({ answers: formattedAnswers }) // Sending correctly formatted answers
         })
         .then(response => response.json())
-        .then(data => displayResults(data.correct_answers, data.wrong_answers, data.passed, data))
+        .then(data => displayResults(data.correct_answers, data.wrong_answers, data.score, data))
         .catch(error => console.error('Error submitting exam:', error));
     }
+    
 
     function updateSkippedCount() {
         document.getElementById('skipped-questions').textContent = `Skipped Questions: ${skippedQuestions.length}`;
-        updateReviewSkippedButton(); // Update the visibility of the review button
+        updateReviewSkippedButton();
     }
 
     function displayResults(correctAnswers, wrongAnswers, passed, data) {
-        console.log(data);
-        
-        // Populate the modal content dynamically
         document.getElementById('resultContainer').innerHTML = `
             <h4 class="text-center">Exam Submitted!</h4>
             <p><strong>Correct Answers:</strong> ${correctAnswers}</p>
@@ -210,17 +202,14 @@ document.addEventListener('DOMContentLoaded', function() {
             <p><strong>Skipped Questions:</strong> ${skippedQuestions.length}</p>
         `;
         
-        // Open the modal using Bootstrap's JavaScript API
         const modalElement = document.getElementById('resultsModal');
         const modal = new bootstrap.Modal(modalElement);
         modal.show();
 
         modalElement.addEventListener('hidden.bs.modal', function() {
-            // const examId = window.location.pathname.split('/')[3];
             window.location.href = `/quiz/exam_detail/${examId}/`;
         });
     }
-    
 
     fetchExamDetails();
 });

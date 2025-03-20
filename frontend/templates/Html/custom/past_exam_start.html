@@ -1,3 +1,95 @@
+{% comment %} {% include "../partials/mainhead.html" %}
+
+<style>
+    body {
+        margin: 0;
+        font-family: Arial, sans-serif;
+        background: #344C64;
+        color: white;
+    }
+    .quiz-container {
+        text-align: center;
+        max-width: 800px;
+        width: 90%;
+        margin: 0 auto;
+        padding: 10px;
+    }
+    .quiz-card {
+        background: #577B8D;
+        border-radius: 20px;
+        padding: 20px;
+        box-shadow: 0px 5px 20px rgba(0, 0, 0, 0.5);
+        color: white;
+    }
+    .question-box {
+        background: #57A6A1;
+        border-radius: 20px;
+        padding: 20px;
+        font-size: 1.5rem;
+        margin-bottom: 20px;
+        box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.5);
+    }
+    .options-container {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+    }
+    .option {
+        border-radius: 25px;
+        padding: 15px;
+        font-size: 1rem;
+        background: #57A6A1;
+        color: white;
+        text-align: left;
+        cursor: pointer;
+        transition: all 0.3s ease-in-out;
+    }
+    .option:hover {
+        transform: scale(1.05);
+        box-shadow: 0px 4px 15px rgba(255, 255, 255, 0.2);
+    }
+</style>
+
+<body>
+    {% include "../partials/switcher.html" %}
+    <div class="page">
+        {% include "../partials/header.html"%}
+        {% include "../partials/sidebar.html" %}
+
+        <div class="main-content app-content">
+            <div class="quiz-container my-5">
+                <div class="card quiz-card shadow-lg mx-auto">
+                    <div class="card-body">
+                        <!-- Exam Title -->
+                        <h2 class="text-center" id="exam-title"></h2>
+                        <p class="text-center" id="exam-date"></p>
+                        <p class="text-center" id="exam-duration"></p>
+
+                        <!-- Exam Questions and Options will be populated by JS -->
+                        <div id="question-container" class="mb-4 text-center"></div>
+
+                        <div class="navigation-buttons d-flex justify-content-between align-items-center my-4">
+                            <button type="button" id="prev-question" class="btn btn-prev btn-lg d-none">Previous</button>
+                            <button type="button" id="skip-question" class="btn btn-skip btn-lg d-none">Skip</button>
+                            <button type="button" id="next-question" class="btn btn-next btn-lg d-none">Next</button>
+                            <button type="button" id="submit-exam" class="btn btn-submit btn-lg d-none">Submit</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {% include "../partials/footer.html" %}
+    </div>
+
+    {% include "../partials/commonjs.html"%}
+    {% include "../partials/custom_switcherjs.html"%}
+    
+    <!-- JavaScript for dynamic loading -->
+    <script src="../../../static/assets/js/custom.js"></script>
+    <script src="../../../static/js/past_exam_start.js"></script> <!-- Link to your JS file -->
+</body>
+</html> {% endcomment %}
 {% comment %} @SPK@include("partials/mainhead.html") {% endcomment %}
 {% include "../partials/mainhead.html"%}
 
@@ -199,6 +291,6 @@
     {% include "../partials/commonjs.html"%}
     {% include "../partials/custom_switcherjs.html"%}
     <script src="../../../static/assets/js/custom.js"></script>
-    <script src="../../../static/Js/start_exam.js"></script>
+    <script src="../../../static/js/past_exam_start.js"></script>
 </body>
 </html>
