@@ -250,13 +250,13 @@ class DepartmentSerializer(serializers.ModelSerializer):
 class PositionSerializer(serializers.ModelSerializer):
     class Meta:
         model = Position
-        fields = ["id", "title"]
+        fields = ["id", "name"]
 
 
 class PastExamSerializer(serializers.ModelSerializer):
     organization_name = serializers.CharField(source="organization.name", read_only=True)
     department_name = serializers.CharField(source="department.name", read_only=True, allow_null=True)
-    position_name = serializers.CharField(source="position.title", read_only=True)
+    position_name = serializers.CharField(source="position.name", read_only=True)
     questions_count = serializers.SerializerMethodField()
     questions = QuestionSerializer(many=True, read_only=True)  # Detailed questions list
 

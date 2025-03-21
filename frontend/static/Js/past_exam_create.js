@@ -418,7 +418,7 @@ document.addEventListener("DOMContentLoaded", function () {
     
             fetch('/quiz/positions/', {
                 method: "POST",
-                body: JSON.stringify({ "title": newPosition }),
+                body: JSON.stringify({ "name": newPosition }),
                 headers: {
                     "Authorization": `Bearer ${token}`,
                     "Content-Type": "application/json"

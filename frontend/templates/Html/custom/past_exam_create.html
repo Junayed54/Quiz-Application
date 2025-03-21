@@ -1,5 +1,6 @@
 {% comment %} @SPK@include("partials/mainhead.html") {% endcomment %}
 {% include "../partials/mainhead.html"%}
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 </head>
 
 <body>
@@ -61,7 +62,7 @@
                         <div class="mb-3">
                             <label for="position" class="form-label fw-semibold">Position</label>
                             <div class="input-group">
-                                <select id="position" class="form-select " required>
+                                <select id="position" class="form-select" required>
                                     <option value="">Select Position</option>
                                 </select>
                                 <button type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#addPositionModal">

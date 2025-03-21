@@ -20,7 +20,7 @@ document.addEventListener('DOMContentLoaded', function() {
         window.location.href = '/login/';
         return;
     }
-
+    
 
     // 2. Function to validate token with the backend
     function validateToken() {
