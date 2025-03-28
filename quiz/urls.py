@@ -10,6 +10,7 @@ from .attampts import BestAttemptsView, UserAttemptsView
 router = DefaultRouter()
 router.register(r'exams', ExamViewSet, basename='exam')
 router.register(r'attempts', ExamAttemptViewSet, basename='attempts')
+
 router.register(r'questions', QuestionViewSet, basename='questions')
 router.register(r'question-options', QuestionOptionViewSet)
 router.register(r'categories', CategoryViewSet)
@@ -24,6 +25,8 @@ router.register(r'positions', PositionViewSet, basename="position")
 router.register(r'past-exams', PastExamViewSet, basename="past_exam")
 
 
+
+router.register(r'pastExamAttempts', PastExamAttemptViewSet, basename='pastExamAttempts')
 
 urlpatterns = [
     path('', include(router.urls)),
@@ -129,4 +132,8 @@ urlpatterns += [
     path("past-exams/<int:exam_id>/submit/", SubmitPastExamAttemptView.as_view(), name="past-exam-submit"),
     path('past_exam_create/', TemplateView.as_view(template_name='Html/custom/past_exam_create.html'), name='past_exam_create'),
     path('past_exam_start/<int:pk>/', TemplateView.as_view(template_name='Html/custom/past_exam_start.html'), name='past_exam_start'),
+    
+    
+    path('past_exam_details/<int:pk>/', TemplateView.as_view(template_name='Html/custom/past_exam_details.html'), name='past_exam_details'),
+    path('past_exam_result/<int:pk>/', TemplateView.as_view(template_name='Html/custom/past_exam_result.html'), name='past_exam_results'),
 ]

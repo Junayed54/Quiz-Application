@@ -1946,13 +1946,30 @@ class PastExamViewSet(viewsets.ModelViewSet):
 
 
 
-class PastExamListView(generics.ListAPIView):
-    """
-    API view to list all past exams.
-    """
-    queryset = PastExam.objects.all().order_by("-exam_date")
-    serializer_class = PastExamSerializer
-    permission_classes = [IsAuthenticated]
+class PastExamListView(APIView):
+    def get(self, request):
+        organization = request.GET.get('organization')
+        department = request.GET.get('department')
+        position = request.GET.get('position')
+        exam_date = request.GET.get('exam_date')
+
+        # exams = PastExam.objects.filter(is_published=True)
+        exams = PastExam.objects.all()
+        if organization:
+            exams = exams.filter(organization__id=organization)
+        if department:
+            exams = exams.filter(department__id=department)
+        if position:
+            exams = exams.filter(position__id=position)
+        if exam_date:
+            exams = exams.filter(exam_date=exam_date)
+
+        if not (organization or department or position or exam_date):
+            exams = list(exams)
+            random.shuffle(exams)
+
+        serializer = PastExamSerializer(exams, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
     
 class PastExamDetailView(generics.RetrieveAPIView):
     """
@@ -2058,5 +2075,105 @@ class UpdateQuestionExplanationView(APIView):
 
         except Exception as e:
             return JsonResponse({"error": str(e)}, status=500)
-        
-        
+
+
+
+# past Exam
+class PastExamAttemptViewSet(viewsets.ViewSet):
+    queryset = PastExamAttempt.objects.all()
+    serializer_class = PastExamSerializer
+    permission_classes = []
+
+    @action(detail=False, methods=['post'], permission_classes=[IsAuthenticated])
+    def all_attempts(self, request):
+        user_id = request.data.get('user_id', None)
+        user = User.objects.get(id=user_id)
+        time_period = request.query_params.get('time_period', 'all')
+
+        user_attempts = PastExamAttempt.objects.filter(user=user).prefetch_related('past_exam')
+
+        if time_period == 'weekly':
+            user_attempts = user_attempts.filter(attempt_time__gte=timezone.now() - timedelta(weeks=1))
+        elif time_period == 'monthly':
+            user_attempts = user_attempts.filter(attempt_time__gte=timezone.now() - timedelta(days=30))
+        elif time_period == 'yearly':
+            user_attempts = user_attempts.filter(attempt_time__gte=timezone.now() - timedelta(days=365))
+
+        if not user_attempts.exists():
+            return Response({"message": "No past exam attempts found for this user."}, status=status.HTTP_404_NOT_FOUND)
+
+        attempts_data = []
+        for attempt in user_attempts:
+            past_exam = attempt.past_exam
+            percentage = (attempt.correct_answers / attempt.total_questions) * 100 if attempt.total_questions > 0 else 0
+
+            attempt_detail = {
+                'exam_title': past_exam.title,
+                'attempt_time': attempt.attempt_time,
+                'total_questions': attempt.total_questions,
+                'answered_questions': attempt.answered_questions,
+                'correct_answers': attempt.correct_answers,
+                'wrong_answers': attempt.wrong_answers,
+                'score': attempt.score,
+                'percentage': round(percentage, 2),
+            }
+            attempts_data.append(attempt_detail)
+
+        return Response(attempts_data, status=status.HTTP_200_OK)
+
+    @action(detail=False, methods=['get'], permission_classes=[IsAuthenticated])
+    def user_attempts(self, request):
+        user = request.user
+        past_exam_id = request.query_params.get('past_exam_id', None)
+
+        if not past_exam_id:
+            return Response({"error": "past_exam_id parameter is required."}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            past_exam = PastExam.objects.get(id=past_exam_id)
+        except PastExam.DoesNotExist:
+            return Response({"error": "Past exam not found."}, status=status.HTTP_404_NOT_FOUND)
+
+        user_attempts = PastExamAttempt.objects.filter(user=user, past_exam=past_exam)
+
+        if not user_attempts.exists():
+            return Response({"message": "No attempts found for this past exam."}, status=status.HTTP_404_NOT_FOUND)
+
+        serializer = PastExamAttemptSerializer(user_attempts, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    @action(detail=False, methods=['post'], permission_classes=[IsAuthenticated])
+    def highest_attempts(self, request):
+        # user_id = request.data.get('user_id', None)
+        # user = User.objects.get(id=user_id)
+        user = request.user
+        attempted_exams = PastExam.objects.filter(exam_attempts__user=user).distinct()
+        print("hello world")
+        exams_data = []
+        for past_exam in attempted_exams:
+            attempts = PastExamAttempt.objects.filter(user=user, past_exam=past_exam).annotate(
+                position=Window(
+                    expression=Rank(),
+                    order_by=F('correct_answers').desc()
+                )
+            )
+            highest_attempt = attempts.order_by('-correct_answers').first()
+            unique_participants_count = PastExamAttempt.objects.filter(past_exam=past_exam).values('user').distinct().count()
+
+            exams_data.append({
+                'past_exam_id': past_exam.id,
+                'exam_title': past_exam.title,
+                'total_questions': past_exam.total_questions,
+                'unique_participants': unique_participants_count,
+                'highest_attempt': {
+                    'attempt_id': highest_attempt.id,
+                    'answered_questions': highest_attempt.answered_questions,
+                    'correct_answers': highest_attempt.correct_answers,
+                    'wrong_answers': highest_attempt.wrong_answers,
+                    'score': highest_attempt.score,
+                    'attempt_time': highest_attempt.attempt_time,
+                    'position': highest_attempt.position
+                }
+            })
+
+        return Response({'exams': exams_data}, status=status.HTTP_200_OK)

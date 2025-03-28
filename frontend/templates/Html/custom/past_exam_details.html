@@ -1,0 +1,192 @@
+{% comment %} Include Main Header {% endcomment %}
+{% include "../partials/mainhead.html" %}
+
+<style>
+    /* Custom scrollbar styling */
+    .question-table-container::-webkit-scrollbar {
+        height: 8px;
+        width: 8px;
+    }
+    .question-table-container::-webkit-scrollbar-thumb {
+        background-color: #0056b3;
+        border-radius: 5px;
+    }
+    .question-table-container::-webkit-scrollbar-track {
+        background-color: #f0f0f0;
+    }
+
+    /* Custom card shadow */
+    .custom-card {
+        border-radius: 10px;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    }
+
+    .multi-button {
+        display: flex;
+        justify-content: flex-start;
+        gap: 10px;
+        width: auto;
+        margin-left: 20px;
+        margin-bottom: 10px;
+    }
+
+    button {
+        border-radius: 10px;
+        font-size: 10px;
+        padding: 0;
+        cursor: pointer;
+        transition: 0.3s ease;
+        background: rgba(120, 113, 130, 0.9);
+        color: #fff;
+        border: 2px solid transparent;
+        font-weight: 600;
+        margin: 0;
+        overflow: hidden;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    button:hover {
+        position: relative;
+        background: #fff;
+        color: rgba(120, 113, 130, 0.9);
+        border: 2px solid rgba(120, 113, 130, 0.9);
+    }
+
+    .btn__text {
+        padding: 6px 8px;
+    }
+
+    .btn__icon {
+        background: rgba(120, 113, 130, 1);
+        color: #fff;
+        height: 100%;
+        align-items: center;
+        display: flex;
+        padding: 6px 12px;
+        transition: 0.3s ease;
+        border: 2px solid transparent;
+        border-radius: 5px 2px 2px 5px;
+    }
+
+    button:hover .btn__icon {
+        background: #f9f9f9;
+        color: rgba(120, 113, 130, 0.9);
+    }
+</style>
+
+</head>
+
+<body>
+    {% load static %}
+
+    {% comment %} Include Switcher, Header, and Sidebar {% endcomment %}
+    {% include "../partials/switcher.html" %}
+    <div class="page">
+        {% include "../partials/header.html" %}
+        {% include "../partials/sidebar.html" %}
+
+        <!-- Start:: Main Content -->
+        <div class="main-content app-content">
+            <div class="container mt-4">
+                <!-- Past Exam Details Card -->
+                <div class="card custom-card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h4 class="card-title text-uppercase">Past Exam Details</h4>
+                    </div>
+                    <div class="card-body">
+                        <!-- Exam Information -->
+                        <h5 style="color:#FF9D23;">Title: <span id="past-exam-title" class="text-secondary"></span></h5>
+                        <p style="color:#00879E;">Category: <span id="past-exam-category" class="text-secondary"></span></p>
+                        <p>Status: <span id="past-exam-status" class="badge bg-danger">Completed</span></p>
+
+                        <!-- Exam Details Table -->
+                        <table class="table table-bordered responsive-table" style="max-width:75%; border-color: #A59D84">
+                            <tbody>
+                                <tr>
+                                    <th>Total Questions</th>
+                                    <td id="past-exam-total-questions"></td>
+                                </tr>
+                                <tr>
+                                    <th>Total Marks</th>
+                                    <td id="past-exam-total-marks"></td>
+                                </tr>
+                                <tr>
+                                    <th>Exam Date</th>
+                                    <td id="past-exam-date"></td>
+                                </tr>
+                                <tr>
+                                    <th>Negative Marks</th>
+                                    <td id="past-exam-negative-marks"></td>
+                                </tr>
+                                <tr>
+                                    <th>Organization</th>
+                                    <td id="past-exam-organization"></td>
+                                </tr>
+                                <tr>
+                                    <th>Department</th>
+                                    <td id="past-exam-department"></td>
+                                </tr>
+                                <tr>
+                                    <th>Position</th>
+                                    <td id="past-exam-position"></td>
+                                </tr>
+                                <tr>
+                                    <th>Duration</th>
+                                    <td id="past-exam-duration"></td>
+                                </tr>
+                                <tr>
+                                    <th>Your Score</th>
+                                    <td id="past-exam-score"></td>
+                                </tr>
+                            </tbody>
+                        </table>
+
+                        <!-- Subjects Section -->
+                        <div id="subject-question-count" class="mt-4">
+                            <h5>Subjects:</h5>
+                            <div id="subject-list" class="d-flex flex-wrap gap-3">
+                                <!-- Dynamic subject content here -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div class="multi-button">
+                        <button id="start-exam-btn">
+                            <span class="btn__text">Start Exam</span>
+                            <span class="btn__icon"><i class="fa-solid fa-pen-clip"></i></span>
+                        </button>
+                        <button id="leaderboard-btn">
+                            <span class="btn__text">Leaderboard</span>
+                            <span class="btn__icon"><i class="fa-solid fa-ranking-star"></i></span>
+                        </button>
+                        <button id="past_result" class="">
+                            <span class="btn__text">Result</span>
+                            <span class="btn__icon"><i class="fa-solid fa-file-alt"></i></span>
+                        </button>
+                        <button id="download-certificate" class="">
+                            <span class="btn__text">Download Certificate</span>
+                            <span class="btn__icon"><i class="fa-solid fa-file-download"></i></span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- End:: Main Content -->
+
+        {% comment %} Include Footer and Modals {% endcomment %}
+        {% include "../partials/footer.html" %}
+        {% include "../partials/headersearch_modal.html" %}
+    </div>
+
+    {% comment %} Include Common Scripts {% endcomment %}
+    {% include "../partials/commonjs.html" %}
+    {% include "../partials/custom_switcherjs.html" %}
+
+    <!-- Custom Scripts -->
+    <script src="{% static 'assets/js/custom.js' %}"></script>
+    <script src="{% static 'Js/past_exam_detail.js' %}"></script>
+</body>
+</html>

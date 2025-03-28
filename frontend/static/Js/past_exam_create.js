@@ -297,6 +297,8 @@ document.addEventListener("DOMContentLoaded", function () {
         formData.append("position", document.getElementById("position").value);
         formData.append("exam_date", document.getElementById("exam_date").value);
         formData.append("duration", document.getElementById("duration").value);
+        formData.append("pass_mark", document.getElementById("pass_mark").value);
+        formData.append("negative_mark", document.getElementById("negative_mark").value);
         formData.append("file", document.getElementById("excel_file").files[0]);
 
         // POST the FormData; do not manually set Content-Type header for FormData.

@@ -18,9 +18,46 @@
                 <div class="card shadow-lg mx-auto" style="max-width: 100%">
 
                     <div class="card-body">
-                        <h1 class="card-title p-4" style="color: #727D73; text-align: center; font-size: 22px; font-weight: 700; text-transform: uppercase; word-spacing: 1px; letter-spacing:2px;">পূর্ববর্তী পরীক্ষাগুলো</h1>
+                        <h1 class="card-title p-4" style="color: #727D73; text-align: center; font-size: 22px; font-weight: 700; text-transform: uppercase; word-spacing: 1px; letter-spacing:2px;">
+                            পূর্ববর্তী পরীক্ষাগুলো
+                        </h1>
+                    
+                        <!-- Filter Form -->
+                        <form id="exam-filter-form" class="p-4">
+                            <div class="row">
+                                <div class="col-md-3 mt-2">
+                                    <label for="organization">Organization</label>
+                                    <select id="organization" class="form-control">
+                                        <option value="">Select Organization</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-3 mt-2">
+                                    <label for="department">Department</label>
+                                    <select id="department" class="form-control">
+                                        <option value="">Select Department</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-3 mt-2">
+                                    <label for="position">Position</label>
+                                    <select id="position" class="form-control">
+                                        <option value="">Select Position</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-3 mt-2">
+                                    <label for="exam_date">Exam Date</label>
+                                    <input type="date" id="exam_date" class="form-control">
+                                </div>
+                            </div>
+                            <div class="d-flex justify-content-start mt-3">
+                                <button type="submit" class="btn btn-primary">Filter</button>
+                            </div>
+                        </form>
+                        
+                    
+                        <!-- Exam List -->
                         <div class="row p-4" id="past-exams-list"></div>
                     </div>
+                    
 
                     <div class="card-body">
                         <h1 class="card-title p-4" style="color: #727D73; text-align: center; font-size: 22px; font-weight: 700; text-transform: uppercase; word-spacing: 1px; letter-spacing:2px;">Model Test Exams</h1>

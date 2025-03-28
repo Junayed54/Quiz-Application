@@ -263,12 +263,20 @@ class PastExamSerializer(serializers.ModelSerializer):
     class Meta:
         model = PastExam
         fields = [
-            "id", "title", "organization_name", "department_name", "position_name", "duration",
+            "id", "title", "organization_name", "department_name", "position_name",
+            "duration", "pass_mark", "negative_mark",
             "exam_date", "is_published", "questions_count", "questions"
         ]
 
     def get_questions_count(self, obj):
+        # Count the number of questions related to the past exam
         return obj.questions.count()
+
+    def get_questions(self, obj):
+        # This method allows detailed fetching of questions using the QuestionSerializer
+        questions = obj.questions.all()  # Get all the questions related to this past exam
+        return QuestionSerializer(questions, many=True).data  # Serialize questions
+
 
 
 
@@ -295,6 +303,8 @@ class PastExamCreateSerializer(serializers.ModelSerializer):
             "position",
             "exam_date",
             "duration",
+            "pass_mark",
+            "negative_mark",
             "is_published",
             "file",
         ]
@@ -305,3 +315,25 @@ class PastExamCreateSerializer(serializers.ModelSerializer):
         # Create the PastExam instance using the validated data
         instance = PastExam.objects.create(**validated_data)
         return instance
+
+
+
+class PastExamAttemptSerializer(serializers.ModelSerializer):
+    user_name = serializers.CharField(source='user.username', read_only=True)  # User's name
+    past_exam_title = serializers.StringRelatedField(source='past_exam.title', read_only=True)  # Past exam title
+    score = serializers.ReadOnlyField()
+    attempt_time = serializers.ReadOnlyField()
+
+    class Meta:
+        model = PastExamAttempt
+        fields = [
+            'id', 'user', 'user_name', 'past_exam', 'past_exam_title', 'total_questions', 
+            'answered_questions', 'correct_answers', 'wrong_answers', 'score', 'attempt_time'
+        ]
+        read_only_fields = ['attempt_time', 'score']
+
+    def to_representation(self, instance):
+        representation = super().to_representation(instance)
+        representation['user_name'] = instance.user.username
+        representation['past_exam_title'] = instance.past_exam.title
+        return representation

@@ -81,6 +81,17 @@
                             <label for="duration" class="form-label fw-semibold">Exam Duration (in minutes)</label>
                             <input type="number" id="duration" class="form-control" placeholder="Enter duration in minutes" min="1" required>
                         </div>
+
+                        <div class="mb-3">
+                            <label for="pass_mark" class="form-label fw-semibold">Pass Mark (%)</label>
+                            <input type="number" id="pass_mark" class="form-control" placeholder="Enter pass mark percentage" min="1" max="100" required>
+                        </div>
+                    
+                        <!-- Negative Mark -->
+                        <div class="mb-3">
+                            <label for="negative_mark" class="form-label fw-semibold">Negative Mark per Wrong Answer</label>
+                            <input type="number" id="negative_mark" class="form-control" placeholder="Enter negative mark" step="0.01" min="0">
+                        </div>
             
                         <!-- Upload Excel File -->
                         <div class="mb-3">
