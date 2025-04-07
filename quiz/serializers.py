@@ -7,12 +7,17 @@ User = get_user_model()
 class QuestionOptionSerializer(serializers.ModelSerializer):
     class Meta:
         model = QuestionOption
-        fields = ['id', 'text', 'is_correct', 'question']
+        fields = ['id', 'text', 'image', 'is_correct', 'question']
 
     def create(self, validated_data):
         # Here we ensure that the question is set properly from the validated_data
         return QuestionOption.objects.create(**validated_data)
 
+
+    def validate(self, data):
+        if not data.get("text") and not data.get("image"):
+            raise serializers.ValidationError("An option must have either text or an image.")
+        return data
 
 class CategorySerializer(serializers.ModelSerializer):
     class Meta:
@@ -40,7 +45,7 @@ class QuestionSerializer(serializers.ModelSerializer):
     reviewed_by = serializers.StringRelatedField(read_only=True) 
     class Meta:
         model = Question
-        fields = ['id', 'text', 'explanation', 'marks', 'exam', 'options', 'status', 'remarks', 'category', 'created_by', 'category_name', 'difficulty_level',  'time_limit', 'reviewed_by', 'updated_at', 'created_at', 'subject', 'question_usage_years']
+        fields = ['id', 'text', 'image', 'explanation', 'marks', 'exam', 'options', 'status', 'remarks', 'category', 'created_by', 'category_name', 'difficulty_level',  'time_limit', 'reviewed_by', 'updated_at', 'created_at', 'subject', 'question_usage_years']
         
     # def get_created_by_name(self, obj):
     #     return obj.created_by if obj.exam and obj.created_by else None
@@ -64,6 +69,11 @@ class QuestionSerializer(serializers.ModelSerializer):
             QuestionOption.objects.create(question=question, **option_data)
         return question
 
+    def validate(self, data):
+        text, image = data.get('text'), data.get('image')
+        if bool(text) == bool(image):  # Both are provided or both are missing
+            raise serializers.ValidationError("Provide either 'text' or 'image', not both.")
+        return data
 
 
 
@@ -258,7 +268,7 @@ class PastExamSerializer(serializers.ModelSerializer):
     department_name = serializers.CharField(source="department.name", read_only=True, allow_null=True)
     position_name = serializers.CharField(source="position.name", read_only=True)
     questions_count = serializers.SerializerMethodField()
-    questions = QuestionSerializer(many=True, read_only=True)  # Detailed questions list
+    questions = serializers.SerializerMethodField()
 
     class Meta:
         model = PastExam
@@ -273,9 +283,9 @@ class PastExamSerializer(serializers.ModelSerializer):
         return obj.questions.count()
 
     def get_questions(self, obj):
-        # This method allows detailed fetching of questions using the QuestionSerializer
-        questions = obj.questions.all()  # Get all the questions related to this past exam
-        return QuestionSerializer(questions, many=True).data  # Serialize questions
+        ordered_links = obj.pastexamquestion_set.select_related("question").order_by("order")
+        questions = [link.question for link in ordered_links]
+        return QuestionSerializer(questions, many=True).data
 
 
 

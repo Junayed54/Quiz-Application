@@ -52,35 +52,102 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
 
+    // function showQuestion(index) {
+    //     const question = questions[index];
+    //     document.getElementById('question-text').textContent = `Question ${index + 1}: ${question.text}`;
+    //     const usesSection = document.getElementById('uses-section');
+        
+    //     usesSection.innerHTML = `<strong>Uses:</strong> (${question.question_usage_years})`;
+    //     const optionsContainer = document.getElementById('options-container');
+    //     optionsContainer.innerHTML = '';
+    //     question.options.forEach(option => {
+    //         const optionElement = document.createElement('div');
+    //         optionElement.classList.add('form-check');
+    //         optionElement.innerHTML = `
+    //             <input type="radio" name="option" value="${option.id}" id="option${option.id}" class="hidden">
+    //             <label for="option${option.id}" 
+    //                 class="block cursor-pointer p-3 text-center rounded border border-gray-300 hover:bg-blue-100"
+    //                 style="background:#57A6A1; width: 100%; height: 60px; display: flex; align-items: center; justify-content: center;">
+    //                 ${option.text}
+    //             </label>
+    //         `;
+            
+    //         optionsContainer.appendChild(optionElement);
+    //     });
+
+    //     const selectedAnswer = answers[index] && answers[index].option;
+    //     if (selectedAnswer) document.querySelector(`input[name="option"][value="${selectedAnswer}"]`).checked = true;
+    //     toggleButtonVisibility(index);
+    //     document.getElementById('next-question').disabled = !selectedAnswer;
+    //     updateSkipButtonVisibility();
+    // }
+
+
     function showQuestion(index) {
         const question = questions[index];
-        document.getElementById('question-text').textContent = `Question ${index + 1}: ${question.text}`;
-        const usesSection = document.getElementById('uses-section');
-        
-        usesSection.innerHTML = `<strong>Uses:</strong> (${question.question_usage_years})`;
+        const questionContainer = document.getElementById('question-text');
         const optionsContainer = document.getElementById('options-container');
+        const usesSection = document.getElementById('uses-section');
+    
+        // Clear previous content
+        questionContainer.innerHTML = '';
         optionsContainer.innerHTML = '';
+    
+        // Display question text or image
+        if (question.image) {
+            // If the question has an image
+            questionContainer.innerHTML = `
+                <p class="text-lg font-semibold">Question ${index + 1}:</p>
+                <img src="${question.image}" alt="Question Image" class="max-w-full h-auto rounded-lg shadow-md">
+            `;
+        } else {
+            // If the question is text-based
+            questionContainer.innerHTML = `<p class="text-lg font-semibold">Question ${index + 1}: ${question.text}</p>`;
+        }
+    
+        // Display the usage section
+        usesSection.innerHTML = `<strong>Uses:</strong> (${question.question_usage_years})`;
+    
+        // Display options (either text or image)
         question.options.forEach(option => {
             const optionElement = document.createElement('div');
             optionElement.classList.add('form-check');
-            optionElement.innerHTML = `
-                <input type="radio" name="option" value="${option.id}" id="option${option.id}" class="hidden">
-                <label for="option${option.id}" 
-                    class="block cursor-pointer p-3 text-center rounded border border-gray-300 hover:bg-blue-100"
-                    style="background:#57A6A1; width: 100%; height: 60px; display: flex; align-items: center; justify-content: center;">
-                    ${option.text}
-                </label>
-            `;
-            
+    
+            if (option.image) {
+                // Option with an image
+                optionElement.innerHTML = `
+                    <input type="radio" name="option" value="${option.id}" id="option${option.id}" class="hidden">
+                    <label for="option${option.id}" class="block cursor-pointer p-3 text-center rounded border border-gray-300 hover:bg-blue-100"
+                        style="background: #57A6A1; width: 100%; height: auto; display: flex; align-items: center; justify-content: center;">
+                        <img src="${option.image}" alt="Option Image" class="max-w-full h-auto rounded-lg shadow-md">
+                    </label>
+                `;
+            } else {
+                // Option with text
+                optionElement.innerHTML = `
+                    <input type="radio" name="option" value="${option.id}" id="option${option.id}" class="hidden">
+                    <label for="option${option.id}" class="block cursor-pointer p-3 text-center rounded border border-gray-300 hover:bg-blue-100"
+                        style="background: #57A6A1; width: 100%; height: 60px; display: flex; align-items: center; justify-content: center;">
+                        ${option.text}
+                    </label>
+                `;
+            }
+    
             optionsContainer.appendChild(optionElement);
         });
-
+    
+        // Restore the previously selected answer if available
         const selectedAnswer = answers[index] && answers[index].option;
-        if (selectedAnswer) document.querySelector(`input[name="option"][value="${selectedAnswer}"]`).checked = true;
+        if (selectedAnswer) {
+            document.querySelector(`input[name="option"][value="${selectedAnswer}"]`).checked = true;
+        }
+    
+        // Manage button visibility
         toggleButtonVisibility(index);
         document.getElementById('next-question').disabled = !selectedAnswer;
         updateSkipButtonVisibility();
     }
+    
 
     function toggleButtonVisibility(index) {
         document.getElementById('prev-question').classList.toggle('d-none', index === 0);

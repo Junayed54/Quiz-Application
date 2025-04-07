@@ -243,6 +243,8 @@ STATICFILES_DIRS = [
     BASE_DIR / 'frontend' / 'static',
 ]
 STATIC_ROOT = os.path.join(BASE_DIR, 'static')
+MEDIA_URL = 'media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 STATICFILES_STORAGE = "whitenoise.storage.CompressedStaticFilesStorage"
 # Default primary key field type
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'

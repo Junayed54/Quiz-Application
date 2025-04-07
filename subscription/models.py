@@ -19,8 +19,11 @@ class SubscriptionPackage(models.Model):
     price = models.DecimalField(max_digits=8, decimal_places=2)
     duration_in_days = models.IntegerField(default=30)
     max_exams = models.IntegerField(default=5)
-    max_attampts = models.IntegerField(default=5)
+    max_attempts = models.IntegerField(default=5)
     
+    max_past_exams = models.IntegerField(default=3)  # New field for max past exams
+    max_past_exam_attempts = models.IntegerField(default=3)  # New field for max past exam attempts
+
     very_easy_percentage = models.CharField(max_length=10)
     easy_percentage = models.CharField(max_length=10)
     medium_percentage = models.CharField(max_length=10)

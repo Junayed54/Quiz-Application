@@ -146,9 +146,9 @@ class PastExamAdmin(admin.ModelAdmin):
         (None, {
             'fields': ('title', 'organization', 'department', 'position', 'exam_date', 'duration', 'is_published')
         }),
-        ('Questions', {
-            'fields': ('questions',)
-        }),
+        # ('Questions', {
+        #     'fields': ('questions',)
+        # }),
     )
 
 # PastExamAttemptAdmin

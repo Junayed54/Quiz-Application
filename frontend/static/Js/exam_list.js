@@ -140,6 +140,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Initial fetch of exams on page load
     fetchExams('/quiz/exams/');
+
 });
 
 // Function to load past exams
@@ -201,7 +202,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         <h6 class="text-muted">Organization: <span class="text-dark">${examData.organization_name}</span></h6>
                     </div>
                     <div class="card-footer bg-light d-flex justify-content-between align-items-center">
-                        <button class="btn btn-outline-primary btn-sm d-flex align-items-center" onclick="viewExamDetail(${examData.id})">
+                        <button class="btn btn-outline-primary btn-sm d-flex align-items-center" onclick="viewPastExamDetail(${examData.id})">
                             <i class="fa-solid fa-circle-info me-2"></i> Details
                         </button>
                         <button class="btn btn-outline-secondary btn-sm d-flex align-items-center" onclick="shareExam('${examData.title}', '${window.location.origin}/quiz/exam_detail/${examData.id}/')">
@@ -224,4 +225,11 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 
+function viewExamDetail(examId) {
+    window.location.href = `/quiz/exam_detail/${examId}`;
+}
 
+
+function viewPastExamDetail(examId) {
+    window.location.href = `/quiz/past_exam_details/${examId}`;
+}

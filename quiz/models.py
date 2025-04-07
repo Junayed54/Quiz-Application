@@ -285,11 +285,12 @@ class Question(models.Model):
     ]
     
     exams = models.ManyToManyField('Exam', related_name='questions', blank=True)
-    text = models.CharField(max_length=255, unique=True)
+    text = models.CharField(max_length=255, unique=True, null=True, blank=True)
+    image = models.ImageField(upload_to='question_images/', null=True, blank=True)
     explanation = models.TextField(null=True, blank=True)
     marks = models.IntegerField()
     category = models.ForeignKey(Category, related_name='questions', on_delete=models.CASCADE, null=True, blank=True)
-    difficulty_level = models.IntegerField(choices=DIFFICULTY_LEVEL_CHOICES, default=1)
+    difficulty_level = models.IntegerField(choices=DIFFICULTY_LEVEL_CHOICES, default=1, null=True, blank=True)
     status = models.CharField(max_length=30, choices=STATUS_CHOICES, default='submitted', null=True)
     remarks = models.TextField(blank=True, null=True)
     time_limit = models.IntegerField(help_text="Time limit for this question in seconds", default=60)
@@ -308,11 +309,17 @@ class Question(models.Model):
         return correct_option.text if correct_option else None
     
     def __str__(self):
-        return self.text
+        return self.text if self.text else "Image-based Question"
 
     def category_name(self):
-        return self.category.name
+        return self.category.name if self.category else None
     
+    def clean(self):
+        """Ensure only one of 'text' or 'image' is provided."""
+        if not self.text and not self.image:
+            raise ValueError("Either 'text' or 'image' must be provided.")
+        if self.text and self.image:
+            raise ValueError("You cannot provide both 'text' and 'image' for a question.")
     
 class QuestionUsage(models.Model):
     question = models.ForeignKey(Question, related_name='usages', on_delete=models.CASCADE)
@@ -326,11 +333,13 @@ class QuestionUsage(models.Model):
 
 class QuestionOption(models.Model):
     question = models.ForeignKey(Question, related_name='options', on_delete=models.CASCADE)
-    text = models.CharField(max_length=255)
+    text = models.CharField(max_length=255, blank=True, null=True)  # Optional text
+    image = models.ImageField(upload_to="question_options/", blank=True, null=True)  # Image option
     is_correct = models.BooleanField(default=False)
 
     def __str__(self):
-        return self.text
+        return self.text if self.text else f"Image Option ({self.image.url if self.image else 'No Image'})"
+
 
 
 
@@ -409,7 +418,16 @@ class Position(models.Model):
     name = models.CharField(max_length=255)
 
     def __str__(self):
-        return self.title
+        return self.name
+    
+class PastExamQuestion(models.Model):
+    exam = models.ForeignKey("PastExam", on_delete=models.CASCADE)
+    question = models.ForeignKey("Question", on_delete=models.CASCADE)
+    order = models.PositiveIntegerField()  # To maintain question order
+
+    class Meta:
+        unique_together = ("exam", "question")
+        ordering = ["order"]
 
 class PastExam(models.Model):
     title = models.CharField(max_length=255)  # Exam Name
@@ -419,15 +437,20 @@ class PastExam(models.Model):
     exam_date = models.DateField()  # When the exam was conducted
     duration = models.IntegerField(null=True, blank=True)
     is_published = models.BooleanField(default=True)  # Admin controls visibility
-    questions = models.ManyToManyField('Question', related_name="past_exams")  # Many-to-Many with Question
+    questions = models.ManyToManyField(Question, related_name="past_exams", through="PastExamQuestion")  # Many-to-Many with Question
     total_questions = models.PositiveIntegerField(default=0) 
     pass_mark = models.PositiveIntegerField(default=50)  # Minimum passing percentage
     negative_mark = models.FloatField(default=0.0)  # Penalty per wrong answer
 
     def save(self, *args, **kwargs):
-        """ Update total_questions before saving """
-        self.total_questions = self.questions.count()
-        super().save(*args, **kwargs)
+        is_new = self.pk is None  # Check if it's a new instance
+    
+        super().save(*args, **kwargs)  # Save if it's new, get the ID
+
+        if not is_new:  # Only update total_questions for existing records
+            self.total_questions = self.questions.count()
+            super().save(update_fields=["total_questions"])  # Save only the updated field
+
         
     
     def __str__(self):
