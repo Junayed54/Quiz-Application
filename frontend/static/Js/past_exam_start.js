@@ -274,7 +274,7 @@ document.addEventListener('DOMContentLoaded', function() {
         modal.show();
 
         modalElement.addEventListener('hidden.bs.modal', function() {
-            window.location.href = `/quiz/exam_detail/${examId}/`;
+            window.location.href = `/quiz/past_exam_details/${examId}/`;
         });
     }
 
