@@ -437,7 +437,7 @@ class PastExam(models.Model):
     exam_date = models.DateField()  # When the exam was conducted
     duration = models.IntegerField(null=True, blank=True)
     is_published = models.BooleanField(default=True)  # Admin controls visibility
-    # questions = models.ManyToManyField(Question, related_name="past_exams", through="PastExamQuestion")  # Many-to-Many with Question
+    questions = models.ManyToManyField(Question, related_name="past_exams", through="PastExamQuestion")  # Many-to-Many with Question
     total_questions = models.PositiveIntegerField(default=0) 
     pass_mark = models.PositiveIntegerField(default=50)  # Minimum passing percentage
     negative_mark = models.FloatField(default=0.0)  # Penalty per wrong answer
