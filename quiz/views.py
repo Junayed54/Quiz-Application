@@ -713,7 +713,7 @@ class QuestionViewSet(viewsets.ModelViewSet):
         return Response(users_data, status=status.HTTP_200_OK)
 
     # View all submitted questions of a specific user
-    @action(detail=False, methods=['get'], url_path='submitted_questions/(?P<user_id>\d+)')
+    @action(detail=False, methods=['get'], url_path='submitted_questions/<int:user_id>')
     def submitted_questions(self, request, user_id=None):
         submitted_status = 'submitted'
         user = User.objects.get(id=user_id)
