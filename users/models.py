@@ -42,11 +42,13 @@ class CustomUser(AbstractUser):
     ADMIN = 'admin'
     TEACHER = 'teacher'
     STUDENT = 'student'
+    OPERATOR = 'operator'
 
     ROLE_CHOICES = [
         (ADMIN, 'Admin'),
         (TEACHER, 'Teacher'),
         (STUDENT, 'Student'),
+        (OPERATOR, 'Operator'),
     ]
 
     username = models.CharField(max_length=100, unique=True)

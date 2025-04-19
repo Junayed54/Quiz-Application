@@ -2366,7 +2366,7 @@ class PastExamViewSet(viewsets.ModelViewSet):
 
                 question_cell = f"{get_column_letter(df.columns.get_loc(question_column) + 1)}{index + 2}"
                 question_image_data = self.get_image_data_from_map(image_map.get(question_cell))
-                question_text = row[question_column].strip() if row[question_column] else None
+                question_text = str(row[question_column]).strip() if row[question_column] else None
                 if question_image_data:
                     question_text = None
 
@@ -2391,15 +2391,16 @@ class PastExamViewSet(viewsets.ModelViewSet):
                     )
                     question_count += 1
                 else:
-                    question = Question.objects.filter(text=question_text, subject=current_subject).first()
-                    if not question:
-                        question = Question.objects.create(
-                            text=question_text,
-                            subject=current_subject,
-                            marks=1,
-                            category=category,
-                            difficulty_level=difficulty_level
-                        )
+                    question, created = Question.objects.get_or_create(
+                        text=question_text,
+                        defaults={
+                            "subject": current_subject,
+                            "marks": 1,
+                            "category": category,
+                            "difficulty_level": difficulty_level
+                        }
+                    )
+                    if created:
                         question_count += 1
                     else:
                         updated_questions += 1
@@ -2409,21 +2410,18 @@ class PastExamViewSet(viewsets.ModelViewSet):
                             question.difficulty_level = difficulty_level
                         question.save()
 
-                # Add question to exam with order
                 PastExamQuestion.objects.update_or_create(
                     exam=past_exam,
                     question=question,
                     defaults={"order": index + 1}
                 )
 
-                # Save question image if exists
                 if question_image_data:
                     image_file = self.save_image_to_field(question_image_data, f"question_image_{index}.png")
                     if image_file:
                         question.image.save(image_file.name, image_file)
                         question.save()
 
-                # Handling options
                 question.options.all().delete()
 
                 if all(opt in df.columns for opt in standard_options):
@@ -2476,6 +2474,7 @@ class PastExamViewSet(viewsets.ModelViewSet):
             "message": f"{question_count} questions added, {updated_questions} updated",
             "past_exam_id": past_exam.id
         }
+
 
 
     def get_image_data_from_map(self, image):
@@ -2758,3 +2757,28 @@ class PastExamAttemptViewSet(viewsets.ViewSet):
             })
 
         return Response({'exams': exams_data}, status=status.HTTP_200_OK)
+    
+    
+    
+class CheckPastExamsView(APIView):
+    def get(self, request, *args, **kwargs):
+        # Get query parameters from the request
+        position_id = request.query_params.get('position_id', None)
+        department_id = request.query_params.get('department_id', None)
+        organization_id = request.query_params.get('organization_id', None)
+
+        # Filtering the past exams based on position, department, or organization
+        exams = PastExam.objects.filter(
+            position_id=position_id,
+            department_id=department_id if department_id else None,
+            organization_id=organization_id
+        )
+
+        # If no past exams found, return a message indicating no exams available
+        if not exams.exists():
+            return Response({"message": "No past exams found for this position, department, or organization."},
+                            status=status.HTTP_404_NOT_FOUND)
+
+        # If past exams are found, serialize the data
+        serializer = PastExamSerializer(exams, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)

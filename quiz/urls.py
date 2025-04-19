@@ -130,6 +130,8 @@ urlpatterns += [
     path('past-exams/', PastExamListView.as_view(), name='past-exam-list'),
     path("past-exams/<int:pk>/", PastExamDetailView.as_view(), name="past-exam-detail"),
     path("past-exams/<int:exam_id>/submit/", SubmitPastExamAttemptView.as_view(), name="past-exam-submit"),
+    path('past-exams-check/', CheckPastExamsView.as_view(), name='check_past_exams'),
+    
     path('past_exam_create/', TemplateView.as_view(template_name='Html/custom/past_exam_create.html'), name='past_exam_create'),
     path('past_exam_start/<int:pk>/', TemplateView.as_view(template_name='Html/custom/past_exam_start.html'), name='past_exam_start'),
     

@@ -79,6 +79,7 @@ INSTALLED_APPS = [
     'frontend',
     'invitation',
     'subscription',
+    'govt_jobs',
     
     
 ]

@@ -5,6 +5,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const logout = document.getElementById('logout');
     const teacher = document.getElementById('teacher');
     const admin = document.getElementById('admin');
+    const operator = document.getElementById('operator');
     const pk_admin = document.getElementById('pk_admin');
     const student = document.getElementById('student');
     const student1 = document.getElementById('student1');
@@ -72,6 +73,8 @@ document.addEventListener('DOMContentLoaded', function() {
             } else if (data.role === 'admin') {
                 admin.classList.remove('d-none');
                 pk_admin.classList.remove('d-none');
+            } else if (data.role=='operator'){
+                operator.classList.remove('d-none');
             } else if (data.role === 'student') {
                 student.classList.remove('d-none');
                 student1.classList.remove('d-none');

@@ -166,3 +166,20 @@ class PastExamAttemptAdmin(admin.ModelAdmin):
 # Registering the models and admin classes
 admin.site.register(PastExam, PastExamAdmin)
 admin.site.register(PastExamAttempt, PastExamAttemptAdmin)
+
+
+@admin.register(Organization)
+class OrganizationAdmin(admin.ModelAdmin):
+    list_display = ('name', 'address')
+    search_fields = ('name', 'address')
+
+@admin.register(Department)
+class DepartmentAdmin(admin.ModelAdmin):
+    list_display = ('name', 'organization')
+    list_filter = ('organization',)
+    search_fields = ('name', 'organization__name')
+
+@admin.register(Position)
+class PositionAdmin(admin.ModelAdmin):
+    list_display = ('name',)
+    search_fields = ('name',)

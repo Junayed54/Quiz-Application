@@ -23,6 +23,10 @@ class IsStudent(BasePermission):
     def has_permission(self, request, view):
         return request.user.role == 'student'
 
+class IsOperator(BasePermission):
+    def has_permission(self, request, view):
+        return request.user.role == 'operator'
+
 
 # class IsTeacherOrAdmin(permissions.BasePermission):
 #     def has_permission(self, request, view):
