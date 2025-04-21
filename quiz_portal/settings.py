@@ -46,7 +46,7 @@ EMAIL_USE_TLS = True
 EMAIL_HOST_USER = 'jonaetshanto8@gmail.com'
 EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD')
 
-ALLOWED_HOSTS = ['127.0.0.1','localhost', '217.76.63.211', '161.97.141.58']
+ALLOWED_HOSTS = ['127.0.0.1','localhost', '217.76.63.211', '161.97.141.58', 'jobs.academy', 'www.jobs.academy']
 
 # Application definition
 INSTALLED_APPS = [
@@ -193,24 +193,24 @@ CHANNEL_LAYERS = {
 #     'x-requested-with',
 # ]
 # Database configuration (SQLite for simplicity)
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.sqlite3',
-#         'NAME': BASE_DIR / 'db.sqlite3',
-#     }
-# }
-
-
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'quiz_portal',  # Your database name
-        'USER': 'root',     # The new user you just created
-        'PASSWORD': 'Bridgers@123',  # The password for the new user
-        'HOST': 'localhost',
-        'PORT': '3306',  # Default MySQL port
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3',
     }
 }
+
+
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.mysql',
+#         'NAME': 'quiz_portal',  # Your database name
+#         'USER': 'root',     # The new user you just created
+#         'PASSWORD': 'Bridgers@123',  # The password for the new user
+#         'HOST': 'localhost',
+#         'PORT': '3306',  # Default MySQL port
+#     }
+# }
 
 
 
