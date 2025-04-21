@@ -29,11 +29,7 @@ DEBUG = True
 # FRONTEND_URL = 'http://localhost:8000'
 
 # ALLOWED_HOSTS = []
-CORS_ALLOWED_ORIGINS = [
-    "http://localhost:3000",
-    "http://127.0.0.1:3000",
-    "http://217.76.63.211:8001",
-]
+CORS_ALLOW_ALL_ORIGINS = True
 
 
 
@@ -172,7 +168,7 @@ SOCIALACCOUNT_LOGIN_ON_GET = True
 
 LOGIN_REDIRECT_URL = 'success'
 SOCIALACCOUNT_AUTO_SIGNUP = True
-ACCOUNT_LOGOUT_REDIRECT_URL = "/login/"
+# ACCOUNT_LOGOUT_REDIRECT_URL = "/login/"
 
 # WSGI application
 # WSGI_APPLICATION = 'quiz_portal.wsgi.application'
