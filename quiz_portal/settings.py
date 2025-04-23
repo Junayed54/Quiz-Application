@@ -113,7 +113,7 @@ REST_FRAMEWORK = {
         'rest_framework_simplejwt.authentication.JWTAuthentication',
         'rest_framework.authentication.TokenAuthentication',
     ),
-    'DEFAULT_PERMISSION_CLASSES': [
+    'DEFAULT_PERMISSION_CL12ASSES': [
         'rest_framework.permissions.IsAuthenticated',
     ],
     
@@ -189,24 +189,24 @@ CHANNEL_LAYERS = {
 #     'x-requested-with',
 # ]
 # Database configuration (SQLite for simplicity)
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.sqlite3',
-#         'NAME': BASE_DIR / 'db.sqlite3',
-#     }
-# }
-
-
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'quiz_portal',  # Your database name
-        'USER': 'root',     # The new user you just created
-        'PASSWORD': 'Bridgers@123',  # The password for the new user
-        'HOST': 'localhost',
-        'PORT': '3306',  # Default MySQL port
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3',
     }
 }
+
+
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.mysql',
+#         'NAME': 'quiz_portal',  # Your database name
+#         'USER': 'root',     # The new user you just created
+#         'PASSWORD': 'Bridgers@123',  # The password for the new user
+#         'HOST': 'localhost',
+#         'PORT': '3306',  # Default MySQL port
+#     }
+# }
 
 
 
@@ -234,10 +234,11 @@ USE_TZ = True
 import os
 
 # STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles_build')
-STATIC_URL = '/static/'
+STATIC_URL = 'static/'
 STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, 'staticfiles'),
-    BASE_DIR / 'frontend' / 'static',
+    # os.path.join(BASE_DIR, 'staticfiles'),
+    # BASE_DIR / 'frontend' / 'static',
+    BASE_DIR / 'staticfiles'
 ]
 STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 MEDIA_URL = 'media/'
@@ -283,6 +284,7 @@ CELERY_TASK_SERIALIZER = 'json'
 CELERY_RESULT_SERIALIZER = 'json'
 CELERY_TIMEZONE = 'UTC'
 
+LOGIN_URL = '/no-login/'  # Some dummy URL
 
 
 # Google Analytics
