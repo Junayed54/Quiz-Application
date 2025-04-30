@@ -234,7 +234,7 @@ USE_TZ = True
 import os
 
 # STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles_build')
-STATIC_URL = 'static/'
+STATIC_URL = '/static/'
 STATICFILES_DIRS = [
     # os.path.join(BASE_DIR, 'staticfiles'),
     BASE_DIR / 'frontend' / 'static',
