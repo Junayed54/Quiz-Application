@@ -18,7 +18,7 @@ async function register() {
     const phone_number = document.getElementById('phone_number').value.trim();
     const email = document.getElementById('email').value.trim();
     const password = document.getElementById('password').value;
-    const role = document.getElementById('role').value;
+    // const role = document.getElementById('role').value;
 
     // Get error message elements
     const errorMessage = document.getElementById('error-message');
@@ -26,7 +26,7 @@ async function register() {
     const phoneNumberError = document.getElementById('phone-number-error');
     const emailError = document.getElementById('email-error');
     const passwordError = document.getElementById('password-error');
-    const roleError = document.getElementById('role-error');
+    // const roleError = document.getElementById('role-error');
 
     console.log("Register form submitted");
 
@@ -36,7 +36,7 @@ async function register() {
     phoneNumberError.textContent = '';
     emailError.textContent = '';
     passwordError.textContent = '';
-    roleError.textContent = '';
+    // roleError.textContent = '';
 
     try {
         // Send registration data to the server
@@ -45,7 +45,7 @@ async function register() {
             headers: {
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify({ username, phone_number, email, password, role }),
+            body: JSON.stringify({ username, phone_number, email, password}),
         });
 
         if (response.ok) {
@@ -70,9 +70,9 @@ async function register() {
             if (data.password) {
                 passwordError.textContent = data.password.join(', ');
             }
-            if (data.role) {
-                roleError.textContent = data.role.join(', ');
-            }
+            // if (data.role) {
+            //     roleError.textContent = data.role.join(', ');
+            // }
             if (data.non_field_errors) {
                 errorMessage.textContent = data.non_field_errors.join(', ');
             }

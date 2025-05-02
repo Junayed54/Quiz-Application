@@ -221,6 +221,8 @@ document.addEventListener("DOMContentLoaded", function () {
     const responseMessage = document.getElementById("responseMessage");
     const token = localStorage.getItem("access_token");
 
+
+    const loader = document.getElementById("uploadLoader");
     // Function to fetch and populate the select fields on page load
     function fetchOptions() {
         // Fetch organizations
@@ -289,6 +291,8 @@ document.addEventListener("DOMContentLoaded", function () {
         e.preventDefault();
         responseMessage.classList.add("d-none");
 
+        // Show loader
+        loader.classList.remove("d-none");
         // Prepare FormData with the proper keys
         const formData = new FormData();
         formData.append("title", document.getElementById("title").value);
@@ -311,6 +315,7 @@ document.addEventListener("DOMContentLoaded", function () {
         })
         .then(response => response.json())
         .then(data => {
+            loader.classList.add("d-none");
             if (data.error) {
                 responseMessage.classList.remove("d-none");
                 responseMessage.textContent = `Error: ${data.error}`;
@@ -320,6 +325,7 @@ document.addEventListener("DOMContentLoaded", function () {
             }
         })
         .catch(error => {
+            loader.classList.add("d-none"); // Hide loader
             responseMessage.classList.remove("d-none");
             responseMessage.textContent = `Error: ${error.message}`;
         });
@@ -330,12 +336,14 @@ document.addEventListener("DOMContentLoaded", function () {
         const newOrganization = document.getElementById("newOrganization").value;
         const newOrganizationAddress = document.getElementById("newOrganizationAddress").value;
     
-        if (newOrganization && newOrganizationAddress) {
+        if (newOrganization) {
             const organizationSelect = document.getElementById("organization");
             const option = document.createElement("option");
             // Temporary value set as newOrganization; backend response will provide correct id.
             option.value = newOrganization;  
-            option.textContent = `${newOrganization} - ${newOrganizationAddress}`;
+            option.textContent = newOrganizationAddress
+                ? `${newOrganization} - ${newOrganizationAddress}`
+                : `${newOrganization}`;
             organizationSelect.appendChild(option);
             organizationSelect.value = newOrganization;
     

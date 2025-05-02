@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>MCQ Quiz</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    body {
+      background-color: #f4f4f4;
+      padding: 2rem;
+    }
+
+    #timer {
+      position: fixed;
+      top: 15px;
+      right: 20px;
+      background-color: #4169e1;
+      color: white;
+      padding: 10px 16px;
+      border-radius: 8px;
+      font-weight: bold;
+      z-index: 1000;
+    }
+
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+      background-color: #fff;
+      border-radius: 10px;
+      padding: 2rem;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 1.5rem;
+    }
+
+    h1 {
+      color: #4169e1;
+      font-size: 2rem;
+    }
+
+    .question-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+      gap: 1.5rem;
+    }
+
+    .question-card {
+      background: #f9f9f9;
+      padding: 1.2rem;
+      border-radius: 8px;
+      border: 1px solid #ddd;
+    }
+
+    .question {
+      margin-bottom: 1rem;
+      font-weight: bold;
+    }
+
+    .options {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.75rem;
+    }
+
+    .option {
+      padding: 0.75rem;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      background-color: white;
+      cursor: pointer;
+      transition: background-color 0.2s ease;
+    }
+
+    .option:hover {
+      background-color: #f0f0f0;
+    }
+
+    .option.selected {
+      background-color: #e6effd;
+      border-color: #4169e1;
+    }
+
+    .option.correct {
+      background-color: #d4edda;
+      border-color: #28a745;
+    }
+
+    .option.incorrect {
+      background-color: #f8d7da;
+      border-color: #dc3545;
+    }
+
+    .controls {
+      margin-top: 2rem;
+      text-align: center;
+    }
+
+    button {
+      background-color: #4169e1;
+      color: white;
+      border: none;
+      padding: 0.75rem 1.5rem;
+      font-size: 1rem;
+      border-radius: 6px;
+      cursor: pointer;
+      margin: 10px;
+    }
+
+    button:disabled {
+      background-color: #999;
+      cursor: not-allowed;
+    }
+
+    .score {
+      font-size: 1.2rem;
+      margin-top: 1rem;
+      font-weight: bold;
+    }
+
+    @media (max-width: 768px) {
+      .question-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .options {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<div id="timer">1:00</div>
+
+<div class="container">
+  <header>
+    <h1>MCQ Quiz</h1>
+  </header>
+
+  <div class="question-grid" id="question-grid"></div>
+
+  <div class="controls">
+    <div id="result" class="score" style="display: none;">
+      Your Score: <span id="score">0</span>/<span id="total-score">5</span>
+    </div>
+    <button id="submit-btn" disabled>Submit Quiz</button>
+    <button id="try-again-btn" style="display: none;">Try Again</button>
+  </div>
+</div>
+
+<script>
+const quizQuestions = [
+  {
+    id: "q1",
+    text: "What is the capital of France?",
+    options: [
+      { id: "q1_a", text: "London" },
+      { id: "q1_b", text: "Berlin" },
+      { id: "q1_c", text: "Paris" },
+      { id: "q1_d", text: "Madrid" }
+    ],
+    correctOptionId: "q1_c"
+  },
+  {
+    id: "q2",
+    text: "Which planet is known as the Red Planet?",
+    options: [
+      { id: "q2_a", text: "Venus" },
+      { id: "q2_b", text: "Mars" },
+      { id: "q2_c", text: "Jupiter" },
+      { id: "q2_d", text: "Saturn" }
+    ],
+    correctOptionId: "q2_b"
+  },
+  {
+    id: "q3",
+    text: "Which language runs in a web browser?",
+    options: [
+      { id: "q3_a", text: "Java" },
+      { id: "q3_b", text: "C" },
+      { id: "q3_c", text: "Python" },
+      { id: "q3_d", text: "JavaScript" }
+    ],
+    correctOptionId: "q3_d"
+  },
+  {
+    id: "q4",
+    text: "What does HTML stand for?",
+    options: [
+      { id: "q4_a", text: "Hypertext Markup Language" },
+      { id: "q4_b", text: "Hypertext Markdown Language" },
+      { id: "q4_c", text: "Hyperloop Machine Language" },
+      { id: "q4_d", text: "Helicopters Terminals Motorboats Lamborginis" }
+    ],
+    correctOptionId: "q4_a"
+  },
+  {
+    id: "q5",
+    text: "What year was JavaScript launched?",
+    options: [
+      { id: "q5_a", text: "1996" },
+      { id: "q5_b", text: "1995" },
+      { id: "q5_c", text: "1994" },
+      { id: "q5_d", text: "None of the above" }
+    ],
+    correctOptionId: "q5_b"
+  }
+];
+
+const questionGrid = document.getElementById('question-grid');
+const submitBtn = document.getElementById('submit-btn');
+const tryAgainBtn = document.getElementById('try-again-btn');
+const resultEl = document.getElementById('result');
+const scoreEl = document.getElementById('score');
+const totalScoreEl = document.getElementById('total-score');
+const timerEl = document.getElementById('timer');
+
+let userAnswers = {};
+let showResults = false;
+let timer = 60;
+let interval;
+
+function formatTime(seconds) {
+  const mins = Math.floor(seconds / 60);
+  const secs = seconds % 60;
+  return `${mins}:${secs < 10 ? '0' + secs : secs}`;
+}
+
+function startTimer() {
+  timerEl.textContent = formatTime(timer);
+  interval = setInterval(() => {
+    timer--;
+    timerEl.textContent = formatTime(timer);
+    if (timer <= 0) {
+      clearInterval(interval);
+      submitQuiz();
+    }
+  }, 1000);
+}
+
+function initQuiz() {
+  questionGrid.innerHTML = '';
+  userAnswers = {};
+  showResults = false;
+  timer = 60;
+  clearInterval(interval);
+  startTimer();
+
+  quizQuestions.forEach(question => {
+    const card = document.createElement('div');
+    card.className = 'question-card';
+    card.dataset.questionId = question.id;
+
+    const questionEl = document.createElement('div');
+    questionEl.className = 'question';
+    questionEl.textContent = question.text;
+
+    const optionsEl = document.createElement('div');
+    optionsEl.className = 'options';
+
+    question.options.forEach(option => {
+      const optionEl = document.createElement('div');
+      optionEl.className = 'option';
+      optionEl.textContent = option.text;
+      optionEl.dataset.optionId = option.id;
+
+      optionEl.addEventListener('click', () => {
+        if (showResults) return;
+        userAnswers[question.id] = option.id;
+        [...optionsEl.children].forEach(opt => opt.classList.remove('selected'));
+        optionEl.classList.add('selected');
+        submitBtn.disabled = Object.keys(userAnswers).length < quizQuestions.length;
+      });
+
+      optionsEl.appendChild(optionEl);
+    });
+
+    card.appendChild(questionEl);
+    card.appendChild(optionsEl);
+    questionGrid.appendChild(card);
+  });
+
+  resultEl.style.display = 'none';
+  tryAgainBtn.style.display = 'none';
+  submitBtn.style.display = 'inline-block';
+  submitBtn.disabled = true;
+}
+
+function submitQuiz() {
+  showResults = true;
+  clearInterval(interval);
+  let score = 0;
+
+  quizQuestions.forEach(question => {
+    const card = document.querySelector(`.question-card[data-question-id="${question.id}"]`);
+    const selectedId = userAnswers[question.id];
+    const correctId = question.correctOptionId;
+
+    [...card.querySelectorAll('.option')].forEach(opt => {
+      const oid = opt.dataset.optionId;
+      if (oid === correctId) {
+        opt.classList.add('correct');
+      } else if (oid === selectedId) {
+        opt.classList.add('incorrect');
+      }
+      opt.classList.remove('selected');
+    });
+
+    if (selectedId === correctId) score++;
+  });
+
+  scoreEl.textContent = score;
+  totalScoreEl.textContent = quizQuestions.length;
+  resultEl.style.display = 'block';
+  tryAgainBtn.style.display = 'inline-block';
+  submitBtn.style.display = 'none';
+}
+
+submitBtn.addEventListener('click', submitQuiz);
+tryAgainBtn.addEventListener('click', initQuiz);
+
+// Initialize on load
+initQuiz();
+</script>
+
+</body>
+</html>

@@ -1,7 +1,7 @@
 from django.contrib import admin
 from .models import *
 import nested_admin
-
+from django.utils.html import format_html
 
 
 @admin.register(Category)
@@ -12,11 +12,12 @@ class CategoryAdmin(admin.ModelAdmin):
 
 class QuestionOptionInline(nested_admin.NestedTabularInline):
     model = QuestionOption
-    extra = 4  # Number of extra forms to display in the admin
+    # extra = 4  # Number of extra forms to display in the admin
+    classes = ['collapse']
 
 class QuestionInline(nested_admin.NestedTabularInline):
     model = Question
-    extra = 0  # Number of extra forms to display in the admin
+    # extra = 0  # Number of extra forms to display in the admin
     inlines = [QuestionOptionInline]
     
     
@@ -34,6 +35,11 @@ class QuestionInline(admin.TabularInline):
     model = Exam.questions.through  # Assuming a Many-to-Many relationship
     extra = 0  # No extra empty fields 
 
+class ExamQuestionInline(admin.TabularInline):  # Renamed here
+    model = Exam.questions.through
+    extra = 0
+    
+    
 @admin.register(Exam)
 class ExamAdmin(admin.ModelAdmin):
     list_display = ('title', 'category', 'total_questions', 'status', 'created_by', 'created_at', 'starting_time', 'last_date')
@@ -86,18 +92,80 @@ class ExamDifficultyAdmin(admin.ModelAdmin):
 
 
 class QuestionAdmin(admin.ModelAdmin):
-    list_display = ('id', 'text', 'remarks', 'category', 'difficulty_level', 'marks', 'status', 'created_by', 'reviewed_by', 'created_at', 'updated_at')
+    list_display = (
+        'id', 
+        'text_snippet', 
+        'question_image_preview', 
+        'get_options', 
+        'category', 
+        'difficulty_level', 
+        'marks', 
+        'status', 
+        'created_by', 
+        'reviewed_by', 
+        'created_at', 
+        'updated_at'
+    )
     list_filter = ('difficulty_level', 'status', 'category')
     search_fields = ('text', 'remarks')
-    # ordering = ('-created_at',)
-    readonly_fields = ('created_at', 'updated_at')
-    # list_editable = ('status', 'marks', 'difficulty_level')
-    
-    # To display related options in the question admin interface
+    readonly_fields = ('created_at', 'updated_at', 'question_image_preview')
+    ordering = ('-created_at',)
+
+    # Show only first 50 characters of question text
+    def text_snippet(self, obj):
+        return obj.text[:50] + "..." if obj.text and len(obj.text) > 50 else obj.text
+    text_snippet.short_description = 'Question'
+
+    # Display inline image preview (if image exists)
+    def question_image_preview(self, obj):
+        if obj.image:
+            return format_html('<img src="{}" width="100" height="auto" />', obj.image.url)
+        return "No image"
+    question_image_preview.short_description = 'Image Preview'
+
+    # Show all options as text (with correct marked)
     def get_options(self, obj):
-        return ", ".join([str(option) for option in obj.get_options()])
-    
+        output_lines = []
+
+        # Get regular options from QuestionOption
+        direct_options = obj.options.all()
+        if direct_options.exists():
+            output_lines.append("<u>Regular Options:</u>")
+            output_lines.extend([
+                f"<b>{opt.text}</b> {'✅' if opt.is_correct else ''}"
+                for opt in direct_options
+            ])
+
+        # Get options from PastExamQuestionOption
+        past_exam_options = PastExamQuestionOption.objects.filter(question=obj).select_related('option')
+        if past_exam_options.exists():
+            output_lines.append("<u>Past Exam Options:</u>")
+            output_lines.extend([
+                f"<b>{po.option.text}</b> {'✅' if po.option.is_correct else ''}"
+                for po in past_exam_options
+            ])
+
+        # Get options from ExamQuestionOption (if you have this model)
+        exam_options = ExamQuestionOption.objects.filter(question=obj).select_related('option')
+        if exam_options.exists():
+            output_lines.append("<u>Exam Options:</u>")
+            output_lines.extend([
+                f"<b>{eo.option.text}</b> {'✅' if eo.option.is_correct else ''}"
+                for eo in exam_options
+            ])
+
+        # If no options exist
+        if not output_lines:
+            return "No options"
+        
+        # Safely format the output using `format_html`
+        try:
+            return format_html("<br>".join(output_lines))
+        except KeyError as e:
+            return f"Error formatting options: {str(e)}"
+
     get_options.short_description = 'Options'
+
 
 # Register the admin class
 admin.site.register(Question, QuestionAdmin)

@@ -150,7 +150,7 @@ class Validate_token(APIView):
     permission_classes = [IsAuthenticated]  # User must be authenticated
 
     def get(self, request):
-        print("hello")
+        # print("hello")
         return Response({
             'message': 'Access granted. You are authenticated!',
             'user': request.user.username

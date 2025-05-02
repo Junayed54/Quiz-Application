@@ -41,26 +41,24 @@ class QuestionSerializer(serializers.ModelSerializer):
     category = serializers.PrimaryKeyRelatedField(queryset=Category.objects.all(), write_only=True)
     category_name = serializers.SerializerMethodField()
     question_usage_years = serializers.SerializerMethodField()
-    created_by = serializers.StringRelatedField(read_only=True)  # Use username or any identifier as per your requirement
-    reviewed_by = serializers.StringRelatedField(read_only=True) 
+    created_by = serializers.StringRelatedField(read_only=True)
+    reviewed_by = serializers.StringRelatedField(read_only=True)
+
     class Meta:
         model = Question
-        fields = ['id', 'text', 'image', 'explanation', 'marks', 'exam', 'options', 'status', 'remarks', 'category', 'created_by', 'category_name', 'difficulty_level',  'time_limit', 'reviewed_by', 'updated_at', 'created_at', 'subject', 'question_usage_years']
-        
-    # def get_created_by_name(self, obj):
-    #     return obj.created_by if obj.exam and obj.created_by else None
-       
+        fields = [
+            'id', 'text', 'image', 'explanation', 'explanation_image', 'marks', 'exam',
+            'options', 'status', 'remarks', 'category', 'created_by', 'category_name',
+            'difficulty_level', 'time_limit', 'reviewed_by', 'updated_at',
+            'created_at', 'subject', 'question_usage_years'
+        ]
+
     def get_category_name(self, obj):
         return obj.category.name if obj.category and obj.category.name else None
-    
-    # def get_created_at(self, obj):
-    #     return obj.exam.created_at if obj.exam and obj.exam.created_at else None
-    
+
     def get_question_usage_years(self, obj):
-        # Get the years from the related QuestionUsage entries
         years = obj.usages.values_list('year', flat=True).distinct()
         return ", ".join(map(str, years)) if years else "No uses"
-
 
     def create(self, validated_data):
         options_data = validated_data.pop('options', [])
@@ -71,9 +69,17 @@ class QuestionSerializer(serializers.ModelSerializer):
 
     def validate(self, data):
         text, image = data.get('text'), data.get('image')
-        if bool(text) == bool(image):  # Both are provided or both are missing
+        explanation = data.get('explanation')
+        explanation_image = data.get('explanation_image')
+
+        if bool(text) == bool(image):
             raise serializers.ValidationError("Provide either 'text' or 'image', not both.")
+
+        if explanation and explanation_image:
+            raise serializers.ValidationError("Provide either 'explanation' (text) or 'explanation_image', not both.")
+
         return data
+
 
 
 
@@ -261,6 +267,28 @@ class PositionSerializer(serializers.ModelSerializer):
     class Meta:
         model = Position
         fields = ["id", "name"]
+        
+        
+class PastExamQuestionSerializer(serializers.ModelSerializer):
+    options = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Question
+        fields = ["id", "text", "image", "options"]  # Add more fields as needed
+
+    def get_options(self, question):
+        exam = self.context.get("past_exam")
+        if not exam:
+            return []
+
+        # Filter the QuestionOptions related to the specific exam and question
+        option_links = PastExamQuestionOption.objects.filter(
+            exam=exam, question=question
+        ).select_related("option")
+
+        options = [link.option for link in option_links]
+        return QuestionOptionSerializer(options, many=True).data
+
 
 
 class PastExamSerializer(serializers.ModelSerializer):
@@ -279,14 +307,12 @@ class PastExamSerializer(serializers.ModelSerializer):
         ]
 
     def get_questions_count(self, obj):
-        # Count the number of questions related to the past exam
         return obj.questions.count()
 
     def get_questions(self, obj):
-        ordered_links = obj.pastexamquestion_set.select_related("question").order_by("order")
+        ordered_links = obj.related_questions.select_related("question").order_by("order")
         questions = [link.question for link in ordered_links]
-        return QuestionSerializer(questions, many=True).data
-
+        return PastExamQuestionSerializer(questions, many=True, context={"past_exam": obj}).data
 
 
 

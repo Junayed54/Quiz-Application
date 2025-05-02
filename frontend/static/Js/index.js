@@ -226,4 +226,3 @@ document.addEventListener('DOMContentLoaded', function() {
 //     // Get all elements with the class 'user-summary'
     
 // });
-

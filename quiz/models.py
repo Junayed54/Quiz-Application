@@ -112,7 +112,19 @@ class Exam(models.Model):
 
         return True
 
-    
+    def delete(self, *args, **kwargs):
+        # Get the questions associated with this exam
+        related_questions = self.questions.all()
+
+        # First, delete the Exam instance
+        super().delete(*args, **kwargs)
+
+        # Now, iterate through the questions that were related to this exam
+        for question in related_questions:
+            # Check if this question is still related to any other Exam instances
+            if not question.exams.exists():
+                # If the question is not linked to any other exams, delete it
+                question.delete()
     class Meta:
         ordering = ['-created_at']
         verbose_name = "Exam"
@@ -287,7 +299,10 @@ class Question(models.Model):
     exams = models.ManyToManyField('Exam', related_name='questions', blank=True)
     text = models.CharField(max_length=255, unique=True, null=True, blank=True)
     image = models.ImageField(upload_to='question_images/', null=True, blank=True)
+
     explanation = models.TextField(null=True, blank=True)
+    explanation_image = models.ImageField(upload_to='explanation_images/', null=True, blank=True)
+
     marks = models.IntegerField()
     category = models.ForeignKey(Category, related_name='questions', on_delete=models.CASCADE, null=True, blank=True)
     difficulty_level = models.IntegerField(choices=DIFFICULTY_LEVEL_CHOICES, default=1, null=True, blank=True)
@@ -299,27 +314,30 @@ class Question(models.Model):
     subject = models.ForeignKey(Subject, related_name='questions', on_delete=models.CASCADE, null=True, blank=True)
     created_at = models.DateField(auto_now_add=True, null=True)
     updated_at = models.DateField(auto_now=True, null=True)
-    
+
     def get_options(self):
         return self.options.all()
 
     def get_correct_answer(self):
-        """Returns the correct answer text for the question, if available."""
         correct_option = self.options.filter(is_correct=True).first()
         return correct_option.text if correct_option else None
-    
+
     def __str__(self):
         return self.text if self.text else "Image-based Question"
 
     def category_name(self):
         return self.category.name if self.category else None
-    
+
     def clean(self):
-        """Ensure only one of 'text' or 'image' is provided."""
+        """Ensure only one of 'text' or 'image' is provided, and only one of 'explanation' or 'explanation_image'."""
         if not self.text and not self.image:
             raise ValueError("Either 'text' or 'image' must be provided.")
         if self.text and self.image:
             raise ValueError("You cannot provide both 'text' and 'image' for a question.")
+
+        if self.explanation and self.explanation_image:
+            raise ValueError("You cannot provide both a text and image explanation.")
+
     
 class QuestionUsage(models.Model):
     question = models.ForeignKey(Question, related_name='usages', on_delete=models.CASCADE)
@@ -420,14 +438,7 @@ class Position(models.Model):
     def __str__(self):
         return self.name
     
-class PastExamQuestion(models.Model):
-    exam = models.ForeignKey("PastExam", on_delete=models.CASCADE)
-    question = models.ForeignKey("Question", on_delete=models.CASCADE)
-    order = models.PositiveIntegerField()  # To maintain question order
 
-    class Meta:
-        unique_together = ("exam", "question")
-        ordering = ["order"]
 
 class PastExam(models.Model):
     title = models.CharField(max_length=255)  # Exam Name
@@ -437,7 +448,7 @@ class PastExam(models.Model):
     exam_date = models.DateField()  # When the exam was conducted
     duration = models.IntegerField(null=True, blank=True)
     is_published = models.BooleanField(default=True)  # Admin controls visibility
-    questions = models.ManyToManyField(Question, related_name="past_exams", through="PastExamQuestion")  # Many-to-Many with Question
+    questions = models.ManyToManyField(Question, related_name="past_exams", through='PastExamQuestion')  # Many-to-Many with Question
     total_questions = models.PositiveIntegerField(default=0) 
     pass_mark = models.PositiveIntegerField(default=50)  # Minimum passing percentage
     negative_mark = models.FloatField(default=0.0)  # Penalty per wrong answer
@@ -451,7 +462,23 @@ class PastExam(models.Model):
             self.total_questions = self.questions.count()
             super().save(update_fields=["total_questions"])  # Save only the updated field
 
-        
+    def delete(self, *args, **kwargs):
+        # First, delete the relationship between the questions and this exam
+        for question in self.questions.all():
+            # Check if the question is associated with any other exams
+            if not question.past_exams.exclude(id=self.id).exists():
+                # If the question is not linked to any other exam, delete it
+                # Delete the options that are not linked to any other exam for this question
+                for option in question.options.all():
+                    # Check if this option is not used in any other exam for this question
+                    if not PastExamQuestionOption.objects.filter(question=question, option=option).exclude(exam=self).exists():
+                        option.delete()
+                question.delete()
+
+        # Now delete the PastExam instance
+        super().delete(*args, **kwargs)
+
+    
     
     def __str__(self):
         return f"{self.title} ({self.organization.name})"
@@ -480,3 +507,31 @@ class PastExamAttempt(models.Model):
 
     def __str__(self):
         return f"{self.user.username} - {self.past_exam.title} (Score: {self.score})"
+
+
+
+class ExamQuestionOption(models.Model):
+    exam = models.ForeignKey(Exam, on_delete=models.CASCADE)
+    question = models.ForeignKey(Question, on_delete=models.CASCADE)
+    option = models.ForeignKey(QuestionOption, on_delete=models.CASCADE)
+
+    class Meta:
+        unique_together = ('exam', 'question', 'option')
+
+
+class PastExamQuestion(models.Model):
+    exam = models.ForeignKey(PastExam, on_delete=models.CASCADE, related_name='related_questions')
+    question = models.ForeignKey(Question, on_delete=models.CASCADE, related_name='related_pastexams')
+    order = models.IntegerField(null=True, blank=True)
+    points = models.FloatField(null=True, blank=True)
+
+    class Meta:
+        unique_together = ('exam', 'question')
+
+class PastExamQuestionOption(models.Model):
+    exam = models.ForeignKey(PastExam, on_delete=models.CASCADE, related_name='related_question_options')
+    question = models.ForeignKey(Question, on_delete=models.CASCADE, related_name='used_in_pastexams_with_option')
+    option = models.ForeignKey(QuestionOption, on_delete=models.CASCADE, related_name='used_in_pastexams')
+
+    class Meta:
+        unique_together = ("exam", "question", "option")

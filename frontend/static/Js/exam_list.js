@@ -15,9 +15,17 @@ document.addEventListener('DOMContentLoaded', function() {
     .then(response => response.json())
     .then(data => {
         const departmentSelect = document.getElementById('department');
-        departmentSelect.innerHTML = data.map(department => `
-            <option value="${department.id}">${department.name}</option>
-        `).join('');
+    
+        // Clear previous dynamic options but keep the first default one
+        departmentSelect.innerHTML = `<option value="" disabled selected>Select Department</option>`;
+    
+        // Append new options dynamically
+        data.forEach(department => {
+            const option = document.createElement('option');
+            option.value = department.id;
+            option.textContent = department.name;
+            departmentSelect.appendChild(option);
+        });
     })
     .catch(error => console.error('Error fetching departments:', error));
 
@@ -233,3 +241,120 @@ function viewExamDetail(examId) {
 function viewPastExamDetail(examId) {
     window.location.href = `/quiz/past_exam_details/${examId}`;
 }
+
+
+// document.addEventListener('DOMContentLoaded', function () {
+//     const accessToken = localStorage.getItem('access_token');
+
+//     // === Dropdown Elements ===
+//     const departmentSelect = document.getElementById('department');
+//     const positionSelect = document.getElementById('position');
+//     const organizationSelect = document.getElementById('organization');
+
+//     // === Current and Past Exams Containers ===
+//     const currentExamsContainer = document.getElementById('current-exams-container');
+//     const pastExamsContainer = document.getElementById('past-exams-container');
+
+//     // === Utility: Populate Dropdown with Default Option ===
+//     function populateSelect(selectElement, data, placeholderText) {
+//         selectElement.innerHTML = `<option value="" disabled selected>${placeholderText}</option>` +
+//             data.map(item => `<option value="${item.id}">${item.name}</option>`).join('');
+//     }
+
+//     // === Fetch Departments ===
+//     fetch('/quiz/departments/', {
+//         method: 'GET',
+//         headers: {
+//             'Authorization': `Bearer ${accessToken}`
+//         }
+//     })
+//     .then(response => response.json())
+//     .then(data => populateSelect(departmentSelect, data, 'Select Department'))
+//     .catch(error => {
+//         console.error('Error fetching departments:', error);
+//         departmentSelect.innerHTML = '<option disabled>Error loading departments</option>';
+//     });
+
+//     // === Fetch Positions ===
+//     fetch('/quiz/positions/', {
+//         method: 'GET',
+//         headers: {
+//             'Authorization': `Bearer ${accessToken}`
+//         }
+//     })
+//     .then(response => response.json())
+//     .then(data => populateSelect(positionSelect, data, 'Select Position'))
+//     .catch(error => {
+//         console.error('Error fetching positions:', error);
+//         positionSelect.innerHTML = '<option disabled>Error loading positions</option>';
+//     });
+
+//     // === Fetch Organizations ===
+//     fetch('/quiz/organizations/', {
+//         method: 'GET',
+//         headers: {
+//             'Authorization': `Bearer ${accessToken}`
+//         }
+//     })
+//     .then(response => response.json())
+//     .then(data => populateSelect(organizationSelect, data, 'Select Organization'))
+//     .catch(error => {
+//         console.error('Error fetching organizations:', error);
+//         organizationSelect.innerHTML = '<option disabled>Error loading organizations</option>';
+//     });
+
+//     // === Fetch Exams (Reusable for Current & Past) ===
+//     function fetchExams(endpoint, container, filters = {}) {
+//         const url = new URL(endpoint, window.location.origin);
+//         Object.keys(filters).forEach(key => url.searchParams.append(key, filters[key]));
+
+//         fetch(url, {
+//             method: 'GET',
+//             headers: {
+//                 'Authorization': `Bearer ${accessToken}`
+//             }
+//         })
+//         // .then(response => {
+//         //     if (!response.ok) {
+//         //         throw new Error('Failed to fetch exams');
+//         //     }
+//         //     return response.json();
+//         // })
+//         .then(data => {
+//             if (data.length === 0) {
+//                 container.innerHTML = '<p class="text-gray-500">No exams found.</p>';
+//             } else {
+//                 container.innerHTML = data.map(exam => `
+//                     <div class="bg-white p-4 shadow-md rounded-lg mb-4">
+//                         <h3 class="text-lg font-semibold">${exam.title}</h3>
+//                         <p>Total Marks: ${exam.total_marks}</p>
+//                         <p>Total Questions: ${exam.total_questions}</p>
+//                         <a href="/quiz/start_exam/${exam.exam_id}" class="text-blue-600 hover:underline">Start Exam</a>
+//                     </div>
+//                 `).join('');
+//             }
+//         })
+//         .catch(error => {
+//             console.error('Error fetching exams:', error);
+//             container.innerHTML = '<p class="text-red-500">Error loading exams. Please try again.</p>';
+//         });
+//     }
+
+//     // === Fetch All Exams Initially ===
+//     fetchExams('/quiz/exams/', currentExamsContainer);
+//     fetchExams('/quiz/past_exams/', pastExamsContainer);
+
+//     // === Event Listeners to Fetch Exams When Filters Change ===
+//     [departmentSelect, positionSelect, organizationSelect].forEach(select => {
+//         select.addEventListener('change', () => {
+//             const filters = {
+//                 department: departmentSelect.value,
+//                 position: positionSelect.value,
+//                 organization: organizationSelect.value
+//             };
+
+//             fetchExams('/quiz/exams/', currentExamsContainer, filters);
+//             fetchExams('/quiz/past_exams/', pastExamsContainer, filters);
+//         });
+//     });
+// });

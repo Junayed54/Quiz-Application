@@ -95,17 +95,18 @@
                                         </div>
                         
                                         <!-- Email -->
-                                        <div class="col-xl-12">
-                                            <label for="email" class="form-label text-dark fw-bold">Email</label>
-                                            <input type="email" class="form-control form-control-lg" id="email" name="email" placeholder="Email address">
-                                            <small id="email-error" class="text-danger"></small>
-                                        </div>
+                                        
                                     </div>
                                 </div>
                         
                                 <!-- Right side (Password and Role) -->
                                 <div class="col-lg-6">
                                     <div class="row gy-3">
+                                        <div class="col-xl-12">
+                                            <label for="email" class="form-label text-dark fw-bold">Email</label>
+                                            <input type="email" class="form-control form-control-lg" id="email" name="email" placeholder="Email address">
+                                            <small id="email-error" class="text-danger"></small>
+                                        </div>
                                         <!-- Password -->
                                         <div class="col-xl-12">
                                             <label for="password" class="form-label text-dark fw-bold">Password</label>
@@ -119,7 +120,7 @@
                                         </div>
                         
                                         <!-- Role -->
-                                        <div class="col-xl-12">
+                                        {% comment %} <div class="col-xl-12">
                                             <label for="role" class="form-label text-dark fw-bold">Role</label>
                                             <select class="form-control form-control-lg" id="role" name="role">
                                                 <option value="">Select Role</option>
@@ -129,7 +130,7 @@
                                                 <option value="student">Student</option>
                                             </select>
                                             <small id="role-error" class="text-danger"></small>
-                                        </div>
+                                        </div> {% endcomment %}
                                     </div>
                                 </div>
                             </div>

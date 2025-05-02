@@ -29,6 +29,7 @@ from invitation.models import ExamInvite
 from calendar import monthrange
 from django.http import JsonResponse
 import openpyxl
+import tempfile
 import random
 import json
 import uuid
@@ -42,7 +43,10 @@ from django.db.models.functions import Rank
 User = get_user_model()
 
 now = timezone.now()
+import logging
 
+# Configure logging at the top of your file
+logging.basicConfig(level=logging.INFO)
 
 
 
@@ -969,6 +973,116 @@ class UserCreatedExamsView(ListAPIView):
         return Exam.objects.filter(created_by=user)
 
 
+# class ExamUploadView(APIView):
+#     def post(self, request, *args, **kwargs):
+#         exam_id = request.POST.get('exam_id')
+
+#         if not exam_id:
+#             return Response({"error": "Exam ID is required."}, status=status.HTTP_400_BAD_REQUEST)
+
+#         if 'file' not in request.FILES:
+#             return Response({"error": "No file provided."}, status=status.HTTP_400_BAD_REQUEST)
+
+#         try:
+#             exam = Exam.objects.get(exam_id=exam_id)
+#         except Exam.DoesNotExist:
+#             return Response({"error": "Exam not found."}, status=status.HTTP_404_NOT_FOUND)
+
+#         file = request.FILES['file']
+#         try:
+#             df = pd.read_excel(file)
+#         except Exception as e:
+#             return Response({"error": f"Error reading file: {str(e)}"}, status=status.HTTP_400_BAD_REQUEST)
+
+#         required_columns = ['Question', 'Option1', 'Option2', 'Option3', 'Option4', 'Answer', 'Options_num', 'Category', 'Difficulty', 'Subject']
+#         df_columns_lower = [col.lower() for col in df.columns]
+
+#         # Check for missing columns in a case-insensitive manner
+#         missing_cols = [col for col in required_columns if col.lower() not in df_columns_lower]
+#         if missing_cols:
+#             return Response({"error": f"Missing columns: {', '.join(missing_cols)}"}, status=status.HTTP_400_BAD_REQUEST)
+
+#         question_count = 0
+#         duplicate_questions = []
+
+#         try:
+#             with transaction.atomic():
+#                 for _, row in df.iterrows():
+#                     # Normalize column access to be case-insensitive
+#                     row = {col.lower(): value for col, value in row.items()}
+
+#                     question_text = row['question']
+#                     options = [row['option1'], row['option2'], row['option3'], row['option4']]
+#                     correct_answer = row['answer'].strip().lower().replace(" ", "")
+
+#                     # Extract subject from the row
+#                     subject_name = row['subject']
+#                     subject, created = Subject.objects.get_or_create(name=subject_name)
+
+#                     # Check if the question already exists for this exam (to avoid duplicates)
+#                     if Question.objects.filter(exam=exam, text=question_text).exists():
+#                         duplicate_questions.append(question_text)
+#                         continue
+
+#                     # Handle the difficulty level and category
+#                     category_name = row['category']
+#                     try:
+#                         difficulty_level = int(row['difficulty'])  # Assuming difficulty is an integer
+#                     except ValueError:
+#                         return Response({"error": f"Invalid difficulty level '{row['difficulty']}'. It must be an integer."}, status=status.HTTP_400_BAD_REQUEST)
+
+#                     if difficulty_level not in range(1, 7):  # Validate difficulty level
+#                         return Response({"error": f"Invalid difficulty level {difficulty_level}. It must be between 1 and 6."}, status=status.HTTP_400_BAD_REQUEST)
+
+#                     category, created = Category.objects.get_or_create(name=category_name)
+#                     question_count += 1
+
+#                     # Create the question object
+#                     question = Question.objects.create(
+#                         exam=exam,
+#                         text=question_text,
+#                         marks=1,  # Assuming static marks for each question
+#                         category=category,
+#                         difficulty_level=difficulty_level,
+#                         subject=subject  # Set the subject
+#                     )
+
+#                     # Create the options and mark the correct one
+#                     for i, option_text in enumerate(options, start=1):
+#                         normalized_option_label = f"option{i}".strip().lower().replace(" ", "")
+#                         is_correct = (normalized_option_label == correct_answer)
+#                         QuestionOption.objects.create(
+#                             question=question,
+#                             text=option_text,
+#                             is_correct=is_correct
+#                         )
+
+#                 # Update the total number of questions in the exam
+#                 exam.total_questions = question_count
+#                 exam.save()
+
+#                 # Provide feedback on duplicate questions
+#                 if duplicate_questions:
+#                     return Response({"message": "Some questions were duplicates and skipped.", "duplicates": duplicate_questions}, status=status.HTTP_201_CREATED)
+#                 else:
+#                     return Response({"message": "All questions created successfully."}, status=status.HTTP_201_CREATED)
+
+#         except Exception as e:
+#             return Response({"error": f"An error occurred: {str(e)}"}, status=status.HTTP_400_BAD_REQUEST)
+
+def save_image_with_unique_name(image_data, original_filename, upload_to='uploads'):
+    """Saves image data to a Django ContentFile with a unique filename."""
+    try:
+        img = Image.open(BytesIO(image_data))
+        img_format = img.format or "PNG"
+        unique_filename = f"{uuid.uuid4().hex}.{img_format.lower()}"
+        img_io = BytesIO()
+        img.save(img_io, format=img_format)
+        return ContentFile(img_io.getvalue(), name=os.path.join(upload_to, unique_filename))
+    except Exception as e:
+        logging.error(f"Error saving image: {e}")
+        return None
+
 class ExamUploadView(APIView):
     def post(self, request, *args, **kwargs):
         exam_id = request.POST.get('exam_id')
@@ -977,95 +1091,113 @@ class ExamUploadView(APIView):
             return Response({"error": "Exam ID is required."}, status=status.HTTP_400_BAD_REQUEST)
 
         if 'file' not in request.FILES:
-            return Response({"error": "No file provided."}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"error": "No Excel file provided."}, status=status.HTTP_400_BAD_REQUEST)
 
         try:
             exam = Exam.objects.get(exam_id=exam_id)
         except Exam.DoesNotExist:
             return Response({"error": "Exam not found."}, status=status.HTTP_404_NOT_FOUND)
 
-        file = request.FILES['file']
-        try:
-            df = pd.read_excel(file)
-        except Exception as e:
-            return Response({"error": f"Error reading file: {str(e)}"}, status=status.HTTP_400_BAD_REQUEST)
+        excel_file = request.FILES['file']
 
-        required_columns = ['Question', 'Option1', 'Option2', 'Option3', 'Option4', 'Answer', 'Options_num', 'Category', 'Difficulty', 'Subject']
+        try:
+            df = pd.read_excel(excel_file)
+        except Exception as e:
+            return Response({"error": f"Error reading Excel file: {str(e)}"}, status=status.HTTP_400_BAD_REQUEST)
+
         df_columns_lower = [col.lower() for col in df.columns]
 
-        # Check for missing columns in a case-insensitive manner
-        missing_cols = [col for col in required_columns if col.lower() not in df_columns_lower]
-        if missing_cols:
-            return Response({"error": f"Missing columns: {', '.join(missing_cols)}"}, status=status.HTTP_400_BAD_REQUEST)
+        def get_column_data(col_name, row):
+            if col_name.lower() in df_columns_lower:
+                return row[df.columns[df_columns_lower.index(col_name.lower())]]
+            return None
+
+        required_columns_text = ['Question_Text', 'Option1_Text', 'Option2_Text', 'Option3_Text', 'Option4_Text', 'Answer', 'Options_num', 'Category', 'Difficulty', 'Subject']
+        missing_cols_text = [col for col in required_columns_text if col.lower() not in df_columns_lower]
+        if missing_cols_text:
+            return Response({"error": f"Missing text columns: {', '.join(missing_cols_text)}"}, status=status.HTTP_400_BAD_REQUEST)
 
         question_count = 0
         duplicate_questions = []
 
         try:
             with transaction.atomic():
-                for _, row in df.iterrows():
-                    # Normalize column access to be case-insensitive
-                    row = {col.lower(): value for col, value in row.items()}
+                for index, row in df.iterrows():
+                    question_text = str(get_column_data('Question_Text', row)) if get_column_data('Question_Text', row) is not None else None
+                    question_image_data = None # Placeholder for image data if you're extracting from Excel
+                    question_image_filename = None # Placeholder
 
-                    question_text = row['question']
-                    options = [row['option1'], row['option2'], row['option3'], row['option4']]
-                    correct_answer = row['answer'].strip().lower().replace(" ", "")
+                    options_text = [
+                        str(get_column_data(f'Option{i}_Text', row)) if get_column_data(f'Option{i}_Text', row) is not None else None
+                        for i in range(1, 5)
+                    ]
+                    options_image_data = [None] * 4 # Placeholders
+                    options_image_filenames = [None] * 4 # Placeholders
 
-                    # Extract subject from the row
-                    subject_name = row['subject']
-                    subject, created = Subject.objects.get_or_create(name=subject_name)
+                    correct_answer = str(get_column_data('Answer', row)).strip().lower().replace(" ", "")
+                    subject_name = str(get_column_data('Subject', row))
+                    category_name = str(get_column_data('Category', row))
+                    difficulty_level_str = str(get_column_data('Difficulty', row))
 
-                    # Check if the question already exists for this exam (to avoid duplicates)
+                    subject, _ = Subject.objects.get_or_create(name=subject_name)
+                    category, _ = Category.objects.get_or_create(name=category_name)
+
+                    try:
+                        difficulty_level = int(difficulty_level_str)
+                        if not 1 <= difficulty_level <= 6:
+                            return Response({"error": f"Invalid difficulty level '{difficulty_level_str}'. It must be between 1 and 6."}, status=status.HTTP_400_BAD_REQUEST)
+                    except ValueError:
+                        return Response({"error": f"Invalid difficulty level '{difficulty_level_str}'. It must be an integer."}, status=status.HTTP_400_BAD_REQUEST)
+
+                    # Basic duplicate check based on text (you might need to adjust)
                     if Question.objects.filter(exam=exam, text=question_text).exists():
-                        duplicate_questions.append(question_text)
+                        duplicate_questions.append(question_text if question_text else "Question with image")
                         continue
 
-                    # Handle the difficulty level and category
-                    category_name = row['category']
-                    try:
-                        difficulty_level = int(row['difficulty'])  # Assuming difficulty is an integer
-                    except ValueError:
-                        return Response({"error": f"Invalid difficulty level '{row['difficulty']}'. It must be an integer."}, status=status.HTTP_400_BAD_REQUEST)
-
-                    if difficulty_level not in range(1, 7):  # Validate difficulty level
-                        return Response({"error": f"Invalid difficulty level {difficulty_level}. It must be between 1 and 6."}, status=status.HTTP_400_BAD_REQUEST)
-
-                    category, created = Category.objects.get_or_create(name=category_name)
-                    question_count += 1
-
-                    # Create the question object
                     question = Question.objects.create(
                         exam=exam,
                         text=question_text,
-                        marks=1,  # Assuming static marks for each question
+                        image=None,
+                        marks=1,
                         category=category,
                         difficulty_level=difficulty_level,
-                        subject=subject  # Set the subject
+                        subject=subject
                     )
+                    question_count += 1
 
-                    # Create the options and mark the correct one
-                    for i, option_text in enumerate(options, start=1):
-                        normalized_option_label = f"option{i}".strip().lower().replace(" ", "")
-                        is_correct = (normalized_option_label == correct_answer)
-                        QuestionOption.objects.create(
+                    # Placeholder for handling question image (if you implement image extraction)
+                    # if question_image_data:
+                    #     image_file = save_image_with_unique_name(question_image_data, "question_image.png", 'questions')
+                    #     if image_file:
+                    #         question.image.save(image_file.name.split('/')[-1], image_file)
+                    #         question.save()
+
+                    for i, option_text in enumerate(options_text):
+                        is_correct = (f"option{i+1}".strip().lower().replace(" ", "") == correct_answer)
+                        option = QuestionOption.objects.create(
                             question=question,
                             text=option_text,
+                            image=None,
                             is_correct=is_correct
                         )
+                        # Placeholder for handling option images
+                        # if options_image_data[i]:
+                        #     image_file = save_image_with_unique_name(options_image_data[i], f"option_{i+1}.png", 'options')
+                        #     if image_file:
+                        #         option.image.save(image_file.name.split('/')[-1], image_file)
+                        #         option.save()
 
-                # Update the total number of questions in the exam
-                exam.total_questions = question_count
+                exam.total_questions = Question.objects.filter(exam=exam).count()
                 exam.save()
 
-                # Provide feedback on duplicate questions
                 if duplicate_questions:
-                    return Response({"message": "Some questions were duplicates and skipped.", "duplicates": duplicate_questions}, status=status.HTTP_201_CREATED)
+                    return Response({"message": f"{question_count} questions created. Some were duplicates and skipped.", "duplicates": duplicate_questions}, status=status.HTTP_201_CREATED)
                 else:
-                    return Response({"message": "All questions created successfully."}, status=status.HTTP_201_CREATED)
+                    return Response({"message": f"{question_count} questions created successfully."}, status=status.HTTP_201_CREATED)
 
         except Exception as e:
+            logging.error(f"An error occurred: {str(e)}")
             return Response({"error": f"An error occurred: {str(e)}"}, status=status.HTTP_400_BAD_REQUEST)
-
 
 
 
@@ -1813,117 +1945,6 @@ class PositionViewSet(viewsets.ModelViewSet):
 
 
 
-# class PastExamViewSet(viewsets.ModelViewSet):
-#     queryset = PastExam.objects.all().order_by("-exam_date")
-#     parser_classes = [MultiPartParser, FormParser]
-
-#     def get_serializer_class(self):
-#         if self.action in ["create", "update"]:
-#             return PastExamCreateSerializer
-#         return PastExamSerializer
-
-#     def create(self, request, *args, **kwargs):
-#         print("hello")
-#         serializer = PastExamCreateSerializer(data=request.data)
-       
-#         if serializer.is_valid():
-#             past_exam = serializer.save()  # Create PastExam
-
-#             # Handle file upload if provided
-#             if "file" in request.FILES:
-#                 file = request.FILES["file"]
-#                 result = self.process_questions(file, past_exam)
-#                 if "error" in result:
-#                     print(result)
-#                     return Response(result, status=status.HTTP_400_BAD_REQUEST)
-
-#             return Response(PastExamSerializer(past_exam).data, status=status.HTTP_201_CREATED)
-
-#         if serializer.errors:
-#             print(serializer.errors)
-#         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-#     def process_questions(self, file, past_exam):
-#         """Processes the uploaded Excel file and gets or creates questions."""
-#         try:
-#             df = pd.read_excel(file)
-#         except Exception as e:
-#             return {"error": f"Error reading file: {str(e)}"}
-
-#         required_columns = ["Question", "Option1", "Option2", "Option3", "Option4", "Answer", "Difficulty", "Subject"]
-#         df_columns_lower = [col.lower() for col in df.columns]
-
-#         # Check if 'Category' exists in the uploaded file
-#         has_category = "category" in df_columns_lower
-#         if has_category:
-#             required_columns.append("Category")
-
-#         # Find missing columns
-#         missing_cols = [col for col in required_columns if col.lower() not in df_columns_lower]
-#         if missing_cols:
-#             return {"error": f"Missing columns: {', '.join(missing_cols)}"}
-
-#         question_count = 0
-#         updated_questions = 0
-
-#         try:
-#             with transaction.atomic():
-#                 for _, row in df.iterrows():
-#                     row = {col.lower(): value for col, value in row.items()}  # Normalize column access
-
-#                     question_text = row["question"]
-#                     options = [row["option1"], row["option2"], row["option3"], row["option4"]]
-#                     correct_answer = row["answer"].strip().lower().replace(" ", "")
-
-#                     # Validate difficulty level
-#                     try:
-#                         difficulty_level = int(row["difficulty"])
-#                     except ValueError:
-#                         return {"error": f"Invalid difficulty level '{row['difficulty']}'. Must be an integer."}
-
-#                     if difficulty_level not in range(1, 7):
-#                         return {"error": f"Invalid difficulty level {difficulty_level}. Must be between 1 and 6."}
-
-#                     # Get or create the Subject
-#                     subject, _ = Subject.objects.get_or_create(name=row["subject"])
-
-#                     # Handle category (if present)
-#                     category = None
-#                     if has_category and row.get("category"):
-#                         category, _ = Category.objects.get_or_create(name=row["category"])
-
-#                     # Get or create the Question
-#                     question, created = Question.objects.get_or_create(
-#                         text=question_text,
-#                         defaults={
-#                             "marks": 1,
-#                             "category": category,
-#                             "difficulty_level": difficulty_level,
-#                             "subject": subject,
-#                         }
-#                     )
-
-#                     # Associate the question with the past exam (if not already linked)
-#                     if not question.past_exams.filter(id=past_exam.id).exists():
-#                         question.past_exams.add(past_exam)
-#                         if created:
-#                             question_count += 1
-#                         else:
-#                             updated_questions += 1
-
-#                     # Remove old options and add new ones if the question was just created
-#                     if created:
-#                         question.options.all().delete()  # Clear existing options
-#                         for i, option_text in enumerate(options, start=1):
-#                             is_correct = option_text.strip().lower().replace(" ", "") == correct_answer
-#                             QuestionOption.objects.create(question=question, text=option_text, is_correct=is_correct)
-
-#                 return {
-#                     "message": f"{question_count} new questions added, {updated_questions} existing questions linked."
-#                 }
-
-#         except Exception as e:
-#             return {"error": f"An error occurred: {str(e)}"}
 
 
 from rest_framework import viewsets, status
@@ -1936,180 +1957,6 @@ from io import BytesIO
 from PIL import Image
 
 
-# class PastExamViewSet(viewsets.ModelViewSet):
-#     queryset = PastExam.objects.all().order_by("-exam_date")
-#     parser_classes = [MultiPartParser, FormParser]
-
-#     def get_serializer_class(self):
-#         return PastExamCreateSerializer if self.action in ["create", "update"] else PastExamSerializer
-
-#     def create(self, request, *args, **kwargs):
-#         serializer = self.get_serializer(data=request.data)
-
-#         if serializer.is_valid():
-#             past_exam = serializer.save()
-#             past_exam.refresh_from_db()
-
-#             if "file" in request.FILES:
-#                 file = request.FILES["file"]
-#                 result = self.process_questions(file, past_exam)
-
-#                 if result and "error" in result:
-#                     return Response(result, status=status.HTTP_400_BAD_REQUEST)
-#                 elif result:
-#                     return Response(result, status=status.HTTP_201_CREATED)
-#                 else:
-#                     return Response({"error": "Unknown error occurred during question processing."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
-#             return Response(PastExamSerializer(past_exam).data, status=status.HTTP_201_CREATED)
-
-#         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-#     def process_questions(self, file, past_exam):
-#         try:
-#             df = pd.read_excel(file)
-#             workbook = openpyxl.load_workbook(file)
-#             sheet = workbook.active
-#         except Exception as e:
-#             return {"error": f"Error reading file: {str(e)}"}
-
-#         required_columns = ["Question", "Option1", "Option2", "Option3", "Option4", "Answer", "Difficulty"]
-#         df.columns = [col.lower() for col in df.columns]
-
-#         has_category = "category" in df.columns
-#         if has_category:
-#             required_columns.append("Category")
-
-#         missing_cols = [col for col in required_columns if col.lower() not in df.columns]
-#         if missing_cols:
-#             return {"error": f"Missing columns: {', '.join(missing_cols)}"}
-
-#         image_map = {}
-#         for image in sheet._images:
-#             if hasattr(image, "anchor"):
-#                 cell = image.anchor._from
-#                 cell_ref = f"{get_column_letter(cell.col + 1)}{cell.row + 1}"
-#                 image_map[cell_ref] = image
-
-#         answer_map = {"ক": "option1", "খ": "option2", "গ": "option3", "ঘ": "option4"}
-#         current_subject = None
-#         question_count = 0
-#         updated_questions = 0
-
-#         with transaction.atomic():
-#             for index, row in df.iterrows():
-#                 row = row.fillna("")
-
-#                 if "subject" in row and row["subject"]:
-#                     current_subject, _ = Subject.objects.get_or_create(name=row["subject"].strip())
-
-#                 if not current_subject:
-#                     return {"error": f"Subject missing at row {index + 2}"}
-
-#                 # Question image from column C
-#                 question_cell = f"{get_column_letter(3)}{index + 2}"  # Column C
-#                 question_image_data = self.get_image_data_from_map(image_map.get(question_cell))
-#                 question_text = row["question"].strip() if row["question"] else None
-#                 if question_image_data:
-#                     question_text = None
-
-#                 category = None
-#                 if has_category and row.get("category"):
-#                     category, _ = Category.objects.get_or_create(name=row["category"].strip())
-
-#                 difficulty_level = None
-#                 if row["difficulty"]:
-#                     try:
-#                         difficulty_level = int(row["difficulty"])
-#                     except ValueError:
-#                         return {"error": f"Invalid difficulty level at row {index + 2}"}
-
-#                 question, created = Question.objects.get_or_create(
-#                     text=question_text,
-#                     subject=current_subject,
-#                     defaults={"marks": 1, "category": category, "difficulty_level": difficulty_level}
-#                 )
-
-#                 past_exam.questions.add(question)
-
-#                 if question_image_data:
-#                     image_file = self.save_image_to_field(question_image_data, f"question_image_{index}.png")
-#                     if image_file:
-#                         question.image.save(image_file.name, image_file)
-#                         question.save()
-
-#                 if not created:
-#                     question.options.all().delete()
-
-#                 correct_option_text = None
-#                 correct_answer = str(row["answer"]).strip().lower().replace(" ", "")
-#                 options = []
-
-#                 for i in range(1, 5):
-#                     option_text = str(row.get(f"option{i}", "")).strip() if pd.notna(row.get(f"option{i}")) else None
-
-#                     col_letter = get_column_letter(3 + i)  # D (4) to G (7)
-#                     option_cell = f"{col_letter}{index + 2}"
-#                     option_image_data = self.get_image_data_from_map(image_map.get(option_cell))
-#                     if option_image_data:
-#                         option_text = None
-
-#                     option_obj = QuestionOption(
-#                         question=question,
-#                         text=option_text
-#                     )
-
-#                     if option_image_data:
-#                         image_file = self.save_image_to_field(option_image_data, f"option_image_{index}_{i}.png")
-#                         if image_file:
-#                             option_obj.image.save(image_file.name, image_file)
-
-#                     option_obj.save()
-#                     options.append(option_obj)
-
-#                     if correct_answer in answer_map and answer_map[correct_answer] == f"option{i}":
-#                         correct_option_text = option_obj.text or "image"
-#                     elif correct_answer == f"option{i}":
-#                         correct_option_text = option_obj.text or "image"
-
-#                 for option in options:
-#                     if option.text == correct_option_text or (option.text is None and correct_option_text == "image"):
-#                         option.is_correct = True
-#                         option.save()
-
-#                 if created:
-#                     question_count += 1
-#                 else:
-#                     updated_questions += 1
-
-#             past_exam.save()
-
-#         return {
-#             "message": f"{question_count} questions added, {updated_questions} updated",
-#             "past_exam_id": past_exam.id
-#         }
-
-#     def get_image_data_from_map(self, image):
-#         if not image:
-#             return None
-#         try:
-#             img_byte_arr = BytesIO()
-#             img_byte_arr.write(image._data())
-#             return img_byte_arr.getvalue()
-#         except Exception as e:
-#             print(f"Error extracting image: {e}")
-#             return None
-
-#     def save_image_to_field(self, image_data, filename):
-#         try:
-#             img = Image.open(BytesIO(image_data))
-#             img_format = img.format or "PNG"
-#             img_io = BytesIO()
-#             img.save(img_io, format=img_format)
-#             return ContentFile(img_io.getvalue(), name=filename)
-#         except Exception as e:
-#             print(f"Error saving image: {e}")
-#             return None
 
 
 
@@ -2143,351 +1990,236 @@ class PastExamViewSet(viewsets.ModelViewSet):
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-    # def process_questions(self, file, past_exam):
-    #     try:
-    #         df = pd.read_excel(file)
-    #         workbook = openpyxl.load_workbook(file)
-    #         sheet = workbook.active
-    #     except Exception as e:
-    #         return {"error": f"Error reading file: {str(e)}"}
-
-    #     df.columns = [col.lower() for col in df.columns]
-
-    #     required_columns = ["question"]
-    #     has_answer = "answer" in df.columns
-    #     has_difficulty = "difficulty" in df.columns
-    #     has_category = "category" in df.columns
-
-    #     if has_answer:
-    #         required_columns.append("answer")
-    #     if has_difficulty:
-    #         required_columns.append("difficulty")
-    #     if has_category:
-    #         required_columns.append("category")
-
-    #     missing_cols = [col for col in required_columns if col not in df.columns]
-    #     if missing_cols:
-    #         return {"error": f"Missing columns: {', '.join(missing_cols)}"}
-
-    #     standard_options = ["option1", "option2", "option3", "option4"]
-    #     bengali_options = ["ক", "খ", "গ", "ঘ"]
-
-    #     image_map = {}
-    #     for image in sheet._images:
-    #         if hasattr(image, "anchor"):
-    #             cell = image.anchor._from
-    #             cell_ref = f"{get_column_letter(cell.col + 1)}{cell.row + 1}"
-    #             image_map[cell_ref] = image
-
-    #     current_subject = None
-    #     question_count = 0
-    #     updated_questions = 0
-
-    #     with transaction.atomic():
-    #         for index, row in df.iterrows():
-    #             row = row.fillna("")
-
-    #             if "subject" in row and row["subject"]:
-    #                 current_subject, _ = Subject.objects.get_or_create(name=row["subject"].strip())
-
-    #             if not current_subject:
-    #                 return {"error": f"Subject missing at row {index + 2}"}
-
-    #             # Dynamically check where 'question' column is located
-    #             question_column = next((col for col in df.columns if 'question' in col.lower()), None)
-    #             if question_column is None:
-    #                 return {"error": f"Question column not found at row {index + 2}"}
-
-    #             question_cell = f"{get_column_letter(df.columns.get_loc(question_column) + 1)}{index + 2}"
-    #             question_image_data = self.get_image_data_from_map(image_map.get(question_cell))
-    #             question_text = row[question_column].strip() if row[question_column] else None
-    #             if question_image_data:
-    #                 question_text = None  # Image-based question
-
-    #             category = None
-    #             if has_category and row.get("category"):
-    #                 category, _ = Category.objects.get_or_create(name=row["category"].strip())
-
-    #             difficulty_level = None
-    #             if has_difficulty and row["difficulty"]:
-    #                 try:
-    #                     difficulty_level = int(row["difficulty"])
-    #                 except ValueError:
-    #                     return {"error": f"Invalid difficulty level at row {index + 2}"}
-
-    #             # Create new question if not found
-    #             if not question_text:  # Image-only question
-    #                 question = Question.objects.create(
-    #                     text=None,
-    #                     subject=current_subject,
-    #                     marks=1,
-    #                     category=category,
-    #                     difficulty_level=difficulty_level
-    #                 )
-    #                 question_count += 1
-    #             else:
-    #                 question = Question.objects.filter(text=question_text, subject=current_subject).first()
-    #                 if not question:
-    #                     question = Question.objects.create(
-    #                         text=question_text,
-    #                         subject=current_subject,
-    #                         marks=1,
-    #                         category=category,
-    #                         difficulty_level=difficulty_level
-    #                     )
-    #                     question_count += 1
-    #                 else:
-    #                     updated_questions += 1
-    #                     if not question.category and category:
-    #                         question.category = category
-    #                     if not question.difficulty_level and difficulty_level:
-    #                         question.difficulty_level = difficulty_level
-    #                     question.save()
-
-    #             # Add question to exam
-    #             past_exam.questions.add(question)
-
-    #             # Save question image if exists
-    #             if question_image_data:
-    #                 image_file = self.save_image_to_field(question_image_data, f"question_image_{index}.png")
-    #                 if image_file:
-    #                     question.image.save(image_file.name, image_file)
-    #                     question.save()
-
-    #             # Handling options
-    #             question.options.all().delete()  # Remove existing options if any
-
-    #             if all(opt in df.columns for opt in standard_options):
-    #                 option_columns = standard_options
-    #                 answer_map = {"ক": "option1", "খ": "option2", "গ": "option3", "ঘ": "option4",
-    #                               "option1": "option1", "option2": "option2", "option3": "option3", "option4": "option4"}
-    #             elif all(opt in df.columns for opt in bengali_options):
-    #                 option_columns = bengali_options
-    #                 answer_map = {"ক": "ক", "খ": "খ", "গ": "গ", "ঘ": "ঘ"}
-    #             else:
-    #                 option_columns = []
-    #                 answer_map = {}
-
-    #             options = []
-
-    #             for i, option_key in enumerate(option_columns):
-    #                 option_text = str(row.get(option_key, "")).strip() if pd.notna(row.get(option_key)) else None
-    #                 col_letter = get_column_letter(4 + i)
-    #                 option_cell = f"{col_letter}{index + 2}"
-    #                 option_image_data = self.get_image_data_from_map(image_map.get(option_cell))
-
-    #                 if option_image_data:
-    #                     option_text = None
-
-    #                 option_obj = QuestionOption(
-    #                     question=question,
-    #                     text=option_text
-    #                 )
-
-    #                 if option_image_data:
-    #                     image_file = self.save_image_to_field(option_image_data, f"option_image_{index}_{i}.png")
-    #                     if image_file:
-    #                         option_obj.image.save(image_file.name, image_file)
-
-    #                 option_obj.save()
-    #                 options.append((option_key, option_obj))
-
-    #             if has_answer:
-    #                 correct_answer = str(row["answer"]).strip().lower().replace(" ", "")
-    #                 correct_key = answer_map.get(correct_answer)
-    #                 if correct_key:
-    #                     for option_key, option_obj in options:
-    #                         if option_key == correct_key:
-    #                             option_obj.is_correct = True
-    #                             option_obj.save()
-
-    #         past_exam.save()
-
-    #     return {
-    #         "message": f"{question_count} questions added, {updated_questions} updated",
-    #         "past_exam_id": past_exam.id
-    #     }
-    
-    
     
     def process_questions(self, file, past_exam):
+        # 1. Read Excel file with pandas and openpyxl for image extraction
         try:
-            df = pd.read_excel(file)
-            workbook = openpyxl.load_workbook(file)
+            logging.info("Starting to process the file")
+
+            # Create a temporary file on disk and write the uploaded file content to it
+            with tempfile.NamedTemporaryFile(delete=False, suffix=".xlsx") as temp_file:
+                temp_file.write(file.read())
+                temp_file_path = temp_file.name
+
+            # Load with pandas
+            df = pd.read_excel(temp_file_path)
+
+            # Load with openpyxl
+            workbook = openpyxl.load_workbook(temp_file_path)
             sheet = workbook.active
-        except Exception as e:
-            return {"error": f"Error reading file: {str(e)}"}
 
-        df.columns = [col.lower() for col in df.columns]
+            image_map = {}
+            for image in sheet._images:
+                if hasattr(image, "anchor"):
+                    cell = image.anchor._from
+                    cell_ref = f"{get_column_letter(cell.col + 1)}{cell.row + 1}"
+                    image_map[cell_ref] = image
 
-        required_columns = ["question"]
-        has_answer = "answer" in df.columns
-        has_difficulty = "difficulty" in df.columns
-        has_category = "category" in df.columns
+            for column in df.columns:
+                # Ensure each non-image column is converted to string
+                df[column] = df[column].apply(str)
 
-        if has_answer:
-            required_columns.append("answer")
-        if has_difficulty:
-            required_columns.append("difficulty")
-        if has_category:
-            required_columns.append("category")
+            # 2. Convert all column names to lowercase for consistency
+            df.columns = [col.lower() for col in df.columns]
 
-        missing_cols = [col for col in required_columns if col not in df.columns]
-        if missing_cols:
-            return {"error": f"Missing columns: {', '.join(missing_cols)}"}
+            # 3. Determine optional fields
+            required_columns = ["question"]
+            has_answer = "answer" in df.columns
+            has_difficulty = "difficulty" in df.columns
+            has_category = "category" in df.columns
 
-        standard_options = ["option1", "option2", "option3", "option4"]
-        bengali_options = ["ক", "খ", "গ", "ঘ"]
+            if has_answer:
+                required_columns.append("answer")
+            if has_difficulty:
+                required_columns.append("difficulty")
+            if has_category:
+                required_columns.append("category")
 
-        image_map = {}
-        for image in sheet._images:
-            if hasattr(image, "anchor"):
-                cell = image.anchor._from
-                cell_ref = f"{get_column_letter(cell.col + 1)}{cell.row + 1}"
-                image_map[cell_ref] = image
+            # 4. Validate required columns
+            missing_cols = [col for col in required_columns if col not in df.columns]
+            if missing_cols:
+                return {"error": f"Missing columns: {', '.join(missing_cols)}"}
 
-        current_subject = None
-        question_count = 0
-        updated_questions = 0
+            # 5. Option style support
+            standard_options = ["option1", "option2", "option3", "option4"]
+            bengali_options = ["ক", "খ", "গ", "ঘ"]
 
-        with transaction.atomic():
-            for index, row in df.iterrows():
-                row = row.fillna("")
+            # 6. Initialize counters
+            current_subject = None
+            question_count = 0
+            updated_questions = 0
 
-                if "subject" in row and row["subject"]:
-                    current_subject, _ = Subject.objects.get_or_create(name=row["subject"].strip())
+            # 7. Atomic transaction for rollback on error
+            with transaction.atomic():
+                for index, row in df.iterrows():
+                    row = row.fillna("")
 
-                if not current_subject:
-                    return {"error": f"Subject missing at row {index + 2}"}
+                    # 7.1 Detect subject
+                    if "subject" in row and row["subject"]:
+                        current_subject, _ = Subject.objects.get_or_create(name=row["subject"].strip())
+                    if not current_subject:
+                        return {"error": f"Subject missing at row {index + 2}"}
 
-                question_column = next((col for col in df.columns if 'question' in col.lower()), None)
-                if question_column is None:
-                    return {"error": f"Question column not found at row {index + 2}"}
+                    # 7.2 Detect question cell
+                    question_column = next((col for col in df.columns if 'question' in col.lower()), None)
+                    if not question_column:
+                        return {"error": f"Question column not found at row {index + 2}"}
 
-                question_cell = f"{get_column_letter(df.columns.get_loc(question_column) + 1)}{index + 2}"
-                question_image_data = self.get_image_data_from_map(image_map.get(question_cell))
-                question_text = str(row[question_column]).strip() if row[question_column] else None
-                if question_image_data:
-                    question_text = None
+                    question_cell = f"{get_column_letter(df.columns.get_loc(question_column) + 1)}{index + 2}"
+                    question_image_data = self.get_image_data_from_map(image_map.get(question_cell))
+                    question_text = str(row[question_column]).strip() if row[question_column] else None
+                    if question_image_data:
+                        question_text = None  # If image exists, skip text
 
-                category = None
-                if has_category and row.get("category"):
-                    category, _ = Category.objects.get_or_create(name=row["category"].strip())
+                    # 7.3 Detect category
+                    category = None
+                    if has_category and row.get("category"):
+                        category, _ = Category.objects.get_or_create(name=row["category"].strip())
 
-                difficulty_level = None
-                if has_difficulty and row["difficulty"]:
-                    try:
-                        difficulty_level = int(row["difficulty"])
-                    except ValueError:
-                        return {"error": f"Invalid difficulty level at row {index + 2}"}
+                    # 7.4 Detect difficulty level
+                    difficulty_level = None
+                    if has_difficulty and row["difficulty"]:
+                        try:
+                            difficulty_level = int(row["difficulty"])
+                        except ValueError:
+                            return {"error": f"Invalid difficulty level at row {index + 2}"}
 
-                if not question_text:
-                    question = Question.objects.create(
-                        text=None,
-                        subject=current_subject,
-                        marks=1,
-                        category=category,
-                        difficulty_level=difficulty_level
-                    )
-                    question_count += 1
-                else:
-                    question, created = Question.objects.get_or_create(
-                        text=question_text,
-                        defaults={
-                            "subject": current_subject,
-                            "marks": 1,
-                            "category": category,
-                            "difficulty_level": difficulty_level
-                        }
-                    )
-                    if created:
+                    # 7.5 Create or update question
+                    if not question_text:
+                        question = Question.objects.create(
+                            text=None,
+                            subject=current_subject,
+                            marks=1,
+                            category=category,
+                            difficulty_level=difficulty_level
+                        )
                         question_count += 1
                     else:
-                        updated_questions += 1
-                        if not question.category and category:
-                            question.category = category
-                        if not question.difficulty_level and difficulty_level:
-                            question.difficulty_level = difficulty_level
-                        question.save()
+                        question, created = Question.objects.get_or_create(
+                            text=question_text,
+                            defaults={
+                                "subject": current_subject,
+                                "marks": 1,
+                                "category": category,
+                                "difficulty_level": difficulty_level
+                            }
+                        )
+                        if created:
+                            question_count += 1
+                        else:
+                            updated_questions += 1
+                            if not question.category and category:
+                                question.category = category
+                            if not question.difficulty_level and difficulty_level:
+                                question.difficulty_level = difficulty_level
+                            question.save()
 
-                PastExamQuestion.objects.update_or_create(
-                    exam=past_exam,
-                    question=question,
-                    defaults={"order": index + 1}
-                )
-
-                if question_image_data:
-                    image_file = self.save_image_to_field(question_image_data, f"question_image_{index}.png")
-                    if image_file:
-                        question.image.save(image_file.name, image_file)
-                        question.save()
-
-                question.options.all().delete()
-
-                if all(opt in df.columns for opt in standard_options):
-                    option_columns = standard_options
-                    answer_map = {"ক": "option1", "খ": "option2", "গ": "option3", "ঘ": "option4",
-                                "option1": "option1", "option2": "option2", "option3": "option3", "option4": "option4"}
-                elif all(opt in df.columns for opt in bengali_options):
-                    option_columns = bengali_options
-                    answer_map = {"ক": "ক", "খ": "খ", "গ": "গ", "ঘ": "ঘ"}
-                else:
-                    option_columns = []
-                    answer_map = {}
-
-                options = []
-
-                for i, option_key in enumerate(option_columns):
-                    option_text = str(row.get(option_key, "")).strip() if pd.notna(row.get(option_key)) else None
-                    col_letter = get_column_letter(4 + i)
-                    option_cell = f"{col_letter}{index + 2}"
-                    option_image_data = self.get_image_data_from_map(image_map.get(option_cell))
-
-                    if option_image_data:
-                        option_text = None
-
-                    option_obj = QuestionOption(
+                    # 7.6 Link question to PastExam
+                    PastExamQuestion.objects.update_or_create(
+                        exam=past_exam,
                         question=question,
-                        text=option_text
+                        defaults={"order": index + 1}
                     )
 
-                    if option_image_data:
-                        image_file = self.save_image_to_field(option_image_data, f"option_image_{index}_{i}.png")
+                    # 7.7 Save question image if exists
+                    if question_image_data:
+                        filename = f"question_image_{uuid.uuid4().hex}.png"
+                        image_file = self.save_image_to_field(question_image_data, filename)
                         if image_file:
-                            option_obj.image.save(image_file.name, image_file)
+                            question.image.save(image_file.name, image_file)
+                            question.save()
 
-                    option_obj.save()
-                    options.append((option_key, option_obj))
+                    # 7.8 Determine option format
+                    option_columns = []
+                    answer_map = {}
+                    if all(opt in df.columns for opt in standard_options):
+                        option_columns = standard_options
+                        answer_map = {"ক": "option1", "খ": "option2", "গ": "option3", "ঘ": "option4",
+                                      "option1": "option1", "option2": "option2", "option3": "option3", "option4": "option4"}
+                    elif all(opt in df.columns for opt in bengali_options):
+                        option_columns = bengali_options
+                        answer_map = {opt: opt for opt in bengali_options}
 
-                if has_answer:
-                    correct_answer = str(row["answer"]).strip().lower().replace(" ", "")
-                    correct_key = answer_map.get(correct_answer)
-                    if correct_key:
-                        for option_key, option_obj in options:
-                            if option_key == correct_key:
-                                option_obj.is_correct = True
-                                option_obj.save()
+                    # 7.9 Create options
+                    options = []
+                    for i, option_key in enumerate(option_columns):
+                        option_text = str(row.get(option_key, "")).strip() if pd.notna(row.get(option_key)) else None
+                        col_letter = get_column_letter(df.columns.get_loc(option_key) + 1) if option_key in df.columns else ""
+                        option_cell = f"{col_letter}{index + 2}"
+                        option_image_data = self.get_image_data_from_map(image_map.get(option_cell))
 
-            past_exam.save()
+                        if option_image_data:
+                            option_text = None
 
-        return {
-            "message": f"{question_count} questions added, {updated_questions} updated",
-            "past_exam_id": past_exam.id
-        }
+                        option_obj = QuestionOption.objects.create(
+                            question=question,
+                            text=option_text
+                        )
 
+                        # if created:
+                        #     # If it's a new option, link it to the PastExamQuestionOption
+                        #     PastExamQuestionOption.objects.create(
+                        #         exam=past_exam,
+                        #         question=question,
+                        #         option=option_obj
+                        #     )
+                        # else:
+                            # If the option already exists, link it to the PastExamQuestionOption
+                        PastExamQuestionOption.objects.get_or_create(
+                            exam=past_exam,
+                            question=question,
+                            option=option_obj
+                        )
 
+                        if option_image_data:
+                            filename = f"option_image_{uuid.uuid4().hex}.png"
+                            image_file = self.save_image_to_field(option_image_data, filename)
+                            if image_file:
+                                option_obj.image.save(image_file.name, image_file)
+
+                        option_obj.save()
+                        options.append((option_key, option_obj))
+
+                    # 7.10 Mark correct answer
+                    if has_answer:
+                        correct_answer = str(row["answer"]).strip().lower().replace(" ", "")
+                        correct_key = answer_map.get(correct_answer)
+                        if correct_key:
+                            for option_key, option_obj in options:
+                                if option_key == correct_key:
+                                    option_obj.is_correct = True
+                                    option_obj.save()
+
+                # Final save
+                past_exam.save()
+
+            # 8. Return summary
+            return {
+                "message": f"{question_count} questions added, {updated_questions} updated",
+                "past_exam_id": past_exam.id
+            }
+        except Exception as e:
+            logging.error(f"Error reading file: {str(e)}")
+            return {"error": f"Error reading file: {str(e)}"}
 
     def get_image_data_from_map(self, image):
         if not image:
             return None
         try:
             img_byte_arr = BytesIO()
-            img_byte_arr.write(image._data())
-            return img_byte_arr.getvalue()
+            # Ensure the image object has the _data method
+            if hasattr(image, '_data'):
+                data = image._data()
+                img_byte_arr.write(data)
+                return img_byte_arr.getvalue()
+            else:
+                print(f"Error extracting image from cell: Unknown -> Image object has no '_data' attribute")
+                return None
         except Exception as e:
-            print(f"Error extracting image: {e}")
+            print(f"Error extracting image from cell: {getattr(image.anchor, 'from', 'Unknown')} -> {e}")
             return None
 
+    # 💾 Helper: Convert raw image data to Django ContentFile
     def save_image_to_field(self, image_data, filename):
         try:
             img = Image.open(BytesIO(image_data))
@@ -2498,8 +2230,6 @@ class PastExamViewSet(viewsets.ModelViewSet):
         except Exception as e:
             print(f"Error saving image: {e}")
             return None
-
-
 
 
     
