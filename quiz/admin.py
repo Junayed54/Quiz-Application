@@ -111,23 +111,20 @@ class QuestionAdmin(admin.ModelAdmin):
     readonly_fields = ('created_at', 'updated_at', 'question_image_preview')
     ordering = ('-created_at',)
 
-    # Show only first 50 characters of question text
     def text_snippet(self, obj):
         return obj.text[:50] + "..." if obj.text and len(obj.text) > 50 else obj.text
     text_snippet.short_description = 'Question'
 
-    # Display inline image preview (if image exists)
     def question_image_preview(self, obj):
         if obj.image:
             return format_html('<img src="{}" width="100" height="auto" />', obj.image.url)
         return "No image"
     question_image_preview.short_description = 'Image Preview'
 
-    # Show all options as text (with correct marked)
     def get_options(self, obj):
         output_lines = []
 
-        # Get regular options from QuestionOption
+        # Regular options
         direct_options = obj.options.all()
         if direct_options.exists():
             output_lines.append("<u>Regular Options:</u>")
@@ -136,8 +133,12 @@ class QuestionAdmin(admin.ModelAdmin):
                 for opt in direct_options
             ])
 
-        # Get options from PastExamQuestionOption
-        past_exam_options = PastExamQuestionOption.objects.filter(question=obj).select_related('option')
+        # PastExamQuestionOptions
+        past_exam_questions = PastExamQuestion.objects.filter(question=obj)
+        past_exam_options = PastExamQuestionOption.objects.filter(
+            question__in=past_exam_questions
+        ).select_related('option')
+
         if past_exam_options.exists():
             output_lines.append("<u>Past Exam Options:</u>")
             output_lines.extend([
@@ -145,26 +146,22 @@ class QuestionAdmin(admin.ModelAdmin):
                 for po in past_exam_options
             ])
 
-        # Get options from ExamQuestionOption (if you have this model)
-        exam_options = ExamQuestionOption.objects.filter(question=obj).select_related('option')
-        if exam_options.exists():
-            output_lines.append("<u>Exam Options:</u>")
-            output_lines.extend([
-                f"<b>{eo.option.text}</b> {'✅' if eo.option.is_correct else ''}"
-                for eo in exam_options
-            ])
-
-        # If no options exist
-        if not output_lines:
-            return "No options"
-        
-        # Safely format the output using `format_html`
+        # ExamQuestionOption (if it exists in your model)
         try:
-            return format_html("<br>".join(output_lines))
-        except KeyError as e:
-            return f"Error formatting options: {str(e)}"
+            exam_options = ExamQuestionOption.objects.filter(question=obj).select_related('option')
+            if exam_options.exists():
+                output_lines.append("<u>Exam Options:</u>")
+                output_lines.extend([
+                    f"<b>{eo.option.text}</b> {'✅' if eo.option.is_correct else ''}"
+                    for eo in exam_options
+                ])
+        except:
+            pass  # If ExamQuestionOption is not defined
+
+        return format_html("<br>".join(output_lines)) if output_lines else "No options"
 
     get_options.short_description = 'Options'
+
 
 
 # Register the admin class

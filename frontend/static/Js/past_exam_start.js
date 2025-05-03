@@ -85,6 +85,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function showQuestion(index) {
         const question = questions[index];
+        // console.log(question.question.text);
         const questionContainer = document.getElementById('question-text');
         const optionsContainer = document.getElementById('options-container');
         const usesSection = document.getElementById('uses-section');
@@ -94,19 +95,19 @@ document.addEventListener('DOMContentLoaded', function() {
         optionsContainer.innerHTML = '';
     
         // Display question text or image
-        if (question.image) {
+        if (question.question.image) {
             // If the question has an image
             questionContainer.innerHTML = `
                 <p class="text-lg font-semibold">Question ${index + 1}:</p>
-                <img src="${question.image}" alt="Question Image" class="max-w-full h-auto rounded-lg shadow-md">
+                <img src="${question.question.image}" alt="Question Image" class="max-w-full h-auto rounded-lg shadow-md">
             `;
         } else {
             // If the question is text-based
-            questionContainer.innerHTML = `<p class="text-lg font-semibold">Question ${index + 1}: ${question.text}</p>`;
+            questionContainer.innerHTML = `<p class="text-lg font-semibold">Question ${index + 1}: ${question.question.text}</p>`;
         }
     
         // Display the usage section
-        usesSection.innerHTML = `<strong>Uses:</strong> (${question.question_usage_years})`;
+        // usesSection.innerHTML = `<strong>Uses:</strong> (${question.question_usage_years})`;
     
         // Display options (either text or image)
         question.options.forEach(option => {

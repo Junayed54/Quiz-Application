@@ -464,16 +464,13 @@ class PastExam(models.Model):
 
     def delete(self, *args, **kwargs):
         # First, delete the relationship between the questions and this exam
-        for question in self.questions.all():
-            # Check if the question is associated with any other exams
-            if not question.past_exams.exclude(id=self.id).exists():
-                # If the question is not linked to any other exam, delete it
-                # Delete the options that are not linked to any other exam for this question
-                for option in question.options.all():
-                    # Check if this option is not used in any other exam for this question
-                    if not PastExamQuestionOption.objects.filter(question=question, option=option).exclude(exam=self).exists():
-                        option.delete()
-                question.delete()
+        for peq in self.related_questions.all():  # related_name from PastExamQuestion model
+            question = peq.question
+            for option in question.options.all():
+                if not PastExamQuestionOption.objects.filter(question=peq, option=option).exclude(question__exam=self).exists():
+                    option.delete()
+            question.delete()
+
 
         # Now delete the PastExam instance
         super().delete(*args, **kwargs)
@@ -525,13 +522,12 @@ class PastExamQuestion(models.Model):
     order = models.IntegerField(null=True, blank=True)
     points = models.FloatField(null=True, blank=True)
 
-    class Meta:
-        unique_together = ('exam', 'question')
+    # class Meta:
+    #     unique_together = ('exam', 'question')
 
 class PastExamQuestionOption(models.Model):
-    exam = models.ForeignKey(PastExam, on_delete=models.CASCADE, related_name='related_question_options')
-    question = models.ForeignKey(Question, on_delete=models.CASCADE, related_name='used_in_pastexams_with_option')
+    question = models.ForeignKey(PastExamQuestion, on_delete=models.CASCADE, related_name='selected_options')
     option = models.ForeignKey(QuestionOption, on_delete=models.CASCADE, related_name='used_in_pastexams')
 
-    class Meta:
-        unique_together = ("exam", "question", "option")
+    # class Meta:
+    #     unique_together = ("exam", "question", "option")

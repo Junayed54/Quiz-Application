@@ -270,26 +270,26 @@ class PositionSerializer(serializers.ModelSerializer):
         
         
 class PastExamQuestionSerializer(serializers.ModelSerializer):
+    """
+    Serializer for PastExamQuestion, handling options specific to the exam instance.
+    """
     options = serializers.SerializerMethodField()
-
+    question = QuestionSerializer(read_only=True)
     class Meta:
-        model = Question
-        fields = ["id", "text", "image", "options"]  # Add more fields as needed
+        model = PastExamQuestion
+        fields = ["id", "question", "order", "points", "options"]
 
-    def get_options(self, question):
-        exam = self.context.get("past_exam")
-        if not exam:
-            return []
-
-        # Filter the QuestionOptions related to the specific exam and question
+    def get_options(self, past_exam_question):
+        """
+        Retrieves and serializes options specific to this PastExamQuestion instance.
+        """
+        # Directly use the passed-in past_exam_question instance.  This is the key.
         option_links = PastExamQuestionOption.objects.filter(
-            exam=exam, question=question
+            question=past_exam_question
         ).select_related("option")
 
-        options = [link.option for link in option_links]
-        return QuestionOptionSerializer(options, many=True).data
-
-
+        options_data = [QuestionOptionSerializer(link.option).data for link in option_links]
+        return options_data
 
 class PastExamSerializer(serializers.ModelSerializer):
     organization_name = serializers.CharField(source="organization.name", read_only=True)
@@ -309,11 +309,19 @@ class PastExamSerializer(serializers.ModelSerializer):
     def get_questions_count(self, obj):
         return obj.questions.count()
 
-    def get_questions(self, obj):
-        ordered_links = obj.related_questions.select_related("question").order_by("order")
-        questions = [link.question for link in ordered_links]
-        return PastExamQuestionSerializer(questions, many=True, context={"past_exam": obj}).data
+    def get_questions(self, past_exam):
+        """
+        Gets the questions for this past exam, with their exam-specific options.
+        """
+        # Get the PastExamQuestions for this exam.  Crucially, order them.
+        past_exam_questions = PastExamQuestion.objects.filter(exam=past_exam).order_by('order')
 
+        # Serialize each PastExamQuestion, which will include the correct options.
+        question_data = []
+        for peq in past_exam_questions:
+            question_serializer = PastExamQuestionSerializer(peq) # Use the PastExamQuestionSerializer
+            question_data.append(question_serializer.data)
+        return question_data
 
 
 
