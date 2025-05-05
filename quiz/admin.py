@@ -200,7 +200,7 @@ class PastExamAttemptInline(admin.TabularInline):
 
 # PastExamAdmin
 class PastExamAdmin(admin.ModelAdmin):
-    list_display = ('title', 'organization', 'department', 'position', 'exam_date', 'is_published', 'duration')
+    list_display = ('title', 'created_by', 'organization', 'department', 'position', 'exam_date', 'is_published', 'duration')
     list_filter = ('organization', 'department', 'position', 'is_published')
     search_fields = ('title', 'organization__name')
     ordering = ('exam_date',)

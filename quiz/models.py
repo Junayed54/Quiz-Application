@@ -452,7 +452,13 @@ class PastExam(models.Model):
     total_questions = models.PositiveIntegerField(default=0) 
     pass_mark = models.PositiveIntegerField(default=50)  # Minimum passing percentage
     negative_mark = models.FloatField(default=0.0)  # Penalty per wrong answer
-
+    created_by = models.ForeignKey(
+        User, 
+        on_delete=models.SET_NULL, 
+        null=True, 
+        blank=True,
+        related_name="created_past_exams"
+    )
     def save(self, *args, **kwargs):
         is_new = self.pk is None  # Check if it's a new instance
     

@@ -297,13 +297,14 @@ class PastExamSerializer(serializers.ModelSerializer):
     position_name = serializers.CharField(source="position.name", read_only=True)
     questions_count = serializers.SerializerMethodField()
     questions = serializers.SerializerMethodField()
-
+    created_by = serializers.StringRelatedField(read_only=True)
+    
     class Meta:
         model = PastExam
         fields = [
             "id", "title", "organization_name", "department_name", "position_name",
             "duration", "pass_mark", "negative_mark",
-            "exam_date", "is_published", "questions_count", "questions"
+            "exam_date", "is_published", "questions_count", "questions", "created_by"
         ]
 
     def get_questions_count(self, obj):
@@ -354,11 +355,14 @@ class PastExamCreateSerializer(serializers.ModelSerializer):
         ]
 
     def create(self, validated_data):
-        # Remove file key (model doesn't have it)
         validated_data.pop("file", None)
-        # Create the PastExam instance using the validated data
-        instance = PastExam.objects.create(**validated_data)
-        return instance
+
+        # ✅ Automatically set created_by from request context
+        user = self.context["request"].user
+        validated_data["created_by"] = user
+
+        return PastExam.objects.create(**validated_data)
+
 
 
 
