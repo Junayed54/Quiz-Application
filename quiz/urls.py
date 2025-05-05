@@ -52,7 +52,8 @@ urlpatterns = [
     path('exams/<uuid:exam_id>/subjects/', ExamSubjectsQuestionCountView.as_view(), name='exam_subjects_question_count'),
     path('exams/<int:exam_id>/result/', exam_leaderboard_view, name='exam_leaderboard'),
     
-    
+    path('questions/<int:pk>/update/', UpdateQuestionView.as_view(), name='update_question'),
+    path('options/<int:pk>/update/', UpdateOptionView.as_view(), name='update_option'),
     
     #attempts
     # path('user/user_attempts/', UserExamAttemptsAPIView.as_view(), name='user_exam_attempts'), 
@@ -131,6 +132,7 @@ urlpatterns += [
     path("past-exams/<int:pk>/", PastExamDetailView.as_view(), name="past-exam-detail"),
     path("past-exams/<int:exam_id>/submit/", SubmitPastExamAttemptView.as_view(), name="past-exam-submit"),
     path('past-exams-check/', CheckPastExamsView.as_view(), name='check_past_exams'),
+    path('past-exam/<int:pk>/delete/', PastExamDeleteView.as_view(), name='past_exam_delete'),
     
     path('past_exam_create/', TemplateView.as_view(template_name='Html/custom/past_exam_create.html'), name='past_exam_create'),
     path('past_exam_start/<int:pk>/', TemplateView.as_view(template_name='Html/custom/past_exam_start.html'), name='past_exam_start'),

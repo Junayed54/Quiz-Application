@@ -44,6 +44,8 @@ User = get_user_model()
 import os
 now = timezone.now()
 import logging
+from django.core.files.storage import default_storage
+from django.core.files.base import ContentFile
 
 # Configure logging at the top of your file
 logging.basicConfig(level=logging.INFO)
@@ -2277,13 +2279,6 @@ class PastExamViewSet(viewsets.ModelViewSet):
             has_difficulty = "difficulty" in df.columns
             has_category = "category" in df.columns
             
-            
-
-            # Check other required columns *if* they exist in the DataFrame
-            # Modify this based on whether answer/difficulty/category are truly *required*
-            # If they are optional, this check isn't needed here.
-            # If they are required *if present*, the logic needs refinement.
-            # Assuming 'answer' is required if present for now:
             if has_answer:
                 required_columns.append("answer")
             # Add similar checks for difficulty/category if they are mandatory
@@ -2358,7 +2353,8 @@ class PastExamViewSet(viewsets.ModelViewSet):
                     # Get potential text, strip whitespace. Will be "" if empty or only whitespace.
                     original_question_text = str(row.get(question_column_name, "")).strip()
                     question_image_data = self.get_image_data_from_map(image_map.get(question_cell))
-
+                    # if original_question_text:
+                    #     print(original_question_text)
                     # --- *** NEW CHECK: Skip if Question Text AND Image are missing *** ---
                     if not original_question_text and not question_image_data:
                         logging.warning(f"Skipping row {excel_row_num}: Question text and image are both missing.")
@@ -2394,10 +2390,12 @@ class PastExamViewSet(viewsets.ModelViewSet):
                     # 7.5 Create or update question
                     # Use question_text_for_db which is None if image exists
                     if question_text_for_db:
+                        
                          question, created = Question.objects.get_or_create(
                              text=question_text_for_db,
-                             subject=current_subject, # Match subject too? Decide based on desired uniqueness.
+                            #  subject=current_subject, # Match subject too? Decide based on desired uniqueness.
                              defaults={
+                                 
                                  "marks": 1, # Assuming default marks
                                  "category": category,
                                  "difficulty_level": difficulty_level
@@ -2405,6 +2403,7 @@ class PastExamViewSet(viewsets.ModelViewSet):
                          )
                          if created:
                              question_count += 1
+                             question.subject = current_subject
                          else:
                              # Update existing question if necessary
                              updated = False
@@ -2791,22 +2790,7 @@ class PastExamViewSet(viewsets.ModelViewSet):
     #     except Exception as e:
     #         print(f"Error saving image: {e}")
     #         return None
-    def get_image_data_from_map(self, image):
-        if not image:
-            return None
-        try:
-            img_byte_arr = BytesIO()
-            # Ensure the image object has the _data method
-            if hasattr(image, '_data'):
-                data = image._data()
-                img_byte_arr.write(data)
-                return img_byte_arr.getvalue()
-            else:
-                print(f"Error extracting image from cell: Unknown -> Image object has no '_data' attribute")
-                return None
-        except Exception as e:
-            print(f"Error extracting image from cell: {getattr(image.anchor, 'from', 'Unknown')} -> {e}")
-            return None
+    
         
     def save_image_to_field(self, image_data, filename):
         try:
@@ -3126,3 +3110,71 @@ class CheckPastExamsView(APIView):
         # If past exams are found, serialize the data
         serializer = PastExamSerializer(exams, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
+    
+    
+class PastExamDeleteView(APIView):
+    permission_classes = [IsAuthenticated]  # You can adjust permissions
+
+    def delete(self, request, pk):
+        exam = get_object_or_404(PastExam, pk=pk)
+        # print(exam)
+        # Optional: check if user is allowed to delete (e.g., created_by match)
+        if exam.created_by != request.user:
+            return Response({'detail': 'Not authorized to delete this exam.'}, status=status.HTTP_403_FORBIDDEN)
+
+
+        exam.delete()
+        return Response({'detail': 'PastExam deleted successfully.'}, status=status.HTTP_204_NO_CONTENT)
+
+
+
+class UpdateQuestionView(APIView):
+    parser_classes = [MultiPartParser, FormParser]
+    permission_classes = [IsAuthenticated]
+
+    def patch(self, request, pk):
+        try:
+            question = Question.objects.get(pk=pk)
+        except Question.DoesNotExist:
+            return Response({"detail": "Question not found."}, status=status.HTTP_404_NOT_FOUND)
+
+        question.text = request.data.get("text", question.text)
+
+        if 'image' in request.FILES:
+            uploaded_file = request.FILES['image']
+            ext = uploaded_file.name.split('.')[-1]
+            unique_filename = f"{uuid.uuid4()}.{ext}"
+            file_path = os.path.join("questions", unique_filename)
+
+            saved_path = default_storage.save(file_path, ContentFile(uploaded_file.read()))
+            question.image.name = saved_path
+
+        question.save()
+        return Response({"detail": "Question updated successfully."})
+
+
+class UpdateOptionView(APIView):
+    parser_classes = [MultiPartParser, FormParser]
+    permission_classes = [IsAuthenticated]
+
+    def patch(self, request, pk):
+        try:
+            option = QuestionOption.objects.get(pk=pk)
+        except QuestionOption.DoesNotExist:
+            return Response({"detail": "Option not found."}, status=status.HTTP_404_NOT_FOUND)
+
+        option.text = request.data.get("text", option.text)
+
+        if 'image' in request.FILES:
+            uploaded_file = request.FILES['image']
+            ext = uploaded_file.name.split('.')[-1]
+            unique_filename = f"{uuid.uuid4()}.{ext}"
+            file_path = os.path.join("options", unique_filename)
+
+            saved_path = default_storage.save(file_path, ContentFile(uploaded_file.read()))
+            option.image.name = saved_path
+
+        option.save()
+        return Response({"detail": "Option updated successfully."})
+
+

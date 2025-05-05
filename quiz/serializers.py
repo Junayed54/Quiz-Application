@@ -286,7 +286,7 @@ class PastExamQuestionSerializer(serializers.ModelSerializer):
         # Directly use the passed-in past_exam_question instance.  This is the key.
         option_links = PastExamQuestionOption.objects.filter(
             question=past_exam_question
-        ).select_related("option")
+        ).select_related("option").order_by("id")
 
         options_data = [QuestionOptionSerializer(link.option).data for link in option_links]
         return options_data
@@ -315,7 +315,7 @@ class PastExamSerializer(serializers.ModelSerializer):
         Gets the questions for this past exam, with their exam-specific options.
         """
         # Get the PastExamQuestions for this exam.  Crucially, order them.
-        past_exam_questions = PastExamQuestion.objects.filter(exam=past_exam).order_by('order')
+        past_exam_questions = PastExamQuestion.objects.filter(exam=past_exam).order_by("id")
 
         # Serialize each PastExamQuestion, which will include the correct options.
         question_data = []
