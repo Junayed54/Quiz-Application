@@ -2895,40 +2895,57 @@ class SubmitPastExamAttemptView(APIView):
         user = request.user
         past_exam = get_object_or_404(PastExam, id=exam_id)
 
-        attempt, created = PastExamAttempt.objects.get_or_create(
-            user=user,
-            past_exam=past_exam,
-            defaults={'total_questions': past_exam.questions.count()}
-        )
-
-        if not created:
-            return Response({"message": "You have already attempted this exam."}, status=status.HTTP_400_BAD_REQUEST)
-
         submitted_answers = request.data.get("answers", [])
+        print(submitted_answers)
+        if not submitted_answers:
+            return Response({"message": "No answers submitted."}, status=status.HTTP_400_BAD_REQUEST)
 
         correct_count = 0
         wrong_count = 0
         answered_count = 0
 
         with transaction.atomic():
+            # Always create a new attempt
+            attempt = PastExamAttempt.objects.create(
+                user=user,
+                past_exam=past_exam,
+                total_questions=past_exam.questions.count()
+            )
+
             for answer in submitted_answers:
                 question_id = answer.get("question_id")
                 selected_option_id = answer.get("selected_option_id")
+                print()
+                if not question_id or not selected_option_id:
+                    continue  # skip if data is invalid
 
-                question = past_exam.questions.filter(id=question_id).first()
-                if not question:
+                # Get PastExamQuestion (not base Question model)
+                past_exam_question = PastExamQuestion.objects.get(
+                    exam=past_exam, id=question_id
+                )
+                if not past_exam_question:
                     continue
 
-                answered_count += 1  
+                answered_count += 1
 
-                correct_options = question.options.filter(is_correct=True).values_list("id", flat=True)
-
-                if selected_option_id in correct_options:
+                option = QuestionOption.objects.get(
+                    id = selected_option_id
+                )
+                if option.is_correct:
                     correct_count += 1
                 else:
                     wrong_count += 1
 
-            attempt.answered_questions = answered_count  # Save the number of answered questions
+                # if selected_option_id in correct_option_ids:
+                #     correct_count += 1
+                # else:
+                #     wrong_count += 1
+            is_passed=False
+            if correct_count>=past_exam.pass_mark:
+                is_passed = True
+            
+            # Save the final score
+            attempt.answered_questions = answered_count
             attempt.correct_answers = correct_count
             attempt.wrong_answers = wrong_count
             attempt.calculate_score()
@@ -2939,6 +2956,7 @@ class SubmitPastExamAttemptView(APIView):
             "total_questions": past_exam.questions.count(),
             "answered_questions": answered_count,
             "correct_answers": correct_count,
+            "is_passed" : is_passed,
             "wrong_answers": wrong_count,
             "score": attempt.score
         }, status=status.HTTP_200_OK)

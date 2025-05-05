@@ -251,7 +251,7 @@ document.addEventListener('DOMContentLoaded', function() {
             body: JSON.stringify({ answers: formattedAnswers }) // Sending correctly formatted answers
         })
         .then(response => response.json())
-        .then(data => displayResults(data.correct_answers, data.wrong_answers, data.score, data))
+        .then(data => displayResults(data.correct_answers, data.wrong_answers, data.score, data.is_passed, data))
         .catch(error => console.error('Error submitting exam:', error));
     }
     
@@ -261,12 +261,12 @@ document.addEventListener('DOMContentLoaded', function() {
         updateReviewSkippedButton();
     }
 
-    function displayResults(correctAnswers, wrongAnswers, passed, data) {
+    function displayResults(correctAnswers, wrongAnswers, passed, is_passed, data) {
         document.getElementById('resultContainer').innerHTML = `
             <h4 class="text-center">Exam Submitted!</h4>
             <p><strong>Correct Answers:</strong> ${correctAnswers}</p>
             <p><strong>Wrong Answers:</strong> ${wrongAnswers}</p>
-            <p><strong>Status:</strong> ${passed ? '<span class="text-success">Passed</span>' : '<span class="text-danger">Failed</span>'}</p>
+            <p><strong>Status:</strong> ${is_passed ? '<span class="text-success">Passed</span>' : '<span class="text-danger">Failed</span>'}</p>
             <p><strong>Skipped Questions:</strong> ${skippedQuestions.length}</p>
         `;
         

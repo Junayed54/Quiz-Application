@@ -499,8 +499,8 @@ class PastExamAttempt(models.Model):
     wrong_answers = models.PositiveIntegerField(default=0)
     score = models.FloatField(default=0.0)  # Store the final score
 
-    class Meta:
-        unique_together = ('user', 'past_exam')  # Prevents duplicate attempts for the same user-exam pair
+    # class Meta:
+    #     unique_together = ('user', 'past_exam')  # Prevents duplicate attempts for the same user-exam pair
 
     def calculate_score(self):
         """ Example score calculation method """
