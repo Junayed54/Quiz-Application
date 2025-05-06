@@ -2921,7 +2921,7 @@ class SubmitPastExamAttemptView(APIView):
                     print(f"Question ID: {question_id}, Selected Option ID: {selected_option_id}")
 
                     # Skip if question or answer is missing
-                    if not question_id or not selected_option_id:
+                    if not question_id or not selected_option_id or selected_option_id in [None, 'none', '']:
                         continue
 
                     # Skip if selected_option_id is not a valid integer
