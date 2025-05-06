@@ -2920,11 +2920,11 @@ class SubmitPastExamAttemptView(APIView):
                     continue  # skip if data is invalid
 
                 # Get PastExamQuestion (not base Question model)
-                past_exam_question = PastExamQuestion.objects.get(
-                    exam=past_exam, id=question_id
-                )
-                if not past_exam_question:
-                    continue
+                # past_exam_question = PastExamQuestion.objects.get(
+                #     exam=past_exam, id=question_id
+                # )
+                # if not past_exam_question:
+                #     continue
 
                 answered_count += 1
 
