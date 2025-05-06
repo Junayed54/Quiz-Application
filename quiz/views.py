@@ -2893,9 +2893,6 @@ class PastExamDetailView(generics.RetrieveAPIView):
 class SubmitPastExamAttemptView(APIView):
     permission_classes = [IsAuthenticated]
 
-    class SubmitPastExamAttemptView(APIView):
-        permission_classes = [IsAuthenticated]
-
     def post(self, request, exam_id):
         try:
             user = request.user
@@ -2923,9 +2920,18 @@ class SubmitPastExamAttemptView(APIView):
                     selected_option_id = answer.get("selected_option_id")
                     print(f"Question ID: {question_id}, Selected Option ID: {selected_option_id}")
 
+                    # Skip if question or answer is missing
                     if not question_id or not selected_option_id:
-                        continue  # skip if data is invalid
+                        continue
 
+                    # Skip if selected_option_id is not a valid integer
+                    try:
+                        selected_option_id = int(selected_option_id)
+                    except (ValueError, TypeError):
+                        print(f"Invalid selected_option_id: {selected_option_id}")
+                        continue
+
+                    # Try to get the QuestionOption
                     try:
                         option = QuestionOption.objects.get(id=selected_option_id)
                     except QuestionOption.DoesNotExist:
@@ -2941,7 +2947,7 @@ class SubmitPastExamAttemptView(APIView):
 
                 is_passed = correct_count >= past_exam.pass_mark
 
-                # Save attempt
+                # Save attempt results
                 attempt.answered_questions = answered_count
                 attempt.correct_answers = correct_count
                 attempt.wrong_answers = wrong_count
@@ -2961,7 +2967,10 @@ class SubmitPastExamAttemptView(APIView):
         except Exception as e:
             print("Unexpected error:", e)
             traceback.print_exc()
-            return Response({"error": "Something went wrong.", "detail": str(e)}, status=500)
+            return Response({
+                "error": "Something went wrong.",
+                "detail": str(e)
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 class UpdateQuestionExplanationView(APIView):
     parser_classes = (MultiPartParser, FormParser)
