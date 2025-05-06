@@ -33,6 +33,7 @@ import tempfile
 import random
 import json
 import uuid
+from django.core.exceptions import ObjectDoesNotExist
 # import logging
 import pandas as pd
 from .pagination import CustomPageNumberPagination
@@ -42,6 +43,7 @@ from django.db.models import F, Window
 from django.db.models.functions import Rank
 User = get_user_model()
 import os
+import traceback
 now = timezone.now()
 import logging
 from django.core.files.storage import default_storage
@@ -2891,76 +2893,75 @@ class PastExamDetailView(generics.RetrieveAPIView):
 class SubmitPastExamAttemptView(APIView):
     permission_classes = [IsAuthenticated]
 
+    class SubmitPastExamAttemptView(APIView):
+        permission_classes = [IsAuthenticated]
+
     def post(self, request, exam_id):
-        user = request.user
-        past_exam = get_object_or_404(PastExam, id=exam_id)
+        try:
+            user = request.user
+            past_exam = get_object_or_404(PastExam, id=exam_id)
 
-        submitted_answers = request.data.get("answers", [])
-        print(submitted_answers)
-        if not submitted_answers:
-            return Response({"message": "No answers submitted."}, status=status.HTTP_400_BAD_REQUEST)
+            submitted_answers = request.data.get("answers", [])
+            print("Submitted answers:", submitted_answers)
 
-        correct_count = 0
-        wrong_count = 0
-        answered_count = 0
+            if not submitted_answers:
+                return Response({"message": "No answers submitted."}, status=status.HTTP_400_BAD_REQUEST)
 
-        with transaction.atomic():
-            # Always create a new attempt
-            attempt = PastExamAttempt.objects.create(
-                user=user,
-                past_exam=past_exam,
-                total_questions=past_exam.questions.count()
-            )
+            correct_count = 0
+            wrong_count = 0
+            answered_count = 0
 
-            for answer in submitted_answers:
-                question_id = answer.get("question_id")
-                selected_option_id = answer.get("selected_option_id")
-                print()
-                if not question_id or not selected_option_id:
-                    continue  # skip if data is invalid
-
-                # Get PastExamQuestion (not base Question model)
-                # past_exam_question = PastExamQuestion.objects.get(
-                #     exam=past_exam, id=question_id
-                # )
-                # if not past_exam_question:
-                #     continue
-
-                answered_count += 1
-
-                option = QuestionOption.objects.get(
-                    id = selected_option_id
+            with transaction.atomic():
+                attempt = PastExamAttempt.objects.create(
+                    user=user,
+                    past_exam=past_exam,
+                    total_questions=past_exam.questions.count()
                 )
-                if option.is_correct:
-                    correct_count += 1
-                else:
-                    wrong_count += 1
 
-                # if selected_option_id in correct_option_ids:
-                #     correct_count += 1
-                # else:
-                #     wrong_count += 1
-            is_passed=False
-            if correct_count>=past_exam.pass_mark:
-                is_passed = True
-            
-            # Save the final score
-            attempt.answered_questions = answered_count
-            attempt.correct_answers = correct_count
-            attempt.wrong_answers = wrong_count
-            attempt.calculate_score()
-            attempt.save()
+                for answer in submitted_answers:
+                    question_id = answer.get("question_id")
+                    selected_option_id = answer.get("selected_option_id")
+                    print(f"Question ID: {question_id}, Selected Option ID: {selected_option_id}")
 
-        return Response({
-            "message": "Exam submitted successfully!",
-            "total_questions": past_exam.questions.count(),
-            "answered_questions": answered_count,
-            "correct_answers": correct_count,
-            "is_passed" : is_passed,
-            "wrong_answers": wrong_count,
-            "score": attempt.score
-        }, status=status.HTTP_200_OK)
+                    if not question_id or not selected_option_id:
+                        continue  # skip if data is invalid
 
+                    try:
+                        option = QuestionOption.objects.get(id=selected_option_id)
+                    except QuestionOption.DoesNotExist:
+                        print(f"Option with ID {selected_option_id} does not exist.")
+                        continue
+
+                    answered_count += 1
+
+                    if option.is_correct:
+                        correct_count += 1
+                    else:
+                        wrong_count += 1
+
+                is_passed = correct_count >= past_exam.pass_mark
+
+                # Save attempt
+                attempt.answered_questions = answered_count
+                attempt.correct_answers = correct_count
+                attempt.wrong_answers = wrong_count
+                attempt.calculate_score()
+                attempt.save()
+
+            return Response({
+                "message": "Exam submitted successfully!",
+                "total_questions": past_exam.questions.count(),
+                "answered_questions": answered_count,
+                "correct_answers": correct_count,
+                "wrong_answers": wrong_count,
+                "is_passed": is_passed,
+                "score": attempt.score
+            }, status=status.HTTP_200_OK)
+
+        except Exception as e:
+            print("Unexpected error:", e)
+            traceback.print_exc()
+            return Response({"error": "Something went wrong.", "detail": str(e)}, status=500)
 
 class UpdateQuestionExplanationView(APIView):
     parser_classes = (MultiPartParser, FormParser)
