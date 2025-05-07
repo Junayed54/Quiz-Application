@@ -129,6 +129,7 @@ urlpatterns = [
 
 urlpatterns += [
     path('past-exams/', PastExamListView.as_view(), name='past-exam-list'),
+    path('user-past-exams/', UserPastExamListAPIView.as_view(), name='user-past-exam-list'),
     path("past-exams/<int:pk>/", PastExamDetailView.as_view(), name="past-exam-detail"),
     path("past-exams/<int:exam_id>/submit/", SubmitPastExamAttemptView.as_view(), name="past-exam-submit"),
     path('past-exams-check/', CheckPastExamsView.as_view(), name='check_past_exams'),

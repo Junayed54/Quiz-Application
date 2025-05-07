@@ -2854,7 +2854,15 @@ class PastExamViewSet(viewsets.ModelViewSet):
         return Response({"questions": [q.text for q in questions]})
 
 
+class UserPastExamListAPIView(generics.ListAPIView):
+    serializer_class = PastExamSerializer
+    permission_classes = [IsAuthenticated]  # Optional: restrict to logged-in users
 
+    def get_queryset(self):
+        user = self.request.user
+        return PastExam.objects.filter(
+            created_by=user
+        ).order_by('-exam_date')
 
 class PastExamListView(APIView):
     def get(self, request):
@@ -2897,7 +2905,7 @@ class SubmitPastExamAttemptView(APIView):
         try:
             user = request.user
             past_exam = get_object_or_404(PastExam, id=exam_id)
-
+            print(past_exam)
             submitted_answers = request.data.get("answers", [])
             print("Submitted answers:", submitted_answers)
 
@@ -2909,6 +2917,7 @@ class SubmitPastExamAttemptView(APIView):
             answered_count = 0
 
             with transaction.atomic():
+                # Create a new exam attempt
                 attempt = PastExamAttempt.objects.create(
                     user=user,
                     past_exam=past_exam,
@@ -2920,40 +2929,43 @@ class SubmitPastExamAttemptView(APIView):
                     selected_option_id = answer.get("selected_option_id")
                     print(f"Question ID: {question_id}, Selected Option ID: {selected_option_id}")
 
-                    # Skip if question or answer is missing
+                    # Skip if question or answer is missing, or if the selected_option_id is invalid
                     if not question_id or not selected_option_id or selected_option_id in [None, 'none', '']:
                         continue
 
-                    # Skip if selected_option_id is not a valid integer
+                    # Ensure selected_option_id is a valid integer
                     try:
+                        print("hello", selected_option_id)
                         selected_option_id = int(selected_option_id)
                     except (ValueError, TypeError):
                         print(f"Invalid selected_option_id: {selected_option_id}")
                         continue
 
-                    # Try to get the QuestionOption
+                    # Ensure the option exists in the database
                     try:
                         option = QuestionOption.objects.get(id=selected_option_id)
                     except QuestionOption.DoesNotExist:
                         print(f"Option with ID {selected_option_id} does not exist.")
                         continue
 
+                    # Increment the answer counters
                     answered_count += 1
-
                     if option.is_correct:
                         correct_count += 1
                     else:
                         wrong_count += 1
 
+                # Check if the user passed the exam
                 is_passed = correct_count >= past_exam.pass_mark
 
-                # Save attempt results
+                # Save the exam attempt results
                 attempt.answered_questions = answered_count
                 attempt.correct_answers = correct_count
                 attempt.wrong_answers = wrong_count
                 attempt.calculate_score()
                 attempt.save()
 
+            # Return response with the exam results
             return Response({
                 "message": "Exam submitted successfully!",
                 "total_questions": past_exam.questions.count(),
