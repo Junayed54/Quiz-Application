@@ -2860,9 +2860,12 @@ class UserPastExamListAPIView(generics.ListAPIView):
 
     def get_queryset(self):
         user = self.request.user
-        return PastExam.objects.filter(
+        
+        exams = PastExam.objects.filter(
             created_by=user
         ).order_by('-exam_date')
+        print(exams)
+        return exams
 
 class PastExamListView(APIView):
     def get(self, request):
