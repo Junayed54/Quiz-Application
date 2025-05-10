@@ -89,7 +89,7 @@ class UsageTracking(models.Model):
     package = models.ForeignKey(SubscriptionPackage, on_delete=models.SET_NULL, null=True, related_name='usage_tracking')
     total_exams_taken = models.IntegerField(default=0)
     total_attempts_taken = models.IntegerField(default=0)
-    
+    total_allowed_exams = models.IntegerField(default=5, null=True, blank=True)  # or any other default value you prefer
     # New field to track specific exams and attempts
     exam_attempts = models.JSONField(null=True, blank=True)  # Stores data like {"exam_id_1": attempts, "exam_id_2": attempts}
 
