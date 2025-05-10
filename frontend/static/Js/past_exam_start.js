@@ -241,6 +241,7 @@ document.addEventListener('DOMContentLoaded', function() {
             question_id: answer.question_id,
             selected_option_id: answer.option // Changed from `option` to `selected_option_id`
         }));
+        
     
         fetch(`/quiz/past-exams/${examId}/submit/`, {
             method: 'POST',

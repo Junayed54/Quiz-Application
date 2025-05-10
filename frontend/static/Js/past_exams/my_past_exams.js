@@ -10,7 +10,7 @@ document.addEventListener("DOMContentLoaded", function () {
         return;
     }
 
-    fetch("/quiz/past-exams/", {
+    fetch("/quiz/user-past-exams/", {
         headers: {
             Authorization: `Bearer ${token}`,
             "Content-Type": "application/json"

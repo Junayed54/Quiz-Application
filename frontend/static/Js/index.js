@@ -70,12 +70,16 @@ document.addEventListener('DOMContentLoaded', function() {
             // Role-based visibility logic
             if (data.role === 'teacher') {
                 teacher.classList.remove('d-none');
+                window.href.location("/home/");
             } else if (data.role === 'admin') {
                 admin.classList.remove('d-none');
                 pk_admin.classList.remove('d-none');
+                window.href.location("/home/");
             } else if (data.role=='operator'){
                 operator.classList.remove('d-none');
+                window.href.location("/home/");
             } else if (data.role === 'student') {
+                window.href.location('/');
                 student.classList.remove('d-none');
                 student1.classList.remove('d-none');
 

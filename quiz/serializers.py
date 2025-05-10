@@ -324,7 +324,28 @@ class PastExamSerializer(serializers.ModelSerializer):
             question_data.append(question_serializer.data)
         return question_data
 
+class PastExamListSerializer(serializers.ModelSerializer):
+    organization = serializers.CharField(source='organization.name')
+    department = serializers.CharField(source='department.name', default=None)
+    position = serializers.CharField(source='position.name')
+    created_by = serializers.CharField(source='created_by.username', default=None)
 
+    class Meta:
+        model = PastExam
+        fields = [
+            'id',
+            'title',
+            'organization',
+            'department',
+            'position',
+            'exam_date',
+            'duration',
+            'total_questions',
+            'pass_mark',
+            'negative_mark',
+            'is_published',
+            'created_by',
+        ]
 
 class PastExamCreateSerializer(serializers.ModelSerializer):
     organization = serializers.PrimaryKeyRelatedField(

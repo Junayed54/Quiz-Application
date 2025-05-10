@@ -16,7 +16,7 @@ from django.shortcuts import get_object_or_404
 from django.views.generic.detail import DetailView
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from django.utils.dateparse import parse_date
-from rest_framework.parsers import MultiPartParser, FormParser
+from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
 from django.db.models.functions import ExtractMonth, ExtractYear
 from django.db import transaction, IntegrityError
 from django.contrib.auth.decorators import login_required
@@ -1975,7 +1975,11 @@ class PastExamViewSet(viewsets.ModelViewSet):
         # return PastExam.objects.filter(created_by=user).order_by("-exam_date")
     
     def get_serializer_class(self):
-        return PastExamCreateSerializer if self.action in ["create", "update"] else PastExamSerializer
+        if self.action == "list":
+            return PastExamListSerializer
+        elif self.action in ["create", "update", "partial_update"]:
+            return PastExamCreateSerializer
+        return PastExamSerializer
 
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data, context={"request": request})
@@ -3169,6 +3173,89 @@ class PastExamDeleteView(APIView):
         exam.delete()
         return Response({'detail': 'PastExam deleted successfully.'}, status=status.HTTP_204_NO_CONTENT)
 
+
+
+
+class AddQuestionToPastExamView(APIView):
+    parser_classes = [MultiPartParser, FormParser, JSONParser]
+
+    def post(self, request):
+        past_exam_id = request.data.get('past_exam_id')
+        if not past_exam_id:
+            return Response({"error": "Missing exam ID"}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            exam = PastExam.objects.get(pk=past_exam_id)
+        except PastExam.DoesNotExist:
+            return Response({"error": "Past exam not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        question_text = request.data.get('question_text')
+        question_image = request.FILES.get('question_image')
+
+        # Set difficulty and question_type to None if not provided
+        difficulty = request.data.get('difficulty', None)
+        question_type = request.data.get('question_type', None)
+
+        # If neither text nor image is provided, return error
+        if not question_text and not question_image:
+            return Response({"error": "Question text or image must be provided."}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Get or create the question (text-based or image-based)
+        if question_text and not question_image:
+            question, created = Question.objects.get_or_create(
+                text=question_text,
+                defaults={
+                    'difficulty_level': difficulty,
+                    'marks': request.data.get('marks', 1),  # or however you handle marks
+                    'time_limit': request.data.get('time_limit', 60)
+            }
+        )
+        else:
+            # Create a new image-based question
+            question = Question.objects.create(
+                text=question_text,
+                image=question_image,
+                difficulty=difficulty,
+                question_type=question_type
+            )
+
+        # Parse options (if available)
+        options_data = request.data.get('options')
+        if options_data:
+            try:
+                options = json.loads(options_data)
+            except json.JSONDecodeError:
+                return Response({"error": "Invalid options format."}, status=status.HTTP_400_BAD_REQUEST)
+
+            # Create options for the question (get_or_create to avoid duplicates)
+            for idx, opt in enumerate(options):
+                if not opt.get('text') and not opt.get('image_key'):
+                    return Response({"error": f"Option {idx + 1} must have either text or an image."}, status=status.HTTP_400_BAD_REQUEST)
+
+                # Get or create the option (text or image)
+                option, created = QuestionOption.objects.get_or_create(
+                    question=question,
+                    text=opt.get('text'),
+                    image=request.FILES.get(opt.get('image_key')) if opt.get('image_key') else None
+                )
+
+                # Create a new PastExamQuestionOption for each option
+                past_exam_question = PastExamQuestion.objects.create(
+                    exam=exam,
+                    question=question
+                )
+
+                # Create the PastExamQuestionOption to link this option to the newly created PastExamQuestion
+                PastExamQuestionOption.objects.create(
+                    question=past_exam_question,
+                    option=option
+                )
+
+        return Response({"message": "Question with options added to exam."}, status=status.HTTP_201_CREATED)
+
+
+
+# Question and Option update view
 
 
 class UpdateQuestionView(APIView):

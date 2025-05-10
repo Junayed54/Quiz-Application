@@ -1,0 +1,115 @@
+{% extends 'new_custom/new_templates/index2.html'%}
+{% block title %}University Questions{% endblock %}
+{% block style %}
+    <style>
+    .container-fluid {
+        padding-top: 20px;
+        padding-bottom: 20px;
+    }
+    .university-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 25px;
+    }
+    .university-grid button{
+        border: none;
+        background: none;
+    }
+    .university-card {
+       
+        border-radius: 12px;
+        padding: 30px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+        min-height: 280px;
+        transition: transform 0.2s ease-in-out;
+    }
+
+    
+    .university-card{
+        font-size: 1rem;
+        font-weight: bold;
+        margin-bottom: 5px;
+        background: #92D7DE; /* Darker teal */
+    }
+    .university-card p {
+        font-size: 0.8rem;
+        color: #424242;
+        margin-bottom: 0;
+    }
+
+    .university-link {
+        background: #92D7DE;
+        color: #231651;
+    }
+
+    .university-card:hover {
+        transform: scale(1.03);
+    }
+    /* Responsive Adjustments */
+    @media (max-width: 576px) {
+        .university-grid {
+            grid-template-columns: 1fr;
+        }
+        .university-card {
+            padding: 10px;
+            min-height: 100px;
+        }
+        .university-card h6 {
+            font-size: 0.9rem;
+            margin-bottom: 3px;
+        }
+        .university-card p {
+            font-size: 0.7rem;
+        }
+        
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+
+    <div class="container-fluid p-4" style="background: #fff; margin-bottom: 100px">
+        <div class="row">
+            <div class="d-flex justify-content-between">
+                <h1 class="text-muted" style="text-shadow: 2px 2px;">পূর্ববর্তী পরিক্ষাগুলি</h1>
+                <div class="input-group mb-3 border-bottom" style="width: 300px">
+                    <input type="text" class="form-control border-0 text-center" placeholder="Search University" aria-label="Search University">
+                    <button class="btn btn-outline-secondary border-0" type="button">
+                        <i class="fas fa-search"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+        <div class="row rounded border border-1 shadow-lg p-4">
+            <div class="col-12">
+                <div class="university-grid" style="text-decoration: none; border: none;">
+                    <button onclick="window.location.href='/all_past_exams/'" class="university-link">
+                        <div class="university-card">
+                            <h6>বিসিএস পরিক্ষাগুলি</h6>
+                            <p></p>
+                        </div>
+                    </button>
+                    <button href="/university/aub" class="university-link">
+                        <div class="university-card">
+                            <h6>শিক্ষক নিবন্দন পরিক্ষাগুলো</h6>
+                            <p>American University of Bangladesh</p>
+                        </div>
+                    </button>
+                    <button href="/university/just" class="university-link">
+                        <div class="university-card">
+                            <h6>University Exams</h6>
+                            <p>Jessore University of Science and Technology</p>
+                        </div>
+                    </button>
+                    
+                </div>
+            </div>
+        </div>
+    </div>
+    </div>
+{% endblock %}

@@ -136,7 +136,8 @@ urlpatterns += [
     path('past-exam/<int:pk>/delete/', PastExamDeleteView.as_view(), name='past_exam_delete'),
     
     path('past_exam_create/', TemplateView.as_view(template_name='Html/custom/past_exam_create.html'), name='past_exam_create'),
-    path('past_exam_start/<int:pk>/', TemplateView.as_view(template_name='Html/custom/past_exam_start.html'), name='past_exam_start'),
+    # path('past_exam_start/<int:pk>/', TemplateView.as_view(template_name='Html/custom/past_exam_start.html'), name='past_exam_start'),
+     path('past_exam_start/<int:pk>/', TemplateView.as_view(template_name='new_custom/quiz/new_past_exam_start.html'), name='past_exam_results'), # for new templates
     
     
     path('past_exam_details/<int:pk>/', TemplateView.as_view(template_name='Html/custom/past_exam_details.html'), name='past_exam_details'),

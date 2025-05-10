@@ -20,7 +20,8 @@ document.getElementById('login-form').addEventListener('submit', function(event)
         if (data.access) {
             localStorage.setItem('access_token', data.access);
             localStorage.setItem('refresh_token', data.refresh);
-            window.location.href = '/';  // Redirect to home page on successful login
+            // Redirect to home page on successful login
+            window.location.href='/'
         } else {
             alert(data.detail || 'Invalid phone number or password');
         }

@@ -1,0 +1,127 @@
+{% extends 'new_custom/new_templates/index2.html' %}
+{% block title %}MockMaster{% endblock %}
+{% block style %}
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .card {
+            padding: 0;
+            margin-bottom: 1rem;
+            box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+        }
+        .card-title {
+            color: #2c3e50;
+            font-size: 1.25rem;
+            font-weight: 500;
+            margin-bottom: 0.75rem;
+        }
+        .card-text {
+            color: #6c757d;
+            font-size: 0.875rem;
+            margin-bottom: 0.1rem;
+            font-weight: bold;
+        }
+        .btn-primary {
+            background-color: #ff6600;
+            border-color: #ff6600;
+            color: white;
+        }
+        .btn-primary:hover {
+            background-color: #cc5200;
+            border-color: #cc5200;
+        }
+        .btn-outline-secondary{
+            border-color: #ff6600;
+            color: #ff6600;
+        }
+        .btn-outline-secondary:hover {
+            background-color: #f8f9fa;
+            border-color: #ff6600;
+            color: #ff6600;
+        }
+        .nav-link {
+            color: #2c3e50;
+            font-size: 1rem;
+        }
+        .nav-link:hover {
+            color: #ff6600;
+        }
+        .navbar-brand {
+            color: #ff6600;
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+        .social-icon {
+            width: 2rem;
+            height: 2rem;
+            margin-right: 0.5rem;
+        }
+        .vertical-line {
+            border-right: 2px solid #ff6600;
+           
+            margin-right: 1rem;
+            height: 100%;
+            align-self: stretch;
+        }
+        .loader-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background: #f9f9f9;
+          }
+          
+          .ripple-loader {
+            width: 48px;
+            height: 48px;
+            position: relative;
+          }
+          
+          .ripple-loader::before,
+          .ripple-loader::after {
+            content: "";
+            position: absolute;
+            border: 4px solid #007bff;
+            border-radius: 50%;
+            animation: ripple 1.2s infinite;
+          }
+          
+          .ripple-loader::after {
+            animation-delay: 0.6s;
+          }
+          
+          @keyframes ripple {
+            0% {
+              width: 0;
+              height: 0;
+              opacity: 1;
+            }
+            100% {
+              width: 48px;
+              height: 48px;
+              opacity: 0;
+            }
+          }
+    </style>
+{% endblock %}
+{% block content %}
+
+    <div class="container py-4">
+        <h2 class="mb-4 text-center">পূর্ববর্তী পরীক্ষাগুলো</h2>
+        <div class="row">
+            <div class="loader-container" id="loader">
+                <div class="ripple-loader"></div>
+            </div>
+            <div class="col-md-10 mx-auto"  id="all_exams">
+                
+                  
+            
+            </div>
+        </div>
+    </div>
+
+{% endblock %}
+
+{% block body_js %}<script src="../../../static/Js/new_templates_js/quiz/new_past_exam_list.js"></script> {% endblock %}
+

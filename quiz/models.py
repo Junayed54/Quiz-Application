@@ -468,19 +468,6 @@ class PastExam(models.Model):
             self.total_questions = self.questions.count()
             super().save(update_fields=["total_questions"])  # Save only the updated field
 
-    # def delete(self, *args, **kwargs):
-    #     # First, delete the relationship between the questions and this exam
-    #     for peq in self.related_questions.all():  # related_name from PastExamQuestion model
-    #         question = peq.question
-    #         for option in question.options.all():
-    #             if not PastExamQuestionOption.objects.filter(question=peq, option=option).exclude(question__exam=self).exists():
-    #                 option.delete()
-    #         question.delete()
-
-
-    #     # Now delete the PastExam instance
-    #     super().delete(*args, **kwargs)
-
     
     
     def __str__(self):
