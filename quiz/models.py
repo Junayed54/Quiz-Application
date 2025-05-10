@@ -498,15 +498,17 @@ class PastExamAttempt(models.Model):
     def __str__(self):
         return f"{self.user.username} - {self.past_exam.title} (Score: {self.score})"
 
-
-
-class ExamQuestionOption(models.Model):
+class ExamQuestion(models.Model):
     exam = models.ForeignKey(Exam, on_delete=models.CASCADE)
     question = models.ForeignKey(Question, on_delete=models.CASCADE)
+    points = models.FloatField(null=True, blank=True)
+    order = models.IntegerField(null=True, blank=True)
+    
+
+class ExamQuestionOption(models.Model):
+    question = models.ForeignKey(ExamQuestion, on_delete=models.CASCADE)
     option = models.ForeignKey(QuestionOption, on_delete=models.CASCADE)
 
-    class Meta:
-        unique_together = ('exam', 'question', 'option')
 
 
 class PastExamQuestion(models.Model):
