@@ -13,6 +13,14 @@
       padding: 1.5rem;
       margin: 2rem auto;
     }
+    #past-exam-title {
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 100%; /* or a fixed width like 300px */
+      display: block;
+    }
+
     .card-title {
       font-size: 1.5rem;
       font-weight: 600;
@@ -84,7 +92,7 @@
     <div class="row justify-content-center">
       <div class="col-lg-6 col-md-8 col-sm-10">
         <div class="card bg-white">
-            <div class="d-flex justify-content-between align-items-center" style="margin-bottom: 34px;">
+            <div class="d-flex justify-content-between align-items-center g-4" style="margin-bottom: 34px;">
                 <h1 class="card-title text-center" id="past-exam-title"></h1>
                 <div class="text-center">
                     <span class="unpublished-badge" id="past-exam-status"></span>

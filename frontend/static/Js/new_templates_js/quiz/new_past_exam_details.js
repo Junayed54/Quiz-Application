@@ -10,7 +10,7 @@ document.addEventListener('DOMContentLoaded', function () {
         return;
     }
 
-    const pastExamDetailsUrl = `/quiz/past-exams/${pastExamId}/`;
+    const pastExamDetailsUrl = `/quiz/past_exams/?exam_id=${pastExamId}`;
     
     
     function fetchPastExamDetails() {
@@ -24,16 +24,19 @@ document.addEventListener('DOMContentLoaded', function () {
         .then(data => {
             if (data) {
                 console.log(data);
-                
+               const title_text = `${data.title}`;
                 // Populate Past Exam Details
-                document.getElementById('past-exam-title').textContent = data.title;
-                document.getElementById('past-exam-total-questions').textContent = data.questions_count;
-                document.getElementById('past-exam-total-marks').textContent = data.questions_count;
+                const titleElement = document.getElementById('past-exam-title')
+                titleElement.textContent = title_text;
+
+                titleElement.setAttribute('title', title_text); 
+                document.getElementById('past-exam-total-questions').textContent = data.total_questions;
+                document.getElementById('past-exam-total-marks').textContent = data.total_questions;
                 document.getElementById('past-exam-negative-marks').textContent = data.negative_marks || 'N/A';
                 document.getElementById('past-exam-duration').textContent = data.duration;
-                document.getElementById('past-exam-organization').textContent = data.organization_name;
-                document.getElementById('past-exam-department').textContent = data.department_name || 'N/A';
-                document.getElementById('past-exam-position').textContent = data.position_name;
+                document.getElementById('past-exam-organization').textContent = data.organization;
+                document.getElementById('past-exam-department').textContent = data.department || 'N/A';
+                document.getElementById('past-exam-position').textContent = data.position;
                 document.getElementById('past-exam-date').textContent = new Date(data.exam_date).toLocaleDateString();
                 document.getElementById('past-exam-duration').textContent = data.duration || 'N/A';
                 document.getElementById('past-exam-status').textContent = data.is_published ? 'Published' : 'Unpublished';

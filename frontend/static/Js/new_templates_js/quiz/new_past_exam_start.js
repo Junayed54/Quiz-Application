@@ -53,6 +53,57 @@ document.addEventListener('DOMContentLoaded', function() {
         .catch(error => console.error('Error fetching exam details:', error));
     }
 
+    // function showAllQuestions() {
+    //     const questionsContainer = document.getElementById('questions-container');
+    //     questionsContainer.innerHTML = '';
+
+    //     const optionLabels = ['ক', 'খ', 'গ', 'ঘ'];
+
+    //     questions.forEach((question, index) => {
+    //         const questionWrapper = document.createElement('div');
+    //         questionWrapper.classList.add('col-md-6'); // 2 columns
+
+    //         // Question text
+    //         let questionHTML = `<p class="fw-semibold d-flex align-items-start gap-2 mb-2 ">${index + 1}. ${question.question.text}</p>`;
+    //         if (question.question.image) {
+    //             questionHTML = `
+    //                 <p class="fw-semibold">${index + 1}.</p>
+    //                 <img src="${question.question.image}" alt="Question Image" class="max-w-full h-auto rounded-lg shadow-md">
+    //             `;
+    //         }
+
+    //         questionWrapper.innerHTML = questionHTML;
+
+    //         // Options container
+    //         const optionsContainer = document.createElement('div');
+    //         optionsContainer.classList.add('d-grid', 'gap-2');
+    //         optionsContainer.style.marginLeft = '2rem';
+
+    //         question.options.forEach((option, optIndex) => {
+    //             const inputId = `q${index}_opt${optIndex}`;
+    //             const labelChar = optionLabels[optIndex] || '';
+    //             const optionText = option.text || `<img src="${option.image}" alt="Option Image" class="img-fluid">`;
+
+    //             const wrapper = document.createElement('div');
+    //             wrapper.classList.add('custom-option');
+
+    //             wrapper.innerHTML = `
+    //                 <input type="radio" name="question${index}" id="${inputId}" value="${option.id}" class="d-none">
+    //                 <label for="${inputId}" class="custom-label">
+    //                     <span class="bengali-label" data-char="${labelChar}">${labelChar}</span>
+    //                     <span>${optionText}</span>
+    //                 </label>
+    //             `;
+
+    //             optionsContainer.appendChild(wrapper);
+    //         });
+
+    //         questionWrapper.appendChild(optionsContainer);
+    //         questionsContainer.appendChild(questionWrapper);
+    //     });
+    // }
+
+
     function showAllQuestions() {
         const questionsContainer = document.getElementById('questions-container');
         questionsContainer.innerHTML = '';
@@ -61,22 +112,48 @@ document.addEventListener('DOMContentLoaded', function() {
 
         questions.forEach((question, index) => {
             const questionWrapper = document.createElement('div');
-            questionWrapper.classList.add('col-md-6'); // 2 columns
+            questionWrapper.classList.add('col-md-6', 'mb-4', 'border', 'rounded', 'p-3');
 
-            // Question text
             let questionHTML = `<p class="fw-semibold d-flex align-items-start gap-2 mb-2 ">${index + 1}. ${question.question.text}</p>`;
             if (question.question.image) {
                 questionHTML = `
                     <p class="fw-semibold">${index + 1}.</p>
-                    <img src="${question.question.image}" alt="Question Image" class="max-w-full h-auto rounded-lg shadow-md">
+                    <img src="${question.question.image}" alt="Question Image" class="max-w-full h-auto rounded-lg shadow-md mb-2">
                 `;
             }
 
-            questionWrapper.innerHTML = questionHTML;
+            questionWrapper.innerHTML += questionHTML;
 
-            // Options container
+            // Question Usages Info (under the question, multiple lines)
+            const usagesInfoContainer = document.createElement('div');
+            usagesInfoContainer.classList.add('mt-2', 'small', 'text-muted');
+            usagesInfoContainer.style.marginLeft = '2rem';
+
+            if (question.question_usages && question.question_usages.length > 0) {
+                question.question_usages.forEach(usage => {
+                    const usageParagraph = document.createElement('p');
+                    let usageText = 'Used in: ';
+                    if (usage.exam_title) {
+                        usageText += `${usage.exam_title}`;
+                    }
+                    if (usage.year) {
+                        usageText += ` (${usage.year})`;
+                    }
+                    usageParagraph.textContent = usageText;
+                    usagesInfoContainer.appendChild(usageParagraph);
+                });
+            } else {
+                const noUsageParagraph = document.createElement('p');
+                noUsageParagraph.textContent = 'No usage information available';
+                usagesInfoContainer.appendChild(noUsageParagraph);
+            }
+
+            questionWrapper.appendChild(usagesInfoContainer);
+
+            // Options container (remains the same)
             const optionsContainer = document.createElement('div');
             optionsContainer.classList.add('d-grid', 'gap-2');
+            optionsContainer.style.marginLeft = '2rem';
 
             question.options.forEach((option, optIndex) => {
                 const inputId = `q${index}_opt${optIndex}`;
@@ -101,7 +178,6 @@ document.addEventListener('DOMContentLoaded', function() {
             questionsContainer.appendChild(questionWrapper);
         });
     }
-
 
 
     document.addEventListener('change', function(event) {

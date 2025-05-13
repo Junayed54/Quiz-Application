@@ -128,21 +128,22 @@ urlpatterns = [
 # past exam 
 
 urlpatterns += [
-    path('past-exams/', PastExamListView.as_view(), name='past-exam-list'),
+    path('past_exams/', PastExamListView.as_view(), name='past-exam-list'),
     path('user-past-exams/', UserPastExamListAPIView.as_view(), name='user-past-exam-list'),
     path("past-exams/<int:pk>/", PastExamDetailView.as_view(), name="past-exam-detail"),
     path("past-exams/<int:exam_id>/submit/", SubmitPastExamAttemptView.as_view(), name="past-exam-submit"),
     path('past-exams-check/', CheckPastExamsView.as_view(), name='check_past_exams'),
     path('past-exam/<int:pk>/delete/', PastExamDeleteView.as_view(), name='past_exam_delete'),
-    
+    path('past_exam/questions/add/', AddQuestionToPastExamView.as_view(), name='add-question-past-exam'),
     path('past_exam_create/', TemplateView.as_view(template_name='Html/custom/past_exam_create.html'), name='past_exam_create'),
     # path('past_exam_start/<int:pk>/', TemplateView.as_view(template_name='Html/custom/past_exam_start.html'), name='past_exam_start'),
-     path('past_exam_start/<int:pk>/', TemplateView.as_view(template_name='new_custom/quiz/new_past_exam_start.html'), name='past_exam_results'), # for new templates
+    path('past_exam_start/<int:pk>/', TemplateView.as_view(template_name='new_custom/quiz/new_past_exam_start.html'), name='past_exam_results'), # for new templates
     
+
     
     path('past_exam_details/<int:pk>/', TemplateView.as_view(template_name='Html/custom/past_exam_details.html'), name='past_exam_details'),
     path('past_exam_result/<int:pk>/', TemplateView.as_view(template_name='Html/custom/past_exam_result.html'), name='past_exam_results'),
-    
+
     
     path('my_past_exams/', TemplateView.as_view(template_name='Html/custom/past_exams/my_past_exams.html'), name='my-past-exams'),
     path('past_exam_update/<int:id>/', TemplateView.as_view(template_name='Html/custom/past_exams/past_exam_update.html'), name='past-exam-update'),

@@ -338,14 +338,6 @@ class Question(models.Model):
         if self.explanation and self.explanation_image:
             raise ValueError("You cannot provide both a text and image explanation.")
 
-    
-class QuestionUsage(models.Model):
-    question = models.ForeignKey(Question, related_name='usages', on_delete=models.CASCADE)
-    exam = models.CharField(max_length=255, help_text="Name of the external exam where the question was used")
-    year = models.IntegerField(default=date.today().year)
-
-    def __str__(self):
-        return f"{self.question.text} used in {self.exam} ({self.year})"
 
     
 
@@ -509,6 +501,14 @@ class ExamQuestionOption(models.Model):
     question = models.ForeignKey(ExamQuestion, on_delete=models.CASCADE)
     option = models.ForeignKey(QuestionOption, on_delete=models.CASCADE)
 
+class QuestionUsage(models.Model):
+    question = models.ForeignKey(Question, related_name='usages', on_delete=models.CASCADE)
+    exam = models.CharField(max_length=255, help_text="Name of the external exam where the question was used", null=True, blank=True)
+    past_exam = models.ForeignKey(PastExam, related_name='question_usages', on_delete=models.CASCADE, null=True, blank=True)
+    year = models.IntegerField(default=date.today().year)
+
+    def __str__(self):
+        return f"{self.question.text} ({self.year})"
 
 
 class PastExamQuestion(models.Model):

@@ -40,7 +40,7 @@ class QuestionSerializer(serializers.ModelSerializer):
     exam = serializers.PrimaryKeyRelatedField(queryset=Exam.objects.all(), write_only=True)
     category = serializers.PrimaryKeyRelatedField(queryset=Category.objects.all(), write_only=True)
     category_name = serializers.SerializerMethodField()
-    question_usage_years = serializers.SerializerMethodField()
+    question_usage_details = serializers.SerializerMethodField()  # Renamed method
     created_by = serializers.StringRelatedField(read_only=True)
     reviewed_by = serializers.StringRelatedField(read_only=True)
 
@@ -50,15 +50,19 @@ class QuestionSerializer(serializers.ModelSerializer):
             'id', 'text', 'image', 'explanation', 'explanation_image', 'marks', 'exam',
             'options', 'status', 'remarks', 'category', 'created_by', 'category_name',
             'difficulty_level', 'time_limit', 'reviewed_by', 'updated_at',
-            'created_at', 'subject', 'question_usage_years'
+            'created_at', 'subject', 'question_usage_details'  # Updated field name
         ]
 
     def get_category_name(self, obj):
         return obj.category.name if obj.category and obj.category.name else None
 
-    def get_question_usage_years(self, obj):
-        years = obj.usages.values_list('year', flat=True).distinct()
-        return ", ".join(map(str, years)) if years else "No uses"
+    def get_question_usage_details(self, obj):
+        usages = obj.usages.select_related('past_exam')  # Optimize query to fetch related PastExam
+        details = []
+        for usage in usages:
+            past_exam_title = usage.past_exam.title if usage.past_exam else "External Exam"  # Handle cases without PastExam
+            details.append(f"{past_exam_title} ({usage.year})")
+        return ", ".join(details) if details else "No uses"
 
     def create(self, validated_data):
         options_data = validated_data.pop('options', [])
@@ -79,7 +83,6 @@ class QuestionSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError("Provide either 'explanation' (text) or 'explanation_image', not both.")
 
         return data
-
 
 
 
@@ -275,9 +278,10 @@ class PastExamQuestionSerializer(serializers.ModelSerializer):
     """
     options = serializers.SerializerMethodField()
     question = QuestionSerializer(read_only=True)
+    question_usages = serializers.SerializerMethodField()
     class Meta:
         model = PastExamQuestion
-        fields = ["id", "question", "order", "points", "options"]
+        fields = ["id", "question", "order", "points", "options", "question_usages"]
 
     def get_options(self, past_exam_question):
         """
@@ -291,6 +295,21 @@ class PastExamQuestionSerializer(serializers.ModelSerializer):
         options_data = [QuestionOptionSerializer(link.option).data for link in option_links]
         return options_data
 
+
+    def get_question_usages(self, past_exam_question):
+        """
+        Retrieves the year and exam title for all question usages related to this question.
+        """
+        question_usages = past_exam_question.question.usages.all().select_related('past_exam') # Fetch all usages and related PastExam
+
+        usage_data = []
+        for usage in question_usages:
+            usage_data.append({
+                "year": usage.year,
+                "exam_title": usage.exam if usage.exam else usage.past_exam.title if usage.past_exam else None,
+            })
+        return usage_data if usage_data else None
+    
 class PastExamSerializer(serializers.ModelSerializer):
     organization_name = serializers.CharField(source="organization.name", read_only=True)
     department_name = serializers.CharField(source="department.name", read_only=True, allow_null=True)

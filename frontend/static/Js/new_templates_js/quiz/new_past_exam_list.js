@@ -64,20 +64,21 @@ document.addEventListener('DOMContentLoaded', function () {
         
         container.innerHTML = data.map(exam => `
             <div class="card">
-                <div class="card-body d-flex justify-content-between align-items-stretch" style="gap: 1rem; height: 9rem">
+                <div class="card-body d-flex justify-content-between align-items-stretch" style="gap: 1rem;">
                     <div style="width: 50%;">
                         <h3 class="card-title">${exam.title}</h3>
                         <div style="display: flex; gap: 3px; margin-bottom: 2px; font-size: 14px; color: #F97316;">
-                            <div class="p-1 rounded" style="background: #D5C7A3">${exam.total_questions} প্রশ্ন</div>
-                            <div class="p-1 rounded" style="background: #D5C7A3">${exam.total_questions} নম্বর</div>
-                            <div class="p-1 rounded" style="background: #D5C7A3">${exam.duration} মিনিট</div>
+                            <div class="p-1 rounded" style="background: #FFEDD5">${exam.total_questions} প্রশ্ন</div>
+                            <div class="p-1 rounded" style="background: #FFEDD5">${exam.total_questions} নম্বর</div>
+                            <div class="p-1 rounded" style="background: #FFEDD5">${exam.duration} মিনিট</div>
                         </div>
                         <div class="mt-2">
                             <p class="card-text">পদঃ ${exam.position}</p>
                             <p class="card-text">সংস্থাঃ ${exam.organization}</p>
                         </div>
                     </div>
-                    <div class="vertical-line"></div>
+                    <div style="height: 9rem;"><div class="vertical-line"></div></div>
+                    
                     <div style="display: flex; flex-direction: column; gap:8px; align-items: center; justify-content: center">
                         <a href="/new_past_exam_details/${exam.id}" class="btn btn-primary">Details</a>
                         <a href="#" class="btn btn-outline-secondary">Share</a>
