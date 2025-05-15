@@ -1,0 +1,219 @@
+{% extends 'new_custom/new_templates/index2.html'%}
+{% block title %}University Questions{% endblock %}
+{% block style %}
+  <style>
+    body {
+      background-color: #0f172a;
+      color: white;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+    .highlight {
+      background: linear-gradient(90deg, #22d3ee, #a855f7);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      font-weight: bold;
+    }
+    .card-custom {
+      background-color: #1e293b;
+      border: none;
+      border-radius: 12px;
+      color: white;
+    }
+    .progress-bar {
+      background-color: #0ea5e9;
+    }
+    .badge-pill {
+      padding: 0.35em 0.7em;
+      border-radius: 10px;
+      background-color: #334155;
+      font-size: 0.8em;
+    }
+    .top-performer {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .top-performer img {
+      border-radius: 50%;
+      border: 4px solid #38bdf8;
+      width: 72px;
+      height: 72px;
+      object-fit: cover;
+      margin-bottom: 0.5rem;
+    }
+    .rank-row {
+      background-color: #1e293b;
+      border-radius: 10px;
+      padding: 12px 20px;
+      margin-bottom: 10px;
+    }
+    .rank-row.active {
+      border: 2px solid #0ea5e9;
+      background-color: #0f172a;
+    }
+    .btn-custom {
+      background-color: #334155;
+      color: #cbd5e1;
+      border: none;
+      border-radius: 8px;
+      padding: 6px 16px;
+    }
+    .btn-custom:hover {
+      background-color: #475569;
+    }
+  </style>
+{% endblock %}
+{% block content %}
+
+  <div class="container py-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <h2 class="highlight">Leaderboard</h2>
+      <div>
+        <button class="btn btn-custom me-2">This Month</button>
+        <button class="btn btn-custom">Refresh</button>
+      </div>
+    </div>
+
+    <div class="row text-center mb-4">
+      <div class="col-md-3 mb-3">
+        <div class="card card-custom p-3">
+          <p class="mb-1">Your Current Rank</p>
+          <h3>#8</h3>
+        </div>
+      </div>
+      <div class="col-md-3 mb-3">
+        <div class="card card-custom p-3">
+          <p class="mb-1">Points This Month</p>
+          <h3>1,140</h3>
+        </div>
+      </div>
+      <div class="col-md-3 mb-3">
+        <div class="card card-custom p-3">
+          <p class="mb-1">Completed Tests</p>
+          <h3>9</h3>
+        </div>
+      </div>
+      <div class="col-md-3 mb-3">
+        <div class="card card-custom p-3">
+          <p class="mb-1">Progress to Next Rank</p>
+          <div class="progress" style="height: 8px;">
+            <div class="progress-bar" style="width: 65%;"></div>
+          </div>
+          <small class="text-muted mt-2 d-block">65%</small>
+        </div>
+      </div>
+    </div>
+
+    <div class="card card-custom p-4 mb-4">
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <h4>Top Performers</h4>
+        <span class="text-muted">May 2025</span>
+      </div>
+      <div class="d-flex justify-content-around text-center py-4">
+        <div class="top-performer">
+          <div class="badge bg-secondary rounded-pill mb-2">RI</div>
+          <img src="https://via.placeholder.com/72" alt="RI">
+          <p class="mb-0">Rafiul Islam</p>
+          <small class="text-muted">1465 pts</small>
+        </div>
+        <div class="top-performer">
+          <div class="badge bg-warning rounded-pill mb-2">SA</div>
+          <img src="https://via.placeholder.com/72" alt="SA">
+          <p class="mb-0">Sadia Ahmed</p>
+          <small class="text-muted">1520 pts</small>
+        </div>
+        <div class="top-performer">
+          <div class="badge bg-danger rounded-pill mb-2">TS</div>
+          <img src="https://via.placeholder.com/72" alt="TS">
+          <p class="mb-0">Tahmina</p>
+          <small class="text-muted">1380 pts</small>
+        </div>
+      </div>
+    </div>
+
+    <div>
+        <div class="rank-row">
+        <div class="row align-items-center text-center">
+          <div class="col">RANK</div>
+          <div class="col">PLAYER</div>
+          <div class="col">TESTS</div>
+          <div class="col">SCORE</div>
+          <div class="col">CHANGE</div>
+        </div>
+      </div>
+      <div class="rank-row">
+        <div class="row align-items-center text-center">
+          <div class="col">#1</div>
+          <div class="col">SA</div>
+          <div class="col">12</div>
+          <div class="col">1,520</div>
+          <div class="col text-success">↑</div>
+        </div>
+      </div>
+      <div class="rank-row">
+        <div class="row align-items-center text-center">
+          <div class="col">#2</div>
+          <div class="col">RI</div>
+          <div class="col">11</div>
+          <div class="col">1,465</div>
+          <div class="col text-success">↑</div>
+        </div>
+      </div>
+      <div class="rank-row">
+        <div class="row align-items-center text-center">
+          <div class="col">#3</div>
+          <div class="col">TS</div>
+          <div class="col">10</div>
+          <div class="col">1,380</div>
+          <div class="col text-danger">↓</div>
+        </div>
+      </div>
+      <div class="rank-row">
+        <div class="row align-items-center text-center">
+          <div class="col">#4</div>
+          <div class="col">HM</div>
+          <div class="col">12</div>
+          <div class="col">1,305</div>
+          <div class="col text-success">↑</div>
+        </div>
+      </div>
+      <div class="rank-row">
+        <div class="row align-items-center text-center">
+          <div class="col">#5</div>
+          <div class="col">FN</div>
+          <div class="col">10</div>
+          <div class="col">1,250</div>
+          <div class="col text-success">↑</div>
+        </div>
+      </div>
+      <div class="rank-row">
+        <div class="row align-items-center text-center">
+          <div class="col">#6</div>
+          <div class="col">AR</div>
+          <div class="col">12</div>
+          <div class="col">1,215</div>
+          <div class="col text-danger">↓</div>
+        </div>
+      </div>
+      <div class="rank-row">
+        <div class="row align-items-center text-center">
+          <div class="col">#7</div>
+          <div class="col">SK</div>
+          <div class="col">8</div>
+          <div class="col">1,176</div>
+          <div class="col text-danger">-</div>
+        </div>
+      </div>
+      <div class="rank-row active">
+        <div class="row align-items-center text-center">
+          <div class="col">#8</div>
+          <div class="col">YO</div>
+          <div class="col">9</div>
+          <div class="col">1,140</div>
+          <div class="col text-success">↑</div>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock %}

@@ -83,6 +83,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     const result = document.getElementById('past_result');
     result.addEventListener('click', function() {
-        window.location.href = `/quiz/past_exam_result/${pastExamId}/`;
+        console.log("hello world");
+        window.location.href = `/quiz/result/${pastExamId}/`;
     });
 });

@@ -11,7 +11,7 @@ from django.contrib.auth import get_user_model
 from .serializers import CustomTokenObtainPairSerializer, UserSerializer
 from django.core.exceptions import ObjectDoesNotExist 
 from .models import CustomUser
-from subscription.models import SubscriptionPackage, UserSubscription
+
 from .serializers import UserSerializer
 User = get_user_model()
 from django.db.models import Count, CharField
@@ -19,7 +19,7 @@ from django.utils import timezone
 from datetime import timedelta
 from django.db.models.functions import TruncDate, Cast
 from django.utils.timezone import now
-from quiz.models import Question, SubscriptionPackage
+from quiz.models import Question
 
 class SignupView(generics.CreateAPIView):
     queryset = User.objects.all()
@@ -33,20 +33,20 @@ class SignupView(generics.CreateAPIView):
         user = serializer.save()
         if user.role == 'student':  # Assuming `role` is a field on the User model
             # Retrieve the "Free" subscription package
-            free_package = SubscriptionPackage.objects.filter(name="free")[0]
+            # free_package = SubscriptionPackage.objects.filter(name="free")[0]
 
             # Set the subscription end date (for example, 30 days from now)
             end_date = timezone.now() + timedelta(days=30)
 
             # Create the user subscription for the "Free" package
-            UserSubscription.objects.create(
-                user=user,
-                package=free_package,
-                start_date=timezone.now(),
-                end_date=end_date,
-                status='active',
-                auto_renew=True
-            )
+            # UserSubscription.objects.create(
+            #     user=user,
+            #     package=free_package,
+            #     start_date=timezone.now(),
+            #     end_date=end_date,
+            #     status='active',
+            #     auto_renew=True
+            # )
         # Generate JWT tokens for the newly created user
         refresh = RefreshToken.for_user(user)
         return Response({
@@ -171,15 +171,15 @@ class DashboardStatisticsView(APIView):
         student_count = User.objects.filter(role='student').count()
         
         # Count the number of users using non-free packages
-        package_user_count = User.objects.filter(
-            subscription_package__name__in=['basic', 'standard', 'premium']
-        ).distinct().count()
+        # package_user_count = User.objects.filter(
+        #     subscription_package__name__in=['basic', 'standard', 'premium']
+        # ).distinct().count()
 
         # Prepare the response data
         data = {
             'question_count': question_count,
             'student_count': student_count,
-            'package_user_count': package_user_count,
+            # 'package_user_count': package_user_count,
         }
         
         return Response(data)
@@ -200,10 +200,10 @@ class DashboardView(APIView):
         total_students = User.objects.filter(role='student').count()
 
         # Count total package users (non-free users)
-        total_package_users = UserSubscription.objects.filter(
-            package__name__in=['basic', 'standard', 'premium'],
-            status='active'
-        ).count()
+        # total_package_users = UserSubscription.objects.filter(
+        #     package__name__in=['basic', 'standard', 'premium'],
+        #     status='active'
+        # ).count()
 
         # Count total questions
         total_questions = Question.objects.count()
@@ -251,7 +251,7 @@ class DashboardView(APIView):
         response_data = {
             "summary": {
                 "total_students": total_students,
-                "total_package_users": total_package_users,
+                # "total_package_users": total_package_users,
                 "total_questions": total_questions,
             },
             "chart_data": {

@@ -1,5 +1,5 @@
 from django.db import models
-from django.contrib.auth import get_user_model
+
 # from quiz.models import Exam
 from django.contrib.auth import get_user_model
 from django.template.loader import render_to_string

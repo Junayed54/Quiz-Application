@@ -1,15 +1,16 @@
-from django.urls import path
-from .views import SubscriptionPackageListCreateView, SubscriptionPackageDetailView, SubscriptionPackageActionView, BuyPackageAPIView
-from django.views.generic import TemplateView
+from rest_framework.routers import DefaultRouter
+from .views import (
+    SubscriptionPlanTierViewSet, SubscriptionPlanPriceViewSet,
+    PlanExamAccessLimitViewSet, UserSubscriptionViewSet,
+    UserExamAccessViewSet
+)
 
-urlpatterns = [
-    path('packages/', SubscriptionPackageListCreateView.as_view(), name='subscription-package-list-create'),
-    path('packages/<int:pk>/', SubscriptionPackageDetailView.as_view(), name='subscription-package-detail'),
-    path('packages/<int:pk>/actions/', SubscriptionPackageActionView.as_view(), name='subscription-package-actions'),
-    path('buy-package/', BuyPackageAPIView.as_view(), name='buy_package_api'),
-    
-    
-    path('create_package/', TemplateView.as_view(template_name='Html/custom/package/create_package.html'), name='create_package'),
-    path('all_packages/', TemplateView.as_view(template_name='Html/custom/package/all_packages.html'), name = 'all_packages'),
-    path('update_package/<int:pk>/', TemplateView.as_view(template_name='Html/custom/package/update_package.html'), name = 'update_package'),
-]
+router = DefaultRouter()
+
+router.register(r'subscription-plans', SubscriptionPlanTierViewSet)
+router.register(r'plan-prices', SubscriptionPlanPriceViewSet)
+router.register(r'access-limits', PlanExamAccessLimitViewSet)
+router.register(r'user-subscriptions', UserSubscriptionViewSet, basename='user-subscription')
+router.register(r'user-exam-accesses', UserExamAccessViewSet, basename='user-exam-access')
+
+urlpatterns = router.urls

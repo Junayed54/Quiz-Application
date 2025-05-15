@@ -5,7 +5,7 @@ from .views import *
 # from .status import SubmitExamToAdminView, SendExamForReviewView, ReviewExamView, ReturnExamToCreatorView, PublishExamView
 from .status import StatusViewSet
 # from .question_status import QuestionStatusViewSet, AssignedQuestionsSummaryAPIView, QuestionsByUserForReviewerView
-from .attampts import BestAttemptsView, UserAttemptsView
+from .attampts import *
 
 router = DefaultRouter()
 router.register(r'exams', ExamViewSet, basename='exam')
@@ -147,4 +147,15 @@ urlpatterns += [
     
     path('my_past_exams/', TemplateView.as_view(template_name='Html/custom/past_exams/my_past_exams.html'), name='my-past-exams'),
     path('past_exam_update/<int:id>/', TemplateView.as_view(template_name='Html/custom/past_exams/past_exam_update.html'), name='past-exam-update'),
+    
+    
+    path('past_exam/best_attempts/', BestPastExamAttemptsView.as_view(), name='best_past_exam_attempts'),
+
+    # View to get all attempts of a specific user for a past exam
+    path('past_exam/user_attempts/', UserPastExamAttemptsView.as_view(), name='user_past_exam_attempts'),
+
+    # Leaderboard view sorted from top score to lowest
+    path('past_exam/leaderboard/<int:exam_id>/', PastExamLeaderboardView.as_view(), name='past_exam_leaderboard'),
+
+    
 ]

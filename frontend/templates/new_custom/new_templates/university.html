@@ -10,7 +10,7 @@
     }
     .university-grid {
         display: grid;
-        grid-template-columns: repeat(3, 1fr);
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
         gap: 25px;
         margin-bottom: 0; /* Remove extra margin below the grid */
     }
@@ -20,14 +20,15 @@
     }
     .university-card {
         border-radius: 12px;
-        padding: 15px; /* Reduced padding */
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+        padding: 10px; /* Reduced padding */
+        box-shadow: 14px 14px 33px 0px #00000040;
         display: flex;
         flex-direction: column;
         justify-content: center;
         align-items: center;
         text-align: center;
-        min-height: 160px; /* Reduced height */
+        
+        min-height: 220px; /* Reduced height */
         transition: transform 0.2s ease-in-out;
         background: #92D7DE;
         font-size: 1rem;
@@ -79,10 +80,10 @@
 
 {% block content %}
 
-    <div class="container-fluid p-4" style="background: #fff; margin-bottom: 150px">
+    <div class="container-fluid p-4" style="background: #fff;">
         <div class="row">
             <div class="d-flex justify-content-between">
-                <h1 class="text-muted" style="text-shadow: 2px 2px;">পূর্ববর্তী পরিক্ষাগুলি</h1>
+                <h1 class="text-muted" style="font-size: 24px; font-weight: 600; text-shadow: 0px 7px 5px #00000040; color: #534268;">পূর্ববর্তী পরিক্ষাগুলি</h1>
                 <div class="input-group mb-3 border-bottom" style="width: 300px">
                     <input type="text" class="form-control border-0 text-center" placeholder="Search University" aria-label="Search University">
                     <button class="btn btn-outline-secondary border-0" type="button">
@@ -91,23 +92,23 @@
                 </div>
             </div>
         </div>
-        <div class="row rounded border border-1 py-4">
+        <div class="row rounded border border-1 p-4" style="box-shadow: 2px 2px 33px 0px #00000040;">
             <div class="col-12">
                 <div class="university-grid" style="text-decoration: none; border: none;">
                     <button onclick="window.location.href='/all_past_exams/'" class="university-link">
-                        <div class="university-card shadow-lg">
+                        <div class="university-card">
                             <h6>বিসিএস পরিক্ষাগুলি</h6>
                             <p></p>
                         </div>
                     </button>
-                    <button href="/university/aub" class="university-link">
-                        <div class="university-card shadow-lg">
+                    <button href="#" class="university-link">
+                        <div class="university-card">
                             <h6>শিক্ষক নিবন্দন পরিক্ষাগুলো</h6>
                             <p>American University of Bangladesh</p>
                         </div>
                     </button>
-                    <button href="/university/just" class="university-link">
-                        <div class="university-card shadow-lg">
+                    <button href="#" class="university-link">
+                        <div class="university-card">
                             <h6>University Exams</h6>
                             <p>Jessore University of Science and Technology</p>
                         </div>
@@ -117,5 +118,6 @@
             </div>
         </div>
     </div>
+    <div style="margin-bottom: 250px"></div>
 
 {% endblock %}

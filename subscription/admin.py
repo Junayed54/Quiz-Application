@@ -1,69 +1,50 @@
 from django.contrib import admin
 from .models import (
-    SubscriptionPackage,
+    SubscriptionPlanTier,
+    SubscriptionPlanPrice,
+    PlanExamAccessLimit,
     UserSubscription,
-    Payment,
-    UsageTracking,
-    SubscriptionHistory,
-    Coupon,
-    PaymentPlan,
-    Notification,
-    Refund,
-    SubscriptionAnalytics
+    UserExamAccess
 )
 
-@admin.register(SubscriptionPackage)
-class SubscriptionPackageAdmin(admin.ModelAdmin):
-    list_display = ('id', 'name', 'price', 'duration_in_days', 'max_exams')
-    list_filter = ('name', 'price')
+
+@admin.register(SubscriptionPlanTier)
+class SubscriptionPlanTierAdmin(admin.ModelAdmin):
+    list_display = (
+        'name', 'ad_free', 'free_model_test', 'paid_model_test',
+        'daily_previous_year_questions', 'upcoming_special_model_tests',
+        'prize_winning_special_exam', 'daily_live_exam_room_access'
+    )
+    list_filter = ('ad_free', 'free_model_test', 'paid_model_test')
     search_fields = ('name',)
+
+
+@admin.register(SubscriptionPlanPrice)
+class SubscriptionPlanPriceAdmin(admin.ModelAdmin):
+    list_display = ('plan_tier', 'duration', 'price')
+    list_filter = ('plan_tier', 'duration')
+    search_fields = ('plan_tier__name',)
+    ordering = ('plan_tier', 'duration')
+
+
+@admin.register(PlanExamAccessLimit)
+class PlanExamAccessLimitAdmin(admin.ModelAdmin):
+    list_display = ('plan_tier', 'content_type', 'max_access_count')
+    list_filter = ('plan_tier', 'content_type')
+    search_fields = ('plan_tier__name',)
+
 
 @admin.register(UserSubscription)
 class UserSubscriptionAdmin(admin.ModelAdmin):
-    list_display = ('user', 'package', 'start_date', 'end_date', 'status', 'auto_renew')
-    list_filter = ('status', 'auto_renew')
-    search_fields = ('user__username', 'package__name')
+    list_display = ('user', 'plan', 'start_date', 'end_date', 'is_active')
+    list_filter = ('is_active', 'plan')
+    search_fields = ('user__username', 'user__phone_number')
+    ordering = ('-start_date',)
 
-@admin.register(Payment)
-class PaymentAdmin(admin.ModelAdmin):
-    list_display = ('user', 'package', 'payment_date', 'amount', 'payment_method', 'status')
-    list_filter = ('status', 'payment_method')
-    search_fields = ('user__username', 'package__name', 'transaction_id')
 
-@admin.register(UsageTracking)
-class UsageTrackingAdmin(admin.ModelAdmin):
-    list_display = ('user', 'package', 'total_exams_taken', 'total_attempts_taken')
-    search_fields = ('user__username', 'package__name')
-
-@admin.register(SubscriptionHistory)
-class SubscriptionHistoryAdmin(admin.ModelAdmin):
-    list_display = ('user', 'package', 'start_date', 'end_date')
-    search_fields = ('user__username', 'package__name')
-
-@admin.register(Coupon)
-class CouponAdmin(admin.ModelAdmin):
-    list_display = ('code', 'discount_percentage', 'valid_from', 'valid_until', 'usage_limit', 'used_count', 'is_active')
-    list_filter = ('is_active',)
-    search_fields = ('code',)
-
-@admin.register(PaymentPlan)
-class PaymentPlanAdmin(admin.ModelAdmin):
-    list_display = ('name', 'total_amount', 'num_installments', 'installment_amount')
-    search_fields = ('name',)
-
-@admin.register(Notification)
-class NotificationAdmin(admin.ModelAdmin):
-    list_display = ('user', 'message', 'is_read', 'created_at')
-    list_filter = ('is_read', 'created_at')
-    search_fields = ('user__username', 'message')
-
-@admin.register(Refund)
-class RefundAdmin(admin.ModelAdmin):
-    list_display = ('user', 'payment', 'refund_amount', 'refund_reason', 'refund_date', 'status')
-    list_filter = ('status', 'refund_date')
-    search_fields = ('user__username', 'payment__transaction_id')
-
-@admin.register(SubscriptionAnalytics)
-class SubscriptionAnalyticsAdmin(admin.ModelAdmin):
-    list_display = ('package', 'total_users', 'total_revenue', 'subscription_start_date', 'subscription_end_date', 'churn_rate')
-    search_fields = ('package__name',)
+@admin.register(UserExamAccess)
+class UserExamAccessAdmin(admin.ModelAdmin):
+    list_display = ('user', 'content_type', 'object_id', 'accessed_at')
+    list_filter = ('content_type', 'accessed_at')
+    search_fields = ('user__username', 'object_id')
+    ordering = ('-accessed_at',)

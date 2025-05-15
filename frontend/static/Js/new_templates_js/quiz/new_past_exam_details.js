@@ -57,6 +57,6 @@ document.addEventListener('DOMContentLoaded', function () {
 
     const result = document.getElementById('past_result');
     result.addEventListener('click', function() {
-        window.location.href = `/quiz/past_exam_result/${pastExamId}/`;
+        window.location.href = `/prev_result/${pastExamId}/`;
     });
 });

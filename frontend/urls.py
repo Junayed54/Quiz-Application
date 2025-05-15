@@ -16,5 +16,6 @@ urlpatterns = [
     path('all_past_exams/', TemplateView.as_view(template_name="new_custom/quiz/all_past_exams.html"), name="all_examss"),
     path('new_past_exam_details/<int:pk>/', TemplateView.as_view(template_name="new_custom/quiz/new_past_exam_details.html")),
     path('user/dashboard/', TemplateView.as_view(template_name="new_custom/new_templates/dashboard.html")),
-    # path('exams/', exam_list_view, name='mcq_exams'),
+    path('questions/', TemplateView.as_view(template_name="new_custom/new_templates/questions.html")),
+    path('prev_result/<int:pk>/', TemplateView.as_view(template_name="new_custom/new_templates/prev_exam_result.html")),
 ]

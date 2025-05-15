@@ -8,7 +8,7 @@ from django.core.exceptions import ValidationError
 from datetime import date
 from invitation.models import ExamInvite
 # from django.contrib.auth import get_user_model
-from subscription.models import SubscriptionPackage, UserSubscription, UsageTracking
+
 User = get_user_model()
 
 
@@ -91,24 +91,14 @@ class Exam(models.Model):
             return True
 
         # Get the user's active subscription
-        subscription = UserSubscription.objects.filter(user=user, status='active').first()
-        if not subscription or not subscription.is_active():
-            return False
-        print("1")
-        # Check usage tracking for the user's subscription
-        usage = UsageTracking.objects.filter(user=user, package=subscription.package).first()
-        if not usage:
-            return False
-        print("2")
+       
+        
         # Ensure the user has not exceeded their exam-taking limit
-        if not usage.can_take_exam():
-            return False
+        
 
         print("hello world")
         # Ensure other conditions, such as exam category matching or subscription specifics, are met
-        # Example: If exams are categorized by the subscription package
-        if self.category and self.category not in subscription.package.allowed_categories:
-            return False
+
 
         return True
 

@@ -411,12 +411,13 @@ class PastExamAttemptSerializer(serializers.ModelSerializer):
     past_exam_title = serializers.StringRelatedField(source='past_exam.title', read_only=True)  # Past exam title
     score = serializers.ReadOnlyField()
     attempt_time = serializers.ReadOnlyField()
+    pass_mark = serializers.IntegerField(source='past_exam.pass_mark')
 
     class Meta:
         model = PastExamAttempt
         fields = [
             'id', 'user', 'user_name', 'past_exam', 'past_exam_title', 'total_questions', 
-            'answered_questions', 'correct_answers', 'wrong_answers', 'score', 'attempt_time'
+            'answered_questions', 'correct_answers', 'wrong_answers', 'score', 'attempt_time', 'pass_mark'
         ]
         read_only_fields = ['attempt_time', 'score']
 

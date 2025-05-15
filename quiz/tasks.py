@@ -1,7 +1,7 @@
 from celery import shared_task
 from django.utils import timezone
 from .models import ExamAttempt
-from subscription.models import UsageTracking, UserSubscription
+# from subscription.models import UsageTracking, UserSubscription
 
 @shared_task
 def auto_submit_exam(attempt_id):
@@ -12,18 +12,18 @@ def auto_submit_exam(attempt_id):
         exam = attempt.exam
 
         # Fetch the user's usage tracking and package details
-        usage_tracking = UsageTracking.objects.filter(user=user).first()
-        if not usage_tracking or not usage_tracking.package:
-            print(f"User {user.username} does not have a valid subscription.")
-            return  # or return a failure status, as per your design
+        # usage_tracking = UsageTracking.objects.filter(user=user).first()
+        # if not usage_tracking or not usage_tracking.package:
+        #     print(f"User {user.username} does not have a valid subscription.")
+        #     return  # or return a failure status, as per your design
 
-        package = usage_tracking.package
+        # package = usage_tracking.package
         
-        # Check if the exam is started and if the user has exceeded attempt limits
-        exam_attempts = usage_tracking.exam_attempts
-        if str(exam.exam_id) not in exam_attempts:
-            print(f"User {user.username} has not started the exam.")
-            return  # or return a failure status
+        # # Check if the exam is started and if the user has exceeded attempt limits
+        # exam_attempts = usage_tracking.exam_attempts
+        # if str(exam.exam_id) not in exam_attempts:
+        #     print(f"User {user.username} has not started the exam.")
+        #     return  # or return a failure status
 
         attempts_taken = exam_attempts[str(exam.exam_id)]["attempts"]
         if attempts_taken >= package.max_attempts:
@@ -31,9 +31,9 @@ def auto_submit_exam(attempt_id):
             return  # or return a failure status
 
         # Check if the user has exceeded the total exam limit
-        if usage_tracking.total_exams_taken >= package.max_exams:
-            print(f"User {user.username} has reached the total exam limit for their package.")
-            return  # or return a failure status
+        # if usage_tracking.total_exams_taken >= package.max_exams:
+        #     print(f"User {user.username} has reached the total exam limit for their package.")
+        #     return  # or return a failure status
 
         # Check if the attempt has already been completed
         if attempt.passed or attempt.answered > 0:

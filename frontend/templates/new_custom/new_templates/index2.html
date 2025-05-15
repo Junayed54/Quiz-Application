@@ -59,16 +59,21 @@
     .authentication{
       text-align: center;
     }
+    .clickable {
+      cursor: pointer;
+    }
 
     .feature-img, dotlottie-player {
       max-width: 100%;
       height: auto;
     }
     .footer {
-      background-color: #1e1e1e;
-      color: #fff;
+      background-color: #EFE3D8;
+      color: #231651;
       padding: 30px 0;
       clear: both;
+      font-size: 1rem;
+      font-weight: 600;
     }
     .facebook-icon {
         color: #1877F2 !important; /* Facebook Blue */
@@ -104,7 +109,12 @@
     <!-- Navbar -->
     <nav class="navbar navbar-expand-lg navbar-light bg-light">
       <div class="container">
-        <a class="navbar-brand" href="/" style="color: rgb(132, 137, 131); font-size:36px; font-weight: 600">Jobs Academy</a>
+        <div id="clickable" class="d-flex justify-content-center align-items-center">
+          
+          <a class="navbar-brand m-0 p-0" href="/" style="color: rgb(132, 137, 131); font-size:36px; font-weight: 600"> Jobs Academy</a>
+          <img style="margin-bottom: 30px" src = "../../../static/images/jobsAcademy2.jpg" alt="logo" width="50" height="50">
+
+        </div>
 
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
                 data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent"
@@ -128,7 +138,7 @@
                     <div class="col-md-6">
                       <div class="dropdown-column pe-3">
                         <a class="dropdown-item border-bottom py-1" href="/past_exams/">পূর্ববর্তী পরিক্ষা</a>
-                        <a class="dropdown-item border-bottom py-1" href="#">Medical Question</a>
+                        <a class="dropdown-item border-bottom py-1" href="/questions/">Test Question</a>
                         <a class="dropdown-item border-bottom py-1" href="#">Agricultural Question</a>
                         <a class="dropdown-item border-bottom py-1" href="#">BSC Question</a>
                         <a class="dropdown-item border-bottom py-1" href="#">DPE Question</a>
@@ -363,8 +373,8 @@
     <p class="mb-1 fw-bold">Mock Master</p>
     <p class="mb-2">MockMaster is your trusted platform for online mock exams across subjects, students, and govt categories.</p>
     <div>
-      <a href="#" class="text-white me-3 facebook-icon"><i class="fa-brands fa-facebook-f"></i></a>
-      <a href="#" class="text-white me-3 linkedin-icon"><i class="fa-brands fa-linkedin"></i></a>
+      <a href="#" class="text-white me-4 facebook-icon"><i class="fa-brands fa-facebook-f"></i></a>
+      <a href="#" class="text-white me-4 linkedin-icon"><i class="fa-brands fa-linkedin"></i></a>
       <a href="#" class="text-white twitter-icon"><i class="fa-brands fa-twitter"></i></a>
     </div>
   </div>

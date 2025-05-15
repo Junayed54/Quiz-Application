@@ -301,7 +301,7 @@ function renderExamDetails(exam) {
             <form id="exam-details-form" class="mb-6">
                 <div class="mb-4">
                     <label for="exam-title" class="block font-medium mb-1">Title</label>
-                    <input type="text" id="exam-title" class="input input-bordered w-full" value="${exam.title}" />
+                    <input type="text" id="exam-title" class="input input-bordered" value="${exam.title}" />
                 </div>
                 <div class="mb-4">
                     <label for="exam-date" class="block font-medium mb-1">Exam Date</label>
@@ -309,7 +309,7 @@ function renderExamDetails(exam) {
                 </div>
                 <button type="button" onclick="updateExamDetails(${exam.id})" class="btn btn-success">Save Exam Details</button>
             </form>
-            <button type="button" id="add-question-btn" class="btn btn-primary mb-4">Add Question</button>
+            <button type="button" id="add-question-btn" class="btn btn-primary my-4">Add Question</button>
             <div id="add-question-form" class="p-4 bg-gray-100 rounded-lg mb-4" style="display: none;">
                 <h3 class="text-xl font-semibold mb-2">New Question</h3>
                 <div class="mb-2">
