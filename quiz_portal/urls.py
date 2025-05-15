@@ -16,6 +16,7 @@ urlpatterns = [
     path('api/', include('invitation.urls')),
     path('', include('subscription.urls')), # Subcription-related URLs
     path('', include('govt_jobs.urls')),
+    path('', include('quickquiz.urls')),
 ]
 # urlpatterns += websocket_urlpatterns
 if settings.DEBUG:

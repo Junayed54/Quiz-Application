@@ -76,6 +76,7 @@ INSTALLED_APPS = [
     'invitation',
     'subscription',
     'govt_jobs',
+    'quickquiz',
     
     
 ]
