@@ -1,5 +1,14 @@
+import uuid
 from rest_framework import viewsets, permissions, generics
 from rest_framework.response import Response
+from django.utils import timezone
+from django.utils.timezone import now
+from datetime import date
+from rest_framework.views import APIView
+from datetime import timedelta
+from rest_framework.permissions import IsAuthenticated
+from rest_framework import serializers
+from rest_framework import status
 from django.contrib.contenttypes.models import ContentType
 from django.shortcuts import get_object_or_404
 from .models import (
@@ -43,6 +52,7 @@ class UserSubscriptionViewSet(viewsets.ModelViewSet):
         serializer.save(user=self.request.user)
 
 
+
 class UserExamAccessViewSet(viewsets.ModelViewSet):
     serializer_class = UserExamAccessSerializer
     permission_classes = [permissions.IsAuthenticated]
@@ -74,3 +84,82 @@ class UserExamAccessViewSet(viewsets.ModelViewSet):
                 return Response({"error": "Access limit reached"}, status=403)
 
         serializer.save(user=self.request.user)
+
+
+class ExamPermissionCheckView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get_exam(self, exam_id):
+        """
+        Try to get Exam by UUID, or PastExam by int.
+        """
+        try:
+            parsed_id = uuid.UUID(str(exam_id))
+            return Exam.objects.get(id=parsed_id)
+        except (ValueError, Exam.DoesNotExist):
+            pass
+
+        try:
+            parsed_id = int(exam_id)
+            return PastExam.objects.get(id=parsed_id)
+        except (ValueError, PastExam.DoesNotExist):
+            return None
+
+    def get(self, request, exam_id):
+        user = request.user
+
+        # Step 1: Validate Exam
+        exam = self.get_exam(exam_id)
+        if not exam:
+            return Response({'has_access': False, 'reason': 'exam_not_found'}, status=404)
+
+        # Step 2: Validate User Subscription
+        subscriptions = UserSubscription.objects.filter(user=user, is_active=True)
+        if not subscriptions.exists():
+            return Response({'has_access': False, 'reason': 'no_subscription'}, status=403)
+
+        subscription = subscriptions.order_by('-end_date').first()
+        if subscription.end_date and subscription.end_date < date.today():
+            return Response({'has_access': False, 'reason': 'subscription_expired'}, status=403)
+
+        # Step 3: Get Content Type for current exam type
+        exam_ct = ContentType.objects.get_for_model(type(exam))
+
+        # Step 4: Get Plan Limit
+        try:
+            plan_limit = PlanExamAccessLimit.objects.get(
+                plan_tier=subscription.plan,
+                content_type=exam_ct
+            )
+        except PlanExamAccessLimit.DoesNotExist:
+            return Response({'has_access': False, 'reason': 'exam_not_allowed_in_plan'}, status=403)
+
+        # Step 5: Check if user already accessed this exam
+        already_accessed = UserExamAccess.objects.filter(
+            user=user,
+            content_type=exam_ct,
+            object_id=exam.id
+        ).exists()
+
+        if already_accessed:
+            # ✅ Already accessed → allow repeat access
+            return Response({'has_access': True})
+
+        # Step 6: Check total unique accessed exams
+        unique_exam_count = UserExamAccess.objects.filter(
+            user=user,
+            content_type=exam_ct
+        ).values('object_id').distinct().count()
+
+        if unique_exam_count >= plan_limit.max_access_count:
+            # ❌ Access limit reached and new exam → block
+            return Response({'has_access': False, 'reason': 'access_limit_reached'}, status=403)
+
+        # Step 7: Log new access
+        UserExamAccess.objects.create(
+            user=user,
+            content_type=exam_ct,
+            object_id=exam.id
+        )
+
+        return Response({'has_access': True})

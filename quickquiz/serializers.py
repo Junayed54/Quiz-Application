@@ -62,3 +62,22 @@ class UserPointsSerializer(serializers.ModelSerializer):
         else:
             instance.add_points(points)
         return instance
+
+
+
+class PracticeLeaderboardSerializer(serializers.ModelSerializer):
+    points = serializers.SerializerMethodField()
+    attempts = serializers.SerializerMethodField()
+    profile_image = serializers.ImageField(source='profile_picture', allow_null=True, required=False)
+
+    class Meta:
+        model = get_user_model()
+        fields = ['id', 'username', 'points', 'attempts', 'profile_image']
+
+    def get_points(self, obj):
+        # Get points from UserPoints model
+        user_points = getattr(obj, 'userpoints', None)
+        return user_points.points if user_points else 0
+
+    def get_attempts(self, obj):
+        return PracticeSession.objects.filter(user=obj).count()

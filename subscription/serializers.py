@@ -1,22 +1,12 @@
 from rest_framework import serializers
 from django.contrib.contenttypes.models import ContentType
-from .models import (
-    SubscriptionPlanTier,
-    SubscriptionPlanPrice,
-    PlanExamAccessLimit,
-    UserSubscription,
-    UserExamAccess,
-)
+from .models import *
 
 from django.contrib.auth import get_user_model
 User = get_user_model()
+from django.utils import timezone
+from datetime import timedelta
 
-
-# 1. SubscriptionPlanTier Serializer
-class SubscriptionPlanTierSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = SubscriptionPlanTier
-        fields = '__all__'
 
 
 # 2. SubscriptionPlanPrice Serializer
@@ -26,6 +16,8 @@ class SubscriptionPlanPriceSerializer(serializers.ModelSerializer):
     class Meta:
         model = SubscriptionPlanPrice
         fields = '__all__'
+        
+
 
 
 # 3. PlanExamAccessLimit Serializer
@@ -36,16 +28,75 @@ class PlanExamAccessLimitSerializer(serializers.ModelSerializer):
     class Meta:
         model = PlanExamAccessLimit
         fields = '__all__'
+        
+        
+class SubscriptionPlanTierSerializer(serializers.ModelSerializer):
+    prices = SubscriptionPlanPriceSerializer(many=True, read_only=True)
+    exam_access_limits = PlanExamAccessLimitSerializer(many=True, read_only=True)
 
-
-# 4. UserSubscription Serializer
+    class Meta:
+        model = SubscriptionPlanTier
+        fields = '__all__'
 class UserSubscriptionSerializer(serializers.ModelSerializer):
-    user = serializers.StringRelatedField()
-    plan = serializers.SlugRelatedField(slug_field='name', queryset=SubscriptionPlanTier.objects.all())
+    price = serializers.PrimaryKeyRelatedField(
+        queryset=SubscriptionPlanPrice.objects.all(),
+        write_only=True
+    )
 
     class Meta:
         model = UserSubscription
-        fields = '__all__'
+        fields = ['id', 'plan', 'start_date', 'end_date', 'is_active', 'price']
+        read_only_fields = ['plan', 'start_date', 'end_date', 'is_active']
+
+    def create(self, validated_data):
+        price = validated_data.pop('price')  # remove price from being passed to model
+
+        # Duration logic
+        duration_map = {
+            'weekly': 7,
+            'biweekly': 14,
+            'monthly': 30,
+            'quarterly': 90,
+            'halfyearly': 180,
+        }
+
+        days = duration_map.get(price.duration)
+        if not days:
+            raise serializers.ValidationError({'price': 'Invalid duration'})
+
+        validated_data['plan'] = price.plan_tier
+        validated_data['start_date'] = timezone.now().date()
+        validated_data['end_date'] = validated_data['start_date'] + timedelta(days=days)
+
+        return UserSubscription.objects.create(**validated_data)
+
+# 4. UserSubscription Serializer
+# class UserSubscriptionSerializer(serializers.ModelSerializer):
+#     user = serializers.HiddenField(default=serializers.CurrentUserDefault())
+#     plan = serializers.SlugRelatedField(slug_field='name', queryset=SubscriptionPlanTier.objects.all())
+#     price = serializers.PrimaryKeyRelatedField(queryset=SubscriptionPlanPrice.objects.all())
+
+#     class Meta:
+#         model = UserSubscription
+#         fields = '__all__'
+
+    # def create(self, validated_data):
+    #     price = validated_data['price']
+    #     validated_data['start_date'] = timezone.now().date()
+
+    #     duration_days_map = {
+    #         'weekly': 7,
+    #         'biweekly': 14,
+    #         'monthly': 30,
+    #         'quarterly': 90,
+    #         'halfyearly': 180,
+    #     }
+
+    #     days = duration_days_map.get(price.duration, 30)
+    #     validated_data['end_date'] = validated_data['start_date'] + timedelta(days=days)
+
+    #     return super().create(validated_data)
+
 
 
 # 5. UserExamAccess Serializer

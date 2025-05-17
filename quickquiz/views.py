@@ -17,6 +17,9 @@ from rest_framework.views import APIView
 from .models import *
 from .serializers import *
 
+from django.contrib.auth import get_user_model
+User = get_user_model()
+
 # Start a new Practice Session
 class StartPracticeSessionView(APIView):
     def post(self, request):
@@ -46,9 +49,8 @@ class SubmitPracticeSessionView(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request):
-        user = request.user  # Authenticated user
+        user = request.user
         session_id = request.data.get('session_id')
-        print(request.data)
 
         try:
             session = PracticeSession.objects.get(id=int(session_id), user=user)
@@ -59,17 +61,17 @@ class SubmitPracticeSessionView(APIView):
         duration = request.data.get('duration')
         if duration is not None:
             try:
-                # Convert duration (in seconds) to timedelta
-                session.duration = timedelta(seconds=int(duration))
+                session.duration = timedelta(minutes=int(duration))
             except (ValueError, TypeError):
                 return Response({'error': 'Invalid duration format.'}, status=status.HTTP_400_BAD_REQUEST)
 
-        answers = request.data.get('answers', [])  # Expected format: [{'question_id': ..., 'selected_option_id': ...}, ...]
+        answers = request.data.get('answers', [])  # [{'question_id': ..., 'option_id': ...}]
         score = 0
         correct_answers = 0
+        total_questions = len(answers)
 
-        for attempt_data in answers:
-            selected_option_id = attempt_data.get('selected_option_id')
+        for attempt in answers:
+            selected_option_id = attempt.get('option_id')
             if selected_option_id:
                 try:
                     selected_option = PracticeOption.objects.get(id=int(selected_option_id))
@@ -77,13 +79,16 @@ class SubmitPracticeSessionView(APIView):
                         score += 1
                         correct_answers += 1
                 except PracticeOption.DoesNotExist:
-                    continue  # Skip invalid option
+                    continue
+
+        wrong_answers = total_questions - correct_answers
+        percentage_score = round((correct_answers / total_questions) * 100, 2) if total_questions > 0 else 0
 
         # Save score and duration
         session.score = score
         session.save()
 
-        # Update or create user points
+        # Update user points
         user_points, _ = UserPoints.objects.get_or_create(user=user)
         user_points.points += score
         user_points.save()
@@ -91,18 +96,65 @@ class SubmitPracticeSessionView(APIView):
         return Response({
             'score': score,
             'correct_answers': correct_answers,
+            'wrong_answers': wrong_answers,
+            'percentage': percentage_score,
             'duration_in_minutes': round(session.duration.total_seconds() / 60) if session.duration else 0,
         }, status=status.HTTP_200_OK)
 
 
 # View for Leaderboard - Display Top 10 Users with highest points
-class LeaderboardView(APIView):
-    def get(self, request):
-        # Get top 10 users based on points
-        leaderboard = UserPoints.objects.order_by('-points')[:10]
-        leaderboard_data = [{'user': user.user.username, 'points': user.points} for user in leaderboard]
+class PracticeLeaderboardAPIView(APIView):
+    permission_classes = [IsAuthenticated]
 
-        return Response(leaderboard_data, status=status.HTTP_200_OK)
+    def get(self, request):
+        # Step 1: Get top 10 users with the highest points
+        top_users_points = (
+            UserPoints.objects.select_related('user')
+            .order_by('-points')[:10]
+        )
+        top_users = [up.user for up in top_users_points]
+
+        # Step 2: Get points for top users and annotate
+        top_data = []
+        for up in top_users_points:
+            top_data.append({
+                'id': up.user.id,
+                'username': up.user.username,
+                'points': up.points,
+                'attempts': PracticeSession.objects.filter(user=up.user).count(),
+                'profile_image': getattr(up.user, 'profile_picture', None),
+            })
+
+        # Step 3: Serialize top users
+        top_serialized = PracticeLeaderboardSerializer(top_users, many=True, context={'request': request}).data
+
+        # Step 4: Add current user info with rank
+        current_user = request.user
+        current_user_points = UserPoints.objects.filter(user=current_user).first()
+        current_user_data = None
+
+        if current_user_points:
+            # Get rank of current user
+            user_ranks = UserPoints.objects.order_by('-points').values_list('user_id', flat=True)
+            try:
+                rank = list(user_ranks).index(current_user.id) + 1
+            except ValueError:
+                rank = None  # should not happen
+
+            current_user_data = {
+                'id': current_user.id,
+                'username': current_user.username,
+                'points': current_user_points.points,
+                'rank': rank,
+                'attempts': PracticeSession.objects.filter(user=current_user).count(),
+                'profile_image': request.build_absolute_uri(current_user.profile_picture.url) if current_user.profile_picture else None,
+            }
+
+        return Response({
+            'top_10': top_serialized,
+            'me': current_user_data
+        })
+
 
 
 

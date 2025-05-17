@@ -79,19 +79,19 @@
       <div class="col-md-3 mb-3">
         <div class="card card-custom p-3">
           <p class="mb-1">Your Current Rank</p>
-          <h3>#8</h3>
+          <h3 id="my_rank">#0</h3>
         </div>
       </div>
       <div class="col-md-3 mb-3">
         <div class="card card-custom p-3">
           <p class="mb-1">Points This Month</p>
-          <h3>1,140</h3>
+          <h3 id="my_points">0</h3>
         </div>
       </div>
       <div class="col-md-3 mb-3">
         <div class="card card-custom p-3">
           <p class="mb-1">Completed Tests</p>
-          <h3>9</h3>
+          <h3 id="my_complete_test">0</h3>
         </div>
       </div>
       <div class="col-md-3 mb-3">
@@ -134,23 +134,26 @@
 
     <div>
         <div class="rank-row">
-        <div class="row align-items-center text-center">
-          <div class="col">RANK</div>
-          <div class="col">PLAYER</div>
-          <div class="col">TESTS</div>
-          <div class="col">SCORE</div>
-          <div class="col">CHANGE</div>
+            <div class="row align-items-center text-center">
+            <div class="col">RANK</div>
+            <div class="col">PLAYER</div>
+            <div class="col">TESTS</div>
+            <div class="col">SCORE</div>
+            <div class="col">CHANGE</div>
+            </div>
         </div>
-      </div>
-      <div class="rank-row">
-        <div class="row align-items-center text-center">
-          <div class="col">#1</div>
-          <div class="col">SA</div>
-          <div class="col">12</div>
-          <div class="col">1,520</div>
-          <div class="col text-success">↑</div>
+        <div id="rank-list">
+
         </div>
-      </div>
+        {% comment %} <div class="rank-row">
+            <div class="row align-items-center text-center">
+            <div class="col">#1</div>
+            <div class="col">SA</div>
+            <div class="col">12</div>
+            <div class="col">1,520</div>
+            <div class="col text-success">↑</div>
+            </div>
+        </div>
       <div class="rank-row">
         <div class="row align-items-center text-center">
           <div class="col">#2</div>
@@ -213,7 +216,12 @@
           <div class="col">1,140</div>
           <div class="col text-success">↑</div>
         </div>
-      </div>
+      </div> {% endcomment %}
     </div>
   </div>
+  <div id="leaderboard-list" class="bg-white rounded p-4 shadow max-w-md mx-auto mt-6">
+  <!-- Leaderboard will be populated here -->
+</div>
 {% endblock %}
+
+{% block body_js %}<script src="../../../static/Js/quickquiz/leaderboard.js"></script>{% endblock %}
