@@ -30,11 +30,49 @@ class ExamCategory(models.Model):
         ordering = ['name']
 
 
+class ExamType(models.Model):
+    name = models.CharField(max_length=100, unique=True)
+
+    def __str__(self):
+        return self.name
+
+class Organization(models.Model):
+    name = models.CharField(max_length=255, unique=True)
+    address = models.TextField(null=True, blank=True)
+    def __str__(self):
+        return self.name
+    
+class Department(models.Model):
+    name = models.CharField(max_length=255)
+    organization = models.ForeignKey(Organization, on_delete=models.CASCADE, related_name="departments")
+
+    def __str__(self):
+        return f"{self.name} - {self.organization.name}"
+
+
+class Position(models.Model):
+    name = models.CharField(max_length=255)
+
+    def __str__(self):
+        return self.name
+    
+    
+    
+    
+
 class Exam(models.Model):
     exam_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    exam_type = models.ForeignKey('ExamType', on_delete=models.SET_NULL, null=True, blank=True, related_name='exams')
     title = models.CharField(max_length=255, unique=True)
     total_questions = models.PositiveIntegerField()
     created_by = models.ForeignKey(User, related_name='exams_created', on_delete=models.SET_NULL, null=True, blank=True)
+    
+    # Add organization hierarchy  
+    organization = models.ForeignKey('Organization', on_delete=models.SET_NULL, null=True, blank=True, related_name="exam_organizations")
+    department = models.ForeignKey('Department', on_delete=models.SET_NULL, null=True, blank=True, related_name="exam_departments")
+    position = models.ForeignKey('Position', on_delete=models.SET_NULL, null=True, blank=True, related_name="exam_positions")
+    
+    
     total_mark = models.PositiveIntegerField()
     pass_mark = models.PositiveIntegerField()
     negative_mark = models.FloatField(null=True, blank=True, default=0.0)
@@ -400,26 +438,12 @@ class Leaderboard(models.Model):
 # past exams models
 # ******><*******
 
-class Organization(models.Model):
-    name = models.CharField(max_length=255, unique=True)
-    address = models.TextField(null=True, blank=True)
-    def __str__(self):
-        return self.name
+
     
-class Department(models.Model):
-    name = models.CharField(max_length=255)
-    organization = models.ForeignKey(Organization, on_delete=models.CASCADE, related_name="departments")
-
-    def __str__(self):
-        return f"{self.name} - {self.organization.name}"
 
 
-class Position(models.Model):
-    name = models.CharField(max_length=255)
 
-    def __str__(self):
-        return self.name
-    
+
 
 
 class PastExam(models.Model):
@@ -427,6 +451,7 @@ class PastExam(models.Model):
     organization = models.ForeignKey(Organization, on_delete=models.CASCADE, related_name="exams")
     department = models.ForeignKey(Department, on_delete=models.SET_NULL, null=True, blank=True, related_name="exams")
     position = models.ForeignKey(Position, on_delete=models.CASCADE, related_name="exams")
+    exam_type = models.ForeignKey(ExamType, on_delete=models.SET_NULL, null=True, blank=True, related_name="past_exams")
     exam_date = models.DateField()  # When the exam was conducted
     duration = models.IntegerField(null=True, blank=True)
     is_published = models.BooleanField(default=True)  # Admin controls visibility
@@ -479,6 +504,17 @@ class PastExamAttempt(models.Model):
 
     def __str__(self):
         return f"{self.user.username} - {self.past_exam.title} (Score: {self.score})"
+
+class PastUserAnswer(models.Model):
+    exam_attempt = models.ForeignKey(PastExamAttempt, related_name='user_answers', on_delete=models.CASCADE)
+    question = models.ForeignKey(Question, on_delete=models.CASCADE)
+    selected_option = models.ForeignKey(QuestionOption, on_delete=models.SET_NULL, null=True, blank=True)
+    is_correct = models.BooleanField(default=False)
+
+    def __str__(self):
+        return f"{self.exam_attempt.user.username} - {self.question.text[:50]}"
+
+
 
 class ExamQuestion(models.Model):
     exam = models.ForeignKey(Exam, on_delete=models.CASCADE)

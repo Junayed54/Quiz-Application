@@ -1,0 +1,29 @@
+{% extends 'new_custom/new_templates/index2.html' %}
+{% block title %}MockMaster - BCS Exam{% endblock %}
+{% block style %}
+    <style>
+        /* Optional: Add some top margin for the heading */
+        .page-heading {
+            padding-top: 40px;
+            padding-bottom: 30px;
+        }
+        /* Optional: Add some margin below each card for better spacing on smaller screens */
+        .exam-card-container {
+            padding-bottom: 20px;
+        }
+    </style>
+{% endblock %}
+{% block content %}
+<div style="background: rgb(255, 253, 208);">
+    <div class="container">
+        <h2 class="text-center page-heading">Model Tests</h2> <div id="examCardsContainer" class="row">
+            </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block body_js %}
+
+    <script src="../../../static/Js/new_templates_js/quiz/model_tests.js"></script>
+{% endblock %}

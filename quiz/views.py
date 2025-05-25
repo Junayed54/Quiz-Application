@@ -157,61 +157,62 @@ class ExamViewSet(viewsets.ModelViewSet):
         Get exams filtered by difficulty ranges based on the user's subscription package.
         """
         # Fetch the active subscription for the user
-        active_subscription = UserSubscription.objects.filter(user=request.user, status='active', end_date__gte=now.date()).first()
+        # active_subscription = UserSubscription.objects.filter(user=request.user, status='active', end_date__gte=now.date()).first()
         
-        if not active_subscription or not active_subscription.package:
-            return Response({"error": "You do not have an active subscription package."}, status=400)
+        # if not active_subscription or not active_subscription.package:
+        #     return Response({"error": "You do not have an active subscription package."}, status=400)
 
-        # Retrieve the subscription package
-        subscription_package = active_subscription.package
+        # # Retrieve the subscription package
+        # subscription_package = active_subscription.package
 
         # Retrieve exams with published status
-        exams = Exam.objects.filter(exam__status='published')
-        filtered_exams = []
+        # exams = Exam.objects.filter(exam__status='published')
+        exams = Exam.objects.all()
+        # filtered_exams = []
 
-        def parse_range(range_str):
-            """
-            Helper function to parse range strings like "10-20" into min and max integers.
-            """
-            try:
-                range_parts = range_str.split('-')
-                if len(range_parts) != 2:
-                    raise ValueError
-                return int(range_parts[0].strip()), int(range_parts[1].strip())
-            except ValueError:
-                raise ValueError(f"Invalid range format: {range_str}")
+        # def parse_range(range_str):
+        #     """
+        #     Helper function to parse range strings like "10-20" into min and max integers.
+        #     """
+        #     try:
+        #         range_parts = range_str.split('-')
+        #         if len(range_parts) != 2:
+        #             raise ValueError
+        #         return int(range_parts[0].strip()), int(range_parts[1].strip())
+        #     except ValueError:
+        #         raise ValueError(f"Invalid range format: {range_str}")
 
-        try:
-            # Parse range values from the subscription package
-            very_easy_min, very_easy_max = parse_range(subscription_package.very_easy_percentage)
-            easy_min, easy_max = parse_range(subscription_package.easy_percentage)
-            medium_min, medium_max = parse_range(subscription_package.medium_percentage)
-            hard_min, hard_max = parse_range(subscription_package.hard_percentage)
-            very_hard_min, very_hard_max = parse_range(subscription_package.very_hard_percentage)
-            expert_min, expert_max = parse_range(subscription_package.expert_percentage)
-        except ValueError as e:
-            return Response({"error": str(e)}, status=400)
+        # try:
+        #     # Parse range values from the subscription package
+        #     very_easy_min, very_easy_max = parse_range(subscription_package.very_easy_percentage)
+        #     easy_min, easy_max = parse_range(subscription_package.easy_percentage)
+        #     medium_min, medium_max = parse_range(subscription_package.medium_percentage)
+        #     hard_min, hard_max = parse_range(subscription_package.hard_percentage)
+        #     very_hard_min, very_hard_max = parse_range(subscription_package.very_hard_percentage)
+        #     expert_min, expert_max = parse_range(subscription_package.expert_percentage)
+        # except ValueError as e:
+        #     return Response({"error": str(e)}, status=400)
 
-        for exam in exams:
-            # Ensure the exam has a related difficulty instance
-            difficulty = getattr(exam, 'difficulty', None)
-            if not difficulty:
-                continue
+        # for exam in exams:
+        #     # Ensure the exam has a related difficulty instance
+        #     difficulty = getattr(exam, 'difficulty', None)
+        #     if not difficulty:
+        #         continue
 
-            # Validate difficulty percentages against subscription ranges
-            if (
-                very_easy_min <= difficulty.difficulty1_percentage <= very_easy_max
-                and easy_min <= difficulty.difficulty2_percentage <= easy_max
-                and medium_min <= difficulty.difficulty3_percentage <= medium_max
-                and hard_min <= difficulty.difficulty4_percentage <= hard_max
-                and very_hard_min <= difficulty.difficulty5_percentage <= very_hard_max
-                and expert_min <= difficulty.difficulty6_percentage <= expert_max
-            ):
-                filtered_exams.append(exam)
+        #     # Validate difficulty percentages against subscription ranges
+        #     if (
+        #         very_easy_min <= difficulty.difficulty1_percentage <= very_easy_max
+        #         and easy_min <= difficulty.difficulty2_percentage <= easy_max
+        #         and medium_min <= difficulty.difficulty3_percentage <= medium_max
+        #         and hard_min <= difficulty.difficulty4_percentage <= hard_max
+        #         and very_hard_min <= difficulty.difficulty5_percentage <= very_hard_max
+        #         and expert_min <= difficulty.difficulty6_percentage <= expert_max
+        #     ):
+        #         filtered_exams.append(exam)
         
         
         # Serialize the filtered exams
-        serializer = self.get_serializer(filtered_exams, many=True)
+        serializer = self.get_serializer(exams, many=True)
         return Response(serializer.data)
     
     
@@ -317,20 +318,8 @@ class ExamViewSet(viewsets.ModelViewSet):
     def submit_exam(self, request, pk=None):
         user = request.user
         exam = self.get_object()
-        usage_tracking = UsageTracking.objects.filter(user=request.user).first()
         
-        package = usage_tracking.package
-        
-        if not usage_tracking.exam_attempts.get(str(pk)):
-            return JsonResponse({"error": "You have not started this exam yet."}, status=403)
-        
-        max_attempts = package.max_attampts
-        if usage_tracking.exam_attempts[str(pk)]["attempts"] >= max_attempts+1:
-            return JsonResponse({"error":"You need to update your package"})
-        
-        if usage_tracking.total_exams_taken >= package.max_exams+1:
-            return JsonResponse({"error":"You need to update your package"})
-        
+        print(self.request.data)
         # Create a new attempt
         attempt = ExamAttempt.objects.create(
             exam=exam,
@@ -357,18 +346,19 @@ class ExamViewSet(viewsets.ModelViewSet):
                 continue  # Skip if answer is None
 
             question_id = answer.get('question_id')
-            selected_option_id = answer.get('option')
+            selected_option_id = answer.get('selected_option_id')
 
             if question_id is None or selected_option_id == 'none':
                 continue  # Skip if either question_id or selected_option is missing
 
             try:
                 question = Question.objects.get(id=question_id)
-                selected_option = QuestionOption.objects.get(id=int(selected_option_id))
-            except (Question.DoesNotExist, QuestionOption.DoesNotExist, ValueError):
+                selected_option = QuestionOption.objects.get(id=selected_option_id)
+                print(selected_option)
+            except (QuestionOption.DoesNotExist, ValueError):
                 raise ValidationError({"error": "Invalid question or option ID."})
 
-            correct_answer = question.get_correct_answer()
+            # correct_answer = question.get_correct_answer()
             is_correct = selected_option.is_correct
 
             # Count as answered
@@ -388,7 +378,7 @@ class ExamViewSet(viewsets.ModelViewSet):
                     'is_correct': is_correct
                 }
             )
-
+        print("hellow ")
         # Update the attempt with results
         attempt.answered = answered_count
         attempt.total_correct_answers = total_correct
@@ -398,7 +388,7 @@ class ExamViewSet(viewsets.ModelViewSet):
 
         Leaderboard.update_best_score(user, exam)
         # Schedule auto-submit task (if needed)
-        auto_submit_exam.apply_async(args=[attempt.id], countdown=10)
+        # auto_submit_exam.apply_async(args=[attempt.id], countdown=10)
 
         return JsonResponse({
             'status': 'submitted',
@@ -586,7 +576,7 @@ class QuestionViewSet(viewsets.ModelViewSet):
     def upload_questions(self, request):
         if 'file' not in request.FILES:
             return Response({"error": "No file provided."}, status=status.HTTP_400_BAD_REQUEST)
-
+        print("hello world")
         # Check if 'Exam', 'Year', and 'Subject' are in the request body
         exam_name = request.data.get('exam_name')
         exam_year = request.data.get('exam_year')
@@ -675,6 +665,9 @@ class QuestionViewSet(viewsets.ModelViewSet):
                             exam=exam_name,
                             year=exam_year
                         )
+                        
+                        
+        
 
         except Exception as e:
             return Response({"error": f"Error while saving questions: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
@@ -1727,110 +1720,301 @@ class UserAnswerViewSet(viewsets.ViewSet):
         
 # Exam Create
 
+# class ExamCreateView(APIView):
+#     permission_classes = [IsAuthenticated]
+#     authentication_classes = [JWTAuthentication]
+
+#     def post(self, request, *args, **kwargs):
+#         exam_title = request.data.get('exam_title')
+#         total_questions = int(request.data.get('total_questions', 10))
+#         total_marks = int(request.data.get('total_marks', 100))
+#         pass_mark = int(request.data.get('pass_mark', 50))
+#         last_date = request.data.get('last_date', None)
+#         duration = int(request.data.get('duration', 60))
+#         negative_marks = request.data.get('negative_marks', 0)
+#         starting_time = request.data.get('starting_time', None)
+#         exam_type = request.data.get('exam_method', 'question_bank')
+#         difficulty_levels = request.data.get('difficulty_levels', '{}')
+#         category_name = request.data.get('category')
+#         exam_type_id = request.data.get('exam_type_id')  # For question_bank
+
+#         try:
+#             difficulty_levels = json.loads(difficulty_levels)
+#         except (TypeError, json.JSONDecodeError):
+#             difficulty_levels = {}
+
+#         if not exam_title:
+#             return Response({"error": "Exam title is required."}, status=status.HTTP_400_BAD_REQUEST)
+
+#         category = None
+#         if category_name:
+#             category, _ = ExamCategory.objects.get_or_create(name=category_name)
+
+#         try:
+#             with transaction.atomic():
+#                 # Step 1: Create the Exam
+#                 duration_minutes = timedelta(minutes=duration)
+#                 exam = Exam.objects.create(
+#                     title=exam_title,
+#                     total_questions=total_questions,
+#                     total_mark=total_marks,
+#                     pass_mark=pass_mark,
+#                     last_date=last_date,
+#                     duration=duration_minutes,
+#                     negative_mark=negative_marks,
+#                     starting_time=parse_datetime(starting_time) if starting_time else None,
+#                     created_by=request.user,
+#                     category=category
+#                 )
+
+#                 # Step 2: Get questions
+#                 selected_questions = []
+#                 if exam_type == 'file':
+#                     selected_questions = self._process_file_upload(request)
+#                 elif exam_type == 'question_bank':
+#                     selected_questions = self._fetch_questions_from_bank(
+#                         exam_type_id=exam_type_id,
+#                         total_questions=total_questions,
+#                         difficulty_levels=difficulty_levels
+#                     )
+#                 else:
+#                     return Response({"error": "Invalid exam type."}, status=status.HTTP_400_BAD_REQUEST)
+
+#                 if isinstance(selected_questions, Response):  # in case _fetch_questions_from_bank returned error
+#                     return selected_questions
+
+#                 selected_questions = selected_questions[:total_questions]
+
+#                 # Step 3: Create ExamQuestion and ExamQuestionOption
+#                 for index, question in enumerate(selected_questions):
+#                     exam_question = ExamQuestion.objects.create(
+#                         exam=exam,
+#                         question=question,
+#                         points=1.0,
+#                         order=index + 1
+#                     )
+
+#                     # Try to find matching PastExamQuestion
+#                     if exam_type_id:
+#                         past_exam_questions = PastExamQuestion.objects.filter(
+#                             question=question,
+#                             exam__exam_type_id=exam_type_id
+#                         ).select_related('exam').order_by('-exam__exam_date')
+
+#                         if past_exam_questions.exists():
+#                             past_exam_question = past_exam_questions.first()
+#                             past_options = PastExamQuestionOption.objects.filter(question=past_exam_question)
+
+#                             for past_option in past_options:
+#                                 ExamQuestionOption.objects.create(
+#                                     question=exam_question,
+#                                     option=past_option.option
+#                                 )
+#                             continue  # Done with this question
+
+#                     # Fallback: use currently correct options
+#                     correct_options = question.options.filter(is_correct=True)
+#                     for option in correct_options:
+#                         ExamQuestionOption.objects.create(
+#                             question=exam_question,
+#                             option=option
+#                         )
+
+#                 # Step 4: Save difficulty breakdown if provided
+#                 if difficulty_levels and any(int(v) > 0 for v in difficulty_levels.values()):
+#                     difficulty_percentages = {
+#                         'difficulty1_percentage': difficulty_levels.get('1', 0),
+#                         'difficulty2_percentage': difficulty_levels.get('2', 0),
+#                         'difficulty3_percentage': difficulty_levels.get('3', 0),
+#                         'difficulty4_percentage': difficulty_levels.get('4', 0),
+#                         'difficulty5_percentage': difficulty_levels.get('5', 0),
+#                         'difficulty6_percentage': difficulty_levels.get('6', 0)
+#                     }
+#                     ExamDifficulty.objects.create(exam=exam, **difficulty_percentages)
+
+#                 # Step 5: Create Status
+#                 status_label = 'student' if request.user.role == 'student' else 'draft'
+#                 Status.objects.create(exam=exam, status=status_label, user=request.user)
+
+#                 return Response(
+#                     {"message": f"Exam '{exam.title}' created successfully with {len(selected_questions)} questions."},
+#                     status=status.HTTP_201_CREATED
+#                 )
+
+#         except Exception as e:
+#             return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
 class ExamCreateView(APIView):
     permission_classes = [IsAuthenticated]
     authentication_classes = [JWTAuthentication]
 
     def post(self, request, *args, **kwargs):
         exam_title = request.data.get('exam_title')
-        total_questions = int(request.data.get('total_questions', 10))  # Default 10 questions
-        total_marks = int(request.data.get('total_marks', 100))  # Default 100 marks
-        pass_mark = int(request.data.get('pass_mark', 50))  # Default 50% pass mark
+        total_questions = int(request.data.get('total_questions', 10))
+        total_marks = int(request.data.get('total_marks', 100))
+        pass_mark = int(request.data.get('pass_mark', 50))
         last_date = request.data.get('last_date', None)
-        duration = int(request.data.get('duration', 60))  # Duration in minutes
+        duration = int(request.data.get('duration', 60))
         negative_marks = request.data.get('negative_marks', 0)
         starting_time = request.data.get('starting_time', None)
-        exam_type = request.data.get('exam_type', 'question_bank')  # Default type is 'question_bank'
-        difficulty_levels = request.data.get('difficulty_levels', {})
-        # print("difficulty: ", type(difficulty_levels))
-        
+        exam_method = request.data.get('exam_method', 'question_bank')
+        difficulty_levels = request.data.get('difficulty_levels', '{}')
         category_name = request.data.get('category')
-       
+        exam_type_id = request.data.get('exam_type_id')
+
+        # NEW: Get organization, department, and position
+        organization_id = request.data.get('organization')
+        department_id = request.data.get('department')
+        position_id = request.data.get('position')
+
         try:
             difficulty_levels = json.loads(difficulty_levels)
-            print(difficulty_levels)
         except (TypeError, json.JSONDecodeError):
-            return Response({"error": "Difficulty levels are invalid."}, status=status.HTTP_400_BAD_REQUEST)
-        
-        # Only validate difficulty percentages if exam type is 'question_bank'
-        if exam_type == 'question_bank':
-            # Ensure percentages add up to 100
-            total_percentage = sum(difficulty_levels.values())
-            if total_percentage != 100:
-                return Response({"error": f"The total percentage of difficulty levels must equal 100, but got {total_percentage}."}, status=status.HTTP_400_BAD_REQUEST)
+            difficulty_levels = {}
 
-        
-        # Basic validations for required fields
         if not exam_title:
             return Response({"error": "Exam title is required."}, status=status.HTTP_400_BAD_REQUEST)
-        if not exam_type:
-            return Response({"error": "Exam type is required (either 'file' or 'question_bank')."}, status=status.HTTP_400_BAD_REQUEST)
-        
+
         category = None
         if category_name:
-            exam_category, _ = ExamCategory.objects.get_or_create(name=category_name)
-        
-        
-        selected_questions = []
+            category, _ = ExamCategory.objects.get_or_create(name=category_name)
 
-        # Process exam questions based on exam type
-        if exam_type == 'file':
-            selected_questions = self._process_file_upload(request)
-        elif exam_type == 'question_bank':
-            print(type(difficulty_levels))
-            selected_questions = self._fetch_questions_from_bank(total_questions, difficulty_levels)
-        else:
-            return Response({"error": "Invalid exam type. Choose either 'file' or 'question_bank'."}, status=status.HTTP_400_BAD_REQUEST)
-
-        if isinstance(selected_questions, Response):  # Handle error response from helper functions
-            return selected_questions
-
-        duration_minutes = timedelta(minutes=duration)
-        # Step 2: Create the Exam
-        exam = Exam.objects.create(
-            title=exam_title,
-            total_questions=len(selected_questions),
-            total_mark=len(selected_questions),
-            pass_mark=pass_mark,
-            last_date=last_date,
-            duration=duration_minutes,  # Convert minutes to seconds
-            negative_mark=negative_marks,
-            starting_time=parse_datetime(starting_time) if starting_time else None,
-            created_by=request.user,
-            category=exam_category
-        )
+        try:
+            exam_type_obj = ExamType.objects.get(id=int(exam_type_id))
+        except ExamType.DoesNotExist:
+            return Response({"error": "Invalid exam type wrong."}, status=status.HTTP_400_BAD_REQUEST)
 
         
         
-        # Step 3: Associate Questions with the Exam
-        exam.questions.set(selected_questions)
+        # NEW: Fetch organization, department, and position objects
+        organization = Organization.objects.filter(id=organization_id).first() if organization_id else None
+        department = Department.objects.filter(id=department_id).first() if department_id else None
+        position = Position.objects.filter(id=position_id).first() if position_id else None
 
-       
-        print(difficulty_levels)
 
-        # Step 5
-        difficulty_percentages = {
-            'difficulty1_percentage': difficulty_levels.get('1', 0),
-            'difficulty2_percentage': difficulty_levels.get('2', 0),
-            'difficulty3_percentage': difficulty_levels.get('3', 0),
-            'difficulty4_percentage': difficulty_levels.get('4', 0),
-            'difficulty5_percentage': difficulty_levels.get('5', 0),
-            'difficulty6_percentage': difficulty_levels.get('6', 0)
-        }
+        try:
+            with transaction.atomic():
+                # Step 1: Create the Exam
+                duration_minutes = timedelta(minutes=duration)
+                exam = Exam.objects.create(
+                    title=exam_title,
+                    total_questions=total_questions,
+                    total_mark=total_marks,
+                    pass_mark=pass_mark,
+                    last_date=last_date,
+                    duration=duration_minutes,
+                    negative_mark=negative_marks,
+                    starting_time=parse_datetime(starting_time) if starting_time else None,
+                    created_by=request.user,
+                    category=category,
+                    exam_type = exam_type_obj,
+                    organization=organization,      # NEW
+                    department=department,          # NEW
+                    position=position               # NEW
+                )
 
-        # Create ExamDifficulty object
-        ExamDifficulty.objects.create(
-            exam=exam,
-            **difficulty_percentages
-        )
-        
-        # Step 5: Set Exam Status and Initialize Leaderboard
-        status_label = 'student' if request.user.role == 'student' else 'draft'
-        Status.objects.create(exam=exam, status=status_label, user=request.user)
+                # [Steps 2–5 remain unchanged]
+                # Step 2: Get questions
+                selected_questions = []
+                if exam_method == 'file':
+                    selected_questions = self._process_file_upload(request)
+                elif exam_method == 'question_bank':
+                    selected_questions = self._fetch_questions_from_bank(
+                        exam_type_id=exam_type_id,
+                        total_questions=total_questions,
+                        difficulty_levels=difficulty_levels
+                    )
+                else:
+                    return Response({"error": "Invalid exam type."}, status=status.HTTP_400_BAD_REQUEST)
 
-        # Leaderboard.objects.create(exam=exam, score=0)
+                if isinstance(selected_questions, Response):  # in case _fetch_questions_from_bank returned error
+                    return selected_questions
 
-        return Response({"message": f"Exam '{exam.title}' created successfully with {len(selected_questions)} questions."}, status=status.HTTP_201_CREATED)
+                selected_questions = selected_questions[:total_questions]
+
+                # Step 3: Create ExamQuestion and ExamQuestionOption
+                for index, question in enumerate(selected_questions):
+                    exam_question = ExamQuestion.objects.create(
+                    exam=exam,
+                    question=question,
+                    points=1.0,
+                    order=index + 1
+                )
+
+                used_past_exam_ids = set()
+                added_options = set()
+
+                if exam_type_id:
+                    past_exam_questions = PastExamQuestion.objects.filter(
+                        question=question,
+                        exam__exam_type_id=exam_type_id
+                    ).select_related('exam').order_by('-exam__exam_date')
+
+                    for past_exam_question in past_exam_questions:
+                        exam_id = past_exam_question.exam.id
+                        if exam_id in used_past_exam_ids:
+                            continue
+                        used_past_exam_ids.add(exam_id)
+
+                        past_options = PastExamQuestionOption.objects.filter(
+                            question=past_exam_question
+                        ).select_related('option')[:4]
+
+                        for past_option in past_options:
+                            if past_option.option.id not in added_options:
+                                ExamQuestionOption.objects.create(
+                                    question=exam_question,
+                                    option=past_option.option
+                                )
+                                added_options.add(past_option.option.id)
+
+                        break  # Only use one past exam
+
+                # Fill up to 4 if fewer options added
+                if len(added_options) < 4:
+                    needed = 4 - len(added_options)
+                    extra_options = question.options.exclude(id__in=added_options).order_by('?')[:needed]
+                    for option in extra_options:
+                        ExamQuestionOption.objects.create(
+                            question=exam_question,
+                            option=option
+                        )
+                        added_options.add(option.id)
+
+                # Final fallback: no options at all
+                if not added_options:
+                    fallback_options = question.options.all().order_by('?')[:4]
+                    for option in fallback_options:
+                        ExamQuestionOption.objects.create(
+                            question=exam_question,
+                            option=option
+                        )
+
+                # Step 4: Save difficulty breakdown if provided
+                if difficulty_levels and any(int(v) > 0 for v in difficulty_levels.values()):
+                    difficulty_percentages = {
+                        'difficulty1_percentage': difficulty_levels.get('1', 0),
+                        'difficulty2_percentage': difficulty_levels.get('2', 0),
+                        'difficulty3_percentage': difficulty_levels.get('3', 0),
+                        'difficulty4_percentage': difficulty_levels.get('4', 0),
+                        'difficulty5_percentage': difficulty_levels.get('5', 0),
+                        'difficulty6_percentage': difficulty_levels.get('6', 0)
+                    }
+                    ExamDifficulty.objects.create(exam=exam, **difficulty_percentages)
+
+                # Step 5: Create Status
+                status_label = 'student' if request.user.role == 'student' else 'draft'
+                Status.objects.create(exam=exam, status=status_label, user=request.user)
+
+
+                return Response(
+                    {"message": f"Exam '{exam.title}' created successfully with {len(selected_questions)} questions."},
+                    status=status.HTTP_201_CREATED
+                )
+
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
     def _process_file_upload(self, request):
         print(request.FILES)
@@ -1892,46 +2076,41 @@ class ExamCreateView(APIView):
 
         return question
 
-    def _fetch_questions_from_bank(self, num_questions, difficulty_levels):
-        """Fetches a set number of questions from the question bank based on difficulty levels."""
-        
-        try:
-            with transaction.atomic():
-                # difficulty_levels = json.loads(difficulty_levels)
+    def _fetch_questions_from_bank(self, exam_type_id, total_questions, difficulty_levels):
+        past_exams = PastExam.objects.filter(exam_type_id=exam_type_id) if exam_type_id else PastExam.objects.all()
+        question_pool = Question.objects.filter(past_exams__in=past_exams).distinct()
 
-                # Ensure percentages add up to 100
-                if sum(difficulty_levels.values()) != 100:
-                    return Response({"error": "Difficulty percentages must add up to 100%."}, status=status.HTTP_400_BAD_REQUEST)
+        if question_pool.count() < total_questions:
+            return Response(
+                {"error": "Not enough questions available in question bank."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
 
-                selected_questions = []
-               
-                for level, percentage in difficulty_levels.items():
-                    # Calculate the number of questions to fetch for this level
-                    num_level_questions = round(num_questions * (percentage / 100))
+        selected_questions = []
+        if difficulty_levels and isinstance(difficulty_levels, dict) and any(difficulty_levels.values()):
+            filtered_levels = {lvl: val for lvl, val in difficulty_levels.items() if val and val > 0}
+            total_percentage = sum(filtered_levels.values())
+            normalized_levels = {
+                lvl: (val / total_percentage) * 100 for lvl, val in filtered_levels.items()
+            }
 
-                    # Filter questions by difficulty level and randomly order them
-                    level_questions = Question.objects.filter(difficulty_level=level).order_by('?')[:num_level_questions]
+            for level, percentage in normalized_levels.items():
+                num_level_questions = round(total_questions * (percentage / 100))
+                level_questions = question_pool.filter(difficulty_level=level).order_by('?')[:num_level_questions]
 
-                    # Check if we have enough questions at this difficulty level
-                    if level_questions.count() < num_level_questions:
-                        return Response(
-                            {"error": f"Not enough questions available for difficulty level '{level}' to meet the requested number."},
-                            status=status.HTTP_400_BAD_REQUEST
-                        )
+                if level_questions.count() < num_level_questions:
+                    return Response(
+                        {"error": f"Not enough questions for difficulty level '{level}'."},
+                        status=status.HTTP_400_BAD_REQUEST
+                    )
 
-                    selected_questions.extend(level_questions)
+                selected_questions.extend(level_questions)
+        else:
+            selected_questions = list(question_pool.order_by('?')[:total_questions])
 
-                # Shuffle selected questions for random order
-                random.shuffle(selected_questions)
-                
-                # Ensure the total number of selected questions does not exceed `num_questions`
-                return selected_questions[:num_questions]
+        random.shuffle(selected_questions)
+        return selected_questions
 
-        except Exception as e:
-            return Response({"error": f"An error occurred while fetching questions: {str(e)}"}, status=status.HTTP_400_BAD_REQUEST)
-        
-        
-        
         
 class OrganizationViewSet(viewsets.ModelViewSet):
     queryset = Organization.objects.all()
@@ -1947,7 +2126,10 @@ class PositionViewSet(viewsets.ModelViewSet):
     
 
 
-
+class ExamTypeViewSet(viewsets.ModelViewSet):
+    queryset = ExamType.objects.all()
+    serializer_class = ExamTypeSerializer
+    # permission_classes = [IsAdminUser] 
 
 
 
@@ -2510,9 +2692,7 @@ class SubmitPastExamAttemptView(APIView):
         try:
             user = request.user
             past_exam = get_object_or_404(PastExam, id=exam_id)
-            print(past_exam)
             submitted_answers = request.data.get("answers", [])
-            print("Submitted answers:", submitted_answers)
 
             if not submitted_answers:
                 return Response({"message": "No answers submitted."}, status=status.HTTP_400_BAD_REQUEST)
@@ -2522,7 +2702,7 @@ class SubmitPastExamAttemptView(APIView):
             answered_count = 0
 
             with transaction.atomic():
-                # Create a new exam attempt
+                # Create exam attempt
                 attempt = PastExamAttempt.objects.create(
                     user=user,
                     past_exam=past_exam,
@@ -2532,45 +2712,40 @@ class SubmitPastExamAttemptView(APIView):
                 for answer in submitted_answers:
                     question_id = answer.get("question_id")
                     selected_option_id = answer.get("selected_option_id")
-                    print(f"Question ID: {question_id}, Selected Option ID: {selected_option_id}")
 
-                    # Skip if question or answer is missing, or if the selected_option_id is invalid
                     if not question_id or not selected_option_id or selected_option_id in [None, 'none', '']:
                         continue
 
-                    # Ensure selected_option_id is a valid integer
                     try:
-                        print("hello", selected_option_id)
+                        question = Question.objects.get(id=question_id)
                         selected_option_id = int(selected_option_id)
-                    except (ValueError, TypeError):
-                        print(f"Invalid selected_option_id: {selected_option_id}")
+                        selected_option = QuestionOption.objects.get(id=selected_option_id)
+                    except (Question.DoesNotExist, QuestionOption.DoesNotExist, ValueError):
                         continue
 
-                    # Ensure the option exists in the database
-                    try:
-                        option = QuestionOption.objects.get(id=selected_option_id)
-                    except QuestionOption.DoesNotExist:
-                        print(f"Option with ID {selected_option_id} does not exist.")
-                        continue
-
-                    # Increment the answer counters
+                    is_correct = selected_option.is_correct
                     answered_count += 1
-                    if option.is_correct:
+                    if is_correct:
                         correct_count += 1
                     else:
                         wrong_count += 1
 
-                # Check if the user passed the exam
-                is_passed = correct_count >= past_exam.pass_mark
+                    # Save PastUserAnswer
+                    PastUserAnswer.objects.create(
+                        exam_attempt=attempt,
+                        question=question,
+                        selected_option=selected_option,
+                        is_correct=is_correct
+                    )
 
-                # Save the exam attempt results
+                # Save summary to attempt
+                is_passed = correct_count >= past_exam.pass_mark
                 attempt.answered_questions = answered_count
                 attempt.correct_answers = correct_count
                 attempt.wrong_answers = wrong_count
                 attempt.calculate_score()
                 attempt.save()
 
-            # Return response with the exam results
             return Response({
                 "message": "Exam submitted successfully!",
                 "total_questions": past_exam.questions.count(),
@@ -2582,7 +2757,6 @@ class SubmitPastExamAttemptView(APIView):
             }, status=status.HTTP_200_OK)
 
         except Exception as e:
-            print("Unexpected error:", e)
             traceback.print_exc()
             return Response({
                 "error": "Something went wrong.",
@@ -2731,6 +2905,39 @@ class PastExamAttemptViewSet(viewsets.ViewSet):
 
         return Response({'exams': exams_data}, status=status.HTTP_200_OK)
     
+    
+class PastUserAnswerViewSet(viewsets.ViewSet):
+    permission_classes = [IsAuthenticated]
+
+    @action(detail=False, methods=['post'], url_path='all-submitted-questions')
+    def all_submitted_questions(self, request):
+        id = request.data.get('user_id')
+        if not id:
+            return Response({'error': 'user_id is required.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            user = User.objects.get(id=id)
+        except User.DoesNotExist:
+            return Response({'error': 'User not found.'}, status=status.HTTP_404_NOT_FOUND)
+
+        # Fetch all PastUserAnswer instances for the user
+        answered_questions = PastUserAnswer.objects.filter(exam_attempt__user=user)
+
+        # Filter for correct and incorrect answers
+        correct_answers = answered_questions.filter(is_correct=True)
+        wrong_answers = answered_questions.filter(is_correct=False)
+
+        # Serialize the data
+        correct_answers_data = PastUserAnswerSerializer(correct_answers, many=True, context={'include_options': True}).data
+        wrong_answers_data = PastUserAnswerSerializer(wrong_answers, many=True, context={'include_options': True}).data
+        submitted_questions_data = PastUserAnswerSerializer(answered_questions, many=True, context={'include_options': True}).data
+
+        return Response({
+            "submitted_questions": submitted_questions_data,
+            "correct_answers": correct_answers_data,
+            "wrong_answers": wrong_answers_data
+        }, status=status.HTTP_200_OK)
+
     
     
 class CheckPastExamsView(APIView):
@@ -2911,3 +3118,40 @@ class UpdateOptionView(APIView):
         return Response({"detail": "Option updated successfully."})
 
 
+
+
+class UserPastExamSummaryAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, id):
+        try:
+            user = User.objects.get(id=id)
+        except User.DoesNotExist:
+            return Response({"error": "User not found."}, status=404)
+
+        # Get all past exam attempts by the user
+        attempts = PastExamAttempt.objects.filter(user=user)
+
+        total_attempts = attempts.count()
+        total_passed = attempts.filter(score__gte=models.F('past_exam__pass_mark')).count()
+        total_failed = total_attempts - total_passed
+
+        total_questions = attempts.aggregate(total=Sum('total_questions'))['total'] or 0
+        total_answered = attempts.aggregate(total=Sum('answered_questions'))['total'] or 0
+        total_correct = attempts.aggregate(total=Sum('correct_answers'))['total'] or 0
+        total_wrong = attempts.aggregate(total=Sum('wrong_answers'))['total'] or 0
+        total_unanswered = total_questions - total_answered
+
+        data = {
+            "username": user.username,
+            "total_attempts": total_attempts,
+            "total_passed": total_passed,
+            "total_failed": total_failed,
+            "total_questions": total_questions,
+            "total_answered": total_answered,
+            "total_correct_answers": total_correct,
+            "total_wrong_answers": total_wrong,
+            "total_unanswered": total_unanswered,
+        }
+
+        return Response(data)

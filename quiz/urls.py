@@ -22,6 +22,7 @@ router.register(r'user-answers', UserAnswerViewSet, basename='user-answer')
 router.register(r'organizations', OrganizationViewSet, basename="organization")
 router.register(r'departments', DepartmentViewSet, basename="department")
 router.register(r'positions', PositionViewSet, basename="position")
+router.register(r'exam-types', ExamTypeViewSet)
 router.register(r'past-exams', PastExamViewSet, basename="past_exam")
 
 
@@ -60,6 +61,9 @@ urlpatterns = [
     path('user_attempts_query/', user_attempts_by_month, name='user_attempts_query'),
     path('admin_user_attempts/', user_exam_attempts_by_month, name='admin_user_attempts_by_month'),
     path('user-exam-summary/<int:id>/', UserExamSummaryAPIView.as_view(), name='user_summary'),
+    
+    # user past exam summury
+    path('user-past-exam-summary/<int:id>/', UserPastExamSummaryAPIView.as_view(), name="user-past-exam-summury"),
     # templates urls
     path('student_exams/', TemplateView.as_view(template_name='Html/custom/student_exams.html'), name = 'student_exams'),
     path('exam_list/', TemplateView.as_view(template_name='Html/custom/exam_list.html'), name='exam-list'),

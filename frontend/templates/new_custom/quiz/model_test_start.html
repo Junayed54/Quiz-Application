@@ -1,0 +1,205 @@
+{% extends "new_custom/new_templates/index2.html" %}
+{% block title %}Start Exam{% endblock %}
+
+{% block style %}
+<style>
+    .no-select {
+        user-select: none;
+        -webkit-user-select: none;
+        -moz-user-select: none;
+        -ms-user-select: none;
+    }
+    .custom-option {
+        display: flex;
+        align-items: center;
+    }
+
+    .custom-label {
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .bengali-label {
+        display: inline-block;
+        width: 32px;
+        height: 32px;
+        font-weight: bold;
+        text-align: center;
+        line-height: 32px;
+        border: 2px solid #ccc;
+        border-radius: 4px;
+        transition: background-color 0.3s, color 0.3s;
+    }
+
+    input[type="radio"]:checked + .custom-label .bengali-label {
+        background-color: #0d6efd;
+        color: white;
+        border-color: #0d6efd;
+    }
+
+    .answer-sheet-container {
+        background-color: #e9ecef;
+        padding: 30px;
+        border-radius: 8px;
+        margin: 20px auto;
+        max-width: 400px;
+    }
+
+    .answer-sheet-title {
+        font-size: 1.5rem;
+        font-weight: bold;
+        margin-bottom: 20px;
+        color: #495057;
+    }
+
+    .answer-sheet-row {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 10px;
+        color: #495057;
+    }
+
+    .answer-sheet-label {
+        font-weight: bold;
+    }
+
+    .right-answer {
+        color: #28a745;
+    }
+
+    .wrong-answer {
+        color: #dc3545;
+    }
+
+    .total-result {
+        font-weight: bold;
+        color: #007bff;
+    }
+
+    .again-try-button {
+        background-image: linear-gradient(to right, #6c757d, #007bff);
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 5px;
+        cursor: pointer;
+        font-weight: bold;
+        margin-top: 20px;
+    }
+    .back-button {
+        background-color: #ccc;
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 5px;
+        cursor: pointer;
+        font-weight: bold;
+        margin-top: 20px;
+    }
+    .back-button:hover {
+        opacity: 0.9
+    }
+
+    .again-try-button:hover {
+        opacity: 0.9;
+    }
+
+
+
+     .loader-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background: #f9f9f9;
+          }
+          
+          .ripple-loader {
+            width: 48px;
+            height: 48px;
+            position: relative;
+          }
+          
+          .ripple-loader::before,
+          .ripple-loader::after {
+            content: "";
+            position: absolute;
+            border: 4px solid #007bff;
+            border-radius: 50%;
+            animation: ripple 1.2s infinite;
+          }
+          
+          .ripple-loader::after {
+            animation-delay: 0.6s;
+          }
+          
+          @keyframes ripple {
+            0% {
+              width: 0;
+              height: 0;
+              opacity: 1;
+            }
+            100% {
+              width: 48px;
+              height: 48px;
+              opacity: 0;
+            }
+          }
+
+    .blurred-question {
+        filter: blur(5px);
+        position: relative;
+    }
+
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="no-select mb-4 py-4 px-2" style="background: #FBF3B9;">
+    <div class="text-center mt-4">
+        <h2 class="text-primary" id="exam-info">DU Question Bank</h2>
+        <p id="organization_name" class="text-muted small">---University of Dhaka---</p>
+    </div>
+
+    <div class="container bg-opacity-10 rounded shadow-lg py-4 my-4" style="background: #fff;">
+        <div class="d-flex justify-content-between border-bottom pb-2 mb-4 small text-muted">
+            <div>Full Mark: <span id="full-mark">12</span></div>
+            <div id="user-name">Your Name</div>
+            <div id="user-profession">Profession</div>
+            <div>Time left: <span id="time-remaining"></span></div>
+        </div>
+
+        <form id="exam-form" class="">
+            <div class="row g-4" id="questions-container">
+               <div class="loader-container" id="loader">
+                    <div class="ripple-loader"></div>
+                </div>
+           
+                <!-- Questions will be injected here by JavaScript -->
+            </div>
+
+            <div class="mt-4 text-end">
+                <button type="submit" class="btn btn-primary" id="submit-exam">Submit</button>
+            </div>
+        </form>
+    </div>
+    
+</div>
+
+<!-- Result Modal -->
+<div class="modal fade" id="resultsModal" tabindex="-1" aria-labelledby="resultsModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content p-3">
+      <div class="modal-body" id="resultContainer">
+        <!-- Result content will be injected here by JavaScript -->
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block body_js %}
+<script src="../../../static/Js/new_templates_js/quiz/model_test_start.js"></script>
+{% endblock %}

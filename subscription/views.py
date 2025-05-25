@@ -95,7 +95,7 @@ class ExamPermissionCheckView(APIView):
         """
         try:
             parsed_id = uuid.UUID(str(exam_id))
-            return Exam.objects.get(id=parsed_id)
+            return Exam.objects.get(exam_id=parsed_id)
         except (ValueError, Exam.DoesNotExist):
             pass
 

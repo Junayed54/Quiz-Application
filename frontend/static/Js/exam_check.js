@@ -22,7 +22,7 @@ document.addEventListener('DOMContentLoaded', function () {
         document.getElementById('loading').classList.add('d-none');
 
         // Populate Exam Info
-        document.getElementById('created-by').innerText = data.created_by;
+        document.getElementById('created-by').innerText = data.creater_name;
         document.getElementById('exam-title').textContent = data.title;
         document.getElementById('total-questions').textContent = data.total_questions;
         document.getElementById('generated-questions').textContent = data.questions_to_generate;
@@ -36,23 +36,23 @@ document.addEventListener('DOMContentLoaded', function () {
             questionDiv.classList.add('mb-4');
 
             // Generate options list with a status switch and remarks textarea
-            const optionsHTML = question.options.map(option => `
+            const optionsHTML = question.question.options.map(option => `
                 <li class="list-group-item">
                     ${option.text} ${option.is_correct ? '<span class="badge badge-success">Correct</span>' : ''}
                 </li>
             `).join('');
 
             questionDiv.innerHTML = `
-                <h5>Question ${index + 1}: ${question.text}</h5>
+                <h5>Question ${index + 1}: ${question.question.text}</h5>
                 <ul class="list-group">${optionsHTML}</ul>
-                <label for="status-${question.id}">Status:</label>
+                <label for="status-${question.question.id}">Status:</label>
                 <div class="form-check form-switch">
-                    <input class="form-check-input" type="checkbox" id="status-${question.id}" onchange="toggleRemarks(${question.id})">
-                    <label class="form-check-label" for="status-${question.id}">No/Yes</label>
+                    <input class="form-check-input" type="checkbox" id="status-${question.question.id}" onchange="toggleRemarks(${question.id})">
+                    <label class="form-check-label" for="status-${question.question.id}">No/Yes</label>
                 </div>
-                <div id="remarks-container-${question.id}" class="d-none mt-2">
-                    <label for="remarks-${question.id}">Remarks:</label>
-                    <textarea id="remarks-${question.id}" class="form-control" placeholder="Enter remarks here..."></textarea>
+                <div id="remarks-container-${question.question.id}" class="d-none mt-2">
+                    <label for="remarks-${question.question.id}">Remarks:</label>
+                    <textarea id="remarks-${question.question.id}" class="form-control" placeholder="Enter remarks here..."></textarea>
                 </div>
             `;
 

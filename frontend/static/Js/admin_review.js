@@ -40,9 +40,9 @@ document.addEventListener('DOMContentLoaded', function () {
                 data.questions.forEach((question, index) => {
                     const questionHTML = `
                         <li class="list-group-item">
-                            <strong>Question ${index + 1}:</strong> ${question.text}
+                            <strong>Question ${index + 1}:</strong> ${question.question.text}
                             <ul class="mt-2">
-                                ${question.options.map(option => `
+                                ${question.question.options.map(option => `
                                     <li>${option.text} ${option.is_correct ? '<span class="badge bg-success">Correct</span>' : ''}</li>
                                 `).join('')}
                             </ul>
@@ -54,7 +54,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     } else {
                         const remarksHTML = `
                             ${questionHTML}
-                            <div class="mt-2"><strong>Reviewer Remarks:</strong> ${question.remarks}</div>
+                            <div class="mt-2"><strong>Reviewer Remarks:</strong> ${question.question.remarks}</div>
                         `;
                         incorrectAnswersList.innerHTML += remarksHTML;
                     }

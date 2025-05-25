@@ -49,7 +49,7 @@ async function fetchUserRole() {
 fetchUserRole();
 
 // Toggle display based on exam type selection
-document.getElementById('exam_type').addEventListener('change', function () {
+document.getElementById('exam_method').addEventListener('change', function () {
     const examType = this.value;
     const difficultySection = document.getElementById('difficulty-section');
     const fileUploadSection = document.getElementById('file-upload-section');
@@ -116,32 +116,49 @@ document.getElementById('examForm').addEventListener('submit', async function (e
     const loaderContainer = document.getElementById('loader-container');
     loaderContainer.classList.remove('d-none');
     loaderContainer.classList.add('d-flex');
+    
 
     const formData = new FormData(this);
+    const examMethod = document.getElementById('exam_method').value;
 
+    
+    if (examMethod === 'question_bank') {
+        const examTypeSelect = document.getElementById('exam_type'); // Make sure your <select> has id="exam_type"
+        const examTypeId = examTypeSelect.value;
+        formData.append('exam_type_id', examTypeId);
+    }
     // If the exam type is 'question_bank', validate and collect difficulty levels
-    if (document.getElementById('exam_type').value === 'question_bank') {
+    if (document.getElementById('exam_method').value === 'question_bank') {
         let totalPercentage = 0;
         const difficultyLevels = {};
+        const use_difficulty = document.getElementById('use_difficulty');
+        const isChecked = use_difficulty.checked;
 
-        // Collect difficulty level data from the form inputs
-        document.querySelectorAll('[name^="difficulty_levels"]').forEach(input => {
-            const level = input.name.split('difficulty_levels[')[1].split(']')[0];
-            const value = parseInt(input.value || 0);
-            totalPercentage += value;
-            difficultyLevels[level] = value;
-        });
+        if (isChecked){
+            // Collect difficulty level data from the form inputs
+            document.querySelectorAll('[name^="difficulty_levels"]').forEach(input => {
+                const level = input.name.split('difficulty_levels[')[1].split(']')[0];
+                const value = parseInt(input.value || 0);
+                totalPercentage += value;
+                difficultyLevels[level] = value;
+            });
 
-        // Validate the total percentage
-        if (totalPercentage !== 100) {
-            loaderContainer.classList.remove('d-flex');
-            loaderContainer.classList.add('d-none');
-            showToast('The total percentage of difficulty levels must be 100.', true);
-            return;
+            // Validate the total percentage
+            if (totalPercentage !== 100) {
+                loaderContainer.classList.remove('d-flex');
+                loaderContainer.classList.add('d-none');
+                showToast('The total percentage of difficulty levels must be 100.', true);
+                return;
+            }
+
+            // Append difficulty levels as JSON string
+            formData.append('difficulty_levels', JSON.stringify(difficultyLevels));
         }
+        
 
-        // Append difficulty levels as JSON string
-        formData.append('difficulty_levels', JSON.stringify(difficultyLevels));
+        
+        
+        
     }
 
     try {

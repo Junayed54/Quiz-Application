@@ -2,7 +2,7 @@ from rest_framework import viewsets, status
 from rest_framework.response import Response
 from rest_framework.decorators import action
 from django.shortcuts import get_object_or_404
-from .models import Status, Exam
+from .models import *
 from .serializers import StatusSerializer, ExamSerializer
 from rest_framework.permissions import IsAuthenticated
 from .permissions import IsAdminOrReadOnly, IsAdmin
@@ -89,21 +89,26 @@ class StatusViewSet(viewsets.ModelViewSet):
         """Reviewer submits the reviewed exam back to the admin, including question remarks."""
         # Fetch the status object using pk (which is the status ID)
         status_obj = self.get_object()  # Assuming you have a StatusModel
-
+        # print(status_obj.status)
         # Check if the exam is under review and the reviewer is the current user
         if status_obj.status == 'under_review' and status_obj.reviewed_by == request.user:
             exam_obj = status_obj.exam  # Assuming the status model has a ForeignKey to the Exam model
-            
+            # print("hellow worold")
+            count = 0
             # Process questions data
             questions_data = request.data.get('questions', [])
             for question_data in questions_data:
+                count +=1 
+                # print(count)
                 question_id = question_data.get('question_id')
+
                 status_value = question_data.get('status')
                 remarks = question_data.get('remarks', '')
 
                 # Fetch the question by ID within the exam
                 try:
-                    question = exam_obj.questions.get(id=question_id)
+                    question = Question.objects.get(id=question_id)
+                    
                 except Question.DoesNotExist:
                     return Response({'detail': f'Question with ID {question_id} not found.'}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -111,7 +116,7 @@ class StatusViewSet(viewsets.ModelViewSet):
                 question.status = status_value
                 question.remarks = remarks
                 question.save()
-
+            
             # Update the exam status to 'reviewed'
             status_obj.status = 'reviewed'
             status_obj.save()

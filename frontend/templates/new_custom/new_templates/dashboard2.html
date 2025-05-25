@@ -1,398 +1,202 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Leaderboard</title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+{% extends 'new_custom/new_templates/index2.html'%}
+{% block title %}Leaderboard{% endblock %}
+{% block style %}
   <style>
     body {
-      background-color: #0f172a;
+      background-color: #0f0f2d;
       color: white;
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     }
-    .highlight {
-      background: linear-gradient(90deg, #22d3ee, #a855f7);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
+    .card {
+      background-color: #1a1a40;
+      border: none;
+      border-radius: 15px;
+    }
+    .progress {
+      background-color: #333;
+    }
+    .rank-badge {
+      font-size: 1rem;
       font-weight: bold;
     }
-    .card-custom {
-      background-color: #1e293b;
-      border: none;
-      border-radius: 12px;
-      color: white;
+    .table {
+      border-spacing: 5px;
+      background: #1a1a40;
+      font-weight: bold;
+      width: 100%
     }
-    .progress-bar {
-      background-color: #0ea5e9;
+    .table-dark{
+      background: red;
     }
-    .badge-pill {
-      padding: 0.35em 0.7em;
-      border-radius: 10px;
-      background-color: #334155;
-      font-size: 0.8em;
+
+    .table-dark th, .table-dark td {
+      vertical-align: middle;
     }
-    .top-performer {
-      position: relative;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-    }
-    .top-performer img {
-      border-radius: 50%;
-      border: 4px solid #38bdf8;
-      width: 72px;
-      height: 72px;
+    .avatar {
+      width: 60px;
+      height: 60px;
       object-fit: cover;
-      margin-bottom: 0.5rem;
+      border-radius: 50%;
     }
-    .rank-row {
-      background-color: #1e293b;
-      border-radius: 10px;
-      padding: 12px 20px;
-      margin-bottom: 10px;
+    .top-avatar {
+      width: 80px;
+      height: 80px;
+      object-fit: cover;
+      border-radius: 50%;
+      border: 3px solid gold;
+      
     }
-    .rank-row.active {
-      border: 2px solid #0ea5e9;
-      background-color: #0f172a;
-    }
-    .btn-custom {
-      background-color: #334155;
-      color: #cbd5e1;
-      border: none;
-      border-radius: 8px;
-      padding: 6px 16px;
-    }
-    .btn-custom:hover {
-      background-color: #475569;
-    }
-
-
-    .question-dropdown {
-      display: none; /* Initially hidden */
-      flex: 1;
-      gap: 2rem;
-      padding: 1.5rem;
-      width: 500px;
-      background-color: rgba(255, 255, 255, 0.7);
-      backdrop-filter: blur(10px);
-      -webkit-backdrop-filter: blur(10px);
-      border: 1px solid rgba(200, 200, 200, 0.3);
-      border-radius: 10px;
-    }
-
-    .dropdown-column {
-      flex: 1;
-    }
-
-    .dropdown-header {
-      font-weight: 600;
-      margin-bottom: 0.75rem;
-      border-bottom: 1px solid #ddd;
-      padding-bottom: 0.5rem;
-      color: #555;
-    }
-
-    .dropdown-item {
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-      padding: 0.4rem 0;
-      font-weight: 500;
-      color: #444;
-      transition: all 0.2s ease-in-out;
-    }
-
-    .dropdown-item:hover {
-      color: #007bff;
-      background-color: transparent;
-    }
-
-    .authentication{
-      text-align: center;
-    }
-
-    .feature-img, dotlottie-player {
-      max-width: 100%;
-      height: auto;
-    }
-    .footer {
-      background-color: #1e1e1e;
-      color: #fff;
-      padding: 30px 0;
-      clear: both;
-    }
-    .facebook-icon {
-        color: #1877F2 !important; /* Facebook Blue */
-    }
-
-    .linkedin-icon {
-        color: #0A66C2 !important; /* LinkedIn Blue */
-    }
-
-    .twitter-icon {
-        color: #1DA1F2 !important; /* Twitter Blue */
-    }
-    .btn-custom {
-      background-color: #ff4b4b;
+    .leader-you {
+      background-color: #3b2c9a !important;
       color: white;
     }
-    .navbar-toggler:focus,
-    .navbar-toggler:active,
-    .navbar-toggler:focus-visible {
-        outline: none !important;
-        box-shadow: none !important;
-        border-color: transparent !important;
-    }
-
   </style>
-</head>
-<body>
-<header style="background: #0f172a;">
-    <!-- Navbar -->
-    <nav class="navbar navbar-expand-lg navbar-light">
-      <div class="container">
-        <a class="navbar-brand" href="/" style="color: rgb(132, 137, 131); font-size:36px; font-weight: 600">Jobs Academy</a>
 
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
-                data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent"
-                aria-expanded="false" aria-label="Toggle navigation">
-          <span class="navbar-toggler-icon"></span>
-        </button>
+{% endblock %}
+{% block content%}
 
-        <div class="collapse navbar-collapse justify-content-between" id="navbarSupportedContent">
-
-          <!-- Centered Nav Links -->
-          <ul class="navbar-nav mx-auto mb-2 mb-lg-0">
-            <li class="nav-item dropdown">
-              <a  style="color: white;" class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button"
-                 aria-expanded="false">
-                Question
-              </a>
-              <ul class="dropdown-menu question-dropdown" aria-labelledby="navbarDropdown">
-                <li class="py-2 border-bottom">
-                  <div class="row">
-                    <!-- Column 1 -->
-                    <div class="col-md-6"  style="color: white;">
-                      <div class="dropdown-column pe-3">
-                        <a class="dropdown-item border-bottom py-1" href="/past_exams/">পূর্ববর্তী পরিক্ষা</a>
-                        <a class="dropdown-item border-bottom py-1" href="/questions/">Test Question</a>
-                        <a class="dropdown-item border-bottom py-1" href="#">Agricultural Question</a>
-                        <a class="dropdown-item border-bottom py-1" href="#">BSC Question</a>
-                        <a class="dropdown-item border-bottom py-1" href="#">DPE Question</a>
-                        <a class="dropdown-item border-bottom py-1" href="#">Engineering Question</a>
-                        <a class="dropdown-item border-bottom py-1" href="#">Banking Question</a>
-                      </div>
-                    </div>
-                
-                    <!-- Column 2 -->
-                    <div class="col-md-6">
-                      <div class="dropdown-column ps-3"  style="color: white;">
-                        <a class="dropdown-item border-bottom py-1" href="#">More Questions</a>
-                        
-                      </div>
-                    </div>
-                  </div>
-                </li>
-                
-                
-                {% comment %} <li>
-                  <div class="dropdown-column">
-                    <h6 class="dropdown-header"><i class="bi bi-arrow-right-short"></i> Sub-Assistant Question</h6>
-                    <!-- Add more items here if needed -->
-                  </div>
-                </li> {% endcomment %}
-              </ul>
-            </li>
-            <li class="nav-item active">
-              <a  style="color: white;" class="nav-link" href="/user/dashboard/">Dashboard</a>
-            </li>
-          </ul>
-
-          <!-- User Dropdown -->
-          <div class="dropdown">
-            <a href="#" class="d-flex align-items-center text-decoration-none dropdown-toggle"
-               id="userDropdown" data-bs-toggle="dropdown" aria-expanded="false">
-              <img src="https://media.istockphoto.com/id/1337144146/vector/default-avatar-profile-icon-vector.jpg?s=612x612&w=0&k=20&c=BIbFwuv7FxTWvh5S3vB6bkT0Qv8Vn8N5Ffseq84ClGI=" 
-                   alt="Profile" width="40" height="40"
-                   class="rounded-circle me-2" style="object-fit: cover;">
-              <div class="text-start">
-                <div class="fw-semibold text-white d-none d-sm-block"><span id="username"><span></div>
-                <div class="text-muted" style="font-size: 0.85rem;"><span id="role"></span></div>
-              </div>
-            </a>
-            <ul class="dropdown-menu dropdown-menu-end p-4" aria-labelledby="userDropdown">
-              <li><a class="dropdown-item authentication" href="/login/" id="login_btn">Login</a></li>
-              <li><a class="dropdown-item authentication" href="/signup/" id="signup_btn">Signup</a></li>
-              <li><hr class="dropdown-divider authentication"></li>
-              <li><a class="dropdown-item d-none" id="logout_btn">Logout</a></li>
-            </ul>
-          </div>
-        </div>
-      </div>
-    </nav>
-  </header>
-
-  <div class="container py-5">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-      <h2 class="highlight">Leaderboard</h2>
+  <div class="container">
+    <div class="d-flex justify-content-between align-items-center mb-4 py-4
+    ">
+      <h2 class="fw-bold">Leaderboard</h2>
       <div>
-        <button class="btn btn-custom me-2">This Month</button>
-        <button class="btn btn-custom">Refresh</button>
+        <button class="btn btn-outline-light btn-secondary btn-sm me-2">This Month</button>
+        <button class="btn btn-outline-light btn-primary btn-sm" onclick="refreshLeaderboard()">Refresh</button>
       </div>
     </div>
 
-    <div class="row text-center mb-4">
-      <div class="col-md-3 mb-3">
-        <div class="card card-custom p-3">
-          <p class="mb-1">Your Current Rank</p>
-          <h3>#8</h3>
+    <div class="row g-3 mb-4">
+      <div class="col-md-4">
+        <div class="card p-3 text-center">
+          <div class="text-white">Your Current Rank</div>
+          <h3 class="text-info" style="color: linear-gradient(90deg, #FFFFFF 0%, #4DFFDF 100%); font-weight: 700; font-size: 35px;
+" id="my_rank">#8</h3>
         </div>
       </div>
-      <div class="col-md-3 mb-3">
-        <div class="card card-custom p-3">
-          <p class="mb-1">Points This Month</p>
-          <h3>1,140</h3>
+      <div class="col-md-4">
+        <div class="card p-3 text-center">
+          <div class="text-white">Points This Month</div>
+          <h3 class="text-info" id="my_points" style="color: linear-gradient(90deg, #FFFFFF 0%, #4DFFDF 100%); font-weight: 700; font-size: 35px;
+">1,140</h3>
         </div>
       </div>
-      <div class="col-md-3 mb-3">
-        <div class="card card-custom p-3">
-          <p class="mb-1">Completed Tests</p>
-          <h3>9</h3>
+      <div class="col-md-4">
+        <div class="card p-3 text-center">
+          <div class="text-white">Completed Tests</div>
+          <h3 class="text-info" id="my_complete_test" style="color: linear-gradient(90deg, #FFFFFF 0%, #4DFFDF 100%); font-weight: 700; font-size: 35px;
+">9</h3>
         </div>
       </div>
-      <div class="col-md-3 mb-3">
-        <div class="card card-custom p-3">
-          <p class="mb-1">Progress to Next Rank</p>
-          <div class="progress" style="height: 8px;">
-            <div class="progress-bar" style="width: 65%;"></div>
+      {% comment %} <div class="col-md-4">
+        <div class="card p-3 text-center">
+          <div class="text-white">Progress to Next Rank</div>
+          <div class="progress mt-2">
+            <div class="progress-bar bg-info" style="width: 65%">65%</div>
           </div>
-          <small class="text-muted mt-2 d-block">65%</small>
         </div>
-      </div>
+      </div> {% endcomment %}
     </div>
 
-    <div class="card card-custom p-4 mb-4">
+    <div class="card p-4 mb-4">
       <div class="d-flex justify-content-between align-items-center mb-3">
-        <h4>Top Performers</h4>
-        <span class="text-muted">May 2025</span>
+        <h5 class="text-white">Top Performers</h5>
+        <span  class="text-white">May 2025</span>
       </div>
-      <div class="d-flex justify-content-around text-center py-4">
-        <div class="top-performer">
-          <div class="badge bg-secondary rounded-pill mb-2">RI</div>
-          <img src="https://via.placeholder.com/72" alt="RI">
-          <p class="mb-0">Rafiul Islam</p>
-          <small class="text-muted">1465 pts</small>
+      <div class="d-flex justify-content-center gap-5 text-center mb-4">
+        <div>
+          <img src="https://via.placeholder.com/80" class="top-avatar mb-2" alt="RI">
+          <div  class="text-white">Rafiul Islam</div>
+          <small class="text-white">1465 pts</small>
         </div>
-        <div class="top-performer">
-          <div class="badge bg-warning rounded-pill mb-2">SA</div>
-          <img src="https://via.placeholder.com/72" alt="SA">
-          <p class="mb-0">Sadia Ahmed</p>
-          <small class="text-muted">1520 pts</small>
+        <div>
+          <img src="https://via.placeholder.com/80" class="top-avatar mb-2" alt="SA">
+          <div class="text-white">Sadia Ahmed</div>
+          <small class="text-white">1520 pts</small>
         </div>
-        <div class="top-performer">
-          <div class="badge bg-danger rounded-pill mb-2">TS</div>
-          <img src="https://via.placeholder.com/72" alt="TS">
-          <p class="mb-0">Tahmina</p>
-          <small class="text-muted">1380 pts</small>
+        <div>
+          <img src="https://via.placeholder.com/80" class="top-avatar mb-2" alt="TS">
+          <div class="text-white">Tahmina</div>
+          <small class="text-white">1380 pts</small>
         </div>
       </div>
-    </div>
 
-    <div>
-        <div class="rank-row">
-        <div class="row align-items-center text-center">
-          <div class="col">RANK</div>
-          <div class="col">PLAYER</div>
-          <div class="col">TESTS</div>
-          <div class="col">SCORE</div>
-          <div class="col">CHANGE</div>
-        </div>
-      </div>
-      <div class="rank-row">
-        <div class="row align-items-center text-center">
-          <div class="col">#1</div>
-          <div class="col">SA</div>
-          <div class="col">12</div>
-          <div class="col">1,520</div>
-          <div class="col text-success">↑</div>
-        </div>
-      </div>
-      <div class="rank-row">
-        <div class="row align-items-center text-center">
-          <div class="col">#2</div>
-          <div class="col">RI</div>
-          <div class="col">11</div>
-          <div class="col">1,465</div>
-          <div class="col text-success">↑</div>
-        </div>
-      </div>
-      <div class="rank-row">
-        <div class="row align-items-center text-center">
-          <div class="col">#3</div>
-          <div class="col">TS</div>
-          <div class="col">10</div>
-          <div class="col">1,380</div>
-          <div class="col text-danger">↓</div>
-        </div>
-      </div>
-      <div class="rank-row">
-        <div class="row align-items-center text-center">
-          <div class="col">#4</div>
-          <div class="col">HM</div>
-          <div class="col">12</div>
-          <div class="col">1,305</div>
-          <div class="col text-success">↑</div>
-        </div>
-      </div>
-      <div class="rank-row">
-        <div class="row align-items-center text-center">
-          <div class="col">#5</div>
-          <div class="col">FN</div>
-          <div class="col">10</div>
-          <div class="col">1,250</div>
-          <div class="col text-success">↑</div>
-        </div>
-      </div>
-      <div class="rank-row">
-        <div class="row align-items-center text-center">
-          <div class="col">#6</div>
-          <div class="col">AR</div>
-          <div class="col">12</div>
-          <div class="col">1,215</div>
-          <div class="col text-danger">↓</div>
-        </div>
-      </div>
-      <div class="rank-row">
-        <div class="row align-items-center text-center">
-          <div class="col">#7</div>
-          <div class="col">SK</div>
-          <div class="col">8</div>
-          <div class="col">1,176</div>
-          <div class="col text-danger">-</div>
-        </div>
-      </div>
-      <div class="rank-row active">
-        <div class="row align-items-center text-center">
-          <div class="col">#8</div>
-          <div class="col">YO</div>
-          <div class="col">9</div>
-          <div class="col">1,140</div>
-          <div class="col text-success">↑</div>
-        </div>
-      </div>
+      <table class="align-middle rounded text-white" style="background: #1a1a40;">
+        <thead class="bg-primary rounded" style="border-radius: 30px;">
+          <tr class="rounded">
+            <th>Rank</th>
+            <th>Player</th>
+            <th>Tests</th>
+            <th>Score</th>
+            <th>Percentage</th>
+          </tr>
+        </thead>
+        <tbody id="rank-list">
+          {% comment %} <tr>
+            <td>#1</td>
+            <td> Sadia Ahmed</td>
+            <td>12</td>
+            <td class="text-warning fw-bold">1,520</td>
+            <td>90%</td>
+          </tr>
+          <tr>
+            <td>#2</td>
+            <td>Rafiul Islam</td>
+            <td>11</td>
+            <td>1,465</td>
+            <td>88%</td>
+          </tr>
+          <tr>
+            <td>#3</td>
+            <td><img src="https://via.placeholder.com/60" class="avatar me-2"> Tahmina</td>
+            <td>10</td>
+            <td>1,380</td>
+            <td>78%</td>
+          </tr>
+          <tr>
+            <td>#4</td>
+            <td><img src="https://via.placeholder.com/60" class="avatar me-2"> Hasan Mahmud</td>
+            <td>12</td>
+            <td>1,305</td>
+            <td>76</td>
+          </tr>
+          <tr>
+            <td>#5</td>
+            <td><img src="https://via.placeholder.com/60" class="avatar me-2"> Farzana Noor</td>
+            <td>12</td>
+            <td>1,250</td>
+            <td>75</td>
+          </tr>
+          <tr>
+            <td>#6</td>
+            <td><img src="https://via.placeholder.com/60" class="avatar me-2"> Arif Rahman</td>
+            <td>10</td>
+            <td>1,215</td>
+            <td>70</td>
+          </tr>
+          <tr>
+            <td>#7</td>
+            <td><img src="https://via.placeholder.com/60" class="avatar me-2"> Shahriar Khan</td>
+            <td>9</td>
+            <td>1,175</td>
+            <td>69</td>
+          </tr>
+          <tr class="leader-you">
+            <td>#8</td>
+            <td><img src="https://via.placeholder.com/60" class="avatar me-2"> You</td>
+            <td>9</td>
+            <td>1,140</td>
+            <td>68</td>
+          </tr> {% endcomment %}
+        </tbody>
+      </table>
     </div>
   </div>
+{% endblock %}
+{% block body_js %}
+  <script>
+    function refreshLeaderboard() {
+      alert("Leaderboard refreshed!");
+    }
+  </script>
+  <script src="../../../static/Js/quickquiz/leaderboard.js"></script>
+{% endblock %}
 
-
-
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-    <script>
-    document.getElementById('navbarDropdown').addEventListener('click', function(event) {
-        var dropdownMenu = document.querySelector('.question-dropdown');
-        dropdownMenu.style.display = dropdownMenu.style.display === 'block' ? 'none' : 'block';
-        event.preventDefault();
-    });
-</script>
-</body>
-</html>

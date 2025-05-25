@@ -211,12 +211,28 @@ async function submitAllAnswers() {
 
     if (!response.ok) throw new Error('Submission failed');
 
-    const data = await response.json();
-    alert("Submitted successfully!");
-    // Optional: redirect or show results
+    const data = await response.json(); // Assuming response has correct, incorrect, score
+
+    // Update modal values
+    document.getElementById('correct-count').textContent = data.correct_answers;
+    document.getElementById('incorrect-count').textContent = data.wrong_answers;
+    document.getElementById('score-percent').textContent = `${data.score}%`;
+
+    // Show the modal
+    const modal = new bootstrap.Modal(document.getElementById('resultModal'));
+    modal.show();
+
   } catch (err) {
     alert("Error submitting answers: " + err.message);
   }
+}
+
+function reviewAnswers() {
+  window.location.href = '/review-answers'; // update URL as needed
+}
+
+function continuePractice() {
+  window.location.reload(); // or redirect to start a new quiz
 }
 
 // Start quiz

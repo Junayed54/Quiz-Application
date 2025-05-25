@@ -1,0 +1,68 @@
+<div class="row gy-4">
+    <div class="col-12 col-lg-6">
+        <div class="card w-100 p-4">
+            <div class="text-center my-4">
+                <img src="{% static 'images/user_9071610.png' %}" alt="User Icon" class="rounded-circle mb-3" width="100" height="100">
+                <h4 id="username" class="mb-3 text-muted">Username</h4>
+                <p class="text-muted mb-1">Position: 2</p>
+                <div class="bg-info text-white rounded mb-3 py-2 mx-auto" style="width:100px">Top Level</div>
+                <div>Member Since: 21/10/2024</div>
+                <div class="text-muted">Total Balance: 0 &emsp; Total Points: 0</div>
+            </div>
+
+            <h5 class="text-center text-muted">My Exam Summary</h5>
+            <div class="px-4 rounded-3 border mb-4">
+                <table class="table my-4 text-start">
+                    <tbody>
+                        <tr><th>Exams</th><td id="total-attempts">0</td></tr>
+                        <tr><th>Total Passed:</th><td id="total-passed" class="text-muted">0</td></tr>
+                        <tr><th>Total Failed:</th><td id="total-failed" class="text-muted">0</td></tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="px-4 mb-4">
+                <table class="table text-start">
+                    <tbody>
+                        <tr class="bg-success text-white"><th>Questions</th><td id="total-questions">0</td></tr>
+                        <tr class="clickable-row"><th>Answers</th><td id="total-answered">0</td></tr>
+                        <tr class="clickable-row"><th>Right Ans</th><td id="total-correct-answers">0</td></tr>
+                        <tr class="clickable-row"><th>Wrong Ans</th><td id="total-wrong-answers">0</td></tr>
+                        <tr><th>No Ans</th><td id="total-unanswered">0</td></tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="px-4">
+                <table class="table text-start">
+                    <tbody>
+                        <tr class="bg-success text-white"><th>Marks</th><td>0</td></tr>
+                        <tr><th>Obtain Mark</th><td class="text-muted">0</td></tr>
+                        <tr><th>Negative Mark</th><td class="text-muted">N/A</td></tr>
+                        <tr><th>Position</th><td class="text-muted">N/A</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Chart and Exam List -->
+    <div class="col-12 col-lg-6">
+        <div class="card w-100">
+            <div class="mb-3">
+                <canvas id="{{ chart_id }}" width="400" height="200"></canvas>
+                <div class="time-period-selector d-flex justify-content-center align-items-center gap-2 mt-2">
+                    <label><input type="radio" name="timePeriod_{{ chart_id }}" value="all" checked> All</label>
+                    <label><input type="radio" name="timePeriod_{{ chart_id }}" value="weekly"> Weekly</label>
+                    <label><input type="radio" name="timePeriod_{{ chart_id }}" value="monthly"> Monthly</label>
+                    <label><input type="radio" name="timePeriod_{{ chart_id }}" value="yearly"> Yearly</label>
+                </div>
+            </div>
+        </div>
+
+        <div class="container mt-5">
+            <h1 class="text-center text-muted">Exams and Attempts</h1>
+            <div id="{{ exam_list_id }}" class="accordion my-4"></div>
+        </div>
+    </div>
+</div>

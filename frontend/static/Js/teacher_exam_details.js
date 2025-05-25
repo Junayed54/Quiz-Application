@@ -31,10 +31,10 @@ document.addEventListener('DOMContentLoaded', function () {
                 document.getElementById('exam-total-questions').textContent = data.total_questions;
                 document.getElementById('exam-question-generator').textContent = data.questions_to_generate;
                 document.getElementById('exam-total-marks').textContent = data.total_mark;
-                document.getElementById('exam-created-by').textContent = data.created_by;
+                document.getElementById('exam-created-by').textContent = data.creater_name;
                 document.getElementById('exam-last-date').textContent = new Date(data.last_date).toLocaleDateString();
                 document.getElementById('exam-negative-marks').textContent = data.negative_marks || 'N/A';
-                document.getElementById('exam-starting-time').textContent = new Date(data.starting_time).toLocaleTimeString();
+                // document.getElementById('exam-starting-time').textContent = new D.toLocaleTimeString() || 'N/A';
                 document.getElementById('exam-duration').textContent = data.duration || 'N/A';
                 document.getElementById('exam-category').textContent = data.category_name || 'N/A';
                 document.getElementById('exam-status').textContent = data.status || 'N/A';
@@ -45,13 +45,13 @@ document.addEventListener('DOMContentLoaded', function () {
                 console.log(data.questions);
                 data.questions.forEach((question, index) => {
                     
-                    const optionsHTML = question.options.map(option => `<li>${option.text}</li>`).join('');
+                    const optionsHTML = question.question.options.map(option => `<li>${option.text}</li>`).join('');
                     const rowHTML = `
                         <tr>
                             <td>${index + 1}</td>
-                            <td>${question.text}</td>
+                            <td>${question.question.text}</td>
                             <td><ul>${optionsHTML}</ul></td>
-                            <td>${question.options.find(option => option.is_correct)?.text || 'N/A'}</td>
+                            <td>${question.question.options.find(option => option.is_correct)?.text || 'N/A'}</td>
                         </tr>
                     `;
                     questionsList.innerHTML += rowHTML;

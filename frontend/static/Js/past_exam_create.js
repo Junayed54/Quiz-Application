@@ -281,10 +281,35 @@ document.addEventListener("DOMContentLoaded", function () {
             });
         })
         .catch(error => console.error("Error fetching positions:", error));
+
+
+        // Fetch exam types
+        fetch('/quiz/exam-types/', {
+            method: 'GET',
+            headers: {
+                "Authorization": `Bearer ${token}`
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            const examTypeSelect = document.getElementById("exam_type");
+            data.forEach(type => {
+                const option = document.createElement("option");
+                option.value = type.id;
+                option.textContent = type.name;
+                examTypeSelect.appendChild(option);
+            });
+        })
+        .catch(error => console.error("Error fetching exam types:", error));
     }
 
     // Populate the selects on page load
     fetchOptions();
+
+
+
+    
+
 
     // Handle exam form submission
     examUploadForm.addEventListener("submit", function (e) {
@@ -299,7 +324,9 @@ document.addEventListener("DOMContentLoaded", function () {
         formData.append("organization", document.getElementById("organization").value);
         formData.append("department", document.getElementById("department").value);
         formData.append("position", document.getElementById("position").value);
+        formData.append("exam_type", document.getElementById("exam_type").value);
         formData.append("exam_date", document.getElementById("exam_date").value);
+        
         formData.append("duration", document.getElementById("duration").value);
         formData.append("pass_mark", document.getElementById("pass_mark").value);
         formData.append("negative_mark", document.getElementById("negative_mark").value);
@@ -447,4 +474,39 @@ document.addEventListener("DOMContentLoaded", function () {
             $('#addPositionModal').modal('hide');
         }
     });
+
+
+    document.getElementById("saveExamType").addEventListener("click", function () {
+        const newExamType = document.getElementById("newExamType").value;
+        if (newExamType) {
+            const examTypeSelect = document.getElementById("exam_type");
+            const option = document.createElement("option");
+            option.value = newExamType;  // Temporary
+            option.textContent = newExamType;
+            examTypeSelect.appendChild(option);
+            examTypeSelect.value = newExamType;
+
+            fetch('/quiz/exam-types/', {
+                method: "POST",
+                body: JSON.stringify({ "name": newExamType }),
+                headers: {
+                    "Authorization": `Bearer ${token}`,
+                    "Content-Type": "application/json"
+                },
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log("Exam type added:", data);
+                if (data.id) {
+                    option.value = data.id;
+                    examTypeSelect.value = data.id;
+                }
+            })
+            .catch(error => console.error("Error saving exam type:", error));
+
+            $('#addExamTypeModal').modal('hide');
+        }
+    });
+
+
 });

@@ -1,0 +1,184 @@
+{% extends 'new_custom/new_templates/index2.html' %}
+{% load static %}
+{% block title %}MockMaster{% endblock %}
+{% block style %}
+<style>
+    .clickable-row {
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        .clickable-row:hover {
+            background-color: #6082B6;
+            color: white;
+        }
+        .bg-success {
+            background-color: #51829B !important;
+        }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<div class="main-content app-content" style="background: rgb(255, 253, 208);">
+            <div class="container pt-4">
+                <ul class="nav nav-tabs mb-4" id="userSummaryTabs" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active" id="model-summary-tab" data-bs-toggle="tab" data-bs-target="#model-summary" type="button" role="tab" aria-controls="model-summary" aria-selected="true">Model Test Summary</button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="past-exam-summary-tab" data-bs-toggle="tab" data-bs-target="#past-exam-summary" type="button" role="tab" aria-controls="past-exam-summary" aria-selected="false">বিগত বছরের পরিক্ষার Summary</button>
+                    </li>
+                </ul>
+
+                <div class="tab-content" id="userSummaryTabContent">
+
+                    <div class="tab-pane fade show active" id="model-summary" role="tabpanel" aria-labelledby="model-summary-tab">
+                        <div class="row gy-4">
+                            <div class="col-12 col-lg-6">
+                                <div class="card w-100 p-4">
+                                    <div class="text-center my-4">
+                                        <img src="{% static 'images/user_9071610.png' %}" alt="User Icon" class="rounded-circle mb-3" width="100" height="100">
+                                        <h4 id="model-username" class="mb-3 text-muted">Username 1</h4>
+                                        <p class="text-muted mb-1">Position: 2</p>
+                                        <div class="bg-info text-white rounded mb-3 py-2 mx-auto" style="width:100px">Top Level</div>
+                                        <div>Member Since: 21/10/2024</div>
+                                        <div class="text-muted">Total Balance: 0 &emsp; Total Points: 0</div>
+                                    </div>
+
+                                    <h5 class="text-center text-muted">My Exam Summary</h5>
+                                    <div class="px-4 rounded-3 border mb-4">
+                                        <table class="table my-4 text-start">
+                                            <tbody>
+                                                <tr><th>Exams</th><td id="model-total-attempts">0</td></tr>
+                                                <tr><th>Total Passed:</th><td id="model-total-passed" class="text-muted">0</td></tr>
+                                                <tr><th>Total Failed:</th><td id="model-total-failed" class="text-muted">0</td></tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+
+                                    <div class="px-4 mb-4">
+                                        <table class="table text-start">
+                                            <tbody>
+                                                <tr class="bg-success text-white"><th>Questions</th><td id="model-total-questions">0</td></tr>
+                                                <tr class="clickable-row"><th>Answers</th><td id="model-total-answered">0</td></tr>
+                                                <tr class="clickable-row"><th>Right Ans</th><td id="model-total-correct-answers">0</td></tr>
+                                                <tr class="clickable-row"><th>Wrong Ans</th><td id="model-total-wrong-answers">0</td></tr>
+                                                <tr><th>No Ans</th><td id="model-total-unanswered">0</td></tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+
+                                    <div class="px-4">
+                                        <table class="table text-start">
+                                            <tbody>
+                                                <tr class="bg-success text-white"><th>Marks</th><td id="model-total-marks">0</td></tr>
+                                                <tr><th>Obtain Mark</th><td id="model-obtain-mark" class="text-muted">0</td></tr>
+                                                <tr><th>Negative Mark</th><td id="model-negative-mark" class="text-muted">N/A</td></tr>
+                                                <tr><th>Position</th><td id="model-position" class="text-muted">N/A</td></tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-12 col-lg-6">
+                                <div class="card w-100">
+                                    <div class="mb-3">
+                                        <canvas id="modelCorrectAnswersChart" width="400" height="200"></canvas>
+                                        <div class="time-period-selector d-flex justify-content-center align-items-center gap-2 mt-2">
+                                            <label><input type="radio" name="modelTimePeriod" value="all" checked> All</label>
+                                            <label><input type="radio" name="modelTimePeriod" value="weekly"> Weekly</label>
+                                            <label><input type="radio" name="modelTimePeriod" value="monthly"> Monthly</label>
+                                            <label><input type="radio" name="modelTimePeriod" value="yearly"> Yearly</label>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="container mt-5">
+                                    <h1 class="text-center text-muted">Exams and Attempts</h1>
+                                    <div id="modelExamList" class="accordion my-4"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="tab-pane fade" id="past-exam-summary" role="tabpanel" aria-labelledby="past-exam-summary-tab">
+                        <div class="row gy-4">
+                            <div class="col-12 col-lg-6">
+                                <div class="card w-100 p-4">
+                                    <div class="text-center my-4">
+                                        <img src="{% static 'images/user_9071610.png' %}" alt="User Icon" class="rounded-circle mb-3" width="100" height="100">
+                                        <h4 id="past-exam-username" class="mb-3 text-muted">Username 1</h4>
+                                        <p class="text-muted mb-1">Position: 2</p>
+                                        <div class="bg-info text-white rounded mb-3 py-2 mx-auto" style="width:100px">Top Level</div>
+                                        <div>Member Since: 21/10/2024</div>
+                                        <div class="text-muted">Total Balance: 0 &emsp; Total Points: 0</div>
+                                    </div>
+
+                                    <h5 class="text-center text-muted">My Exam Summary</h5>
+                                    <div class="px-4 rounded-3 border mb-4">
+                                        <table class="table my-4 text-start">
+                                            <tbody>
+                                                <tr><th>Exams</th><td id="past-exam-total-attempts">0</td></tr>
+                                                <tr><th>Total Passed:</th><td id="past-exam-total-passed" class="text-muted">0</td></tr>
+                                                <tr><th>Total Failed:</th><td id="past-exam-total-failed" class="text-muted">0</td></tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+
+                                    <div class="px-4 mb-4">
+                                        <table class="table text-start">
+                                            <tbody>
+                                                <tr class="bg-success text-white"><th>Questions</th><td id="past-exam-total-questions">0</td></tr>
+                                                <tr class="clickable-row"><th>Answers</th><td id="past-exam-total-answered">0</td></tr>
+                                                <tr class="clickable-row"><th>Right Ans</th><td id="past-exam-total-correct-answers">0</td></tr>
+                                                <tr class="clickable-row"><th>Wrong Ans</th><td id="past-exam-total-wrong-answers">0</td></tr>
+                                                <tr><th>No Ans</th><td id="past-exam-total-unanswered">0</td></tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+
+                                    <div class="px-4">
+                                        <table class="table text-start">
+                                            <tbody>
+                                                <tr class="bg-success text-white"><th>Marks</th><td id="past-exam-total-marks">0</td></tr>
+                                                <tr><th>Obtain Mark</th><td id="past-exam-obtain-mark" class="text-muted">0</td></tr>
+                                                <tr><th>Negative Mark</th><td id="past-exam-negative-mark" class="text-muted">N/A</td></tr>
+                                                <tr><th>Position</th><td id="past-exam-position" class="text-muted">N/A</td></tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-12 col-lg-6">
+                                <div class="card w-100">
+                                    <div class="mb-3">
+                                        <canvas id="pastExamCorrectAnswersChart" width="400" height="200"></canvas>
+                                        <div class="time-period-selector d-flex justify-content-center align-items-center gap-2 mt-2">
+                                            <label><input type="radio" name="pastExamTimePeriod" value="all" checked> All</label>
+                                            <label><input type="radio" name="pastExamTimePeriod" value="weekly"> Weekly</label>
+                                            <label><input type="radio" name="pastExamTimePeriod" value="monthly"> Monthly</label>
+                                            <label><input type="radio" name="pastExamTimePeriod" value="yearly"> Yearly</label>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="container mt-5">
+                                    <h1 class="text-center text-muted">Exams and Attempts</h1>
+                                    <div id="pastExamList" class="accordion my-4"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+{% endblock %}
+
+{% block body_js %}
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="{% static 'js/new_templates_js/user/fetch-summary.js' %}"></script>
+{% endblock %}

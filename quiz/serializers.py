@@ -24,6 +24,10 @@ class CategorySerializer(serializers.ModelSerializer):
         model = Category
         fields = ['id', 'name', 'description']
 
+class ExamTypeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ExamType
+        fields = ["id", "name"]
 
 class QuestionUsageSerializer(serializers.ModelSerializer):
     question_text = serializers.CharField(source='question.text', read_only=True)
@@ -119,32 +123,82 @@ class ExamCategorySerializer(serializers.ModelSerializer):
     class Meta:
         model = ExamCategory
         fields = '__all__'
+        
+        
+        
+class ExamQuestionOptionSerializer(serializers.ModelSerializer):
+    option_text = serializers.CharField(source='option.text', read_only=True)
 
+    class Meta:
+        model = ExamQuestionOption
+        fields = ['id', 'option', 'option_text']
+
+
+class ExamQuestionSerializer(serializers.ModelSerializer):
+    question = QuestionSerializer(read_only=True)
+    options = serializers.SerializerMethodField()
+    question_usages = serializers.SerializerMethodField()
+    class Meta:
+        model = ExamQuestion
+        fields = ['id', 'question', 'order', 'points', 'options', 'question_usages']
+
+    def get_options(self, obj):
+        options = ExamQuestionOption.objects.filter(question=obj)
+        return ExamQuestionOptionSerializer(options, many=True).data
+    
+    def get_question_usages(self, past_exam_question):
+        """
+        Retrieves the year and exam title for all question usages related to this question.
+        """
+        question_usages = past_exam_question.question.usages.all().select_related('past_exam') # Fetch all usages and related PastExam
+
+        usage_data = []
+        for usage in question_usages:
+            usage_data.append({
+                "year": usage.year,
+                "exam_title": usage.exam if usage.exam else usage.past_exam.title if usage.past_exam else None,
+            })
+        return usage_data if usage_data else None
 
    
 class ExamSerializer(serializers.ModelSerializer):
     status_id = serializers.IntegerField(source='exam.id', read_only=True)
     status = serializers.ReadOnlyField()  # Read-only field to display exam status
     category_name = serializers.CharField(source='category.name', read_only=True)  # Category name for convenience
-    questions = QuestionSerializer(many=True, read_only=True)
+    questions = ExamQuestionSerializer(source='examquestion_set', many=True, read_only=True)
     subjects = serializers.SerializerMethodField()  # Custom field for subjects with question count
-    creater_name = serializers.CharField(source='created_by.username', read_only=True) 
+    creater_name = serializers.CharField(source='created_by.username', read_only=True)
+
+    exam_type = serializers.PrimaryKeyRelatedField(queryset=ExamType.objects.all())
+
+    # Read-only field to show exam_type name in the response
+    exam_type_name = serializers.CharField(source='exam_type.name', read_only=True)
+
+    # Add these fields
+    organization_name = serializers.CharField(source='organization.name', read_only=True)
+    department_name = serializers.CharField(source='department.name', read_only=True)
+    position_name = serializers.CharField(source='position.name', read_only=True)
+
     class Meta:
         model = Exam
         fields = [
             'exam_id', 'title', 'total_questions', 'created_by', 'creater_name', 'total_mark',
             'pass_mark', 'negative_mark', 'created_at', 'updated_at',
             'starting_time', 'last_date', 'category', 'category_name', 
-            'duration', 'status', 'questions', 'status_id', 'subjects'
+            'duration', 'status', 'questions', 'status_id', 'subjects',
+            'organization', 'organization_name', 'department', 'department_name', 'position', 'position_name', 'exam_type', 'exam_type_name'
         ]
-        read_only_fields = ['created_at', 'updated_at', 'status', 'category_name']
+        read_only_fields = [
+            'created_at', 'updated_at', 'status', 'category_name',
+            'organization_name', 'department_name', 'position_name', 'exam_type_name'
+        ]
     
     def get_subjects(self, obj):
-        # Assuming each question has a subject attribute (e.g., question.subject.name)
         question_subjects = [question.subject.name for question in obj.questions.all()]
         subject_count = Counter(question_subjects)
-        # Convert to a list of dictionaries for serialization
         return [{'subject': subject, 'question_count': count} for subject, count in subject_count.items()]
+    
+    
 
 class StatusSerializer(serializers.ModelSerializer):
     exam_details = serializers.SerializerMethodField()
@@ -309,7 +363,9 @@ class PastExamQuestionSerializer(serializers.ModelSerializer):
                 "exam_title": usage.exam if usage.exam else usage.past_exam.title if usage.past_exam else None,
             })
         return usage_data if usage_data else None
-    
+
+        
+        
 class PastExamSerializer(serializers.ModelSerializer):
     organization_name = serializers.CharField(source="organization.name", read_only=True)
     department_name = serializers.CharField(source="department.name", read_only=True, allow_null=True)
@@ -376,7 +432,10 @@ class PastExamCreateSerializer(serializers.ModelSerializer):
     position = serializers.PrimaryKeyRelatedField(
         queryset=Position.objects.all(), write_only=True
     )
-    file = serializers.FileField(required=False, write_only=True)  # For file upload; not stored on model
+    exam_type = serializers.PrimaryKeyRelatedField(
+        queryset=ExamType.objects.all(), write_only=True  # Include ExamType here
+    )
+    file = serializers.FileField(required=False, write_only=True)
 
     class Meta:
         model = PastExam
@@ -386,6 +445,7 @@ class PastExamCreateSerializer(serializers.ModelSerializer):
             "organization",
             "department",
             "position",
+            "exam_type",         # ✅ Add this line
             "exam_date",
             "duration",
             "pass_mark",
@@ -396,13 +456,9 @@ class PastExamCreateSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         validated_data.pop("file", None)
-
-        # ✅ Automatically set created_by from request context
         user = self.context["request"].user
         validated_data["created_by"] = user
-
         return PastExam.objects.create(**validated_data)
-
 
 
 
@@ -426,3 +482,13 @@ class PastExamAttemptSerializer(serializers.ModelSerializer):
         representation['user_name'] = instance.user.username
         representation['past_exam_title'] = instance.past_exam.title
         return representation
+
+
+
+class PastUserAnswerSerializer(serializers.ModelSerializer):
+    question_text = serializers.CharField(source='question.text', read_only=True)
+    selected_option_text = serializers.CharField(source='selected_option.text', read_only=True)
+
+    class Meta:
+        model = PastUserAnswer
+        fields = ['id', 'question', 'question_text', 'selected_option', 'selected_option_text', 'is_correct']

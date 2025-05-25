@@ -222,7 +222,7 @@ document.addEventListener('DOMContentLoaded', function () {
         document.querySelectorAll('.clickable-div').forEach(div => {
             div.addEventListener('click', function () {
                 const userId = this.getAttribute('data-user-id');
-                window.location.href = `/quiz/user_summary/${userId}/`;
+                window.location.href = `/user-summary/${userId}/`;
             });
         });
     }

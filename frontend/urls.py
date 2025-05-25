@@ -14,9 +14,14 @@ urlpatterns = [
     
     path('past_exams/', TemplateView.as_view(template_name="new_custom/new_templates/university.html"), name ='universities'),
     path('all_past_exams/', TemplateView.as_view(template_name="new_custom/quiz/all_past_exams.html"), name="all_examss"),
-    path('new_past_exam_details/<int:pk>/', TemplateView.as_view(template_name="new_custom/quiz/new_past_exam_details.html")),
-    path('user/dashboard/', TemplateView.as_view(template_name="new_custom/new_templates/dashboard.html")),
-    path('user/leaderboard/', TemplateView.as_view(template_name="new_custom/new_templates/dashboard3.html")),
+    path('model-tests/', TemplateView.as_view(template_name="new_custom/quiz/model_test.html"), name="model-tests"),
+    path('past_exam_details/<int:pk>/', TemplateView.as_view(template_name="new_custom/quiz/new_past_exam_details.html")),
+    path('user/dashboard/', TemplateView.as_view(template_name="new_custom/new_templates/dashboard2.html")),
+    path('user/leaderboard/', TemplateView.as_view(template_name="new_custom/new_templates/quick_leaderboard.html")),
     path('questions/', TemplateView.as_view(template_name="new_custom/new_templates/questions.html")),
     path('prev_result/<int:pk>/', TemplateView.as_view(template_name="new_custom/new_templates/prev_exam_result.html")),
+    
+    path('model-tests/<uuid:id>/', TemplateView.as_view(template_name="new_custom/quiz/model_test_details.html")),
+    path('model-test/start/<uuid:id>/', TemplateView.as_view(template_name="new_custom/quiz/model_test_start.html")),
+    path('user-summary/<int:pk>/', TemplateView.as_view(template_name="new_custom/user/user-summary.html")),
 ]

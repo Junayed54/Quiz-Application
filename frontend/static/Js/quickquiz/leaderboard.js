@@ -31,36 +31,43 @@ document.addEventListener("DOMContentLoaded", function () {
     })
     .catch(error => {
         console.error("❌ Leaderboard Fetch Error:", error);
-        alert("Something went wrong while loading leaderboard.");
+        // alert("Something went wrong while loading leaderboard.");
     });
 
     function renderLeaderboard(top10, me) {
         const leaderboardList = document.getElementById("rank-list");
-        leaderboardList.innerHTML = "";
+        // leaderboardList.innerHTML = "";
 
         top10.forEach((user, index) => {
             leaderboardList.innerHTML += `
-            <div class="rank-row">
-                <div class="row align-items-center text-center">
-                        <div class="col">${index+1}</div>
-                        <div class="col">${user.username}</div>
-                        <div class="col">${user.attempts}</div>
-                        <div class="col">${user.points}</div>
-                        <div class="col text-success">↑</div>
-                </div>
-            </div>`
+            <tr>
+                <td>#${index+1}</td>
+                <td>${user.username}</td>
+                <td>${user.attempts}</td>
+                <td>${user.points}</td>
+                <td>${user.points}%</td>
+            </tr>`
+            // <div class="rank-row">
+            //     <div class="row align-items-center text-center">
+            //             <div class="col">#</div>
+            //             <div class="col">div>
+            //             <div class="col"></div>
+            //             <div class="col"></div>
+            //             <div class="col text-success">↑</div>
+            //     </div>
+            // </div>`
         });
 
         if (me) {
             const rank = document.getElementById("my_rank");
-            rank.innerText = `${me.rank}`;
+            rank.innerText = `#${me.rank}`;
 
             const my_points = document.getElementById("my_points");
             my_points.innerText = `${me.points}`;
 
             const my_complete_test = document.getElementById("my_complete_test");
             my_complete_test.innerText = `${me.attempts}`;
-            currentUser.textContent = `You: ${me.username} - ${me.points} points`;
+            // currentUser.textContent = `You: ${me.username} - ${me.points} points`;
         }
     }
 });

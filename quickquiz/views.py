@@ -88,9 +88,11 @@ class SubmitPracticeSessionView(APIView):
         session.score = score
         session.save()
 
-        # Update user points
+        
+        # Update user points using model method
         user_points, _ = UserPoints.objects.get_or_create(user=user)
-        user_points.points += score
+        user_points.add_points(score)
+
         user_points.save()
 
         return Response({

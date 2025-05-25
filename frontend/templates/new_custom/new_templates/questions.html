@@ -122,27 +122,36 @@
       </div>
 
       <!-- Result Section (Initially Hidden) -->
-      <div id="results-section">
-        <h2 class="mb-4 gradient-text">Practice Results</h2>
-        <div class="result-items">
-          <div class="result-item">
-            <div class="fs-2 correct number" id="correct-count">0</div>
-            <div class="text-muted">Correct</div>
+      <!-- Bootstrap Modal -->
+      <div class="modal fade" id="resultModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+          <div class="modal-content text-white border-1 border-primary" style="background: #0F0F1A; border-radius: 15px;">
+            <div class="modal-body text-center">
+              <h3 class="fw-bold mb-4 gradient-text" style="">Practice Results</h3>
+              <div class="d-flex justify-content-around mb-4">
+                <div>
+                  <h2 id="correct-count" class="correct number" style="">0</h2>
+                  <p>Correct</p>
+                </div>
+                <div>
+                  <h2 id="incorrect-count" class="incorrect number" style="color: #FF4D79;">0</h2>
+                  <p>Incorrect</p>
+                </div>
+                <div>
+                  <h2 id="score-percent" class="score number" style="color: #FFD60A">0%</h2>
+                  <p>Score</p>
+                </div>
+              </div>
+              <div class="d-flex justify-content-center gap-3">
+                <button class="btn review-button" onclick="reviewAnswers()">Review Answers</button>
+                <button class="btn continue-button" onclick="continuePractice()">Continue Practice</button>
+              </div>
+            </div>
           </div>
-          <div class="result-item">
-            <div class="fs-2 incorrect number" id="incorrect-count">0</div>
-            <div class="text-muted">Incorrect</div>
-          </div>
-          <div class="result-item">
-            <div class="fs-2 score number" id="score-percent">0%</div>
-            <div class="text-muted">Score</div>
-          </div>
-        </div>
-        <div class="action-buttons">
-          <button class="review-button">Review Answers</button>
-          <button class="continue-button" onclick="window.location.reload()">Continue Practice</button>
         </div>
       </div>
+
+
     </main>
   </div>
 {% endblock %}
