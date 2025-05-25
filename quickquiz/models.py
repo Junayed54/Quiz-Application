@@ -6,6 +6,7 @@ from django.utils import timezone
 class PracticeQuestion(models.Model):
     text = models.TextField(blank=True, null=True)
     image = models.ImageField(upload_to='practice_questions/', blank=True, null=True)
+    marks = models.PositiveIntegerField(default=1)  
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):

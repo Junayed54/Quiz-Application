@@ -13,7 +13,7 @@ class PracticeQuestionSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = PracticeQuestion
-        fields = ['id', 'text', 'image', 'options']
+        fields = ['id', 'text', 'image','marks', 'options']
 
 
 class PracticeSessionSerializer(serializers.ModelSerializer):

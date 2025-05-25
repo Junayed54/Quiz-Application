@@ -7,6 +7,7 @@ let quizStartTime;
 let perQuestionStartTime;
 let sessionId = null;
 let timerInterval = null;
+let total_questions = null;
 
 const questionContainer = document.getElementById('question-container');
 const timerDisplay = document.getElementById('quiz-timer'); // Add this in HTML
@@ -61,12 +62,26 @@ async function fetchQuestions() {
   }
 }
 
+function updateProgressBar(currentIndex, totalQuestions) {
+  const percentage = (currentIndex / totalQuestions) * 100;
+  const progressBar = document.getElementById('quiz-progress-bar');
+  progressBar.style.width = percentage + '%';
+  progressBar.setAttribute('aria-valuenow', percentage);
+}
+
+function loadQuestion(index) {
+  if (index >= 0 && index < total_questions) {
+    // Your logic to show the question from questions[index]
+    updateProgressBar(index + 1, total_questions); // Add 1 because progress is 1-based
+  }
+}
 // Render a question
 function renderQuestion(index) {
   const q = questions[index];
   const questionNumber = index + 1;
   const total = questions.length;
-
+  total_questions = total;
+  loadQuestion(currentIndex);
   // Save previous question duration
   if (questions[currentIndex]) {
     const duration = Math.floor((new Date() - perQuestionStartTime) / 1000);
@@ -147,6 +162,7 @@ function renderQuestion(index) {
     prevBtn.onclick = () => {
       if (currentIndex > 0) {
         currentIndex--;
+        loadQuestion(currentIndex);
         renderQuestion(currentIndex);
       }
     };
@@ -158,6 +174,7 @@ function renderQuestion(index) {
     nextBtn.onclick = () => {
       if (currentIndex < questions.length - 1) {
         currentIndex++;
+        loadQuestion(currentIndex);
         renderQuestion(currentIndex);
       }
     };
@@ -227,8 +244,8 @@ async function submitAllAnswers() {
   }
 }
 
-function reviewAnswers() {
-  window.location.href = '/review-answers'; // update URL as needed
+function reviewLeaderboard() {
+  window.location.href = '/user/leaderboard/'; // update URL as needed
 }
 
 function continuePractice() {

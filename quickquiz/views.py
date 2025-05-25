@@ -172,19 +172,19 @@ class PracticeQuestionUploadView(APIView):
             wb = load_workbook(file, data_only=True)
             ws = wb.active
             df = pd.DataFrame(ws.values)
-            df.columns = df.iloc[0]
+
+            # Normalize headers
+            df.columns = df.iloc[0].astype(str).str.strip().str.lower()
             df = df[1:]
 
             image_map = self.extract_images(wb)
 
             created_count, skipped_count = 0, 0
-            question_col = 'question'
-            available_options = ['option1', 'option2', 'option3', 'option4']
 
             with transaction.atomic():
                 for index, row in df.iterrows():
                     excel_row_num = index + 2
-                    question_text = str(row.get('question', "")).strip()
+                    question_text = str(row.get('question', '')).strip()
                     q_cell = f"{get_column_letter(df.columns.get_loc('question') + 1)}{excel_row_num}"
                     question_image = self.get_image_data_from_map(image_map.get(q_cell))
 
@@ -192,18 +192,16 @@ class PracticeQuestionUploadView(APIView):
                         skipped_count += 1
                         continue
 
-                    # Get or create question (match on text or image)
-                    question, created = PracticeQuestion.objects.get_or_create(
-                        text=question_text if not question_image else None,
-                        image=None if not question_image else None,
-                        defaults={'marks': 1}
-                    )
-
-                    if not created:
-                        skipped_count += 1  # Skip if question already exists
+                    # Check if a question with the same text already exists
+                    existing_question = PracticeQuestion.objects.filter(text=question_text).first()
+                    if existing_question:
+                        skipped_count += 1
                         continue
 
-                    # Save image if it's a new question and has image
+                    # Create the question
+                    question = PracticeQuestion.objects.create(text=question_text, marks=1)
+
+                    # Save image if any
                     if question_image:
                         q_filename = f"q_img_{question.id}_{uuid.uuid4().hex[:8]}.png"
                         q_file = self.save_image_to_field(question_image, q_filename)
@@ -218,7 +216,7 @@ class PracticeQuestionUploadView(APIView):
                         opt_image = self.get_image_data_from_map(image_map.get(cell_ref))
                         opt_text = str(row.get(opt, "")).strip()
 
-                        is_correct = (correct == opt.lower()) or (correct == opt_text)
+                        is_correct = (correct == opt.lower()) or (correct == opt_text.lower())
 
                         if opt_image:
                             opt_filename = f"opt_img_{question.id}_{uuid.uuid4().hex[:8]}.png"
@@ -238,7 +236,6 @@ class PracticeQuestionUploadView(APIView):
                             )
 
                     created_count += 1
-
 
             return Response({
                 "message": "Upload complete",
