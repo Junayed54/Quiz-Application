@@ -1,6 +1,9 @@
 document.addEventListener("DOMContentLoaded", function () {
     const accessToken = localStorage.getItem("access_token");
-    
+     const path =  window.location.pathname; 
+
+    const examId = path.split('/')[3];
+    // /quiz/past-exam/${examId}/leaderboard/
     if (!accessToken) {
         alert("No access token found. Please log in.");
         return;
@@ -11,7 +14,7 @@ document.addEventListener("DOMContentLoaded", function () {
         return matches.map(char => char.toUpperCase()).join('');
     }
 
-    fetch("/api/practice/leaderboard/", {
+    fetch(`/quiz/exam/${examId}/leaderboard/`, {
         method: "GET",
         headers: {
             "Authorization": "Bearer " + accessToken,
@@ -162,9 +165,9 @@ document.addEventListener("DOMContentLoaded", function () {
 
         top10.forEach((user, index) => {
             leaderboardList.innerHTML += `
-            <tr  class="rank-row p-4">
+            <tr  class="rank-row">
                 <td>#${index+1}</td>
-                <td class="d-flex align-items-center mt-2" style="gap: 10px;"><div style="width: 45px; height:45px;" class="border bg-secondary rounded-circle text-center"><div class="d-flex justify-content-center align-items-center pt-2">${getInitialsRegex(user.username)}</div></div><div><h6>${user.username}</h6><span class="text-secondary" style="font-size: 15px;">${user.attempts} tests</span></div></td>
+                <td class="d-flex align-items-center" style="gap: 5px;"><div style="width: 45px; height:45px;" class="border bg-secondary rounded-circle text-center"><div class="d-flex justify-content-center align-items-center pt-2">${getInitialsRegex(user.username)}</div></div><div><h6>${user.username}</h6><span class="text-secondary" style="font-size: 15px;">${user.attempts} tests</span></div></td>
                 <td>${user.attempts}</td>
                 <td>${user.points}</td>
                 <td>${user.points}%</td>

@@ -46,7 +46,7 @@ class UserSubscriptionViewSet(viewsets.ModelViewSet):
     permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
-        return UserSubscription.objects.filter(user=self.request.user)
+        return UserSubscription.objects.filter(user=self.request.user, is_active=True)
 
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
@@ -113,6 +113,7 @@ class ExamPermissionCheckView(APIView):
         if not exam:
             return Response({'has_access': False, 'reason': 'exam_not_found'}, status=404)
 
+        object_id = exam.exam_id if hasattr(exam, 'exam_id') else exam.id
         # Step 2: Validate User Subscription
         subscriptions = UserSubscription.objects.filter(user=user, is_active=True)
         if not subscriptions.exists():
@@ -120,6 +121,8 @@ class ExamPermissionCheckView(APIView):
 
         subscription = subscriptions.order_by('-end_date').first()
         if subscription.end_date and subscription.end_date < date.today():
+            subscription.is_active = False
+            subscription.save(update_fields=["is_active"])
             return Response({'has_access': False, 'reason': 'subscription_expired'}, status=403)
 
         # Step 3: Get Content Type for current exam type
@@ -138,7 +141,7 @@ class ExamPermissionCheckView(APIView):
         already_accessed = UserExamAccess.objects.filter(
             user=user,
             content_type=exam_ct,
-            object_id=exam.id
+            object_id=object_id
         ).exists()
 
         if already_accessed:
@@ -159,7 +162,7 @@ class ExamPermissionCheckView(APIView):
         UserExamAccess.objects.create(
             user=user,
             content_type=exam_ct,
-            object_id=exam.id
+            object_id=object_id
         )
 
         return Response({'has_access': True})

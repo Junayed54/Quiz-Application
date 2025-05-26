@@ -248,7 +248,7 @@ document.addEventListener('DOMContentLoaded', function () {
         document.querySelectorAll('.clickable-div').forEach(div => {
             div.addEventListener('click', function() {
                 const userId = this.getAttribute('data-user-id');  // Get user ID from data attribute
-                window.location.href = `/quiz/user_summary/${userId}/`;  // Redirect to the URL with the user ID
+                window.location.href = `/user-summary/${userId}/`;  // Redirect to the URL with the user ID
             });
         });
     }

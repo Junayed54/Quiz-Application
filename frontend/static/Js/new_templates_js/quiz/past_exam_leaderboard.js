@@ -3,15 +3,20 @@ document.addEventListener("DOMContentLoaded", function () {
     
     if (!accessToken) {
         alert("No access token found. Please log in.");
+        window.path.location = "/login/";
         return;
     }
+    const path =  window.location.pathname; 
 
+    const examId = path.split('/')[3];
+    
+    console.log(examId);
     function getInitialsRegex(fullName) {
         const matches = fullName.match(/\b\w/g) || []; // Find the first letter of each word
         return matches.map(char => char.toUpperCase()).join('');
     }
 
-    fetch("/api/practice/leaderboard/", {
+    fetch(`/quiz/past-exam/${examId}/leaderboard/`, {
         method: "GET",
         headers: {
             "Authorization": "Bearer " + accessToken,
@@ -157,6 +162,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
 
     function renderLeaderboard(top10, me) {
+        console.log("me", me, "top 10", top10);
         const leaderboardList = document.getElementById("rank-list");
         // leaderboardList.innerHTML = "";
 
@@ -164,10 +170,10 @@ document.addEventListener("DOMContentLoaded", function () {
             leaderboardList.innerHTML += `
             <tr  class="rank-row p-4">
                 <td>#${index+1}</td>
-                <td class="d-flex align-items-center mt-2" style="gap: 10px;"><div style="width: 45px; height:45px;" class="border bg-secondary rounded-circle text-center"><div class="d-flex justify-content-center align-items-center pt-2">${getInitialsRegex(user.username)}</div></div><div><h6>${user.username}</h6><span class="text-secondary" style="font-size: 15px;">${user.attempts} tests</span></div></td>
+                <td class="d-flex align-items-center mt-2" style="gap: 10px;"><div style="width: 45px; height:45px;" class="border bg-secondary rounded-circle text-center"><div class="d-flex justify-content-center align-items-center pt-2">${getInitialsRegex(user.username)}</div></div><div><h6>${user.username}</h6><span class="text-secondary" style="font-size: 15px;">${user.points}</span></div></td>
                 <td>${user.attempts}</td>
                 <td>${user.points}</td>
-                <td>${user.points}%</td>
+                <td>${user.percentage}%</td>
             </tr>`
             // <div class="rank-row">
             //     <div class="row align-items-center text-center">

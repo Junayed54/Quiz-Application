@@ -115,7 +115,7 @@
     <div class="p-4 mb-4">
       <div class="d-flex justify-content-between align-items-center mb-3" style="border-bottom: 1px solid #FFFFFF0D">
         <h5 class="text-white">Top Performers</h5>
-        <span  class="text-white"></span>
+        <span  class="text-white" id="month"></span>
       </div>
       <div id="top-performers" class="flex justify-center gap-4 mt-6"></div>
     </div>
@@ -138,14 +138,12 @@
   </div>
   </div>
 {% endblock %}
- {% load static %}
 {% block body_js %}
   <script>
     function refreshLeaderboard() {
       alert("Leaderboard refreshed!");
     }
   </script>
- 
-  <script src="{% static 'Js/new_templates_js/past_exam_leaderboard.js' %}"></script>
+  <script src="../../../static/Js/new_templates_js/quiz/model_test_leaderboard.js"></script>
 {% endblock %}
 

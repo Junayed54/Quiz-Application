@@ -5,10 +5,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const urlParams = new URLSearchParams(window.location.search);
     const pastExamId = window.location.pathname.split('/')[2];  // Ensure the past_exam_id is passed in the URL
     console.log(pastExamId);
-    if (!pastExamId || !accessToken) {
-        window.location.href = '/login/';
-        return;
-    }
+    
 
     const pastExamDetailsUrl = `/quiz/past_exams/?exam_id=${pastExamId}`;
     
@@ -16,9 +13,7 @@ document.addEventListener('DOMContentLoaded', function () {
     function fetchPastExamDetails() {
         fetch(pastExamDetailsUrl, {
             method: 'GET',
-            headers: {
-                'Authorization': `Bearer ${accessToken}`,
-            },
+            
         })
         .then(response => response.json())
         .then(data => {
@@ -58,5 +53,10 @@ document.addEventListener('DOMContentLoaded', function () {
     const result = document.getElementById('past_result');
     result.addEventListener('click', function() {
         window.location.href = `/prev_result/${pastExamId}/`;
+    });
+
+    const leaderboard = document.getElementById('leaderboard');
+    leaderboard.addEventListener('click', function() {
+        window.location.href = `/past-exam/leaderboard/${pastExamId}/`;
     });
 });

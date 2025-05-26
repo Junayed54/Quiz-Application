@@ -339,7 +339,7 @@ class ExamViewSet(viewsets.ModelViewSet):
         total_correct = 0
         total_wrong = 0
         answered_count = 0
-
+        total_questions = exam.total_questions  
         # Process each answer
         for answer in answers:
             if answer is None:
@@ -378,7 +378,9 @@ class ExamViewSet(viewsets.ModelViewSet):
                     'is_correct': is_correct
                 }
             )
-        print("hellow ")
+        # print("hellow ")
+        
+        percentage = round((total_correct / total_questions) * 100, 2) if total_questions else 0
         # Update the attempt with results
         attempt.answered = answered_count
         attempt.total_correct_answers = total_correct
@@ -392,10 +394,12 @@ class ExamViewSet(viewsets.ModelViewSet):
 
         return JsonResponse({
             'status': 'submitted',
-            'answered': answered_count,
+            'total_questions': total_questions,
+            'answered_questions': answered_count,
             'correct_answers': total_correct,
             'wrong_answers': total_wrong,
-            'passed': attempt.passed
+            'passed': attempt.passed,
+            'percentage': percentage
         }, status=status.HTTP_200_OK)
         
         
@@ -2150,6 +2154,7 @@ from PIL import Image
 class PastExamViewSet(viewsets.ModelViewSet):
     queryset = PastExam.objects.all().order_by("-exam_date")
     parser_classes = [MultiPartParser, FormParser]
+    
 
     def get_queryset(self):
         return PastExam.objects.all()
@@ -2645,6 +2650,7 @@ class UserPastExamListAPIView(generics.ListAPIView):
         return exams
 
 class PastExamListView(APIView):
+    permission_classes = [AllowAny]
     def get(self, request):
         exam_id = request.GET.get('exam_id')  # Fetch from query params
 
@@ -2682,25 +2688,27 @@ class PastExamDetailView(generics.RetrieveAPIView):
     """
     queryset = PastExam.objects.all()
     serializer_class = PastExamSerializer
-    permission_classes = [IsAuthenticated]
+    # permission_classes = [IsAuthenticated]
     
     
 class SubmitPastExamAttemptView(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request, exam_id):
+        
         try:
             user = request.user
             past_exam = get_object_or_404(PastExam, id=exam_id)
             submitted_answers = request.data.get("answers", [])
-
+            # print(past_exam)
             if not submitted_answers:
                 return Response({"message": "No answers submitted."}, status=status.HTTP_400_BAD_REQUEST)
 
             correct_count = 0
             wrong_count = 0
             answered_count = 0
-
+            total_questions = past_exam.questions.count()
+            
             with transaction.atomic():
                 # Create exam attempt
                 attempt = PastExamAttempt.objects.create(
@@ -2712,17 +2720,22 @@ class SubmitPastExamAttemptView(APIView):
                 for answer in submitted_answers:
                     question_id = answer.get("question_id")
                     selected_option_id = answer.get("selected_option_id")
+                    
 
                     if not question_id or not selected_option_id or selected_option_id in [None, 'none', '']:
+                        
                         continue
-
+                    
                     try:
                         question = Question.objects.get(id=question_id)
                         selected_option_id = int(selected_option_id)
+                       
                         selected_option = QuestionOption.objects.get(id=selected_option_id)
+                        
                     except (Question.DoesNotExist, QuestionOption.DoesNotExist, ValueError):
+                        
                         continue
-
+                    
                     is_correct = selected_option.is_correct
                     answered_count += 1
                     if is_correct:
@@ -2745,7 +2758,7 @@ class SubmitPastExamAttemptView(APIView):
                 attempt.wrong_answers = wrong_count
                 attempt.calculate_score()
                 attempt.save()
-
+                percentage = round((correct_count / total_questions) * 100, 2) if total_questions else 0.0
             return Response({
                 "message": "Exam submitted successfully!",
                 "total_questions": past_exam.questions.count(),
@@ -2753,7 +2766,8 @@ class SubmitPastExamAttemptView(APIView):
                 "correct_answers": correct_count,
                 "wrong_answers": wrong_count,
                 "is_passed": is_passed,
-                "score": attempt.score
+                "score": attempt.score,
+                "percentage": percentage
             }, status=status.HTTP_200_OK)
 
         except Exception as e:
@@ -3155,3 +3169,159 @@ class UserPastExamSummaryAPIView(APIView):
         }
 
         return Response(data)
+    
+    
+    
+    
+# new leaderboard views
+from rest_framework.views import APIView
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+from django.shortcuts import get_object_or_404
+from .models import Exam, ExamAttempt
+
+class ExamLeaderboardAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, exam_id):  # UUID comes from URL
+        exam = get_object_or_404(Exam, exam_id=exam_id)
+        attempts = ExamAttempt.objects.filter(exam=exam).select_related('user', 'exam')
+
+        user_stats = {}
+        for attempt in attempts:
+            user_id = attempt.user.id
+            if user_id not in user_stats:
+                user_stats[user_id] = {
+                    'user': attempt.user,
+                    'total_score': 0.0,
+                    'total_possible': 0.0,
+                    'attempts': 0,
+                }
+
+            user_stats[user_id]['total_score'] += attempt.total_correct_answers or 0.0
+            user_stats[user_id]['total_possible'] += attempt.exam.total_mark or 0.0
+            user_stats[user_id]['attempts'] += 1
+
+        # Sort users by total_score
+        sorted_users = sorted(user_stats.values(), key=lambda x: x['total_score'], reverse=True)
+        top_10 = []
+
+        for stat in sorted_users[:10]:
+            percentage = (
+                round((stat['total_score'] / stat['total_possible']) * 100, 2)
+                if stat['total_possible'] else 0.0
+            )
+
+            top_10.append({
+                'id': stat['user'].id,
+                'username': stat['user'].username,
+                'points': stat['total_score'],
+                'attempts': stat['attempts'],
+                'percentage': percentage,
+                'profile_image': request.build_absolute_uri(stat['user'].profile_picture.url)
+                if hasattr(stat['user'], 'profile_picture') and stat['user'].profile_picture else None,
+            })
+
+        # Current user
+        me = None
+        for rank, stat in enumerate(sorted_users):
+            if stat['user'].id == request.user.id:
+                percentage = (
+                    round((stat['total_score'] / stat['total_possible']) * 100, 2)
+                    if stat['total_possible'] else 0.0
+                )
+                me = {
+                    'id': stat['user'].id,
+                    'username': stat['user'].username,
+                    'points': stat['total_score'],
+                    'attempts': stat['attempts'],
+                    'percentage': percentage,
+                    'rank': rank + 1,
+                    'profile_image': request.build_absolute_uri(stat['user'].profile_picture.url)
+                    if hasattr(stat['user'], 'profile_picture') and stat['user'].profile_picture else None,
+                }
+                break
+
+        return Response({
+            'top_10': top_10,
+            'me': me
+        })
+
+
+
+
+
+class PastExamLeaderboardAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, exam_id):
+    
+        if not exam_id:
+            return Response({'error': 'exam_id is required'}, status=400)
+
+        past_exam = get_object_or_404(PastExam, id=exam_id)
+
+        attempts = PastExamAttempt.objects.filter(past_exam=past_exam).select_related('user')
+
+        user_stats = {}
+
+        for attempt in attempts:
+            user_id = attempt.user.id
+            if user_id not in user_stats:
+                user_stats[user_id] = {
+                    'user': attempt.user,
+                    'total_score': 0,
+                    'total_questions': 0,
+                    'attempts': 0,
+                }
+
+            user_stats[user_id]['total_score'] += attempt.correct_answers or 0
+            user_stats[user_id]['total_questions'] += attempt.total_questions or 0
+            user_stats[user_id]['attempts'] += 1
+
+        # Sort users by total_score
+        sorted_users = sorted(user_stats.values(), key=lambda x: x['total_score'], reverse=True)
+
+        # Top 10 leaderboard
+        top_10 = []
+        for stat in sorted_users[:10]:
+            percentage = (
+                round((stat['total_score'] / stat['attempts']), 2)
+                if stat['attempts'] else 0.0
+            )
+
+            top_10.append({
+                'id': stat['user'].id,
+                'username': stat['user'].username,
+                'points': stat['total_score'],
+                'attempts': stat['attempts'],
+                'percentage': percentage,
+                'profile_image': request.build_absolute_uri(stat['user'].profile_picture.url)
+                if hasattr(stat['user'], 'profile_picture') and stat['user'].profile_picture else None,
+            })
+
+        # Current user data
+        me = None
+        for rank, stat in enumerate(sorted_users):
+            if stat['user'].id == request.user.id:
+                percentage = (
+                    round((stat['total_score'] / stat['attempts']), 2)
+                    if stat['attempts'] else 0.0
+                )
+
+                me = {
+                    'id': stat['user'].id,
+                    'username': stat['user'].username,
+                    'points': stat['total_score'],
+                    'attempts': stat['attempts'],
+                    'percentage': percentage,
+                    'rank': rank + 1,
+                    'profile_image': request.build_absolute_uri(stat['user'].profile_picture.url)
+                    if hasattr(stat['user'], 'profile_picture') and stat['user'].profile_picture else None,
+                }
+                break
+
+        return Response({
+            'top_10': top_10,
+            'me': me,
+        })

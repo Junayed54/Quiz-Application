@@ -49,9 +49,8 @@ class UserSubscriptionSerializer(serializers.ModelSerializer):
         read_only_fields = ['plan', 'start_date', 'end_date', 'is_active']
 
     def create(self, validated_data):
-        price = validated_data.pop('price')  # remove price from being passed to model
+        price = validated_data.pop('price')
 
-        # Duration logic
         duration_map = {
             'weekly': 7,
             'biweekly': 14,
@@ -64,11 +63,30 @@ class UserSubscriptionSerializer(serializers.ModelSerializer):
         if not days:
             raise serializers.ValidationError({'price': 'Invalid duration'})
 
-        validated_data['plan'] = price.plan_tier
-        validated_data['start_date'] = timezone.now().date()
-        validated_data['end_date'] = validated_data['start_date'] + timedelta(days=days)
+        start_date = timezone.now().date()
+        end_date = start_date + timedelta(days=days)
 
-        return UserSubscription.objects.create(**validated_data)
+        user = self.context['request'].user
+
+        subscription, created = UserSubscription.objects.get_or_create(
+            user=user,
+            defaults={
+                'plan': price.plan_tier,
+                'start_date': start_date,
+                'end_date': end_date,
+                'is_active': True
+            }
+        )
+
+        if not created:
+            # Update the existing subscription
+            subscription.plan = price.plan_tier
+            subscription.start_date = start_date
+            subscription.end_date = end_date
+            subscription.is_active = True
+            subscription.save()
+
+        return subscription
 
 # 4. UserSubscription Serializer
 # class UserSubscriptionSerializer(serializers.ModelSerializer):

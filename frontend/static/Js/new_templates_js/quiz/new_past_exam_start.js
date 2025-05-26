@@ -408,10 +408,7 @@ document.addEventListener('DOMContentLoaded', function(){
     const subscriptionDiv = document.getElementById('subscription-section'); // Assuming you have a div with this ID
     let questionsShownCount = 0;
 
-    if (!accessToken) {
-        window.location.href = '/login/';
-        return;
-    }
+    
 
     let timeRemaining;
     const timeDisplay = document.getElementById('time-remaining');
@@ -434,7 +431,7 @@ document.addEventListener('DOMContentLoaded', function(){
     function fetchExamDetails(isLimitedAccess) {
         fetch(`/quiz/past-exams/${examId}/`, {
             method: 'GET',
-            headers: { 'Authorization': `Bearer ${accessToken}` }
+            // headers: { 'Authorization': `Bearer ${accessToken}` }
         })
         .then(response => response.json())
         .then(data => {
@@ -662,7 +659,7 @@ function showBuySubscriptionOnScroll() {
         if (selectedOption) {
             const questionIndex = parseInt(questionName.replace('question', ''));
             answers[questionIndex] = {
-                question_id: questions[questionIndex].id,
+                question_id: questions[questionIndex].question.id,
                 option: selectedOption.value
             };
             return true;
@@ -693,10 +690,11 @@ function showBuySubscriptionOnScroll() {
     }
 
     function displayResults(correctAnswers, wrongAnswers, score, is_passed, data) {
+        console.log(data);
         const totalQuestions = data.total_questions || correctAnswers + wrongAnswers;
         const attempted = correctAnswers + wrongAnswers;
         const notAttempted = totalQuestions - attempted;
-        const percentage = ((score / totalQuestions) * 100).toFixed(0);
+        const percentage = ((correctAnswers / totalQuestions) * 100).toFixed(0);
         const grade = percentage >= 80 ? "A+" : percentage >= 70 ? "A" : percentage >= 60 ? "B" : "F";
 
         document.getElementById('resultContainer').innerHTML = `
@@ -729,7 +727,7 @@ function showBuySubscriptionOnScroll() {
                 </div>
                 <div class="answer-sheet-row">
                     <div class="answer-sheet-label">Your Mark</div>
-                    <div>${score}/${totalQuestions}</div>
+                    <div>${correctAnswers}/${totalQuestions}</div>
                 </div>
                 <div class="answer-sheet-row">
                     <div class="answer-sheet-label total-result">Total Result</div>
@@ -748,7 +746,7 @@ function showBuySubscriptionOnScroll() {
         modal.show();
 
         modalElement.addEventListener('hidden.bs.modal', function () {
-            window.location.href = `/new_past_exam_details/${examId}/`;
+            window.location.href = `/past_exam_details/${examId}/`;
         });
     }
 

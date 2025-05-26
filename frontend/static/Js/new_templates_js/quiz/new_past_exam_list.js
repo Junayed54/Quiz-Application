@@ -1,9 +1,9 @@
 document.addEventListener('DOMContentLoaded', function () {
     const accessToken = localStorage.getItem('access_token');
-    if (!accessToken) {
-        window.location.href = '/login/';
-        return;
-    }
+    // if (!accessToken) {
+    //     window.location.href = '/login/';
+    //     return;
+    // }
     const loader = document.getElementById('loader');
     // const headers = {
     //     'Authorization': `Bearer ${accessToken}`,

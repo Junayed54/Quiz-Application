@@ -19,7 +19,7 @@ class CustomUserAdmin(UserAdmin):
         }),
         ('Additional info', {
             'classes': ('wide',),
-            'fields': ('address', 'other_information', 'profile_picture', 'date_of_birth', 'gender', 'secondary_phone_number', 'bio', 'facebook_profile', 'twitter_profile', 'linkedin_profile', 'preferences'),
+            'fields': ('profile_picture', 'address', 'other_information', 'profile_picture', 'date_of_birth', 'gender', 'secondary_phone_number', 'bio', 'facebook_profile', 'twitter_profile', 'linkedin_profile', 'preferences'),
         }),
     )
     search_fields = ('phone_number', 'username', 'email')

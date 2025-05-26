@@ -4,11 +4,8 @@ document.addEventListener('DOMContentLoaded', function () {
     // Extract past_exam_id from the URL
     const urlParams = new URLSearchParams(window.location.search);
     const examId = window.location.pathname.split('/')[2];  // Ensure the past_exam_id is passed in the URL
-    console.log(examId);
-    if (!examId || !accessToken) {
-        window.location.href = '/login/';
-        return;
-    }
+   
+    
 
     const pastExamDetailsUrl = `/quiz/exams/${examId}/`;
     
@@ -55,8 +52,15 @@ document.addEventListener('DOMContentLoaded', function () {
         window.location.href = `/model-test/start/${examId}/`;
     });
 
-    const result = document.getElementById('past_result');
-    result.addEventListener('click', function() {
-        window.location.href = `/prev_result/${examId}/`;
+    const model_test_result = document.getElementById('model_test_result');
+    model_test_result.addEventListener('click', function() {
+        window.location.href = `/model-test/result/${examId}/`;
     });
+
+     const leaderboard = document.getElementById('leaderboard');
+    leaderboard.addEventListener('click', function() {
+        window.location.href = `/model-test/leaderboard/${examId}/`;
+    });
+
+    // user/model-test/leaderboard/<uuid:exam_id>/</uuid:exam_id>
 });

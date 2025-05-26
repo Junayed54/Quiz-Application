@@ -2,7 +2,7 @@ from django.db import models
 from django.contrib.auth import get_user_model
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.contenttypes.fields import GenericForeignKey
-
+from django.utils import timezone
 User = get_user_model()
 
 # -------------------------
@@ -88,11 +88,16 @@ class UserSubscription(models.Model):
     end_date = models.DateField(null=True, blank=True)
     is_active = models.BooleanField(default=True)
 
+  
+
     def __str__(self):
         return f"{self.user} - {self.plan.name}"
-
-
-# -------------------------
+    
+    def save(self, *args, **kwargs):
+        today = timezone.now().date()
+        self.is_active = self.end_date is None or today <= self.end_date
+        super().save(*args, **kwargs)
+# ----------------  ---------
 # 5. User Exam Access Tracking
 # -------------------------
 

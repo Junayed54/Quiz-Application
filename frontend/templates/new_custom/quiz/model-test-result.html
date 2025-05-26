@@ -1,0 +1,155 @@
+{% extends 'new_custom/new_templates/index2.html'%}
+{% block title %}University Questions{% endblock %}
+{% block style %}
+<style>
+    /* CSS for hover effect to show it's clickable */
+    .clickable-div {
+        cursor: pointer; /* Show pointer cursor */
+        transition: background-color 0.2s ease; /* Smooth transition for background color */
+    }
+
+    .clickable-div:hover {
+        background-color: #f0f0f0; /* Light background on hover */
+    }
+
+    .border-primary {
+        border: 2px solid #007bff; /* Highlight user icon */
+    }
+    .d-flex {
+        border-radius: 10px;
+    }
+    .text-success {
+        font-weight: bold;
+        color: #28a745 !important;
+    }
+    .table {
+        border-radius: 10px;
+    }
+
+    
+    table {
+        border-collapse: collapse; /* Ensures proper rounding */
+        width: 100%;
+        border-radius: 10px; /* Adjust radius as needed */
+        overflow: hidden; /* Hides overflow from corners */
+        border: 2px solid #ccc; /* Optional: Border color */
+    }
+
+    th{
+        color: #fff;
+    }
+
+    th, td {
+        border: 1px solid #ddd;
+        padding: 10px;
+        text-align: left;
+    }
+
+    
+</style>
+{% endblock %}
+
+{% block content %}
+        <div style="background: rgb(255, 253, 208);">
+            
+            <div class="container my-5">
+               
+                <div class="row">
+                    
+                    <!-- User Attempts Section -->
+                    <div class="col-lg-8 col-md-12">
+                        <div style="display: flex; align-items: center; gap:4px; color:#727D73; text-align: center; font-size: 22px; font-weight: 700; text-transform: uppercase; word-spacing: 1px; letter-spacing:2px;">
+                            <h4 class="mb-4" style="color: #FF8080; text-align: center; font-size: 22px; font-weight: 700; text-transform: uppercase; word-spacing: 1px; letter-spacing:2px; margin:0 auto;">Users Attempts 
+                            
+                        </div>
+                       
+                        <div class="overflow-auto">
+                            <table class="table table-bordered text-center rounded-3">
+                            
+                                
+                                <thead class="table-bordered" style=";">
+                                    <tr><td colspan="8" id="exam-details" class="" style="color: #FFB200; text-align: center; background-color: #51829B"> </td></tr>
+                                    <tr class="">
+                                        
+                                        <th style="color: #fff; background: #9BB0C1;">Date</th>
+                                        <th style="color: #fff; background: #9BB0C1;">Name</th>
+                                        <th style="color: #fff; background: #9BB0C1;">Questions</th>
+                                        <th style="color: #fff; background: #9BB0C1;">Answered</th>
+                                        <th style="color: #fff; background: #9BB0C1;">Right</th>
+                                        <th style="color: #fff; background: #9BB0C1;">Wrong</th>
+                                        <th style="color: #fff; background: #9BB0C1;">Pass Mark</th>
+                                        <th style="color: #fff; background: #9BB0C1;">Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="user-attempts" style="">
+                                    
+                                    <!-- Dynamically populated -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                
+                    <!-- Detailed Attempt Modal -->
+                    <div class="modal fade" id="attempt-details-modal" tabindex="-1" aria-labelledby="attemptDetailsModalLabel" aria-hidden="true">
+                        <div class="modal-dialog modal-lg">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title" id="attemptDetailsModalLabel">Attempt Details</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                </div>
+                                <div class="modal-body overflow-auto">
+                                    <table class="table table-striped text-center overflow-hidden">
+                                        <thead>
+                                            <tr class="text-white" style="background: #80CBC4">
+                                                <th>Attempt Date</th>
+                                                <th>Attempt Time</th>
+                                                <th>Total Questions</th>
+                                                <th>Answered</th>
+                                                <th>Correct</th>
+                                                <th>Wrong</th>
+                                                <th>Pass Mark</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="user-attempts-details">
+                                            <!-- Dynamically populated -->
+                                        </tbody>
+                                    </table>
+
+                                    <div class="my-4">
+                                        <canvas id="attemptChart"></canvas>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                
+                    <!-- Leaderboard Section -->
+                    <div class="col-lg-3 col-md-12">
+                        <h4 class="text-center mb-4" style="color: #FF8080">Top 10 Scorers</h4>
+                        <div class="card">
+                            <div class="card-body">
+                                <div id="leaderboard" class="row row-cols-1 row-cols-md-2 row-cols-lg-1 g-4">
+                                    <!-- Dynamic Entries will be inserted here -->
+                                </div>
+                                
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+            </div>
+            
+            <div style="height: 220px;"></div>
+
+        </div>
+
+            <!-- MY custom macq-->
+{% endblock %}
+
+{% block body_js %}
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="../../../static/Js/result.js"></script>
+{% endblock %}
+

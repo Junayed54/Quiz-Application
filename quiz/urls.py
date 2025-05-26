@@ -43,7 +43,7 @@ urlpatterns = [
     path('question-history/', QuestionHistoryByMonthView.as_view(), name='question-history'),
     path('teacher-history/', QuestionHistoryByTeacherMonthYearView.as_view(), name='teacher-history'),
     path('teacher-summary/', UserQuestionSummaryView.as_view(), name='teacher-question-summary'),
-    
+    path('exam/<uuid:exam_id>/leaderboard/', ExamLeaderboardAPIView.as_view(), name='exam_leaderboard'),
     
     path('create-exam/', ExamCreateView.as_view(), name='create_exam'),
     path('2create_exam/', TemplateView.as_view(template_name="Html/custom/2create_exam.html"), name='2create_exam'),
@@ -159,7 +159,7 @@ urlpatterns += [
     path('past_exam/user_attempts/', UserPastExamAttemptsView.as_view(), name='user_past_exam_attempts'),
 
     # Leaderboard view sorted from top score to lowest
-    path('past_exam/leaderboard/<int:exam_id>/', PastExamLeaderboardView.as_view(), name='past_exam_leaderboard'),
+    path('past-exam/<int:exam_id>/leaderboard/', PastExamLeaderboardAPIView.as_view(), name='past_exam_leaderboard'),
 
     
 ]
