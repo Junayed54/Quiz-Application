@@ -528,7 +528,7 @@ class ExamQuestionOption(models.Model):
     option = models.ForeignKey(QuestionOption, on_delete=models.CASCADE, blank=True)
 
 class QuestionUsage(models.Model):
-    question = models.ForeignKey(Question, related_name='usages', on_delete=models.CASCADE)
+    question = models.ForeignKey(Question, related_name='usages', on_delete=models.CASCADE, null=True, blank=True)
     exam = models.CharField(max_length=255, help_text="Name of the external exam where the question was used", null=True, blank=True)
     past_exam = models.ForeignKey(PastExam, related_name='question_usages', on_delete=models.CASCADE, null=True, blank=True)
     year = models.IntegerField(default=date.today().year)
