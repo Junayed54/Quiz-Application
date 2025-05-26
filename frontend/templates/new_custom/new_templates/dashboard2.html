@@ -3,13 +3,20 @@
 {% block style %}
   <style>
     body {
-      background-color: #0f0f2d;
+      background-color: #0f172a;
       color: white;
     }
     .card {
-      background-color: #1a1a40;
+      background-color: #1e293b;
       border: none;
       border-radius: 15px;
+    }
+
+    .rank-row {
+      background-color: #1e293b;
+      border-radius: 100px;
+      padding: 12px 20px;
+      margin-bottom: 10px;
     }
     .progress {
       background-color: #333;
@@ -20,17 +27,18 @@
     }
     .table {
       border-spacing: 5px;
-      background: #1a1a40;
+      border-radius: 14px;
       font-weight: bold;
       width: 100%
     }
-    .table-dark{
-      background: red;
-    }
+    
 
     .table-dark th, .table-dark td {
       vertical-align: middle;
+      background: #1e293b;
+      
     }
+    
     .avatar {
       width: 60px;
       height: 60px;
@@ -103,7 +111,7 @@
       </div>
       <div class="d-flex justify-content-center gap-5 text-center mb-4">
         <div>
-          <img src="https://via.placeholder.com/80" class="top-avatar mb-2" alt="RI">
+          <img src="../../../static/images/profile.jpeg" class="top-avatar mb-2" alt="RI">
           <div  class="text-white">Rafiul Islam</div>
           <small class="text-white">1465 pts</small>
         </div>
@@ -118,10 +126,12 @@
           <small class="text-white">1380 pts</small>
         </div>
       </div>
+    </div>
+    <div>
 
-      <table class="align-middle rounded text-white" style="background: #1a1a40;">
-        <thead class="bg-primary rounded" style="border-radius: 30px;">
-          <tr class="rounded">
+      <table class="table table-dark align-middle rounded text-white w-100 my-4" style="">
+        <thead class=" rounded m-4" style="border-radius: 30px;">
+          <tr class="rounded rank-row">
             <th>Rank</th>
             <th>Player</th>
             <th>Tests</th>
@@ -129,7 +139,7 @@
             <th>Percentage</th>
           </tr>
         </thead>
-        <tbody id="rank-list">
+        <tbody id="rank-list" class="p-4 rank-row">
           {% comment %} <tr>
             <td>#1</td>
             <td> Sadia Ahmed</td>

@@ -76,8 +76,9 @@ document.addEventListener('DOMContentLoaded', function() {
 let modelCorrectAnswersChartInstance; // Define globally to manage Chart instances
 
 document.addEventListener('DOMContentLoaded', function () {
-    const modelAttemptsApiUrl = '/quiz/attempts/all_attempts/'; // Existing API for model test attempts
-    let user_id = window.location.href.split('/')[5];
+    let user_id = window.location.href.split('/')[4];
+    const modelAttemptsApiUrl = `/quiz/attempts/all_attempts/${user_id}/`; // Existing API for model test attempts
+    
 
     function fetchModelDataAndCreateChart(timePeriod = 'all') {
         fetch(`${modelAttemptsApiUrl}?time_period=${timePeriod}`, {
@@ -207,7 +208,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
 async function loadModelExams() {
     try {
-        let user_id = window.location.href.split('/')[5];
+        let user_id = window.location.href.split('/')[4];
         const response = await fetch('/quiz/attempts/highest_attempts/', { // Existing API for model test highest attempts
             method: 'POST',
             headers: {
