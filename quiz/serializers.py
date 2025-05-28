@@ -142,10 +142,19 @@ class ExamQuestionSerializer(serializers.ModelSerializer):
         model = ExamQuestion
         fields = ['id', 'question', 'order', 'points', 'options', 'question_usages']
 
-    def get_options(self, obj):
-        options = ExamQuestionOption.objects.filter(question=obj)
-        return ExamQuestionOptionSerializer(options, many=True).data
     
+    
+
+    def get_options(self, exam_question):
+        # Get ExamQuestionOption instances linked to this ExamQuestion
+        option_links = ExamQuestionOption.objects.filter(
+            exam_question=exam_question
+        ).select_related("option").order_by("id")
+        print("devide", option_links)
+        options_data = [QuestionOptionSerializer(link.option).data for link in option_links]
+        return options_data
+
+
     def get_question_usages(self, past_exam_question):
         """
         Retrieves the year and exam title for all question usages related to this question.
@@ -159,13 +168,12 @@ class ExamQuestionSerializer(serializers.ModelSerializer):
                 "exam_title": usage.exam if usage.exam else usage.past_exam.title if usage.past_exam else None,
             })
         return usage_data if usage_data else None
-
    
 class ExamSerializer(serializers.ModelSerializer):
     status_id = serializers.IntegerField(source='exam.id', read_only=True)
     status = serializers.ReadOnlyField()  # Read-only field to display exam status
     category_name = serializers.CharField(source='category.name', read_only=True)  # Category name for convenience
-    questions = ExamQuestionSerializer(source='examquestion_set', many=True, read_only=True)
+    questions = serializers.SerializerMethodField()
     subjects = serializers.SerializerMethodField()  # Custom field for subjects with question count
     creater_name = serializers.CharField(source='created_by.username', read_only=True)
 
@@ -198,7 +206,19 @@ class ExamSerializer(serializers.ModelSerializer):
         subject_count = Counter(question_subjects)
         return [{'subject': subject, 'question_count': count} for subject, count in subject_count.items()]
     
-    
+    def get_questions(self, exam):
+        """
+        Gets the questions for this past exam, with their exam-specific options.
+        """
+        # Get the PastExamQuestions for this exam.  Crucially, order them.
+        exam_questions = ExamQuestion.objects.filter(exam=exam).order_by("id")
+        
+        # Serialize each PastExamQuestion, which will include the correct options.
+        question_data = []
+        for peq in exam_questions:
+            question_serializer = ExamQuestionSerializer(peq) # Use the PastExamQuestionSerializer
+            question_data.append(question_serializer.data)
+        return question_data
 
 class StatusSerializer(serializers.ModelSerializer):
     exam_details = serializers.SerializerMethodField()

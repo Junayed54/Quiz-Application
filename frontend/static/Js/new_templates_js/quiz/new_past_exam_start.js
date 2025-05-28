@@ -464,7 +464,7 @@ document.addEventListener('DOMContentLoaded', function(){
 
         questions.forEach((question, index) => {
             const questionWrapper = document.createElement('div');
-            questionWrapper.classList.add('col-md-6', 'mb-4', 'border', 'rounded', 'p-3');
+            questionWrapper.classList.add('col-md-6', 'mb-4', 'p-3');
             questionWrapper.setAttribute('data-question-index', index);
             
             if (index >= 10 && !isLimitedAccess) {
@@ -524,12 +524,12 @@ document.addEventListener('DOMContentLoaded', function(){
 
                 const toggleButton = document.createElement('button');
                 toggleButton.textContent = `Show Usage Info`;
-                toggleButton.classList.add('btn', 'btn-sm', 'mb-2', 'bg-info','text-white');
+                toggleButton.classList.add('btn', 'btn-sm', 'mb-2', 'bg-info','text-white', 'text-sm', 'p-1');
                 toggleButton.type = 'button';
                 toggleButton.style.marginLeft = '30px';
 
                 const usageOverlay = document.createElement('div');
-                usageOverlay.classList.add('position-absolute', 'bg-white', 'border', 'rounded', 'shadow', 'px-2');
+                usageOverlay.classList.add('position-absolute', 'bg-white', 'border', 'rounded', 'shadow', 'px-1', 'text-muted');
                 usageOverlay.style.top = '2.2rem';
                 usageOverlay.style.left = '30px';
                 usageOverlay.style.right = '0';

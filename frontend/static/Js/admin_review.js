@@ -42,7 +42,7 @@ document.addEventListener('DOMContentLoaded', function () {
                         <li class="list-group-item">
                             <strong>Question ${index + 1}:</strong> ${question.question.text}
                             <ul class="mt-2">
-                                ${question.question.options.map(option => `
+                                ${question.options.map(option => `
                                     <li>${option.text} ${option.is_correct ? '<span class="badge bg-success">Correct</span>' : ''}</li>
                                 `).join('')}
                             </ul>

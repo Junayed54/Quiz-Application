@@ -1872,7 +1872,6 @@ class ExamCreateView(APIView):
         category_name = request.data.get('category')
         exam_type_id = request.data.get('exam_type_id')
 
-        # NEW: Get organization, department, and position
         organization_id = request.data.get('organization')
         department_id = request.data.get('department')
         position_id = request.data.get('position')
@@ -1892,40 +1891,31 @@ class ExamCreateView(APIView):
         try:
             exam_type_obj = ExamType.objects.get(id=int(exam_type_id))
         except ExamType.DoesNotExist:
-            return Response({"error": "Invalid exam type wrong."}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"error": "Invalid exam type."}, status=status.HTTP_400_BAD_REQUEST)
 
-        
-        
-        # NEW: Fetch organization, department, and position objects
         organization = Organization.objects.filter(id=organization_id).first() if organization_id else None
         department = Department.objects.filter(id=department_id).first() if department_id else None
         position = Position.objects.filter(id=position_id).first() if position_id else None
 
-
         try:
             with transaction.atomic():
-                # Step 1: Create the Exam
-                duration_minutes = timedelta(minutes=duration)
                 exam = Exam.objects.create(
                     title=exam_title,
                     total_questions=total_questions,
                     total_mark=total_marks,
                     pass_mark=pass_mark,
                     last_date=last_date,
-                    duration=duration_minutes,
+                    duration=timedelta(minutes=duration),
                     negative_mark=negative_marks,
                     starting_time=parse_datetime(starting_time) if starting_time else None,
                     created_by=request.user,
                     category=category,
-                    exam_type = exam_type_obj,
-                    organization=organization,      # NEW
-                    department=department,          # NEW
-                    position=position               # NEW
+                    exam_type=exam_type_obj,
+                    organization=organization,
+                    department=department,
+                    position=position
                 )
 
-                # [Steps 2–5 remain unchanged]
-                # Step 2: Get questions
-                selected_questions = []
                 if exam_method == 'file':
                     selected_questions = self._process_file_upload(request)
                 elif exam_method == 'question_bank':
@@ -1935,72 +1925,57 @@ class ExamCreateView(APIView):
                         difficulty_levels=difficulty_levels
                     )
                 else:
-                    return Response({"error": "Invalid exam type."}, status=status.HTTP_400_BAD_REQUEST)
+                    return Response({"error": "Invalid exam method."}, status=status.HTTP_400_BAD_REQUEST)
 
-                if isinstance(selected_questions, Response):  # in case _fetch_questions_from_bank returned error
+                if isinstance(selected_questions, Response):
                     return selected_questions
 
                 selected_questions = selected_questions[:total_questions]
 
-                # Step 3: Create ExamQuestion and ExamQuestionOption
-                for index, question in enumerate(selected_questions):
+                for index, past_exam_question in enumerate(selected_questions):
+                    question = past_exam_question.question  # the actual Question object
+
                     exam_question = ExamQuestion.objects.create(
-                    exam=exam,
-                    question=question,
-                    points=1.0,
-                    order=index + 1
-                )
-
-                used_past_exam_ids = set()
-                added_options = set()
-
-                if exam_type_id:
-                    past_exam_questions = PastExamQuestion.objects.filter(
+                        exam=exam,
                         question=question,
-                        exam__exam_type_id=exam_type_id
-                    ).select_related('exam').order_by('-exam__exam_date')
+                        points=1.0,
+                        order=index + 1
+                    )
 
-                    for past_exam_question in past_exam_questions:
-                        exam_id = past_exam_question.exam.id
-                        if exam_id in used_past_exam_ids:
-                            continue
-                        used_past_exam_ids.add(exam_id)
+                    added_options = set()
 
-                        past_options = PastExamQuestionOption.objects.filter(
-                            question=past_exam_question
-                        ).select_related('option')[:4]
+                    # ✅ Use the existing `past_exam_question` to fetch its options
+                    past_options = PastExamQuestionOption.objects.filter(
+                        question=past_exam_question
+                    ).select_related('option')[:4]
 
-                        for past_option in past_options:
-                            if past_option.option.id not in added_options:
-                                ExamQuestionOption.objects.create(
-                                    question=exam_question,
-                                    option=past_option.option
-                                )
-                                added_options.add(past_option.option.id)
+                    for past_option in past_options:
+                        if past_option.option.id not in added_options:
+                            ExamQuestionOption.objects.create(
+                                exam_question=exam_question,
+                                option=past_option.option
+                            )
+                            added_options.add(past_option.option.id)
 
-                        break  # Only use one past exam
+                    if len(added_options) < 4:
+                        needed = 4 - len(added_options)
+                        extra_options = question.options.exclude(id__in=added_options).order_by('?')[:needed]
+                        for option in extra_options:
+                            ExamQuestionOption.objects.create(
+                                question=exam_question,
+                                option=option
+                            )
+                            added_options.add(option.id)
 
-                # Fill up to 4 if fewer options added
-                if len(added_options) < 4:
-                    needed = 4 - len(added_options)
-                    extra_options = question.options.exclude(id__in=added_options).order_by('?')[:needed]
-                    for option in extra_options:
-                        ExamQuestionOption.objects.create(
-                            question=exam_question,
-                            option=option
-                        )
-                        added_options.add(option.id)
+                    if not added_options:
+                        fallback_options = question.options.all().order_by('?')[:4]
+                        for option in fallback_options:
+                            ExamQuestionOption.objects.create(
+                                question=exam_question,
+                                option=option
+                            )
 
-                # Final fallback: no options at all
-                if not added_options:
-                    fallback_options = question.options.all().order_by('?')[:4]
-                    for option in fallback_options:
-                        ExamQuestionOption.objects.create(
-                            question=exam_question,
-                            option=option
-                        )
 
-                # Step 4: Save difficulty breakdown if provided
                 if difficulty_levels and any(int(v) > 0 for v in difficulty_levels.values()):
                     difficulty_percentages = {
                         'difficulty1_percentage': difficulty_levels.get('1', 0),
@@ -2012,10 +1987,8 @@ class ExamCreateView(APIView):
                     }
                     ExamDifficulty.objects.create(exam=exam, **difficulty_percentages)
 
-                # Step 5: Create Status
                 status_label = 'student' if request.user.role == 'student' else 'draft'
                 Status.objects.create(exam=exam, status=status_label, user=request.user)
-
 
                 return Response(
                     {"message": f"Exam '{exam.title}' created successfully with {len(selected_questions)} questions."},

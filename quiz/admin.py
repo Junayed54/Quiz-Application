@@ -248,3 +248,28 @@ class DepartmentAdmin(admin.ModelAdmin):
 class PositionAdmin(admin.ModelAdmin):
     list_display = ('name',)
     search_fields = ('name',)
+    
+    
+    
+    
+class ExamQuestionOptionInline(admin.TabularInline):
+    model = ExamQuestionOption
+    extra = 0
+    readonly_fields = ['option_text']
+
+    def option_text(self, obj):
+        return obj.option.text if obj.option else "-"
+    option_text.short_description = "Option Text"
+    
+    
+    
+class ExamQuestionAdmin(admin.ModelAdmin):
+    list_display = ['exam', 'question_text', 'points', 'order']
+    inlines = [ExamQuestionOptionInline]
+
+    def question_text(self, obj):
+        return obj.question.text if obj.question else "-"
+    question_text.short_description = "Question"
+    
+admin.site.register(ExamQuestion, ExamQuestionAdmin)
+admin.site.register(ExamQuestionOption) 

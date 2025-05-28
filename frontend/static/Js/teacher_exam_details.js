@@ -45,7 +45,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 console.log(data.questions);
                 data.questions.forEach((question, index) => {
                     
-                    const optionsHTML = question.question.options.map(option => `<li>${option.text}</li>`).join('');
+                    const optionsHTML = question.options.map(option => `<li>${option.text}</li>`).join('');
                     const rowHTML = `
                         <tr>
                             <td>${index + 1}</td>

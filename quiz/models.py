@@ -518,13 +518,13 @@ class PastUserAnswer(models.Model):
 
 class ExamQuestion(models.Model):
     exam = models.ForeignKey(Exam, on_delete=models.CASCADE)
-    question = models.ForeignKey(Question, on_delete=models.CASCADE, blank=True)
+    question  = models.ForeignKey(Question, on_delete=models.CASCADE, blank=True)
     points = models.FloatField(null=True, blank=True)
     order = models.IntegerField(null=True, blank=True)
     
 
 class ExamQuestionOption(models.Model):
-    question = models.ForeignKey(ExamQuestion, on_delete=models.CASCADE)
+    exam_question = models.ForeignKey(ExamQuestion, on_delete=models.CASCADE)
     option = models.ForeignKey(QuestionOption, on_delete=models.CASCADE, blank=True)
 
 class QuestionUsage(models.Model):
