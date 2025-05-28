@@ -143,7 +143,7 @@ document.addEventListener('DOMContentLoaded', function() {
         method: 'GET',
         headers: {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
+            
         }
     })
     .then(response => {
@@ -216,6 +216,6 @@ document.addEventListener('DOMContentLoaded', function() {
     })
     .catch(error => {
         console.error('Error fetching exams:', error);
-        examCardsContainer.innerHTML = '<p class="text-danger">পরীক্ষাগুলো লোড করতে ব্যর্থ হয়েছে।</p>';
+        examCardsContainer.innerHTML = '<p class="text-danger text-center">পরীক্ষাগুলো লোড করতে ব্যর্থ হয়েছে।</p>';
     });
 });

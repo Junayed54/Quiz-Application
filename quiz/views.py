@@ -125,9 +125,14 @@ class CategoryViewSet(viewsets.ModelViewSet):
 class ExamViewSet(viewsets.ModelViewSet):
     queryset = Exam.objects.all()
     serializer_class = ExamSerializer
-    permission_classes = [IsAuthenticated]
+    # permission_classes = [IsAuthenticated]
     authentication_classes=[JWTAuthentication]
 
+    
+    def get_permissions(self):
+        if self.action in ['list', 'retrieve', 'exam_list']:
+            return [AllowAny()]
+        return [IsAuthenticated()]
     
     def perform_create(self, serializer):
         # print('Hello')
@@ -151,7 +156,7 @@ class ExamViewSet(viewsets.ModelViewSet):
         # Leaderboard.objects.create(exam=exam, score=0)
         return Response({'exam_id': exam.exam_id})
     
-    @action(detail=False, methods=['get'], permission_classes=[IsAuthenticated], authentication_classes=[JWTAuthentication])
+    @action(detail=False, methods=['get'])
     def exam_list(self, request):
         """
         Get exams filtered by difficulty ranges based on the user's subscription package.
@@ -166,8 +171,8 @@ class ExamViewSet(viewsets.ModelViewSet):
         # subscription_package = active_subscription.package
 
         # Retrieve exams with published status
-        # exams = Exam.objects.filter(exam__status='published')
-        exams = Exam.objects.all()
+        exams = Exam.objects.filter(exam__status='published')
+        # exams = Exam.objects.all()
         # filtered_exams = []
 
         # def parse_range(range_str):
@@ -2081,38 +2086,53 @@ class ExamCreateView(APIView):
         return question
 
     def _fetch_questions_from_bank(self, exam_type_id, total_questions, difficulty_levels):
+        # Step 1: Get all relevant PastExam instances
         past_exams = PastExam.objects.filter(exam_type_id=exam_type_id) if exam_type_id else PastExam.objects.all()
-        question_pool = Question.objects.filter(past_exams__in=past_exams).distinct()
 
-        if question_pool.count() < total_questions:
-            return Response(
-                {"error": "Not enough questions available in question bank."},
-                status=status.HTTP_400_BAD_REQUEST
-            )
+        # Step 2: Get all PastExamQuestion entries (distinct by question)
+        past_exam_questions = PastExamQuestion.objects.filter(exam__in=past_exams).select_related('question').distinct()
+
+        # Step 3: Validate availability
+        if past_exam_questions.count() < total_questions:
+            raise ValidationError("Not enough questions available in the question bank.")
 
         selected_questions = []
+
+        # Step 4: Filter by difficulty levels if provided
         if difficulty_levels and isinstance(difficulty_levels, dict) and any(difficulty_levels.values()):
             filtered_levels = {lvl: val for lvl, val in difficulty_levels.items() if val and val > 0}
             total_percentage = sum(filtered_levels.values())
-            normalized_levels = {
-                lvl: (val / total_percentage) * 100 for lvl, val in filtered_levels.items()
-            }
 
-            for level, percentage in normalized_levels.items():
-                num_level_questions = round(total_questions * (percentage / 100))
-                level_questions = question_pool.filter(difficulty_level=level).order_by('?')[:num_level_questions]
+            # Normalize the difficulty percentages
+            normalized_levels = {lvl: val / total_percentage for lvl, val in filtered_levels.items()}
 
-                if level_questions.count() < num_level_questions:
-                    return Response(
-                        {"error": f"Not enough questions for difficulty level '{level}'."},
-                        status=status.HTTP_400_BAD_REQUEST
-                    )
+            level_counts = {}
+            remaining = total_questions
+
+            # Distribute question count per level
+            for i, (level, ratio) in enumerate(normalized_levels.items()):
+                if i == len(normalized_levels) - 1:
+                    level_counts[level] = remaining
+                else:
+                    count = int(total_questions * ratio)
+                    level_counts[level] = count
+                    remaining -= count
+
+            # Fetch questions for each level
+            for level, count in level_counts.items():
+                level_questions = past_exam_questions.filter(question__difficulty_level=level).order_by('?')[:count]
+
+                if level_questions.count() < count:
+                    raise ValidationError(f"Not enough questions for difficulty level '{level}'.")
 
                 selected_questions.extend(level_questions)
         else:
-            selected_questions = list(question_pool.order_by('?')[:total_questions])
+            # No difficulty filter: pick random questions
+            selected_questions = list(past_exam_questions.order_by('?')[:total_questions])
 
+        # Step 5: Shuffle the selected questions before returning
         random.shuffle(selected_questions)
+
         return selected_questions
 
         

@@ -13,9 +13,7 @@ document.addEventListener('DOMContentLoaded', function () {
     function fetchPastExamDetails() {
         fetch(pastExamDetailsUrl, {
             method: 'GET',
-            headers: {
-                'Authorization': `Bearer ${accessToken}`,
-            },
+            
         })
         .then(response => response.json())
         .then(data => {

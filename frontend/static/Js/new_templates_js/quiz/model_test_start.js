@@ -31,7 +31,6 @@ document.addEventListener('DOMContentLoaded', function(){
     function fetchExamDetails(isLimitedAccess) {
         fetch(`/quiz/exams/${examId}/`, {
             method: 'GET',
-            headers: { 'Authorization': `Bearer ${accessToken}` }
         })
         .then(response => response.json())
         .then(data => {
