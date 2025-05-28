@@ -90,7 +90,7 @@ class ExamDifficultyAdmin(admin.ModelAdmin):
     list_display = ('exam', 'difficulty1_percentage', 'difficulty2_percentage', 'difficulty3_percentage', 'difficulty4_percentage', 'difficulty5_percentage', 'difficulty6_percentage')
     search_fields = ('exam__title',)
 
-
+from django.utils.html import format_html, mark_safe
 class QuestionAdmin(admin.ModelAdmin):
     list_display = (
         'id', 
@@ -133,7 +133,7 @@ class QuestionAdmin(admin.ModelAdmin):
                 for opt in direct_options
             ])
 
-        # PastExamQuestionOptions
+        # Past Exam Options
         past_exam_questions = PastExamQuestion.objects.filter(question=obj)
         past_exam_options = PastExamQuestionOption.objects.filter(
             question__in=past_exam_questions
@@ -146,9 +146,9 @@ class QuestionAdmin(admin.ModelAdmin):
                 for po in past_exam_options
             ])
 
-        # ExamQuestionOption (if it exists in your model)
+        # Exam Options
         try:
-            exam_options = ExamQuestionOption.objects.filter(question=obj).select_related('option')
+            exam_options = ExamQuestionOption.objects.filter(exam_question=obj).select_related('option')
             if exam_options.exists():
                 output_lines.append("<u>Exam Options:</u>")
                 output_lines.extend([
@@ -156,11 +156,10 @@ class QuestionAdmin(admin.ModelAdmin):
                     for eo in exam_options
                 ])
         except:
-            pass  # If ExamQuestionOption is not defined
+            pass
 
-        return format_html("<br>".join(output_lines)) if output_lines else "No options"
-
-    get_options.short_description = 'Options'
+        # Join with <br> and mark as safe HTML
+        return mark_safe("<br>".join(output_lines)) if output_lines else "No options"
 
 
 
