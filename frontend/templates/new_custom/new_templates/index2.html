@@ -14,7 +14,7 @@
       padding: 0;
     }
     section {
-      padding: 60px 0;
+      padding: 15px 0;
     }
 
     .question-dropdown {
@@ -22,7 +22,7 @@
       flex: 1;
       gap: 2rem;
       padding: 1.5rem;
-      width: 500px;
+      {% comment %} width: 500px; {% endcomment %}
       background-color: rgba(255, 255, 255, 0.7);
       backdrop-filter: blur(10px);
       -webkit-backdrop-filter: blur(10px);
@@ -147,10 +147,10 @@
                 Question
               </a>
               <ul class="dropdown-menu question-dropdown" aria-labelledby="navbarDropdown">
-                <li class="py-2 border-bottom">
+                <li class="py-2">
                   <div class="row">
                     <!-- Column 1 -->
-                    <div class="col-md-6">
+                    <div class=""> <!-- was class col-md-6 -->
                       <div class="dropdown-column pe-3">
                         <a class="dropdown-item border-bottom py-1" href="/past_exams/"> বিগত বছরের চাকুরির পরীক্ষা</a>
                         {% comment %} <a class="dropdown-item border-bottom py-1" href="/questions/">Test Question</a> {% endcomment %}
@@ -163,12 +163,12 @@
                     </div>
                 
                     <!-- Column 2 -->
-                    <div class="col-md-6">
-                      <div class="dropdown-column ps-3">
+                    {% comment %} <div class="col-md-6">
+                      <div class="dropdown-column">
                         <a class="dropdown-item border-bottom py-1" href="#">More Questions</a>
                         
                       </div>
-                    </div>
+                    </div> {% endcomment %}
                   </div>
                 </li>
                 
@@ -212,7 +212,7 @@
 
 {% block content %}
 <!-- Welcome Section -->
-<section class="text-center py-5">
+<section class="text-center">
   <div class="container">
     <div class="row align-items-center">
       <div class="col-md-6 text-md-start text-center mb-4 mb-md-0">
@@ -235,12 +235,12 @@
         </dotlottie-player>
       </div>
     </div>
-    <div class="border border-1 w-100" style="margin-top: 50px;"></div>
+    <div class="border border-1 w-100" style="margin-top: 20px;"></div>
   </div>
 </section>
 
 <!-- Exams Section -->
-<section class="py-5">
+<section class="">
   <div class="container">
     <div class="row align-items-center flex-md-row-reverse">
       
@@ -262,12 +262,12 @@
         </div>
 
         <div class="" style="">
-          <a href="#" class="btn btn-custom mt-4" style="">Start</a>
+          <a href="/model-tests/" class="btn btn-custom mt-4" style="">Start</a>
         </div>
       </div>
 
       <div class="col-md-6">
-        <img src="../../../static/images/index images/image_2.png" alt="Girl in a jacket" >
+        <img src="../../../static/images/index images/image_2.png" alt="image" >
     
       </div>
     </div>
@@ -281,7 +281,7 @@
 </section>
 
 <!-- Leaderboard Section -->
-<section class="text-center py-5">
+<section class="text-center">
   <div class="container">
     <div class="row align-items-center">
       <div class="col-md-6  text-md-start text-sm-center  mb-4 mb-md-0">
@@ -297,7 +297,7 @@
             <li>পুরস্কার জয়ের সুযোগ — লিডারবোর্ডে শীর্ষে থাকলে পেতে পারেন আকর্ষণীয় পুরস্কার!</li>
           </ul>
         </div>
-        <a href="#" class="btn btn-custom">Check</a>
+        {% comment %} <a href="#" class="btn btn-custom">Check</a> {% endcomment %}
       </div>
       <div class="col-md-6">
         <img src="../../../static/images/index images/image_3.png" class="img-fluid">
@@ -308,7 +308,7 @@
 </section>
 
 <!-- Performance Analytics Section -->
-<section class="py-5">
+<section class="py-4">
   <div class="container">
     <div class="row align-items-center flex-md-row-reverse">
       <div class="col-md-6 text-md-start text-center mb-4 mb-md-0">
@@ -324,7 +324,7 @@
             <li>প্রগতি ট্র্যাকার: সময়ের সাথে স্কোরের উন্নতি মনিটর করার জন্য গ্রাফ ও ট্রেন্ড ডাটা।</li>
           </ul>
         </div>
-        <a href="#" class="btn btn-custom">View</a>
+        {% comment %} <a href="#" class="btn btn-custom">View</a> {% endcomment %}
       </div>
       <div class="col-md-6">
         
@@ -337,7 +337,7 @@
 </section>
 
 <!-- Study Materials Section -->
-<section class="text-center py-5">
+<section class="text-center py-4">
   <div class="container">
     <div class="row align-items-center">
       <div class="col-md-6 text-md-start text-center mb-4 mb-md-0">
@@ -359,8 +359,8 @@
   </div>
 </section>
 
-<!-- Contact Us Section -->
-<section class="py-5">
+{% comment %} <!-- Contact Us Section -->
+<section class="py-4">
   <div class="container">
     <div class="row align-items-center flex-md-row-reverse">
       <div class="col-md-6 text-md-start text-center">
@@ -378,9 +378,9 @@
         </div>
       </div>
     </div>
-    {% comment %} <div class="border border-1 w-100" style="margin-top: 50px;"></div> {% endcomment %}
+    <div class="border border-1 w-100" style="margin-top: 50px;"></div> 
   </div>
-</section> 
+</section>  {% endcomment %}
 
 {% endblock %}
 
