@@ -9,7 +9,7 @@ from .tasks import auto_submit_exam
 from users.serializers import UserSerializer
 from .models import *
 from subscription.models import *
-from .permissions import IsAdminOrReadOnly, IsAdmin
+from .permissions import IsAdminOrReadOnly, IsAdmin, IsTeacherOrAdmin
 from django.utils import timezone
 from rest_framework.pagination import PageNumberPagination
 from django.shortcuts import get_object_or_404
@@ -2126,7 +2126,11 @@ class PositionViewSet(viewsets.ModelViewSet):
 class ExamTypeViewSet(viewsets.ModelViewSet):
     queryset = ExamType.objects.all()
     serializer_class = ExamTypeSerializer
-    # permission_classes = [IsAdminUser] 
+
+    def get_permissions(self):
+        if self.request.method in ['GET', 'HEAD', 'OPTIONS']:
+            return [AllowAny()]
+        return [IsTeacherOrAdmin()]
 
 
 
@@ -2673,11 +2677,11 @@ class PastExamViewSet(viewsets.ModelViewSet):
                         last_valid_subject = current_subject  # Update the last valid subject
                     elif last_valid_subject:
                         current_subject = last_valid_subject  # Use the last known subject
-                    else:
-                        # No subject found yet and none in this row, cannot proceed
-                        logging.error(f"Skipping row {excel_row_num}: Subject missing and no previous subject found.")
-                        skipped_rows += 1
-                        continue  # Skip this row
+                    # else:
+                    #     # No subject found yet and none in this row, cannot proceed
+                    #     logging.error(f"Skipping row {excel_row_num}: Subject missing and no previous subject found.")
+                    #     skipped_rows += 1
+                    #     continue  # Skip this row
 
                     # 7.2 Detect question content (Text and Image)
                     question_cell = f"{get_column_letter(df.columns.get_loc(question_column_name) + 1)}{excel_row_num}"
@@ -3033,6 +3037,23 @@ class PastExamViewSet(viewsets.ModelViewSet):
         questions = past_exam.questions.all()
         return Response({"questions": [q.text for q in questions]})
 
+
+
+
+
+class PastExamByTypeListView(ListAPIView):
+    serializer_class = PastExamListSerializer
+    permission_classes = [AllowAny]  # No authentication required
+
+    def get_queryset(self):
+        exam_type_id = self.request.query_params.get('exam_type')
+        # queryset = PastExam.objects.filter(is_published=True)
+        print(exam_type_id)
+        if exam_type_id:
+            queryset = PastExam.objects.filter(exam_type_id=exam_type_id)
+        
+        return queryset
+    
 
 class UserPastExamListAPIView(generics.ListAPIView):
     serializer_class = PastExamSerializer

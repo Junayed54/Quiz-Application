@@ -28,6 +28,6 @@ class IsOperator(BasePermission):
         return request.user.role == 'operator'
 
 
-# class IsTeacherOrAdmin(permissions.BasePermission):
-#     def has_permission(self, request, view):
-#         return request.user.is_authenticated and (request.user.role == 'teacher' or request.user.is_staff)
+class IsTeacherOrAdmin(BasePermission):
+    def has_permission(self, request, view):
+        return request.user.is_authenticated and (request.user.role == 'teacher' or request.user.is_staff or request.user.role == "admin")

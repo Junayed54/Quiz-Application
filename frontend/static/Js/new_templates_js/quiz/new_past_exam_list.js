@@ -4,6 +4,10 @@ document.addEventListener('DOMContentLoaded', function () {
     //     window.location.href = '/login/';
     //     return;
     // }
+    const urlParams = new URLSearchParams(window.location.search);
+
+    const exam_type_id =  window.location.pathname.split('/')[2];
+    console.log(exam_type_id);
     const loader = document.getElementById('loader');
     // const headers = {
     //     'Authorization': `Bearer ${accessToken}`,
@@ -46,10 +50,14 @@ document.addEventListener('DOMContentLoaded', function () {
         //     .catch(err => console.error('Error loading exams:', err));
 
         // Fetch past exams
-        fetch(`/quiz/past-exams/`)
-            .then(res => res.json())
-            .then(data => renderExams(data, 'all_exams', true))
-            .catch(err => console.error('Error loading past exams:', err));
+        fetch(`/quiz/exam-type/past-exams/?exam_type=${exam_type_id}`)
+        .then(res => {
+            if (!res.ok) throw new Error('Network response was not ok');
+            return res.json();
+        })
+        .then(data => renderExams(data, 'all_exams', true))
+        .catch(err => console.error('Error loading past exams:', err));
+
     };
 
     const renderExams = (data, elementId, isPast) => {

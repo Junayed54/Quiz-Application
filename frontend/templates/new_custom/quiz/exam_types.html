@@ -1,0 +1,128 @@
+{% extends 'new_custom/new_templates/index2.html'%}
+{% block title %}পূর্ববর্তী পরীক্ষাগুলো{% endblock %}
+{% block style %}
+
+  <style>
+    .container-fluid {
+        padding-top: 20px;
+        padding-bottom: 20px;
+        margin-bottom: 0; /* Remove any unwanted space at the bottom */
+    }
+    .university-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 25px;
+        margin-bottom: 0; /* Remove extra margin below the grid */
+    }
+    .university-grid button {
+        border: none;
+        background: none;
+    }
+    .university-card {
+        border-radius: 12px;
+        padding: 10px; /* Reduced padding */
+        box-shadow: 14px 14px 33px 0px #00000040;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+        
+        min-height: 220px; /* Reduced height */
+        transition: transform 0.2s ease-in-out;
+        background: #92D7DE;
+        font-size: 1rem;
+        font-weight: bold;
+        margin-bottom: 5px;
+    }
+
+    .university-card p {
+        font-size: 0.8rem;
+        color: #424242;
+        margin-bottom: 0;
+    }
+
+    .university-link {
+        background: #92D7DE;
+        color: #231651;
+    }
+
+    .university-card:hover {
+        transform: scale(1.03);
+    }
+
+    /* Ensure footer styling works correctly */
+    footer {
+        margin-bottom: 0;
+        padding: 0; /* If there's any padding on footer */
+    }
+
+    /* Responsive Adjustments */
+    @media (max-width: 576px) {
+        .university-grid {
+            grid-template-columns: 1fr;
+        }
+        .university-card {
+            padding: 10px;
+            min-height: 100px;
+        }
+        .university-card h6 {
+            font-size: 0.9rem;
+            margin-bottom: 3px;
+        }
+        .university-card p {
+            font-size: 0.7rem;
+        }
+    }
+</style>
+
+{% endblock %}
+
+{% block content %}
+<div style="background: rgb(255, 253, 208);">
+    <div class="container-fluid p-4" >
+        <div class="row">
+            <div class="d-flex justify-content-between">
+                <h1 class="text-muted" style="font-size: 24px; font-weight: 600; text-shadow: 0px 7px 5px #00000040; color: #534268;">পূর্ববর্তী পরিক্ষাগুলি</h1>
+                <div class="input-group mb-3 border-bottom" style="width: 300px">
+                    <input type="text" class="form-control border-0 text-center" placeholder="" aria-label="">
+                    <button class="btn btn-outline-secondary border-0" type="button">
+                        <i class="fas fa-search"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+        <div class="row rounded border border-1 p-4" style="box-shadow: 2px 2px 33px 0px #00000040; background: #fff;">
+            <div class="col-12">
+                <div  id="examTypeContainer" class="university-grid" style="text-decoration: none; border: none;">
+                    {% comment %} <div id="examTypeContainer" class="flex flex-wrap gap-4"> {% endcomment %}
+    <!-- Exam types will be injected here -->
+                    </div>
+                    {% comment %} <button onclick="window.location.href='/all_past_exams/'" class="university-link">
+                        <div class="university-card">
+                            <h6>বিসিএস পরিক্ষাগুলি</h6>
+                            <p></p>
+                        </div>
+                    </button>
+                    <button href="#" class="university-link">
+                        <div class="university-card">
+                            <h6>শিক্ষক নিবন্ধন পরীক্ষা</h6>
+                            
+                        </div>
+                    </button>
+                    <button href="#" class="university-link">
+                        <div class="university-card">
+                            <h6>ব্যাংকিং পরীক্ষা</h6>
+                            
+                        </div>
+                    </button> {% endcomment %}
+                    
+                </div>
+            </div>
+        </div>
+    </div>
+    <div style="height: 250px"></div>
+</div>
+{% endblock %}
+
+{% block body_js %}<script src="../../../static/Js/new_templates_js/quiz/past_exam_types.js"></script>{% endblock %}

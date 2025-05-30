@@ -330,7 +330,7 @@ class Question(models.Model):
 
     explanation = models.TextField(null=True, blank=True)
     explanation_image = models.ImageField(upload_to='explanation_images/', null=True, blank=True)
-
+    
     marks = models.IntegerField()
     category = models.ForeignKey(Category, related_name='questions', on_delete=models.CASCADE, null=True, blank=True)
     difficulty_level = models.IntegerField(choices=DIFFICULTY_LEVEL_CHOICES, default=1, null=True, blank=True)

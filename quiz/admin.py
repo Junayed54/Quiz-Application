@@ -208,7 +208,7 @@ class PastExamAdmin(admin.ModelAdmin):
     # Fields displayed on the form when adding/editing a PastExam
     fieldsets = (
         (None, {
-            'fields': ('title', 'organization', 'department', 'position', 'exam_date', 'duration', 'is_published')
+            'fields': ('title', 'organization', 'department', 'position', 'exam_date', 'duration','exam_type', 'is_published')
         }),
         # ('Questions', {
         #     'fields': ('questions',)
