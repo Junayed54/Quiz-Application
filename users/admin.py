@@ -10,7 +10,7 @@ class CustomUserAdmin(UserAdmin):
         (None, {'fields': ('phone_number', 'username', 'password')}),
         ('Personal info', {'fields': ('email', 'address', 'other_information', 'profile_picture', 'date_of_birth', 'gender', 'secondary_phone_number', 'bio', 'facebook_profile', 'twitter_profile', 'linkedin_profile', 'preferences')}),
         ('Permissions', {'fields': ('is_staff', 'is_active', 'role')}),
-        ('Important dates', {'fields': ('date_joined', 'last_login')}),
+        ('Important dates', {'fields': ( 'last_login', )}),
     )
     add_fieldsets = (
         (None, {

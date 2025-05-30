@@ -473,6 +473,11 @@ class PastExamCreateSerializer(serializers.ModelSerializer):
             "is_published",
             "file",
         ]
+        
+    def validate_title(self, value):
+        if PastExam.objects.filter(title=value).exists():
+            raise serializers.ValidationError("An exam with this title already exists.")
+        return value
 
     def create(self, validated_data):
         validated_data.pop("file", None)

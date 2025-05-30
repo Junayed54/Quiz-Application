@@ -116,6 +116,29 @@ class ExamPermissionCheckView(APIView):
         object_id = exam.exam_id if hasattr(exam, 'exam_id') else exam.id
         # Step 2: Validate User Subscription
         subscriptions = UserSubscription.objects.filter(user=user, is_active=True)
+        # Step 3: Trial Access for New Users
+        today = date.today()
+        trial_end_date = user.date_joined.date() + timedelta(days=7)
+        if not subscriptions.exists() and today <= trial_end_date:
+            # Allow access during trial period
+            exam_ct = ContentType.objects.get_for_model(type(exam))
+
+            # already_accessed = UserExamAccess.objects.filter(
+            #     user=user,
+            #     content_type=exam_ct,
+            #     object_id=object_id
+            # ).exists()
+
+            # if already_accessed:
+            #     return Response({'has_access': True})
+
+            # UserExamAccess.objects.create(
+            #     user=user,
+            #     content_type=exam_ct,
+            #     object_id=object_id
+            # )
+
+            return Response({'has_access': True, 'trial': True})
         if not subscriptions.exists():
             return Response({'has_access': False, 'reason': 'no_subscription'}, status=403)
 

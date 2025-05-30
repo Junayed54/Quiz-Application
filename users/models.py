@@ -61,7 +61,7 @@ class CustomUser(AbstractUser):
     date_of_birth = models.DateField(blank=True, null=True)
     gender = models.CharField(max_length=10, choices=[('male', 'Male'), ('female', 'Female'), ('other', 'Other')], blank=True, null=True)
     secondary_phone_number = models.CharField(max_length=20, blank=True, null=True)
-    # date_joined = models.DateTimeField(auto_now_add=True, null=True)
+    date_joined = models.DateTimeField(auto_now_add=True, null=True, blank=True)
     facebook_profile = models.URLField(blank=True, null=True)
     twitter_profile = models.URLField(blank=True, null=True)
     linkedin_profile = models.URLField(blank=True, null=True)

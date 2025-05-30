@@ -38,7 +38,7 @@ document.addEventListener('DOMContentLoaded', function(){
             loader.classList.add('d-none');
             const full_mark = document.getElementById("full-mark");
             full_mark.innerText=`${data.total_questions}`
-            console.log(data);
+            // console.log(data);
             document.getElementById('exam-info').innerHTML = `<h3 class="text-bold" style="color: #534268; font-size: 36px; font-weight: 800;">${data.title}</h3>`;
 
             // --- Start of new logic for duration ---

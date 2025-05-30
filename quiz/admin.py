@@ -90,13 +90,54 @@ class ExamDifficultyAdmin(admin.ModelAdmin):
     list_display = ('exam', 'difficulty1_percentage', 'difficulty2_percentage', 'difficulty3_percentage', 'difficulty4_percentage', 'difficulty5_percentage', 'difficulty6_percentage')
     search_fields = ('exam__title',)
 
+
+
+from django.contrib.admin import SimpleListFilter
+
+class PastExamFilter(SimpleListFilter):
+    title = 'Past Exam'
+    parameter_name = 'past_exam'
+
+    def lookups(self, request, model_admin):
+        from .models import PastExam
+        return [(exam.id, exam.title) for exam in PastExam.objects.all()]
+
+    def queryset(self, request, queryset):
+        from .models import PastExamQuestion
+        if self.value():
+            question_ids = PastExamQuestion.objects.filter(
+                past_exam_id=self.value()
+            ).values_list('question_id', flat=True)
+            return queryset.filter(id__in=question_ids)
+        return queryset
+
+class LiveExamFilter(SimpleListFilter):
+    title = 'Live Exam'
+    parameter_name = 'live_exam'
+
+    def lookups(self, request, model_admin):
+        from .models import Exam
+        return [(exam.exam_id, exam.title) for exam in Exam.objects.all()]
+
+    def queryset(self, request, queryset):
+        from .models import ExamQuestion
+        if self.value():
+            question_ids = ExamQuestion.objects.filter(
+                exam_id=self.value()
+            ).values_list('question_id', flat=True)
+            return queryset.filter(id__in=question_ids)
+        return queryset
+
+
+
 from django.utils.html import format_html, mark_safe
 class QuestionAdmin(admin.ModelAdmin):
     list_display = (
         'id', 
         'text_snippet', 
         'question_image_preview', 
-        'get_options', 
+        'get_options',
+        'get_exam_names', 
         'category', 
         'difficulty_level', 
         'marks', 
@@ -160,6 +201,22 @@ class QuestionAdmin(admin.ModelAdmin):
 
         # Join with <br> and mark as safe HTML
         return mark_safe("<br>".join(output_lines)) if output_lines else "No options"
+    def get_exam_names(self, obj):
+        from .models import ExamQuestion, PastExamQuestion
+
+        # Get Live Exams
+        live_exams = ExamQuestion.objects.filter(question=obj).select_related('exam')
+        live_exam_titles = [eq.exam.title for eq in live_exams if eq.exam]
+
+        # Get Past Exams
+        past_exams = PastExamQuestion.objects.filter(question=obj).select_related('exam')
+        past_exam_titles = [peq.exam.title for peq in past_exams if peq.exam]
+
+        # Combine both (avoid duplicates)
+        all_titles = set(live_exam_titles + past_exam_titles)
+
+        return ", ".join(all_titles) if all_titles else "—"
+    get_exam_names.short_description = 'Exam(s)'
 
 
 

@@ -437,14 +437,15 @@ document.addEventListener('DOMContentLoaded', function(){
         .then(data => {
             const loader = document.getElementById("loader");
             loader.classList.add('d-none');
-            console.log(data);
+            
             document.getElementById('exam-info').innerHTML = `<h3 class="text-bold" style="color: #534268; font-size: 36px; font-weight: 800;">${data.title}</h3>`;
+            const full_mark = document.getElementById('full-mark');
             
             // Convert the duration (in minutes) to seconds
             timeRemaining = data.duration * 60;
             timerInterval = setInterval(updateTimer, 1000);
             questions = data.questions;
-
+            full_mark.innerText = questions.length;
             // Populate user information
             document.getElementById('user-name').textContent = data.user_name || "Your Name";
             document.getElementById('user-profession').textContent = data.user_profession || "Profession";

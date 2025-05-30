@@ -330,7 +330,7 @@ class Question(models.Model):
 
     explanation = models.TextField(null=True, blank=True)
     explanation_image = models.ImageField(upload_to='explanation_images/', null=True, blank=True)
-    
+
     marks = models.IntegerField()
     category = models.ForeignKey(Category, related_name='questions', on_delete=models.CASCADE, null=True, blank=True)
     difficulty_level = models.IntegerField(choices=DIFFICULTY_LEVEL_CHOICES, default=1, null=True, blank=True)
@@ -447,7 +447,7 @@ class Leaderboard(models.Model):
 
 
 class PastExam(models.Model):
-    title = models.CharField(max_length=255)  # Exam Name
+    title = models.CharField(max_length=255, unique=True)  # Exam Name
     organization = models.ForeignKey(Organization, on_delete=models.CASCADE, related_name="exams")
     department = models.ForeignKey(Department, on_delete=models.SET_NULL, null=True, blank=True, related_name="exams")
     position = models.ForeignKey(Position, on_delete=models.CASCADE, related_name="exams")

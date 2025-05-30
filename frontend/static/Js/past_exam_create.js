@@ -342,10 +342,15 @@ document.addEventListener("DOMContentLoaded", function () {
         })
         .then(response => response.json())
         .then(data => {
+            console.log(data);
             loader.classList.add("d-none");
             if (data.error) {
                 responseMessage.classList.remove("d-none");
                 responseMessage.textContent = `Error: ${data.error}`;
+
+            } else if (data.title) {
+                responseMessage.classList.remove("d-none");
+                responseMessage.textContent = `Error: ${data.title.join(', ')}`;
             } else {
                 responseMessage.classList.remove("d-none");
                 responseMessage.textContent = `Success: ${data.message}`;
