@@ -1,12 +1,20 @@
 {% extends 'new_custom/new_templates/index2.html'%}
+
 {% block title %}Leaderboard{% endblock %}
+{% load static %}
 {% block style %}
   <style>
     body {
       background-color: #0f172a;
-      
-
       color: white;
+    }
+    .text-custom{
+      background: linear-gradient(90deg, #FFFFFF 0%, #4DFFDF 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      font-weight: 700;
+      font-size: 32px;
+
     }
     .cards {
       background-color: #1e293b;
@@ -16,113 +24,230 @@
 
     .rank-row {
       background-color: #1e293b;
-      margin-top: 30px;
-      padding: 102px 200px;
-      
+      padding: 20px;
       height: 70px;
-      border-bottom: 1px solid blue;
+      border-bottom: 1px solid #4f46e5;
+    }
 
-    }
-    .progress {
-      background-color: #333;
-    }
-    .rank-badge {
-      font-size: 1rem;
-      font-weight: bold;
-    }
-    .table{
-      background-color: red;
-    }
-    table tr {
-      
-      font-weight: bold;
-      background: red;
-      background: radial-gradient(61.81% 85.04% at 50% 50%, rgba(108, 77, 246, 0.1) 0%, rgba(108, 77, 246, 0) 70%);
-    }
-    
+    {% comment %} .rank-1 { background-color: #facc15; color: #000; }
+    .rank-2 { background-color: #60a5fa; color: #000; }
+    .rank-3 { background-color: #f472b6; color: #000; } {% endcomment %}
 
-    {% comment %} .table-dark {
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      border-radius: 10px;
+      overflow: hidden;
+    }
+
+    table thead th {
+      color: #38bdf8;
+      font-size: 0.9rem;
+      text-transform: uppercase;
+      padding: 12px;
+      background-color: #1e293b;
+      border-bottom: 2px solid #4f46e5;
+    }
+
+    table tbody tr {
+      transition: background 0.3s ease;
+    }
+
+    table tbody tr:nth-child(even) {
+      background-color: rgba(255, 255, 255, 0.03);
+    }
+
+    table tbody tr:hover {
+      background-color: rgba(255, 255, 255, 0.08);
+    }
+
+    table td {
+      padding: 14px 16px;
+      color: white;
+      font-size: 0.95rem;
+      font-weight: 500;
       vertical-align: middle;
-      background: radial-gradient(61.81% 85.04% at 50% 50%, rgba(108, 77, 246, 0.1) 0%, rgba(108, 77, 246, 0) 70%);
-      
-    } {% endcomment %}
-    
+    }
+
     .avatar {
       width: 60px;
       height: 60px;
       object-fit: cover;
       border-radius: 50%;
     }
+
     .top-avatar {
       width: 80px;
       height: 80px;
       object-fit: cover;
       border-radius: 50%;
       border: 3px solid gold;
-      
     }
+
     .leader-you {
       background-color: #3b2c9a !important;
       color: white;
     }
+
+
+
+
+
+    /* Container for the whole top performers section */
+#top-performers {
+    display: flex;
+    justify-content: center; /* Center the columns horizontally */
+    align-items: flex-start; /* Align items to the top for vertical staggering */
+    min-height: 280px; /* Adjust as needed to provide space for vertical offset */
+    background-color: #1a1a2e; /* Dark background similar to the image */
+    padding: 20px 0; /* Add vertical padding */
+    border-radius: 10px;
+    gap: 20px; /* Space between columns */
+}
+
+/* Wrapper for the circular and rectangular parts to manage their relative positioning */
+.performer-card-wrapper {
+    display: flex;
+    flex-direction: column; /* Stacks the circle and box vertically within the wrapper */
+    align-items: center;
+    position: relative; /* Crucial for absolute positioning of children (like medal) */
+    width: 120px; /* Define a fixed width for the wrapper to control overall card width */
+    margin-bottom: 10px; /* Space between the visual elements and text below */
+}
+
+/* The "round shape" with first letters. This is the colored circle. */
+.performer-initials-circle {
+    width: 80px;  /* Size of the circle */
+    height: 80px; /* Size of the circle */
+    border-radius: 50%;
+    border: 3px solid white; /* White border as seen in the image */
+    z-index: 1; /* Place it *behind* the main content box conceptually */
+    position: relative; /* To contain the initials text */
+    flex-shrink: 0; /* Prevent it from shrinking */
+    display: flex; /* For centering initials */
+    align-items: center;
+    justify-content: center;
+}
+
+.performer-initials-circle span {
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.3); /* Optional: slight shadow for text */
+}
+
+/* The "small div" for the actual profile image or generic avatar. This is the rectangular box. */
+.performer-main-content-box {
+    width: 100px; /* Width of the rectangular image/avatar box */
+    height: 100px; /* Height of the rectangular image/avatar box */
+    border-radius: 8px; /* Slightly rounded corners for the box */
+    overflow: hidden; /* Hide overflow if image is larger */
+    z-index: 2; /* Place it *above* the initials circle visually */
+    position: relative; /* For image inside */
+    margin-top: -40px; /* Pull it UP to overlap the circle below */
+    border: 2px solid #555; /* Subtle border for the box */
+    background-color: #333; /* Default background for box if no image */
+    flex-shrink: 0; /* Prevent it from shrinking */
+    display: flex; /* For centering content inside if no image */
+    align-items: center;
+    justify-content: center;
+}
+
+.performer-profile-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover; /* Ensure image covers the box */
+    display: block; /* Remove extra space below image */
+}
+
+/* Styling for the case when there is no image (initials within the rectangular box) */
+.performer-no-image-avatar {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #444; /* A slightly different background for clarity */
+}
+
+/* Medal Badge positioning */
+.medal-badge {
+    /* Position absolutely relative to .performer-card-wrapper */
+    position: absolute;
+    top: 35px; /* Adjust vertically to sit near the top-right of the circle */
+    right: 5px; /* Adjust horizontally */
+    transform: translate(50%, -50%); /* Fine-tune to center on the corner */
+    z-index: 3; /* Ensure medal is on top of everything */
+    padding: 0.2em 0.5em; /* Adjust padding for badge size */
+}
+
+/* Vertical Positioning Classes (applied to the .col div for staggering) */
+.topper-1st-pos {
+    margin-top: 0; /* Highest position */
+}
+
+.topper-2nd-pos {
+    margin-top: 50px; /* Lower than 1st */
+}
+
+.topper-3rd-pos {
+    margin-top: 100px; /* Even lower than 2nd */
+}
+
+/* Adjust Bootstrap column padding if needed to control spacing */
+.col {
+    padding: 0 10px; /* Reduce horizontal padding between columns if using default .col */
+}
   </style>
 
+
+  
 {% endblock %}
-{% block content%}
 
-  <div class="container">
-    <div class="d-flex justify-content-between align-items-center mb-4 py-4
-    ">
-      <h2 class="fw-bold">Leaderboard</h2>
-      <div>
-        <button class="btn btn-outline-light btn-secondary btn-sm me-2">This Month</button>
-        <button class="btn btn-outline-light btn-primary btn-sm" onclick="refreshLeaderboard()">Refresh</button>
+{% block content %}
+<div class="container">
+  <div class="d-flex justify-content-between align-items-center mb-4 py-4">
+    <h2 class="fw-bold">Leaderboard</h2>
+    <div>
+      <button class="btn btn-outline-light btn-secondary btn-sm me-2">This Month</button>
+      <button class="btn btn-outline-light btn-primary btn-sm" onclick="refreshLeaderboard()">Refresh</button>
+    </div>
+  </div>
+
+  <div class="row g-3 mb-4">
+    <div class="col-md-4">
+      <div class="cards p-3 text-center">
+        <div class="text-white" style="font-weight: 400; font-size: 14px; background: #F0F0FF; -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;">Your Current Rank</div>
+        <h3 class="text-custom" id="my_rank"></h3>
       </div>
     </div>
-
-    <div class="row g-3 mb-4">
-      <div class="col-md-4">
-        <div class="cards p-3 text-center">
-          <div class="text-white">Your Current Rank</div>
-          <h3 class="text-info" style="color: linear-gradient(90deg, #FFFFFF 0%, #4DFFDF 100%); font-weight: 700; font-size: 35px;
-" id="my_rank">#8</h3>
-        </div>
+    <div class="col-md-4">
+      <div class="cards p-3 text-center">
+        <div class="text-white" style="font-weight: 400; font-size: 14px; background: #F0F0FF; -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;">Points This Month</div>
+        <h3 class="text-custom" id="my_points"></h3>
       </div>
-      <div class="col-md-4">
-        <div class="cards p-3 text-center">
-          <div class="text-white">Points This Month</div>
-          <h3 class="text-info" id="my_points" style="color: linear-gradient(90deg, #FFFFFF 0%, #4DFFDF 100%); font-weight: 700; font-size: 35px;
-">1,140</h3>
-        </div>
-      </div>
-      <div class="col-md-4">
-        <div class="cards p-3 text-center">
-          <div class="text-white">Completed Tests</div>
-          <h3 class="text-info" id="my_complete_test" style="color: linear-gradient(90deg, #FFFFFF 0%, #4DFFDF 100%); font-weight: 700; font-size: 35px;
-">9</h3>
-        </div>
-      </div>
-      {% comment %} <div class="col-md-4">
-        <div class="card p-3 text-center">
-          <div class="text-white">Progress to Next Rank</div>
-          <div class="progress mt-2">
-            <div class="progress-bar bg-info" style="width: 65%">65%</div>
-          </div>
-        </div>
-      </div> {% endcomment %}
     </div>
-    <div class="mb-4 rounded" style="background: linear-gradient(180deg, rgba(15, 15, 26, 0.8) 0%, rgba(10, 10, 20, 0.8) 100%); border: 1px solid #6C4DF633;">
+    <div class="col-md-4">
+      <div class="cards p-3 text-center">
+        <div class="text-white" style="font-weight: 400; font-size: 14px; background: #F0F0FF; -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;">Completed Tests</div>
+        <h3 class="text-custom" id="my_complete_test"></h3>
+      </div>
+    </div>
+  </div>
+
+  <div class="mb-4 rounded" style="background: linear-gradient(180deg, rgba(15, 15, 26, 0.8) 0%, rgba(10, 10, 20, 0.8) 100%); border: 1px solid #6C4DF633;">
     <div class="p-4 mb-4">
       <div class="d-flex justify-content-between align-items-center mb-3" style="border-bottom: 1px solid #FFFFFF0D">
         <h5 class="text-white">Top Performers</h5>
-        <span  class="text-white"></span>
+        <span class="text-white"></span>
       </div>
-      <div id="top-performers" class="flex justify-center gap-4 mt-6"></div>
+      <div id="top-performers" class="d-flex justify-content-center gap-4 mt-4"></div>
     </div>
-    <div class="rounded">
-      <table class="align-middle rounded text-white w-100 my-4" style="">
-        <thead class="" style="">
-          <tr class="rank-row my-4">
+
+    <div class="rounded px-4 pb-4">
+      <table class="text-white">
+        <thead>
+          <tr class="rank-row">
             <th>Rank</th>
             <th>Player</th>
             <th>Tests</th>
@@ -130,20 +255,30 @@
             <th>Percentage</th>
           </tr>
         </thead>
-        <tbody id="rank-list" class="">
-          
+        <tbody id="rank-list">
+          <!-- Example row (to be replaced by JS or Django context loop) -->
+          <!--
+          <tr>
+            <td>#1</td>
+            <td>Jonayed Shanto</td>
+            <td>12</td>
+            <td>1140</td>
+            <td>95%</td>
+          </tr>
+          -->
         </tbody>
       </table>
     </div>
   </div>
-  </div>
-{% endblock %}
-{% block body_js %}
-  <script>
-    function refreshLeaderboard() {
-      alert("Leaderboard refreshed!");
-    }
-  </script>
-  <script src="../../../static/Js/quickquiz/leaderboard.js"></script>
+</div>
 {% endblock %}
 
+{% block body_js %}
+<script>
+  function refreshLeaderboard() {
+    alert("Leaderboard refreshed!");
+    // You could trigger an AJAX call here to reload the data
+  }
+</script>
+<script src="{% static 'Js/quickquiz/leaderboard.js' %}"></script>
+{% endblock %}

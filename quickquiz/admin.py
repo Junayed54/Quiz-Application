@@ -1,5 +1,15 @@
 from django.contrib import admin
 from .models import *
+
+
+
+@admin.register(Subject)
+class SubjectAdmin(admin.ModelAdmin):
+    list_display = ['id', 'name']
+    search_fields = ['name']
+    
+    
+
 # PracticeOption Admin
 class PracticeOptionInline(admin.TabularInline):
     model = PracticeOption
@@ -8,7 +18,7 @@ class PracticeOptionInline(admin.TabularInline):
 # PracticeQuestion Admin
 @admin.register(PracticeQuestion)
 class PracticeQuestionAdmin(admin.ModelAdmin):
-    list_display = ['id', 'text', 'image']  # Fields to display in the list view
+    list_display = ['id', 'text', 'subject', 'image']  # Fields to display in the list view
     search_fields = ['text']  # Make it searchable by the question text
     inlines = [PracticeOptionInline]  # Display PracticeOption inline within PracticeQuestion
 

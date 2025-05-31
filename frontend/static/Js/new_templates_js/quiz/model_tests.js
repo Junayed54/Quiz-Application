@@ -198,6 +198,30 @@ document.addEventListener('DOMContentLoaded', function() {
             shareButton.href = '#';
             shareButton.classList.add('btn', 'btn-outline-secondary', 'btn-sm');
             shareButton.textContent = 'শেয়ার';
+            const shareUrl = `${window.location.origin}/model-tests/${exam.exam_id}/`;
+            shareButton.addEventListener('click', async () => {
+                if (navigator.share) {
+                    try {
+                        await navigator.share({
+                            title: exam.title || 'পরীক্ষা',
+                            text: 'এই পরীক্ষাটি দেখুন:',
+                            url: shareUrl,
+                        });
+                    } catch (err) {
+                        console.error('Sharing failed:', err);
+                    }
+                } else {
+                    // Fallback: copy to clipboard
+                    try {
+                        await navigator.clipboard.writeText(shareUrl);
+                        alert('লিংক কপি হয়েছে!');
+                    } catch (err) {
+                        alert('শেয়ার করতে ব্যর্থ হয়েছে।');
+                    }
+                }
+            });
+
+            
 
             buttonDiv.appendChild(detailsButton);
             buttonDiv.appendChild(shareButton);

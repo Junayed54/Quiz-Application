@@ -131,20 +131,21 @@ document.addEventListener("DOMContentLoaded", function () {
 
         const performerCard = document.createElement("div");
         performerCard.className = "col text-center";
-
+// ${hasImage ? `
+//                         <img src="${profileImage}" alt="${user.username}" style="width: 100%; height: 100%; object-fit: cover;">
+//                     ` : `
         performerCard.innerHTML = `
-            <div class="position-relative d-inline-block">
+            <div class="position-relative d-inline-block" style="margin-bottom: 100px">
                 <div class="rounded-circle mx-auto d-flex align-items-center justify-content-center"
                     style="width: 80px; height: 80px; background: ${gradients[podiumIndex]}; overflow: hidden;">
-                    ${hasImage ? `
-                        <img src="${profileImage}" alt="${user.username}" style="width: 100%; height: 100%; object-fit: cover;">
-                    ` : `
-                        <span class="text-white fw-bold fs-4">${initials}</span>
-                    `}
+                    
+                    <span class="text-white fw-bold fs-4">${initials}</span>   
                 </div>
-                <span class="position-absolute top-0 end-0 bg-white rounded-pill px-2 small shadow">
+                <span class="position-absolute top-2 end-3 bg-white rounded-pill px-2 small shadow">
                     ${["🥈", "🥇", "🥉"][podiumIndex]}
                 </span>
+                <div class="position-absolute top-2 end-2 bg-white" style="width: 100px; height: 100px;">
+                </div>
             </div>
             <div class="mt-2 fw-semibold text-white">${user.username}</div>
             <div class="text-light small">${user.points} pts</div>

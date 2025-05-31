@@ -89,7 +89,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     
                     <div style="display: flex; flex-direction: column; gap:8px; align-items: center; justify-content: center">
                         <a href="/past_exam_details/${exam.id}" class="btn btn-primary">Details</a>
-                        <a href="#" class="btn btn-outline-secondary">Share</a>
+                        <button class="btn btn-outline-secondary" onclick="shareExam('${exam.title}', '${window.location.origin}/past_exam_details/${exam.id}')">Share</button>
                     </div>
                     
                 </div>

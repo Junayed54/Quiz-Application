@@ -21,7 +21,10 @@ class UserManager(BaseUserManager):
         email = self.normalize_email(email)
         user = self.model(phone_number=phone_number, email=email, username=username, role=role, **extra_fields)
         
-        user.set_password(password)
+        if password:
+            user.set_password(password)
+        else:
+            user.set_unusable_password()
         user.save(using=self._db)
         return user
 

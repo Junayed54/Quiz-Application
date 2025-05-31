@@ -8,12 +8,23 @@ class PracticeOptionSerializer(serializers.ModelSerializer):
         model = PracticeOption
         fields = ['id', 'text', 'image', 'is_correct']
 
+class SubjectSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Subject
+        fields = ['id', 'name']
+
 class PracticeQuestionSerializer(serializers.ModelSerializer):
+    subject = serializers.PrimaryKeyRelatedField(
+        queryset=Subject.objects.all(),
+        allow_null=True,  # allow explicitly passing null
+        required=False     # allow omitting subject
+    )
     options = PracticeOptionSerializer(many=True, read_only=True)
 
     class Meta:
         model = PracticeQuestion
-        fields = ['id', 'text', 'image','marks', 'options']
+        fields = ['id', 'subject', 'text', 'image', 'marks', 'options']
+
 
 
 class PracticeSessionSerializer(serializers.ModelSerializer):

@@ -1,227 +1,154 @@
 {% extends 'new_custom/new_templates/index2.html'%}
 {% block title %}Leaderboard{% endblock %}
+{% load static %}
 {% block style %}
   <style>
     body {
       background-color: #0f172a;
-      color: white;
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      color: #fff;
     }
-    .highlight {
-      background: linear-gradient(90deg, #22d3ee, #a855f7);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
+    .table-dark th, .table-dark td {
+      border-color: #334155;
+    }
+    .rank-badge {
       font-weight: bold;
+      padding: 0.25rem 0.5rem;
+      border-radius: 0.5rem;
     }
-    .card-custom {
+    .rank-1 { background-color: #facc15; color: #000; }
+    .rank-2 { background-color: #60a5fa; color: #000; }
+    .rank-3 { background-color: #f472b6; color: #000; }
+    .user-highlight {
       background-color: #1e293b;
-      border: none;
-      border-radius: 12px;
-      color: white;
+      border-left: 4px solid #9333ea;
     }
-    .progress-bar {
-      background-color: #0ea5e9;
-    }
-    .badge-pill {
-      padding: 0.35em 0.7em;
-      border-radius: 10px;
-      background-color: #334155;
-      font-size: 0.8em;
-    }
-    .top-performer {
-      position: relative;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-    }
-    .top-performer img {
+    .change-up { color: #4ade80; }  /* green */
+    .change-down { color: #f87171; } /* red */
+    .change-same { color: #cbd5e1; } /* gray */
+    .initials-badge {
+      width: 36px;
+      height: 36px;
       border-radius: 50%;
-      border: 4px solid #38bdf8;
-      width: 72px;
-      height: 72px;
-      object-fit: cover;
-      margin-bottom: 0.5rem;
-    }
-    .rank-row {
-      background-color: #1e293b;
-      border-radius: 10px;
-      padding: 12px 20px;
-      margin-bottom: 10px;
-    }
-    .rank-row.active {
-      border: 2px solid #0ea5e9;
-      background-color: #0f172a;
-    }
-    .btn-custom {
-      background-color: #334155;
-      color: #cbd5e1;
-      border: none;
-      border-radius: 8px;
-      padding: 6px 16px;
-    }
-    .btn-custom:hover {
-      background-color: #475569;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+      font-weight: bold;
+      margin-right: 0.5rem;
     }
   </style>
+
 {% endblock %}
 {% block content %}
 
   <div class="container py-5">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-      <h2 class="highlight">Leaderboard</h2>
-      <div>
-        <button class="btn btn-custom me-2">This Month</button>
-        <button class="btn btn-custom">Refresh</button>
-      </div>
-    </div>
+  <h2 class="mb-4 text-info fw-bold">Leaderboard</h2>
 
-    <div class="row text-center mb-4">
-      <div class="col-md-4 mb-3">
-        <div class="card card-custom p-3">
-          <p class="mb-1">Your Rank</p>
-          <h3 id="my_rank">#0</h3>
-        </div>
-      </div>
-      <div class="col-md-4 mb-3">
-        <div class="card card-custom p-3">
-          <p class="mb-1">Total points</p>
-          <h3 id="my_points">0</h3>
-        </div>
-      </div>
-      <div class="col-md-4 mb-3">
-        <div class="card card-custom p-3">
-          <p class="mb-1">Completed Tests</p>
-          <h3 id="my_complete_test">0</h3>
-        </div>
-      </div>
-      {% comment %} <div class="col-md-3 mb-3">
-        <div class="card card-custom p-3">
-          <p class="mb-1">Progress to Next Rank</p>
-          <div class="progress" style="height: 8px;">
-            <div class="progress-bar" style="width: 65%;"></div>
-          </div>
-          <small class="text-muted mt-2 d-block">65%</small>
-        </div>
-      </div> {% endcomment %}
-    </div>
+  <div class="table-responsive">
+    <table class="table table-dark table-hover align-middle">
+      <thead>
+        <tr class="text-secondary">
+          <th scope="col">Rank</th>
+          <th scope="col">Player</th>
+          <th scope="col">Tests</th>
+          <th scope="col">Score</th>
+          <th scope="col">Change</th>
+        </tr>
+      </thead>
+      <tbody>
 
-    <div class="card card-custom p-4 mb-4">
-      <div class="d-flex justify-content-between align-items-center mb-3">
-        <h4>Top Performers</h4>
-        <span class="text-muted">May 2025</span>
-      </div>
-      <div class="d-flex justify-content-around text-center py-4">
-        <div class="top-performer">
-          <div class="badge bg-secondary rounded-pill mb-2">RI</div>
-          <img src="../../../static/images/profile.jpeg" alt="RI">
-          <p class="mb-0">Rafiul Islam</p>
-          <small class="text-muted">1465 pts</small>
-        </div>
-        <div class="top-performer">
-          <div class="badge bg-warning rounded-pill mb-2">SA</div>
-          <img src="https://via.placeholder.com/72" alt="SA">
-          <p class="mb-0">Sadia Ahmed</p>
-          <small class="text-muted">1520 pts</small>
-        </div>
-        <div class="top-performer">
-          <div class="badge bg-danger rounded-pill mb-2">TS</div>
-          <img src="https://via.placeholder.com/72" alt="TS">
-          <p class="mb-0">Tahmina</p>
-          <small class="text-muted">1380 pts</small>
-        </div>
-      </div>
-    </div>
+        <tr>
+          <td><span class="rank-badge rank-1">#1</span></td>
+          <td>
+            <span class="initials-badge bg-warning text-dark">SA</span> Saadia Ahmed
+          </td>
+          <td>12</td>
+          <td class="text-warning fw-bold">1,520</td>
+          <td class="change-same">–</td>
+        </tr>
 
-    <div>
-        <div class="rank-row">
-            <div class="row align-items-center text-center">
-            <div class="col">RANK</div>
-            <div class="col">PLAYER</div>
-            <div class="col">TESTS</div>
-            <div class="col">SCORE</div>
-            <div class="col">CHANGE</div>
-            </div>
-        </div>
-        <div id="rank-list" style="">
+        <tr>
+          <td><span class="rank-badge rank-2">#2</span></td>
+          <td>
+            <span class="initials-badge bg-primary">RI</span> Rafiul Islam
+          </td>
+          <td>11</td>
+          <td class="text-info fw-bold">1,465</td>
+          <td class="change-up">+1</td>
+        </tr>
 
-        </div>
-        <div class="rank-row">
-          <div class="row align-items-center text-center">
-          <div class="col">#1</div>
-          <div class="col">SA</div>
-          <div class="col">12</div>
-          <div class="col">1,520</div>
-          <div class="col text-success">↑</div>
-          </div>
-        </div>
-      <div class="rank-row">
-        <div class="row align-items-center text-center">
-          <div class="col">#2</div>
-          <div class="col">RI</div>
-          <div class="col">11</div>
-          <div class="col">1,465</div>
-          <div class="col text-success">↑</div>
-        </div>
-      </div>
-      <div class="rank-row">
-        <div class="row align-items-center text-center">
-          <div class="col">#3</div>
-          <div class="col">TS</div>
-          <div class="col">10</div>
-          <div class="col">1,380</div>
-          <div class="col text-danger">↓</div>
-        </div>
-      </div>
-      <div class="rank-row">
-        <div class="row align-items-center text-center">
-          <div class="col">#4</div>
-          <div class="col">HM</div>
-          <div class="col">12</div>
-          <div class="col">1,305</div>
-          <div class="col text-success">↑</div>
-        </div>
-      </div>
-      <div class="rank-row">
-        <div class="row align-items-center text-center">
-          <div class="col">#5</div>
-          <div class="col">FN</div>
-          <div class="col">10</div>
-          <div class="col">1,250</div>
-          <div class="col text-success">↑</div>
-        </div>
-      </div>
-      <div class="rank-row">
-        <div class="row align-items-center text-center">
-          <div class="col">#6</div>
-          <div class="col">AR</div>
-          <div class="col">12</div>
-          <div class="col">1,215</div>
-          <div class="col text-danger">↓</div>
-        </div>
-      </div>
-      <div class="rank-row">
-        <div class="row align-items-center text-center">
-          <div class="col">#7</div>
-          <div class="col">SK</div>
-          <div class="col">8</div>
-          <div class="col">1,176</div>
-          <div class="col text-danger">-</div>
-        </div>
-      </div>
-      <div class="rank-row active">
-        <div class="row align-items-center text-center">
-          <div class="col">#8</div>
-          <div class="col">YO</div>
-          <div class="col">9</div>
-          <div class="col">1,140</div>
-          <div class="col text-success">↑</div>
-        </div>
-      </div> 
-    </div>
+        <tr>
+          <td><span class="rank-badge rank-3">#3</span></td>
+          <td>
+            <span class="initials-badge bg-danger">TS</span> Tahmina
+          </td>
+          <td>10</td>
+          <td class="text-danger fw-bold">1,380</td>
+          <td class="change-down">–1</td>
+        </tr>
+
+        <tr>
+          <td>#4</td>
+          <td>
+            <span class="initials-badge bg-secondary">HM</span> Hasan Mahmud
+          </td>
+          <td>10</td>
+          <td>1,305</td>
+          <td class="change-up">+2</td>
+        </tr>
+
+        <tr>
+          <td>#5</td>
+          <td>
+            <span class="initials-badge bg-secondary">FN</span> Farzana Noor
+          </td>
+          <td>10</td>
+          <td>1,250</td>
+          <td class="change-up">+1</td>
+        </tr>
+
+        <tr>
+          <td>#6</td>
+          <td>
+            <span class="initials-badge bg-secondary">AR</span> Arif Rahman
+          </td>
+          <td>10</td>
+          <td>1,215</td>
+          <td class="change-down">–2</td>
+        </tr>
+
+        <tr>
+          <td>#7</td>
+          <td>
+            <span class="initials-badge bg-secondary">SK</span> Shantier Khan
+          </td>
+          <td>9</td>
+          <td>1,175</td>
+          <td class="change-same">–</td>
+        </tr>
+
+        <tr class="user-highlight">
+          <td><span class="rank-badge bg-purple">#8</span></td>
+          <td>
+            <span class="initials-badge bg-purple">YO</span> You
+          </td>
+          <td>9</td>
+          <td class="text-info fw-bold">1,140</td>
+          <td class="change-same">–</td>
+        </tr>
+
+      </tbody>
+    </table>
   </div>
-  <div id="leaderboard-list" class=" rounded p-4 shadow max-w-md mx-auto mt-6">
-  <!-- Leaderboard will be populated here -->
 </div>
 {% endblock %}
 
-{% block body_js %}<script src="../../../static/Js/quickquiz/leaderboard.js"></script>{% endblock %}
+{% block body_js %}
+<script>
+  function refreshLeaderboard() {
+    alert("Leaderboard refreshed!");
+    // You could trigger an AJAX call here to reload the data
+  }
+</script>
+<script src="{% static 'Js/quickquiz/leaderboard.js' %}"></script>
+{% endblock %}

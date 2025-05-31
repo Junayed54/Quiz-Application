@@ -153,6 +153,21 @@
         position: relative;
     }
 
+
+    /* Add this to your CSS file */
+    .question-header-container {
+        display: flex;
+        gap: 0.5rem; /* Or adjust to match your gap-2 (Bootstrap default is 0.5rem) */
+        align-items: baseline; /* This is often the best for text/number alignment */
+    }
+
+    .question-header-container .fw-semibold.flex-shrink-0 {
+        /* Adjust this value as needed based on your specific font and line-heights */
+        /* It subtly shifts the number up or down to align with the text/image */
+        position: relative;
+        top: 0.05em; /* A very small adjustment */
+    }
+
 </style>
 {% endblock %}
 

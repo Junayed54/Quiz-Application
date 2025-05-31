@@ -3,7 +3,14 @@ from django.contrib.auth import get_user_model
 User = get_user_model()
 from django.utils import timezone
 # Create your models here.
+class Subject(models.Model):
+    name = models.CharField(max_length=100)
+
+    def __str__(self):
+        return self.name
+
 class PracticeQuestion(models.Model):
+    subject = models.ForeignKey(Subject, on_delete=models.CASCADE, null=True, blank=True)  # New field
     text = models.TextField(blank=True, null=True)
     image = models.ImageField(upload_to='practice_questions/', blank=True, null=True)
     marks = models.PositiveIntegerField(default=1)  
@@ -11,6 +18,7 @@ class PracticeQuestion(models.Model):
 
     def __str__(self):
         return self.text or f"Image Question ({self.id})"
+
 
 class PracticeOption(models.Model):
     question = models.ForeignKey(PracticeQuestion, related_name='options', on_delete=models.CASCADE)

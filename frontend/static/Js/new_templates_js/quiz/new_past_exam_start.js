@@ -457,6 +457,150 @@ document.addEventListener('DOMContentLoaded', function(){
     }
 
 
+    // function showAllQuestions(isLimitedAccess) {
+    //     const questionsContainer = document.getElementById('questions-container');
+    //     questionsContainer.innerHTML = '';
+
+    //     const optionLabels = ['ক', 'খ', 'গ', 'ঘ'];
+
+    //     questions.forEach((question, index) => {
+    //         const questionWrapper = document.createElement('div');
+    //         questionWrapper.classList.add('col-md-6', 'mb-4', 'p-3');
+    //         questionWrapper.setAttribute('data-question-index', index);
+            
+    //         if (index >= 10 && !isLimitedAccess) {
+    //             questionWrapper.classList.add('blurred-question');
+    //             questionWrapper.style.pointerEvents = 'none';
+    //         }
+
+
+
+    //         let questionHTML = `<p class="fw-semibold d-flex align-items-start gap-2 mb-2 ">${index + 1}. ${question.question.text}</p>`;
+    //         if (question.question.image) {
+    //             questionHTML = `
+    //                 <p class="fw-semibold">${index + 1}.</p>
+    //                 <img src="${question.question.image}" alt="Question Image" class="max-w-full h-auto rounded-lg shadow-md mb-2">
+    //             `;
+    //         }
+
+    //         questionWrapper.innerHTML += questionHTML;
+
+    //         const usagesInfoContainer = document.createElement('div');
+    //         usagesInfoContainer.classList.add('mt-2', 'small', 'text-muted');
+    //         usagesInfoContainer.style.marginLeft = '2rem';
+
+    //         if (question.question_usages && question.question_usages.length > 0) {
+    //             const details = document.createElement('details');
+    //             const summary = document.createElement('summary');
+    //             summary.textContent = `Used in ${question.question_usages.length} exam${question.question_usages.length > 1 ? 's' : ''}`;
+    //             summary.style.cursor = 'pointer';
+    //             details.appendChild(summary);
+
+    //             question.question_usages.forEach(usage => {
+    //                 const usageParagraph = document.createElement('p');
+    //                 usageParagraph.classList.add('mb-1');
+    //                 let usageText = '';
+    //                 if (usage.exam_title) {
+    //                     usageText += `${usage.exam_title}`;
+    //                 }
+    //                 if (usage.year) {
+    //                     usageText += ` (${usage.year})`;
+    //                 }
+    //                 usageParagraph.textContent = usageText;
+    //                 usageParagraph.style.marginLeft = '1rem';
+    //                 details.appendChild(usageParagraph);
+    //             });
+
+    //             usagesInfoContainer.appendChild(details);
+
+    //         } else {
+    //             const noUsageParagraph = document.createElement('p');
+    //             noUsageParagraph.textContent = 'No usage information available';
+    //             usagesInfoContainer.appendChild(noUsageParagraph);
+    //         }
+
+    //         if (question.question_usages && question.question_usages.length > 0) {
+    //             const usageWrapper = document.createElement('div');
+    //             usageWrapper.classList.add('position-relative');
+
+    //             const toggleButton = document.createElement('button');
+    //             toggleButton.textContent = `Show Usage Info`;
+    //             toggleButton.classList.add('btn', 'btn-sm', 'mb-2', 'bg-info','text-white', 'text-sm', 'p-1');
+    //             toggleButton.type = 'button';
+    //             toggleButton.style.marginLeft = '30px';
+
+    //             const usageOverlay = document.createElement('div');
+    //             usageOverlay.classList.add('position-absolute', 'bg-white', 'border', 'rounded', 'shadow', 'px-1', 'text-muted');
+    //             usageOverlay.style.top = '2.2rem';
+    //             usageOverlay.style.left = '30px';
+    //             usageOverlay.style.right = '0';
+    //             usageOverlay.style.zIndex = '10';
+    //             usageOverlay.style.display = 'none';
+    //             usageOverlay.style.maxHeight = '200px';
+    //             usageOverlay.style.overflowY = 'auto';
+
+    //             if (question.question_usages && question.question_usages.length > 0) {
+    //                 question.question_usages.forEach(usage => {
+    //                     const usageParagraph = document.createElement('p');
+    //                     usageParagraph.classList.add('mb-1', 'text-sm');
+    //                     let usageText = '';
+    //                     if (usage.exam_title) usageText += `${usage.exam_title}`;
+    //                     if (usage.year) usageText += ` (${usage.year})`;
+    //                     usageParagraph.textContent = usageText;
+    //                     usageOverlay.appendChild(usageParagraph);
+    //                 });
+    //             } else {
+    //                 const noUsage = document.createElement('p');
+    //                 noUsage.textContent = 'No usage information available';
+    //                 usageOverlay.appendChild(noUsage);
+    //             }
+
+    //             toggleButton.addEventListener('click', () => {
+    //                 const isVisible = usageOverlay.style.display === 'block';
+    //                 usageOverlay.style.display = isVisible ? 'none' : 'block';
+    //                 toggleButton.textContent = isVisible ? 'Show Usage Info' : 'Hide Usage Info';
+    //             });
+
+    //             usageWrapper.appendChild(toggleButton);
+    //             usageWrapper.appendChild(usageOverlay);
+    //             questionWrapper.appendChild(usageWrapper);
+    //         }
+
+    //         const optionsContainer = document.createElement('div');
+    //         optionsContainer.classList.add('d-grid', 'gap-2');
+    //         optionsContainer.style.marginLeft = '2rem';
+
+    //         question.options.forEach((option, optIndex) => {
+    //             const inputId = `q${index}_opt${optIndex}`;
+    //             const labelChar = optionLabels[optIndex] || '';
+    //             const optionText = option.text || `<img src="${option.image}" alt="Option Image" class="img-fluid">`;
+
+    //             const wrapper = document.createElement('div');
+    //             wrapper.classList.add('custom-option');
+
+    //             wrapper.innerHTML = `
+    //                 <input type="radio" name="question${index}" id="${inputId}" value="${option.id}" class="d-none">
+    //                 <label for="${inputId}" class="custom-label">
+    //                     <span class="bengali-label" data-char="${labelChar}">${labelChar}</span>
+    //                     <span>${optionText}</span>
+    //                 </label>
+    //             `;
+
+    //             optionsContainer.appendChild(wrapper);
+    //         });
+
+    //         questionWrapper.appendChild(optionsContainer);
+    //         questionsContainer.appendChild(questionWrapper);
+            
+    //         if (!isLimitedAccess) {
+    //             window.addEventListener('scroll', showBuySubscriptionOnScroll);
+
+    //         }
+            
+    //     });
+    // }
+
+
     function showAllQuestions(isLimitedAccess) {
         const questionsContainer = document.getElementById('questions-container');
         questionsContainer.innerHTML = '';
@@ -467,27 +611,57 @@ document.addEventListener('DOMContentLoaded', function(){
             const questionWrapper = document.createElement('div');
             questionWrapper.classList.add('col-md-6', 'mb-4', 'p-3');
             questionWrapper.setAttribute('data-question-index', index);
-            
+
             if (index >= 10 && !isLimitedAccess) {
                 questionWrapper.classList.add('blurred-question');
                 questionWrapper.style.pointerEvents = 'none';
             }
 
+            // Main container for the question number and its content (text/image)
+            const questionHeaderContainer = document.createElement('div');
+            questionHeaderContainer.classList.add('d-flex', 'gap-2', 'mb-2','align-items-center'); // Use flexbox
+            
+            const questionNumber = document.createElement('span'); // Changed to span for better inline flow
+            questionNumber.classList.add('fw-semibold', 'flex-shrink-0');
+            questionNumber.textContent = `${index + 1}.`;
+            // Add a slight top margin if needed, or adjust line-height for vertical alignment fine-tuning
+            // questionNumber.style.paddingTop = '2px'; // Example: adjust this based on your font size
 
+            const questionContent = document.createElement('div');
+            questionContent.classList.add('flex-grow-1'); // Allows content to take remaining space
+            
 
-            let questionHTML = `<p class="fw-semibold d-flex align-items-start gap-2 mb-2 ">${index + 1}. ${question.question.text}</p>`;
-            if (question.question.image) {
-                questionHTML = `
-                    <p class="fw-semibold">${index + 1}.</p>
-                    <img src="${question.question.image}" alt="Question Image" class="max-w-full h-auto rounded-lg shadow-md mb-2">
+            // Conditional rendering for question text and image
+            if (question.question.text && question.question.image) {
+                questionContent.innerHTML = `
+                    <p class="fw-semibold mb-0">${question.question.text}</p>
+                    <div class="image-wrapper mt-2" style="max-width: 100%; overflow: hidden;">
+                        <img src="${question.question.image}" alt="Question Image" class="img-fluid rounded-lg shadow-md" style="width: 100%; height: auto;">
+                    </div>
+                `;
+            } else if (question.question.image) {
+                // Only image is present
+                questionContent.innerHTML = `
+                    <div class="image-wrapper" style="max-width: 100%; overflow: hidden;">
+                        <img src="${question.question.image}" alt="Question Image" class="img-fluid rounded-lg shadow-md" style="width: 100%; height: auto;">
+                    </div>
+                `;
+            } else if (question.question.text) {
+                // Only text is present
+                questionContent.innerHTML = `
+                    <p class="fw-semibold mb-0">${question.question.text}</p>
                 `;
             }
+            // If neither text nor image, questionContent will remain empty
 
-            questionWrapper.innerHTML += questionHTML;
+            questionHeaderContainer.appendChild(questionNumber);
+            questionHeaderContainer.appendChild(questionContent); // Append the content div to the header container
+            questionWrapper.appendChild(questionHeaderContainer); // Append the whole header container to the wrapper
+
 
             const usagesInfoContainer = document.createElement('div');
             usagesInfoContainer.classList.add('mt-2', 'small', 'text-muted');
-            usagesInfoContainer.style.marginLeft = '2rem';
+            usagesInfoContainer.style.marginLeft = '2rem'; // Keep existing indent for usage info
 
             if (question.question_usages && question.question_usages.length > 0) {
                 const details = document.createElement('details');
@@ -502,6 +676,7 @@ document.addEventListener('DOMContentLoaded', function(){
                     let usageText = '';
                     if (usage.exam_title) {
                         usageText += `${usage.exam_title}`;
+                    {
                     }
                     if (usage.year) {
                         usageText += ` (${usage.year})`;
@@ -509,10 +684,9 @@ document.addEventListener('DOMContentLoaded', function(){
                     usageParagraph.textContent = usageText;
                     usageParagraph.style.marginLeft = '1rem';
                     details.appendChild(usageParagraph);
+                }
                 });
-
                 usagesInfoContainer.appendChild(details);
-
             } else {
                 const noUsageParagraph = document.createElement('p');
                 noUsageParagraph.textContent = 'No usage information available';
@@ -525,7 +699,7 @@ document.addEventListener('DOMContentLoaded', function(){
 
                 const toggleButton = document.createElement('button');
                 toggleButton.textContent = `Show Usage Info`;
-                toggleButton.classList.add('btn', 'btn-sm', 'mb-2', 'bg-info','text-white', 'text-sm', 'p-1');
+                toggleButton.classList.add('btn', 'btn-sm', 'mb-2', 'bg-info', 'text-white', 'text-sm', 'p-1');
                 toggleButton.type = 'button';
                 toggleButton.style.marginLeft = '30px';
 
@@ -591,12 +765,10 @@ document.addEventListener('DOMContentLoaded', function(){
 
             questionWrapper.appendChild(optionsContainer);
             questionsContainer.appendChild(questionWrapper);
-            
+
             if (!isLimitedAccess) {
                 window.addEventListener('scroll', showBuySubscriptionOnScroll);
-
             }
-            
         });
     }
 
@@ -768,5 +940,6 @@ function showBuySubscriptionOnScroll() {
         });
     }
 
-    checkUserPermission();
+    // checkUserPermission();
+     fetchExamDetails(true);
 });

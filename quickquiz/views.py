@@ -5,7 +5,7 @@ from openpyxl import load_workbook
 
 from rest_framework.parsers import MultiPartParser
 from rest_framework.response import Response
-from rest_framework import status
+from rest_framework import status, viewsets
 from django.core.files.base import ContentFile
 from django.db import transaction
 from openpyxl.utils import get_column_letter
@@ -20,26 +20,39 @@ from .serializers import *
 from django.contrib.auth import get_user_model
 User = get_user_model()
 
+
+
+
+
+class SubjectViewSet(viewsets.ModelViewSet):
+    queryset = Subject.objects.all()
+    serializer_class = SubjectSerializer
+    
+    
 # Start a new Practice Session
 class StartPracticeSessionView(APIView):
     def post(self, request):
         user = request.user  # Assuming the user is authenticated
+        subject_id = request.data.get('subject_id')
 
-        all_questions = list(PracticeQuestion.objects.all())
-        if len(all_questions) < 10:
-            return Response({'error': 'Not enough questions available.'}, status=400)
+        if not subject_id:
+            return Response({'error': 'subject_id is required.'}, status=status.HTTP_400_BAD_REQUEST)
 
-        # Select 30 random questions
-        selected_questions = random.sample(all_questions, 10)
-        
-        # Create a new PracticeSession
-        session = PracticeSession.objects.create(user=user)
+        try:
+            subject = Subject.objects.get(id=subject_id)
+        except Subject.DoesNotExist:
+            return Response({'error': 'Subject not found.'}, status=status.HTTP_404_NOT_FOUND)
 
-        session_data = PracticeSessionSerializer(session).data
+        questions = list(PracticeQuestion.objects.filter(subject=subject))
+
+        if len(questions) < 10:
+            return Response({'error': 'Not enough questions available for this subject.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        selected_questions = random.sample(questions, 10)
+
         question_data = PracticeQuestionSerializer(selected_questions, many=True).data
 
         return Response({
-            'session': session_data,
             'questions': question_data
         }, status=status.HTTP_201_CREATED)
 
@@ -50,12 +63,12 @@ class SubmitPracticeSessionView(APIView):
 
     def post(self, request):
         user = request.user
-        session_id = request.data.get('session_id')
+        # session_id = request.data.get('session_id')
 
-        try:
-            session = PracticeSession.objects.get(id=int(session_id), user=user)
-        except PracticeSession.DoesNotExist:
-            return Response({'error': 'Practice session not found.'}, status=status.HTTP_404_NOT_FOUND)
+        
+        session = PracticeSession.objects.create(user=user)
+        # except PracticeSession.DoesNotExist:
+        #     return Response({'error': 'Practice session not found.'}, status=status.HTTP_404_NOT_FOUND)
 
         # Save duration if provided
         duration = request.data.get('duration')
@@ -163,6 +176,18 @@ class PracticeLeaderboardAPIView(APIView):
 class PracticeQuestionUploadView(APIView):
     parser_classes = [MultiPartParser]
 
+    # Optional: You may need to implement this method depending on your needs
+    def extract_images(self, workbook):
+        # This should return a dictionary mapping cell refs to image data
+        return {}
+
+    def get_image_data_from_map(self, img_obj):
+        return img_obj
+
+    def save_image_to_field(self, image_data, filename):
+        from django.core.files.base import ContentFile
+        return ContentFile(image_data, name=filename)
+
     def post(self, request, *args, **kwargs):
         file = request.FILES.get('file')
         if not file or not file.name.endswith('.xlsx'):
@@ -181,9 +206,19 @@ class PracticeQuestionUploadView(APIView):
 
             created_count, skipped_count = 0, 0
 
+            # Label Mappings
+            LABEL_MAP = {
+                'option1': 'a', 'option2': 'b', 'option3': 'c', 'option4': 'd',
+                'a': 'a', 'b': 'b', 'c': 'c', 'd': 'd',
+                'A': 'a', 'B': 'b', 'C': 'c', 'D': 'd',
+                'ক': 'a', 'খ': 'b', 'গ': 'c', 'ঘ': 'd'
+            }
+            OPTION_LABELS = ['a', 'b', 'c', 'd']
+
             with transaction.atomic():
                 for index, row in df.iterrows():
                     excel_row_num = index + 2
+
                     question_text = str(row.get('question', '')).strip()
                     q_cell = f"{get_column_letter(df.columns.get_loc('question') + 1)}{excel_row_num}"
                     question_image = self.get_image_data_from_map(image_map.get(q_cell))
@@ -192,16 +227,23 @@ class PracticeQuestionUploadView(APIView):
                         skipped_count += 1
                         continue
 
-                    # Check if a question with the same text already exists
-                    existing_question = PracticeQuestion.objects.filter(text=question_text).first()
-                    if existing_question:
-                        skipped_count += 1
-                        continue
+                    # if PracticeQuestion.objects.filter(text=question_text).exists():
+                    #     skipped_count += 1
+                    #     continue
+
+                    # Get or create subject from Excel
+                    subject_name = str(row.get('subject', '')).strip()
+                    subject = None
+                    if subject_name:
+                        subject, _ = Subject.objects.get_or_create(name=subject_name)
 
                     # Create the question
-                    question = PracticeQuestion.objects.create(text=question_text, marks=1)
+                    question = PracticeQuestion.objects.create(
+                        text=question_text,
+                        marks=1,
+                        subject=subject
+                    )
 
-                    # Save image if any
                     if question_image:
                         q_filename = f"q_img_{question.id}_{uuid.uuid4().hex[:8]}.png"
                         q_file = self.save_image_to_field(question_image, q_filename)
@@ -209,14 +251,27 @@ class PracticeQuestionUploadView(APIView):
                             question.image.save(q_file.name, q_file, save=True)
 
                     correct = str(row.get("answer", "")).strip().lower()
+                    standard_correct = LABEL_MAP.get(correct, correct)
 
-                    for opt in ['option1', 'option2', 'option3', 'option4']:
-                        col_index = df.columns.get_loc(opt)
+                    # Map option columns to standardized labels
+                    option_columns = {}
+                    for col in df.columns:
+                        key = str(col).strip()
+                        label = LABEL_MAP.get(key)
+                        if label and label not in option_columns:
+                            option_columns[label] = key
+
+                    for label in OPTION_LABELS:
+                        col_key = option_columns.get(label)
+                        if not col_key:
+                            continue
+
+                        col_index = df.columns.get_loc(col_key)
                         cell_ref = f"{get_column_letter(col_index + 1)}{excel_row_num}"
                         opt_image = self.get_image_data_from_map(image_map.get(cell_ref))
-                        opt_text = str(row.get(opt, "")).strip()
+                        opt_text = str(row.get(col_key, "")).strip()
 
-                        is_correct = (correct == opt.lower()) or (correct == opt_text.lower())
+                        is_correct = (standard_correct == label or standard_correct == opt_text.lower())
 
                         if opt_image:
                             opt_filename = f"opt_img_{question.id}_{uuid.uuid4().hex[:8]}.png"
@@ -245,6 +300,9 @@ class PracticeQuestionUploadView(APIView):
 
         except Exception as e:
             return Response({'error': str(e)}, status=500)
+        
+        
+
 
     def extract_images(self, workbook):
         """Returns a map of Excel cell positions to image binary data"""
@@ -259,10 +317,10 @@ class PracticeQuestionUploadView(APIView):
                         image_map[cell_ref] = output.getvalue()
         return image_map
 
-    def get_image_data_from_map(self, image_data):
-        if image_data:
-            return image_data
-        return None
+    # def get_image_data_from_map(self, image_data):
+    #     if image_data:
+    #         return image_data
+    #     return None
 
-    def save_image_to_field(self, image_data, filename):
-        return ContentFile(image_data, name=filename)
+    # def save_image_to_field(self, image_data, filename):
+    #     return ContentFile(image_data, name=filename)

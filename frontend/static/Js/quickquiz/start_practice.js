@@ -1,4 +1,59 @@
 
+document.addEventListener('DOMContentLoaded', function () {
+  fetchSubjects();
+});
+
+// Fetch subjects and create tabs
+function fetchSubjects() {
+  fetch('/api/subjects/')
+    .then(res => res.json())
+    .then(subjects => {
+      if (Array.isArray(subjects) && subjects.length > 0) {
+        renderSubjectTabs(subjects);
+        
+        fetchQuestions(subjects[0].id); // Safe now
+      } else {
+        console.warn('No subjects available.');
+        document.getElementById('subjectTabs').innerHTML = '<li class="nav-item">No subjects found.</li>';
+        document.getElementById('questionList').innerHTML = '<li class="list-group-item">No questions to display.</li>';
+      }
+    })
+    .catch(error => console.error('Error fetching subjects:', error));
+}
+
+
+
+function renderSubjectTabs(subjects) {
+  const tabContainer = document.getElementById('subjectTabs');
+  tabContainer.innerHTML = '';
+
+  subjects.forEach((subject, index) => {
+    const isActive = index === 0 ? 'active' : '';
+    const isSelected = index === 0 ? 'true' : 'false';
+
+    const tab = `
+      <li class="nav-item" role="presentation">
+        <button
+          class="nav-link ${isActive}"
+          id="subject-tab-${subject.id}"
+          data-bs-toggle="tab"
+          type="button"
+          role="tab"
+          aria-selected="${isSelected}"
+          onclick="fetchQuestions(${subject.id})"
+        >${subject.name}</button>
+      </li>
+    `;
+    tabContainer.insertAdjacentHTML('beforeend', tab);
+  });
+}
+
+
+
+
+
+
+
 let questions = [];
 let currentIndex = 0;
 let selectedAnswers = {};
@@ -35,14 +90,16 @@ function stopTimer() {
 }
 
 // Fetch questions
-async function fetchQuestions() {
+async function fetchQuestions(subjectId) {
+  
   try {
     const response = await fetch('/api/start-practice/', {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${localStorage.getItem('access_token')}`,
         'Content-Type': 'application/json'
-      }
+      },
+      body: JSON.stringify({ subject_id: subjectId })
     });
 
     if (!response.ok) throw new Error('Failed to fetch questions');
@@ -50,7 +107,7 @@ async function fetchQuestions() {
     const data = await response.json();
 
     questions = data.questions;
-    sessionId = data.session.id;
+    // sessionId = data.session.id;
     currentIndex = 0;
     quizStartTime = new Date();
     perQuestionStartTime = new Date();
@@ -211,7 +268,7 @@ async function submitAllAnswers() {
   }));
 
   const payload = {
-    session_id: sessionId,
+    // session_id: sessionId,
     answers: answersList,
     duration: durationInMinutes
   };
@@ -253,4 +310,4 @@ function continuePractice() {
 }
 
 // Start quiz
-fetchQuestions();
+// fetchQuestions();

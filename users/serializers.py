@@ -24,6 +24,7 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
             raise serializers.ValidationError('Must include "phone_number" and "password".')
 
 class UserSerializer(serializers.ModelSerializer):
+    password = serializers.CharField(write_only=True, required=False)
     role = serializers.ChoiceField(choices=User.ROLE_CHOICES, required=False)
     email = serializers.EmailField(required=True)
     address = serializers.CharField(max_length=255, required=False, allow_blank=True)
@@ -56,7 +57,7 @@ class UserSerializer(serializers.ModelSerializer):
         user = User.objects.create_user(
             phone_number=validated_data['phone_number'],
             email=validated_data['email'],
-            password=validated_data['password'],
+            password=validated_data.get('password'),
             username=validated_data.get('username', ''),  # Username is optional
             role=validated_data.get('role', User.STUDENT),  # Default to 'student' if no role is provided
             address=validated_data.get('address', ''),
