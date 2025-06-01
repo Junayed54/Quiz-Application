@@ -1,7 +1,7 @@
 from django.urls import path
 from .views import SignupView, LogoutView, UserRoleView
 from rest_framework_simplejwt.views import TokenRefreshView, TokenObtainPairView
-from .views import UserDetailView, RequestOTPView, VerifyOTPView, Validate_token, DashboardView
+from .views import *
 from django.views.generic import TemplateView
 
 urlpatterns = [
@@ -22,5 +22,8 @@ urlpatterns = [
     
     path('user_profile/', TemplateView.as_view(template_name='Html/custom/user/profile.html'), name='profile'),
     path('reset_password/', TemplateView.as_view(template_name='Html/custom/user/reset_password.html'), name='reset_password'),
+    
+    
+    path('create-temp-user/', TempUserCreateView.as_view(), name='create-temp-user'),
 ]
 

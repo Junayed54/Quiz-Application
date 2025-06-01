@@ -632,18 +632,20 @@ document.addEventListener('DOMContentLoaded', function(){
             
 
             // Conditional rendering for question text and image
-            if (question.question.text && question.question.image) {
-                questionContent.innerHTML = `
-                    <p class="fw-semibold mb-0">${question.question.text}</p>
-                    <div class="image-wrapper mt-2" style="max-width: 100%; overflow: hidden;">
-                        <img src="${question.question.image}" alt="Question Image" class="img-fluid rounded-lg shadow-md" style="width: 100%; height: auto;">
-                    </div>
-                `;
-            } else if (question.question.image) {
+            // if (question.question.text && question.question.image) {
+            //     questionContent.innerHTML = `
+            //         <p class="fw-semibold mb-0">${question.question.text}</p>
+            //         <div class="image-wrapper mt-2" style="max-width: 100%; overflow: hidden;">
+            //             <img src="${question.question.image}" alt="Question Image" class="img-fluid rounded-lg shadow-md" style="width: 100%; max-height: 250px; object-fit: contain;">
+            //         </div>
+            //     `;
+            // } else 
+
+            if (question.question.image) {
                 // Only image is present
                 questionContent.innerHTML = `
                     <div class="image-wrapper" style="max-width: 100%; overflow: hidden;">
-                        <img src="${question.question.image}" alt="Question Image" class="img-fluid rounded-lg shadow-md" style="width: 100%; height: auto;">
+                        <img src="${question.question.image}" alt="Question Image" class="img-fluid rounded-lg shadow-md" style="max-height: 250px; object-fit: contain;">
                     </div>
                 `;
             } else if (question.question.text) {
@@ -747,7 +749,7 @@ document.addEventListener('DOMContentLoaded', function(){
             question.options.forEach((option, optIndex) => {
                 const inputId = `q${index}_opt${optIndex}`;
                 const labelChar = optionLabels[optIndex] || '';
-                const optionText = option.text || `<img src="${option.image}" alt="Option Image" class="img-fluid">`;
+                const optionText = option.text || `<img src="${option.image}" alt="Option Image" class="img-fluid" style="max-height: 100px; object-fit: contain;">`;
 
                 const wrapper = document.createElement('div');
                 wrapper.classList.add('custom-option');

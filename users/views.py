@@ -8,7 +8,7 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework import generics
 from django.contrib.auth import logout
 from django.contrib.auth import get_user_model
-from .serializers import CustomTokenObtainPairSerializer, UserSerializer
+from .serializers import *
 from django.core.exceptions import ObjectDoesNotExist 
 from .models import CustomUser
 
@@ -27,34 +27,38 @@ class SignupView(generics.CreateAPIView):
     serializer_class = UserSerializer
 
     def create(self, request, *args, **kwargs):
-        # First, create the user by calling the serializer's `create` method
-        serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        user = serializer.save()
-        if user.role == 'student':  # Assuming `role` is a field on the User model
-            # Retrieve the "Free" subscription package
-            # free_package = SubscriptionPackage.objects.filter(name="free")[0]
+        phone_number = request.data.get('phone_number')
+        email = request.data.get('email')
+        username = request.data.get('username')
+        password = request.data.get('password')
 
-            # Set the subscription end date (for example, 30 days from now)
+        try:
+            # Check if user already exists (created during exam attempt)
+            user = User.objects.get(phone_number=phone_number, is_active=False)
+            user.email = email
+            user.username = username
+            if password:
+                user.set_password(password)
+            user.is_active = True
+            user.save()
+        except User.DoesNotExist:
+            # Create new user
+            serializer = self.get_serializer(data=request.data)
+            serializer.is_valid(raise_exception=True)
+            user = serializer.save()
+
+        # You can apply free subscription logic here if needed
+        if user.role == 'student':
             end_date = timezone.now() + timedelta(days=30)
+            # Create a "free" subscription here if needed
 
-            # Create the user subscription for the "Free" package
-            # UserSubscription.objects.create(
-            #     user=user,
-            #     package=free_package,
-            #     start_date=timezone.now(),
-            #     end_date=end_date,
-            #     status='active',
-            #     auto_renew=True
-            # )
-        # Generate JWT tokens for the newly created user
+        # Generate JWT tokens
         refresh = RefreshToken.for_user(user)
         return Response({
-            'user': serializer.data,
+            'user': UserSerializer(user).data,
             'refresh': str(refresh),
             'access': str(refresh.access_token),
-        }, status=status.HTTP_201_CREATED)   
-        
+        }, status=status.HTTP_201_CREATED)
         
 class LogoutView(APIView):
     permission_classes = (IsAuthenticated,)
@@ -277,3 +281,24 @@ class DashboardView(APIView):
         }
 
         return Response(response_data)
+    
+    
+    
+    
+    
+class TempUserCreateView(APIView):
+    def post(self, request):
+        serializer = TempUserCreateSerializer(data=request.data)
+        if serializer.is_valid():
+            user = serializer.save()
+
+            # Generate JWT tokens
+            refresh = RefreshToken.for_user(user)
+            return Response({
+                'user_id': user.id,
+                'access': str(refresh.access_token),
+                'refresh': str(refresh),
+                'message': 'User created or reused'
+            }, status=201)
+        
+        return Response(serializer.errors, status=400)

@@ -20,11 +20,11 @@ class UserManager(BaseUserManager):
         
         email = self.normalize_email(email)
         user = self.model(phone_number=phone_number, email=email, username=username, role=role, **extra_fields)
-        
-        if password:
-            user.set_password(password)
-        else:
-            user.set_unusable_password()
+        user.set_password(password)
+        # if password:
+        #     user.set_password(password)
+        # else:
+        #     user.set_unusable_password()
         user.save(using=self._db)
         return user
 
@@ -57,7 +57,7 @@ class CustomUser(AbstractUser):
     username = models.CharField(max_length=100, unique=True)
     phone_number = models.CharField(max_length=20, unique=True, validators=[MinLengthValidator(10), RegexValidator(r'^\d+$', 'Only numeric characters are allowed.')])
     role = models.CharField(max_length=20, choices=ROLE_CHOICES, default=STUDENT)
-    email = models.EmailField(unique=True)
+    email = models.EmailField(unique=True, null=True, blank=True)
     address = models.CharField(max_length=255, blank=True, null=True)
     other_information = models.TextField(blank=True, null=True)
     profile_picture = models.ImageField(upload_to='profile_pictures/', blank=True, null=True)

@@ -16,7 +16,6 @@ from rest_framework import status
 from rest_framework.views import APIView
 from .models import *
 from .serializers import *
-
 from django.contrib.auth import get_user_model
 User = get_user_model()
 
@@ -31,6 +30,8 @@ class SubjectViewSet(viewsets.ModelViewSet):
     
 # Start a new Practice Session
 class StartPracticeSessionView(APIView):
+    # authentication_classes = [AllowInactiveUserJWTAuthentication]
+    permission_classes = [IsAuthenticated]
     def post(self, request):
         user = request.user  # Assuming the user is authenticated
         subject_id = request.data.get('subject_id')

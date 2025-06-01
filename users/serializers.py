@@ -19,6 +19,11 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
                 raise serializers.ValidationError('Invalid phone number or password.')
 
             attrs['user'] = user
+            
+            data = super().validate(attrs)
+            attrs['user_id'] = self.user.id
+            attrs['username'] = self.user.username
+            attrs['role'] = self.user.role
             return attrs
         else:
             raise serializers.ValidationError('Must include "phone_number" and "password".')
@@ -57,7 +62,7 @@ class UserSerializer(serializers.ModelSerializer):
         user = User.objects.create_user(
             phone_number=validated_data['phone_number'],
             email=validated_data['email'],
-            password=validated_data.get('password'),
+            password=validated_data('password'),
             username=validated_data.get('username', ''),  # Username is optional
             role=validated_data.get('role', User.STUDENT),  # Default to 'student' if no role is provided
             address=validated_data.get('address', ''),
@@ -114,3 +119,24 @@ class VerifyOTPSerializer(serializers.Serializer):
     email = serializers.EmailField()
     otp = serializers.CharField(max_length=6)
     new_password = serializers.CharField(write_only=True)
+
+
+
+
+
+class TempUserCreateSerializer(serializers.Serializer):
+    username = serializers.CharField()
+    phone_number = serializers.CharField()
+
+    def create(self, validated_data):
+        phone = validated_data['phone_number']
+        username = validated_data['username']
+        
+        user, created = User.objects.get_or_create(
+            phone_number=phone,
+            defaults={
+                'username': username,
+                'is_active': False
+            }
+        )
+        return user

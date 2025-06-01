@@ -144,7 +144,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 <span class="position-absolute top-2 end-3 bg-white rounded-pill px-2 small shadow">
                     ${["🥈", "🥇", "🥉"][podiumIndex]}
                 </span>
-                <div class="position-absolute top-2 end-2 bg-white" style="width: 100px; height: 100px;">
+                
                 </div>
             </div>
             <div class="mt-2 fw-semibold text-white">${user.username}</div>
