@@ -102,8 +102,8 @@ document.addEventListener("DOMContentLoaded", function () {
             "July", "August", "September", "October", "November", "December"
         ];
 
-        const formatted = `${monthNames[now.getMonth()]} ${now.getFullYear()}`;
-        document.getElementById("month").textContent = formatted;
+        // const formatted = `${monthNames[now.getMonth()]} ${now.getFullYear()}`;
+        // document.getElementById("month").textContent = formatted;
     }
 
     displayCurrentMonthYear();

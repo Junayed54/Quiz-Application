@@ -22,6 +22,14 @@
       border-radius: 15px;
     }
 
+    .button{
+      background: #6C4DF61A;
+      border: 1px solid #6C4DF6;
+    }
+    .button:hover{
+      box-shadow: 0px 0px 10px 0px #6C4DF680;
+    }
+
     .rank-row {
       background-color: #1e293b;
       padding: 20px;
@@ -89,8 +97,21 @@
       color: white;
     }
 
+    /* round container */
 
-
+    .circle-bg {
+      position: fixed;
+      width: 150px;
+      height: 150px;
+      top: 1586px;
+      left: 384px;
+      opacity: 0.15;
+      border-radius: 75px;
+      background: #4DFFDF;
+      backdrop-filter: blur(20px);
+      z-index: 0; /* Or lower than content */
+      pointer-events: none; /* Prevent interaction */
+    }
 
 
     /* Container for the whole top performers section */
@@ -203,11 +224,13 @@
 
 {% block content %}
 <div class="container">
+  <div class="circle-bg"></div>
+
   <div class="d-flex justify-content-between align-items-center mb-4 py-4">
     <h2 class="fw-bold">Leaderboard</h2>
     <div>
-      <button class="btn btn-outline-light btn-secondary btn-sm me-2">This Month</button>
-      <button class="btn btn-outline-light btn-primary btn-sm" onclick="refreshLeaderboard()">Refresh</button>
+      <button class="btn btn-sm me-2 text-white button" >📅This Month</button>
+      <button class="btn btn-sm text-white button" onclick="refreshLeaderboard()">🔄Refresh</button>
     </div>
   </div>
 

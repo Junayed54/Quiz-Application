@@ -1,7 +1,6 @@
 document.addEventListener('DOMContentLoaded', function () {
   if (
-    !localStorage.getItem('access_token') ||
-    !localStorage.getItem('username') ||
+    !localStorage.getItem('username') &&
     !localStorage.getItem('phone_number')
   ) {
     showUserModal(); // Show popup if user not identified
@@ -34,6 +33,7 @@ function showUserModal() {
     const phone = document.getElementById('phoneInput').value;
     localStorage.setItem('username', username);
     localStorage.setItem('phone_number', phone);
+    document.getElementById('userModal').remove();
     fetchSubjects();
     // try {
     //   const response = await fetch('/auth/create-temp-user/', {
@@ -137,7 +137,7 @@ async function fetchQuestions(subjectId) {
     const response = await fetch('/api/start-practice/', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${localStorage.getItem('access_token')}`,
+        // 'Authorization': `Bearer ${localStorage.getItem('access_token')}`,
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({ subject_id: subjectId })
