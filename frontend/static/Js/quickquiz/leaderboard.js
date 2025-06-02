@@ -1,22 +1,37 @@
 document.addEventListener("DOMContentLoaded", function () {
-    const accessToken = localStorage.getItem("access_token");
-    
-    if (!accessToken) {
-        alert("No access token found. Please log in.");
-        return;
-    }
+
 
     function getInitialsRegex(fullName) {
         const matches = fullName.match(/\b\w/g) || []; // Find the first letter of each word
         return matches.map(char => char.toUpperCase()).join('');
     }
 
-    fetch("/api/practice/leaderboard/", {
+
+    
+    
+    const token = localStorage.getItem("access_token");
+    const phoneNumber = localStorage.getItem("phone_number");
+
+    // Prepare the URL
+    let leaderboardUrl = "/api/practice/leaderboard/";
+
+    // If no token, add phone number to query params
+    if (!token && phoneNumber) {
+        leaderboardUrl += `?phone_number=${encodeURIComponent(phoneNumber)}`;
+    }
+
+    // Prepare headers
+    const headers = {
+        "Content-Type": "application/json"
+    };
+
+    if (token) {
+        headers["Authorization"] = `Bearer ${token}`;
+    }
+
+    fetch(leaderboardUrl, {
         method: "GET",
-        headers: {
-            "Authorization": "Bearer " + accessToken,
-            "Content-Type": "application/json",
-        },
+        headers: headers
     })
     .then(response => {
         if (!response.ok) {
@@ -41,60 +56,7 @@ document.addEventListener("DOMContentLoaded", function () {
     });
 
 
-    // function renderTopThreePerformers(users) {
-    //     const top3 = users.slice(0, 3);
-    //     const container = document.getElementById("top-performers");
-    //     container.innerHTML = "";
-
-    //     const medalColors = ["#FFD700", "#C0C0C0", "#CD7F32"]; // gold, silver, bronze
-    //     const displayOrder = [1, 0, 2]; // podium order: 2nd, 1st, 3rd
-
-    //     const gradientBackgrounds = [
-    //         "linear-gradient(135deg, #FFD700 0%, #FFC107 100%)", // 1st
-    //         "linear-gradient(135deg, #FF7B9C 0%, #FF4D79 100%)", // 2nd
-    //         "linear-gradient(135deg, #8A6EFF 0%, #6C4DF6 100%)"  // 3rd
-    //     ];
-
-    //     const medalEmojis = ["🥇", "🥈", "🥉"];
-
-    //     const row = document.createElement("div");
-    //     row.className = "row justify-content-center align-items-end";
-
-    //     displayOrder.forEach((orderIndex, podiumIndex) => {
-    //         const user = top3[orderIndex];
-    //         if (!user) return;
-
-    //         const initials = getInitialsRegex(user.username);
-    //         const hasImage = user.profile_picture && user.profile_picture.trim() !== "";
-
-    //         const col = document.createElement("div");
-    //         col.className = `col-4 d-flex flex-column align-items-center`;
-
-    //         col.innerHTML = `
-    //             <div class="position-relative mb-2">
-    //                 ${
-    //                     hasImage
-    //                         ? `<img src="${user.profile_picture}" alt="${user.username}" class="rounded-circle border border-4" 
-    //                             style="width: 90px; height: 90px; object-fit: cover; border-color: white;">`
-    //                         : `<div class="rounded-circle d-flex align-items-center justify-content-center text-white fw-bold"
-    //                             style="width: 90px; height: 90px; background: ${gradientBackgrounds[podiumIndex]}; font-size: 1.25rem;">
-    //                             ${initials}
-    //                         </div>`
-    //                 }
-    //                 <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-light shadow-sm">
-    //                     ${medalEmojis[podiumIndex]}
-    //                 </span>
-    //             </div>
-    //             <div class="text-white fw-semibold">${user.username}</div>
-    //             <div class="text-secondary small">${user.points} pts</div>
-    //         `;
-
-    //         row.appendChild(col);
-    //     });
-
-    //     container.appendChild(row);
-
-    // }
+    
     function displayCurrentMonthYear() {
         const now = new Date();
         const monthNames = [
@@ -170,15 +132,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 <td>${user.points}</td>
                 <td>${user.points}%</td>
             </tr>`
-            // <div class="rank-row">
-            //     <div class="row align-items-center text-center">
-            //             <div class="col">#</div>
-            //             <div class="col">div>
-            //             <div class="col"></div>
-            //             <div class="col"></div>
-            //             <div class="col text-success">↑</div>
-            //     </div>
-            // </div>`
+           
         });
 
         if (me) {
@@ -194,3 +148,60 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     }
 });
+
+
+
+// function renderTopThreePerformers(users) {
+    //     const top3 = users.slice(0, 3);
+    //     const container = document.getElementById("top-performers");
+    //     container.innerHTML = "";
+
+    //     const medalColors = ["#FFD700", "#C0C0C0", "#CD7F32"]; // gold, silver, bronze
+    //     const displayOrder = [1, 0, 2]; // podium order: 2nd, 1st, 3rd
+
+    //     const gradientBackgrounds = [
+    //         "linear-gradient(135deg, #FFD700 0%, #FFC107 100%)", // 1st
+    //         "linear-gradient(135deg, #FF7B9C 0%, #FF4D79 100%)", // 2nd
+    //         "linear-gradient(135deg, #8A6EFF 0%, #6C4DF6 100%)"  // 3rd
+    //     ];
+
+    //     const medalEmojis = ["🥇", "🥈", "🥉"];
+
+    //     const row = document.createElement("div");
+    //     row.className = "row justify-content-center align-items-end";
+
+    //     displayOrder.forEach((orderIndex, podiumIndex) => {
+    //         const user = top3[orderIndex];
+    //         if (!user) return;
+
+    //         const initials = getInitialsRegex(user.username);
+    //         const hasImage = user.profile_picture && user.profile_picture.trim() !== "";
+
+    //         const col = document.createElement("div");
+    //         col.className = `col-4 d-flex flex-column align-items-center`;
+
+    //         col.innerHTML = `
+    //             <div class="position-relative mb-2">
+    //                 ${
+    //                     hasImage
+    //                         ? `<img src="${user.profile_picture}" alt="${user.username}" class="rounded-circle border border-4" 
+    //                             style="width: 90px; height: 90px; object-fit: cover; border-color: white;">`
+    //                         : `<div class="rounded-circle d-flex align-items-center justify-content-center text-white fw-bold"
+    //                             style="width: 90px; height: 90px; background: ${gradientBackgrounds[podiumIndex]}; font-size: 1.25rem;">
+    //                             ${initials}
+    //                         </div>`
+    //                 }
+    //                 <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-light shadow-sm">
+    //                     ${medalEmojis[podiumIndex]}
+    //                 </span>
+    //             </div>
+    //             <div class="text-white fw-semibold">${user.username}</div>
+    //             <div class="text-secondary small">${user.points} pts</div>
+    //         `;
+
+    //         row.appendChild(col);
+    //     });
+
+    //     container.appendChild(row);
+
+    // }

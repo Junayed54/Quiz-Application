@@ -20,6 +20,8 @@ document.getElementById('login-form').addEventListener('submit', function(event)
         if (data.access) {
             localStorage.setItem('access_token', data.access);
             localStorage.setItem('refresh_token', data.refresh);
+            localStorage.removeItem('phone_number');
+            localStorage.removeItem('username');
             // Redirect to home page on successful login
             window.location.href='/'
         } else {

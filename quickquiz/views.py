@@ -2,7 +2,7 @@ import uuid
 import pandas as pd
 from io import BytesIO
 from openpyxl import load_workbook
-
+from rest_framework.permissions import AllowAny
 from rest_framework.parsers import MultiPartParser
 from rest_framework.response import Response
 from rest_framework import status, viewsets
@@ -31,7 +31,7 @@ class SubjectViewSet(viewsets.ModelViewSet):
 # Start a new Practice Session
 class StartPracticeSessionView(APIView):
     # authentication_classes = [AllowInactiveUserJWTAuthentication]
-    permission_classes = [IsAuthenticated]
+    permission_classes = [AllowAny]
     def post(self, request):
         user = request.user  # Assuming the user is authenticated
         subject_id = request.data.get('subject_id')
@@ -60,18 +60,29 @@ class StartPracticeSessionView(APIView):
 
 # Submit Answers and Calculate Score
 class SubmitPracticeSessionView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [AllowAny]  # Allow both authenticated and unauthenticated
 
     def post(self, request):
-        user = request.user
-        # session_id = request.data.get('session_id')
+        user = None
+        phone_number = request.data.get('phone_number')
+        username = request.data.get('username')
+        # print(request.data)
+        if request.user and request.user.is_authenticated:
+            user = request.user
+        elif phone_number:
+            # Try to find an existing UserPoints by phone_number
+            try:
+                user_points = UserPoints.objects.get(phone_number=phone_number)
+                username = user_points.username  # Overwrite username if already stored
+            except UserPoints.DoesNotExist:
+                user_points = UserPoints.objects.create(username=username, phone_number=phone_number)
+        else:
+            return Response({'error': 'Authentication or phone number is required.'}, status=status.HTTP_400_BAD_REQUEST)
 
-        
-        session = PracticeSession.objects.create(user=user)
-        # except PracticeSession.DoesNotExist:
-        #     return Response({'error': 'Practice session not found.'}, status=status.HTTP_404_NOT_FOUND)
+        # Create the session
+        session = PracticeSession.objects.create(user=user, username=username, phone_number=phone_number)
 
-        # Save duration if provided
+        # Handle duration
         duration = request.data.get('duration')
         if duration is not None:
             try:
@@ -84,8 +95,9 @@ class SubmitPracticeSessionView(APIView):
         correct_answers = 0
         total_questions = len(answers)
 
-        for attempt in answers:
-            selected_option_id = attempt.get('option_id')
+        for question in answers:
+            selected_option_id = question.get('selected_option_id')
+            
             if selected_option_id:
                 try:
                     selected_option = PracticeOption.objects.get(id=int(selected_option_id))
@@ -98,16 +110,17 @@ class SubmitPracticeSessionView(APIView):
         wrong_answers = total_questions - correct_answers
         percentage_score = round((correct_answers / total_questions) * 100, 2) if total_questions > 0 else 0
 
-        # Save score and duration
+        # Save score
         session.score = score
         session.save()
 
-        
-        # Update user points using model method
-        user_points, _ = UserPoints.objects.get_or_create(user=user)
-        user_points.add_points(score)
+        # Update or create UserPoints
+        if user:
+            user_points, _ = UserPoints.objects.get_or_create(user=user)
+        elif phone_number:
+            user_points, _ = UserPoints.objects.get_or_create(phone_number=phone_number, defaults={'username': username})
 
-        user_points.save()
+        user_points.add_points(score)
 
         return Response({
             'score': score,
@@ -117,10 +130,9 @@ class SubmitPracticeSessionView(APIView):
             'duration_in_minutes': round(session.duration.total_seconds() / 60) if session.duration else 0,
         }, status=status.HTTP_200_OK)
 
-
 # View for Leaderboard - Display Top 10 Users with highest points
 class PracticeLeaderboardAPIView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [AllowAny]  # Allow both authenticated and unauthenticated users
 
     def get(self, request):
         # Step 1: Get top 10 users with the highest points
@@ -128,46 +140,64 @@ class PracticeLeaderboardAPIView(APIView):
             UserPoints.objects.select_related('user')
             .order_by('-points')[:10]
         )
-        top_users = [up.user for up in top_users_points]
 
-        # Step 2: Get points for top users and annotate
+        # Step 2: Prepare top 10 leaderboard data
         top_data = []
         for up in top_users_points:
             top_data.append({
-                'id': up.user.id,
-                'username': up.user.username,
+                'id': up.user.id if up.user else None,
+                'username': up.user.username if up.user else up.username,
                 'points': up.points,
-                'attempts': PracticeSession.objects.filter(user=up.user).count(),
-                'profile_image': getattr(up.user, 'profile_picture', None),
+                'attempts': PracticeSession.objects.filter(user=up.user).count() if up.user else PracticeSession.objects.filter(phone_number=up.phone_number).count(),
+                'profile_image': request.build_absolute_uri(up.user.profile_picture.url) if up.user and hasattr(up.user, 'profile_picture') and up.user.profile_picture else None,
             })
 
-        # Step 3: Serialize top users
-        top_serialized = PracticeLeaderboardSerializer(top_users, many=True, context={'request': request}).data
-
-        # Step 4: Add current user info with rank
-        current_user = request.user
-        current_user_points = UserPoints.objects.filter(user=current_user).first()
+        # Step 3: Determine current user data
         current_user_data = None
 
-        if current_user_points:
-            # Get rank of current user
-            user_ranks = UserPoints.objects.order_by('-points').values_list('user_id', flat=True)
-            try:
-                rank = list(user_ranks).index(current_user.id) + 1
-            except ValueError:
-                rank = None  # should not happen
+        if request.user.is_authenticated:
+            current_user = request.user
+            current_user_points = UserPoints.objects.filter(user=current_user).first()
 
-            current_user_data = {
-                'id': current_user.id,
-                'username': current_user.username,
-                'points': current_user_points.points,
-                'rank': rank,
-                'attempts': PracticeSession.objects.filter(user=current_user).count(),
-                'profile_image': request.build_absolute_uri(current_user.profile_picture.url) if current_user.profile_picture else None,
-            }
+            if current_user_points:
+                user_ranks = UserPoints.objects.order_by('-points').values_list('user_id', flat=True)
+                try:
+                    rank = list(user_ranks).index(current_user.id) + 1
+                except ValueError:
+                    rank = None
+
+                current_user_data = {
+                    'id': current_user.id,
+                    'username': current_user.username,
+                    'points': current_user_points.points,
+                    'rank': rank,
+                    'attempts': PracticeSession.objects.filter(user=current_user).count(),
+                    'profile_image': request.build_absolute_uri(current_user.profile_picture.url) if current_user.profile_picture else None,
+                }
+        else:
+            # If unauthenticated, try to get user info by phone number from query params
+            phone_number = request.query_params.get('phone_number')
+            if phone_number:
+                user_points = UserPoints.objects.filter(phone_number=phone_number).first()
+                if user_points:
+                    all_points = UserPoints.objects.order_by('-points')
+                    ranks = list(all_points.values_list('phone_number', flat=True))
+                    try:
+                        rank = ranks.index(phone_number) + 1
+                    except ValueError:
+                        rank = None
+
+                    current_user_data = {
+                        'id': None,
+                        'username': user_points.username or "Guest",
+                        'points': user_points.points,
+                        'rank': rank,
+                        'attempts': PracticeSession.objects.filter(phone_number=phone_number).count(),
+                        'profile_image': None,
+                    }
 
         return Response({
-            'top_10': top_serialized,
+            'top_10': top_data,
             'me': current_user_data
         })
 

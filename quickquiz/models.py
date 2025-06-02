@@ -30,11 +30,11 @@ class PracticeOption(models.Model):
         return self.text or f"Image Option ({self.id})"
 
 class PracticeSession(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
-    duration = models.DurationField(null=True, blank=True)  # Duration between start and end time
-    score = models.IntegerField(default=0)  # The score the user earned in the session
-
-    
+    user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
+    username = models.CharField(max_length=150, blank=True, null=True)  # For unauthenticated users
+    phone_number = models.CharField(max_length=15, blank=True, null=True)  # For unauthenticated users
+    duration = models.DurationField(null=True, blank=True)
+    score = models.IntegerField(default=0)
 
     def update_score(self, score):
         """Update the user's score at the end of the session."""
@@ -42,17 +42,17 @@ class PracticeSession(models.Model):
         self.save()
 
     def __str__(self):
-        return f"Session for {self.user.username}"
-
-
+        return f"Session for {self.user.username if self.user else self.username}"
 
 
 class UserPoints(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE)
-    points = models.PositiveIntegerField(default=0)  # Points accumulated by the user
+    user = models.OneToOneField(User, on_delete=models.CASCADE, null=True, blank=True)
+    username = models.CharField(max_length=150, blank=True, null=True)  # For unauthenticated users
+    phone_number = models.CharField(max_length=15, blank=True, null=True)  # For unauthenticated users
+    points = models.PositiveIntegerField(default=0)
 
     def __str__(self):
-        return f"{self.user.username}'s Points"
+        return f"{self.user.username if self.user else self.username}'s Points"
 
     def add_points(self, points):
         """Add points to the user's account."""
@@ -66,3 +66,4 @@ class UserPoints(models.Model):
             self.save()
         else:
             raise ValueError("Not enough points to subtract.")
+

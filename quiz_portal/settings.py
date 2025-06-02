@@ -76,7 +76,7 @@ INSTALLED_APPS = [
     'invitation',
     'subscription',
     'govt_jobs',
-    'quickquiz',
+    'quickquiz.apps.QuickquizConfig',
     
     
 ]
@@ -114,9 +114,9 @@ REST_FRAMEWORK = {
         'rest_framework_simplejwt.authentication.JWTAuthentication',
         'rest_framework.authentication.TokenAuthentication',
     ),
-    'DEFAULT_PERMISSION_CL12ASSES': [
-        'rest_framework.permissions.IsAuthenticated',
-    ],
+    # 'DEFAULT_PERMISSION_CL12ASSES': [
+    #     'rest_framework.permissions.IsAuthenticated',
+    # ],
     
 }
 

@@ -13,14 +13,29 @@ class SubjectAdmin(admin.ModelAdmin):
 # PracticeOption Admin
 class PracticeOptionInline(admin.TabularInline):
     model = PracticeOption
-    extra = 1  # Number of empty forms to show by default
+    extra = 0
+    can_delete = False
+    readonly_fields = ('text', 'image', 'is_correct')
+    show_change_link = False
+    max_num = 0  # Prevent adding new rows
 
-# PracticeQuestion Admin
-@admin.register(PracticeQuestion)
+    def has_add_permission(self, request, obj=None):
+        return False
+
+    def has_change_permission(self, request, obj=None):
+        return False
+
 class PracticeQuestionAdmin(admin.ModelAdmin):
-    list_display = ['id', 'text', 'subject', 'image']  # Fields to display in the list view
-    search_fields = ['text']  # Make it searchable by the question text
-    inlines = [PracticeOptionInline]  # Display PracticeOption inline within PracticeQuestion
+    list_display = ('id', 'subject', 'short_text', 'marks', 'created_at')
+    search_fields = ('text', )
+    list_filter = ('subject', 'created_at')
+    inlines = [PracticeOptionInline]
+
+    def short_text(self, obj):
+        return obj.text[:50] + "..." if obj.text and len(obj.text) > 50 else obj.text
+    short_text.short_description = "Question Text"
+
+admin.site.register(PracticeQuestion, PracticeQuestionAdmin)
 
 # PracticeSession Admin
 @admin.register(PracticeSession)

@@ -62,7 +62,7 @@ class UserSerializer(serializers.ModelSerializer):
         user = User.objects.create_user(
             phone_number=validated_data['phone_number'],
             email=validated_data['email'],
-            password=validated_data('password'),
+            password=validated_data['password'],
             username=validated_data.get('username', ''),  # Username is optional
             role=validated_data.get('role', User.STUDENT),  # Default to 'student' if no role is provided
             address=validated_data.get('address', ''),

@@ -11,7 +11,7 @@ from django.contrib.auth import get_user_model
 from .serializers import *
 from django.core.exceptions import ObjectDoesNotExist 
 from .models import CustomUser
-
+from quiz.permissions import *
 from .serializers import UserSerializer
 User = get_user_model()
 from django.db.models import Count, CharField
@@ -31,7 +31,7 @@ class SignupView(generics.CreateAPIView):
         email = request.data.get('email')
         username = request.data.get('username')
         password = request.data.get('password')
-
+        # print(request.data)
         try:
             # Check if user already exists (created during exam attempt)
             user = User.objects.get(phone_number=phone_number, is_active=False)
@@ -151,7 +151,7 @@ class VerifyOTPView(APIView):
 
 class Validate_token(APIView):
     authentication_classes = [JWTAuthentication]  # JWT authentication
-    permission_classes = [IsAuthenticated]  # User must be authenticated
+    permission_classes = [IsAuthenticated, IsTeacherOrAdmin]  # User must be authenticated
 
     def get(self, request):
         # print("hello")
