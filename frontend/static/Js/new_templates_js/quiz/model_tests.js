@@ -139,7 +139,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
     const token = localStorage.getItem('access_token');  // Get token from localStorage
      const examTypeId = window.location.pathname.split('/')[2];
-    fetch(`/quiz/model-exams/?exam_type:${examTypeId}`, {
+     console.log(examTypeId);
+    fetch(`/quiz/model-exams/?exam_type=${examTypeId}`, {
         method: 'GET',
         headers: {
             'Content-Type': 'application/json',
