@@ -219,6 +219,39 @@ class ExamSerializer(serializers.ModelSerializer):
             question_serializer = ExamQuestionSerializer(peq) # Use the PastExamQuestionSerializer
             question_data.append(question_serializer.data)
         return question_data
+    
+    
+class ExamListSerializer(serializers.ModelSerializer):
+    exam_type = serializers.PrimaryKeyRelatedField(queryset=ExamType.objects.all())
+    exam_type_name = serializers.CharField(source='exam_type.name', read_only=True)
+    created_by = serializers.StringRelatedField()
+    organization_name = serializers.CharField(source='organization.name', read_only=True)
+    department_name = serializers.CharField(source='department.name', read_only=True)
+    position_name = serializers.CharField(source='position.name', read_only=True)
+
+    category = serializers.StringRelatedField()
+
+    class Meta:
+        model = Exam
+        fields = [
+            'exam_id',
+            'title',
+            'exam_type',
+            'exam_type_name',
+            'total_questions',
+            'total_mark',
+            'pass_mark',
+            'negative_mark',
+            'duration',
+            'starting_time',
+            'last_date',
+            'organization_name',
+            'department_name',
+            'position_name',
+            'category',
+            'created_by',
+            'created_at',
+        ]
 
 class StatusSerializer(serializers.ModelSerializer):
     exam_details = serializers.SerializerMethodField()

@@ -77,7 +77,7 @@ class CreateCategoryView(APIView):
 
 
 class LeaderboardListView(APIView):
-    permission_classes = [IsAuthenticated]
+    # permission_classes = [IsAuthenticated]
 
     def get(self, request, exam_id):
         try:
@@ -118,9 +118,39 @@ class CategoryViewSet(viewsets.ModelViewSet):
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
 
+class ModelExamTypeAPIView(APIView):
+    def get(self, request):
+        exam_types = (
+            ExamType.objects
+            .filter(
+                exams__exam__status='published'  # Join through Status model
+            )
+            .annotate(exam_count=Count('exams', filter=Q(exams__exam__status='published')))
+            .distinct()
+        )
+        serializer = ExamTypeSerializer(exam_types, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
+class ModelTestExamView(APIView):
+    def get(self, request, exam_id=None):
+        if exam_id:
+            # Retrieve a single exam by ID
+            exam = get_object_or_404(Exam, exam_id=exam_id)
+            serializer = ExamListSerializer(exam)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        else:
+            # Optional filter by exam_type from query parameter
+            exam_type_id = request.query_params.get('exam_type')
 
-    
+            exams = Exam.objects.filter(exam__status='published')  # Published exams only
+
+            if exam_type_id:
+                exams = exams.filter(exam_type__id=exam_type_id)
+
+            exams = exams.order_by('-created_at')
+            serializer = ExamListSerializer(exams, many=True)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+
 
 class ExamViewSet(viewsets.ModelViewSet):
     queryset = Exam.objects.all()
@@ -3670,77 +3700,97 @@ class ExamLeaderboardAPIView(APIView):
 
 
 
-class PastExamLeaderboardAPIView(APIView):
-    permission_classes = [IsAuthenticated]
+# class PastExamLeaderboardAPIView(APIView):
+#     permission_classes = [IsAuthenticated]
 
-    def get(self, request, exam_id):
+#     def get(self, request, exam_id):
     
-        if not exam_id:
-            return Response({'error': 'exam_id is required'}, status=400)
+#         if not exam_id:
+#             return Response({'error': 'exam_id is required'}, status=400)
 
-        past_exam = get_object_or_404(PastExam, id=exam_id)
+#         past_exam = get_object_or_404(PastExam, id=exam_id)
 
-        attempts = PastExamAttempt.objects.filter(past_exam=past_exam).select_related('user')
+#         attempts = PastExamAttempt.objects.filter(past_exam=past_exam).select_related('user')
 
-        user_stats = {}
+#         user_stats = {}
 
-        for attempt in attempts:
-            user_id = attempt.user.id
-            if user_id not in user_stats:
-                user_stats[user_id] = {
-                    'user': attempt.user,
-                    'total_score': 0,
-                    'total_questions': 0,
-                    'attempts': 0,
-                }
+#         for attempt in attempts:
+#             user_id = attempt.user.id
+#             if user_id not in user_stats:
+#                 user_stats[user_id] = {
+#                     'user': attempt.user,
+#                     'total_score': 0,
+#                     'total_questions': 0,
+#                     'attempts': 0,
+#                 }
 
-            user_stats[user_id]['total_score'] += attempt.correct_answers or 0
-            user_stats[user_id]['total_questions'] += attempt.total_questions or 0
-            user_stats[user_id]['attempts'] += 1
+#             user_stats[user_id]['total_score'] += attempt.correct_answers or 0
+#             user_stats[user_id]['total_questions'] += attempt.total_questions or 0
+#             user_stats[user_id]['attempts'] += 1
 
-        # Sort users by total_score
-        sorted_users = sorted(user_stats.values(), key=lambda x: x['total_score'], reverse=True)
+#         # Sort users by total_score
+#         sorted_users = sorted(user_stats.values(), key=lambda x: x['total_score'], reverse=True)
 
-        # Top 10 leaderboard
-        top_10 = []
-        for stat in sorted_users[:10]:
-            percentage = (
-                round((stat['total_score'] / stat['attempts']), 2)
-                if stat['attempts'] else 0.0
-            )
+#         # Top 10 leaderboard
+#         top_10 = []
+#         for stat in sorted_users[:10]:
+#             percentage = (
+#                 round((stat['total_score'] / stat['attempts']), 2)
+#                 if stat['attempts'] else 0.0
+#             )
 
-            top_10.append({
-                'id': stat['user'].id,
-                'username': stat['user'].username,
-                'points': stat['total_score'],
-                'attempts': stat['attempts'],
-                'percentage': percentage,
-                'profile_image': request.build_absolute_uri(stat['user'].profile_picture.url)
-                if hasattr(stat['user'], 'profile_picture') and stat['user'].profile_picture else None,
+#             top_10.append({
+#                 'id': stat['user'].id,
+#                 'username': stat['user'].username,
+#                 'points': stat['total_score'],
+#                 'attempts': stat['attempts'],
+#                 'percentage': percentage,
+#                 'profile_image': request.build_absolute_uri(stat['user'].profile_picture.url)
+#                 if hasattr(stat['user'], 'profile_picture') and stat['user'].profile_picture else None,
+#             })
+
+#         # Current user data
+#         me = None
+#         for rank, stat in enumerate(sorted_users):
+#             if stat['user'].id == request.user.id:
+#                 percentage = (
+#                     round((stat['total_score'] / stat['attempts']), 2)
+#                     if stat['attempts'] else 0.0
+#                 )
+
+#                 me = {
+#                     'id': stat['user'].id,
+#                     'username': stat['user'].username,
+#                     'points': stat['total_score'],
+#                     'attempts': stat['attempts'],
+#                     'percentage': percentage,
+#                     'rank': rank + 1,
+#                     'profile_image': request.build_absolute_uri(stat['user'].profile_picture.url)
+#                     if hasattr(stat['user'], 'profile_picture') and stat['user'].profile_picture else None,
+#                 }
+#                 break
+
+#         return Response({
+#             'top_10': top_10,
+#             'me': me,
+#         })
+
+
+class PastExamLeaderboardAPIView(APIView):
+    def get(self, request, exam_id):
+        attempts = (
+            PastExamAttempt.objects
+            .filter(past_exam__id=exam_id)
+            .order_by('-score')[:10]
+        )
+
+        data = []
+        for index, attempt in enumerate(attempts, start=1):
+            data.append({
+                'username': attempt.user.username,
+                'user_id': attempt.user.id,
+                'position': index,
+                'exam_title': attempt.past_exam.title,
             })
 
-        # Current user data
-        me = None
-        for rank, stat in enumerate(sorted_users):
-            if stat['user'].id == request.user.id:
-                percentage = (
-                    round((stat['total_score'] / stat['attempts']), 2)
-                    if stat['attempts'] else 0.0
-                )
-
-                me = {
-                    'id': stat['user'].id,
-                    'username': stat['user'].username,
-                    'points': stat['total_score'],
-                    'attempts': stat['attempts'],
-                    'percentage': percentage,
-                    'rank': rank + 1,
-                    'profile_image': request.build_absolute_uri(stat['user'].profile_picture.url)
-                    if hasattr(stat['user'], 'profile_picture') and stat['user'].profile_picture else None,
-                }
-                break
-
-        return Response({
-            'top_10': top_10,
-            'me': me,
-        })
+        return Response(data, status=status.HTTP_200_OK)

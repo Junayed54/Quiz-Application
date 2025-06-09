@@ -14,7 +14,8 @@ urlpatterns = [
     
     path('past_exams/', TemplateView.as_view(template_name="new_custom/quiz/exam_types.html"), name ='universities'),
     path('past_exams/<int:exam_type_id>/', TemplateView.as_view(template_name="new_custom/quiz/all_past_exams.html"), name="all_examss"),
-    path('model-tests/', TemplateView.as_view(template_name="new_custom/quiz/model_test.html"), name="model-tests"),
+    path('model-tests/', TemplateView.as_view(template_name="new_custom/quiz/model_test_types.html"), name="model-tests_types"),
+    path('model-tests/<int:id>/', TemplateView.as_view(template_name="new_custom/quiz/model_test.html"), name="model-tests_types"),
     path('past_exam_details/<int:pk>/', TemplateView.as_view(template_name="new_custom/quiz/new_past_exam_details.html")),
     path('user/dashboard/', TemplateView.as_view(template_name="new_custom/new_templates/dashboard.html")),
     path('user/leaderboard/', TemplateView.as_view(template_name="new_custom/new_templates/quick_leaderboard2.html")),

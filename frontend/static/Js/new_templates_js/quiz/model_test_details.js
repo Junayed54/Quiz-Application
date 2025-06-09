@@ -7,7 +7,7 @@ document.addEventListener('DOMContentLoaded', function () {
    
     
 
-    const pastExamDetailsUrl = `/quiz/exams/${examId}/`;
+    const pastExamDetailsUrl = `/quiz/model-exams/${examId}/`;
     
     
     function fetchPastExamDetails() {

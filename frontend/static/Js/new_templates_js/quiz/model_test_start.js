@@ -404,5 +404,6 @@ function showBuySubscriptionOnScroll() {
         });
     }
 
-    checkUserPermission();
+    // checkUserPermission();
+    fetchExamDetails(true);
 });

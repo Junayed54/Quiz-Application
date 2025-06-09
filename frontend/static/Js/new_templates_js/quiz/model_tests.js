@@ -138,8 +138,8 @@ document.addEventListener('DOMContentLoaded', function() {
     const examCardsContainer = document.getElementById('examCardsContainer');
 
     const token = localStorage.getItem('access_token');  // Get token from localStorage
-
-    fetch('/quiz/exams/exam_list/', {
+     const examTypeId = window.location.pathname.split('/')[2];
+    fetch(`/quiz/model-exams/?exam_type:${examTypeId}`, {
         method: 'GET',
         headers: {
             'Content-Type': 'application/json',

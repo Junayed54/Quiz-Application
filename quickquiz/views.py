@@ -132,73 +132,78 @@ class SubmitPracticeSessionView(APIView):
 
 # View for Leaderboard - Display Top 10 Users with highest points
 class PracticeLeaderboardAPIView(APIView):
-    permission_classes = [AllowAny]  # Allow both authenticated and unauthenticated users
+    permission_classes = [AllowAny]
 
     def get(self, request):
-        # Step 1: Get top 10 users with the highest points
+        # Fetch top 10 users based on points
         top_users_points = (
             UserPoints.objects.select_related('user')
             .order_by('-points')[:10]
         )
 
-        # Step 2: Prepare top 10 leaderboard data
         top_data = []
         for up in top_users_points:
+            user = up.user
+            profile_image = None
+            if user and hasattr(user, 'profile_picture') and user.profile_picture:
+                profile_image = request.build_absolute_uri(user.profile_picture.url)
+
+            attempts = PracticeSession.objects.filter(user=user).count() if user else PracticeSession.objects.filter(phone_number=up.phone_number).count()
+
             top_data.append({
-                'id': up.user.id if up.user else None,
-                'username': up.user.username if up.user else up.username,
+                'id': user.id if user else None,
+                'username': user.username if user else up.username,
                 'points': up.points,
-                'attempts': PracticeSession.objects.filter(user=up.user).count() if up.user else PracticeSession.objects.filter(phone_number=up.phone_number).count(),
-                'profile_image': request.build_absolute_uri(up.user.profile_picture.url) if up.user and hasattr(up.user, 'profile_picture') and up.user.profile_picture else None,
+                'attempts': attempts,
+                'profile_image': profile_image,
             })
 
-        # Step 3: Determine current user data
         current_user_data = None
 
+        # Check if user is authenticated
         if request.user.is_authenticated:
-            current_user = request.user
-            current_user_points = UserPoints.objects.filter(user=current_user).first()
-
-            if current_user_points:
-                user_ranks = UserPoints.objects.order_by('-points').values_list('user_id', flat=True)
+            user = request.user
+            user_points = UserPoints.objects.filter(user=user).first()
+            if user_points:
+                rank_list = list(UserPoints.objects.order_by('-points').values_list('user_id', flat=True))
                 try:
-                    rank = list(user_ranks).index(current_user.id) + 1
+                    rank = rank_list.index(user.id) + 1
+                except ValueError:
+                    rank = None
+
+                profile_image = request.build_absolute_uri(user.profile_picture.url) if user.profile_picture else None
+
+                current_user_data = {
+                    'id': user.id,
+                    'username': user.username,
+                    'points': user_points.points,
+                    'rank': rank,
+                    'attempts': PracticeSession.objects.filter(user=user).count(),
+                    'profile_image': profile_image,
+                }
+
+        # If not authenticated, check for phone_number in query params
+        elif phone_number := request.query_params.get('phone_number'):
+            user_points = UserPoints.objects.filter(phone_number=phone_number).first()
+            if user_points:
+                ranks = list(UserPoints.objects.order_by('-points').values_list('phone_number', flat=True))
+                try:
+                    rank = ranks.index(phone_number) + 1
                 except ValueError:
                     rank = None
 
                 current_user_data = {
-                    'id': current_user.id,
-                    'username': current_user.username,
-                    'points': current_user_points.points,
+                    'id': None,
+                    'username': user_points.username or "Guest",
+                    'points': user_points.points,
                     'rank': rank,
-                    'attempts': PracticeSession.objects.filter(user=current_user).count(),
-                    'profile_image': request.build_absolute_uri(current_user.profile_picture.url) if current_user.profile_picture else None,
+                    'attempts': PracticeSession.objects.filter(phone_number=phone_number).count(),
+                    'profile_image': None,
                 }
-        else:
-            # If unauthenticated, try to get user info by phone number from query params
-            phone_number = request.query_params.get('phone_number')
-            if phone_number:
-                user_points = UserPoints.objects.filter(phone_number=phone_number).first()
-                if user_points:
-                    all_points = UserPoints.objects.order_by('-points')
-                    ranks = list(all_points.values_list('phone_number', flat=True))
-                    try:
-                        rank = ranks.index(phone_number) + 1
-                    except ValueError:
-                        rank = None
-
-                    current_user_data = {
-                        'id': None,
-                        'username': user_points.username or "Guest",
-                        'points': user_points.points,
-                        'rank': rank,
-                        'attempts': PracticeSession.objects.filter(phone_number=phone_number).count(),
-                        'profile_image': None,
-                    }
 
         return Response({
             'top_10': top_data,
-            'me': current_user_data
+            'me': current_user_data  # This will be None if no user info was found
         })
 
 

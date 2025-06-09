@@ -71,51 +71,102 @@ document.addEventListener("DOMContentLoaded", function () {
     displayCurrentMonthYear();
 
     function renderTopThreePerformers(users) {
-    const top3 = users.slice(0, 3);
-    const container = document.getElementById("top-performers");
-    container.innerHTML = "";
+        const top3 = users.slice(0, 3);
+        const container = document.getElementById("top-performers");
+        container.innerHTML = "";
 
-    const gradients = [
-        "linear-gradient(135deg, #FFD700 0%, #FFC107 100%)", // 1st
-        "linear-gradient(135deg, #FF7B9C 0%, #FF4D79 100%)", // 2nd
-        "linear-gradient(135deg, #8A6EFF 0%, #6C4DF6 100%)"  // 3rd
-    ];
+        const gradients = [
+            "linear-gradient(135deg, #FFD700 0%, #FFC107 100%)", // 1st
+            "linear-gradient(135deg, #FF7B9C 0%, #FF4D79 100%)", // 2nd
+            "linear-gradient(135deg, #8A6EFF 0%, #6C4DF6 100%)"  // 3rd
+        ];
 
-    const displayOrder = [1, 0, 2]; // 2nd, 1st, 3rd podium
+        const displayOrder = [1, 0, 2]; // 2nd, 1st, 3rd podium
 
-    displayOrder.forEach((orderIndex, podiumIndex) => {
-        const user = top3[orderIndex];
-        if (!user) return;
+        displayOrder.forEach((orderIndex, podiumIndex) => {
+            const user = top3[orderIndex];
+            if (!user) return;
 
-        const initials = getInitialsRegex(user.username);
-        const profileImage = user.profile_image;
-        const hasImage = profileImage && profileImage.trim() !== "";
+            const initials = getInitialsRegex(user.username);
+            const profileImage = user.profile_image;
+            const hasImage = profileImage && profileImage.trim() !== "";
 
-        const performerCard = document.createElement("div");
-        performerCard.className = "col text-center";
-// ${hasImage ? `
-//                         <img src="${profileImage}" alt="${user.username}" style="width: 100%; height: 100%; object-fit: cover;">
-//                     ` : `
-        performerCard.innerHTML = `
-            <div class="position-relative d-inline-block" style="margin-bottom: 100px">
-                <div class="rounded-circle mx-auto d-flex align-items-center justify-content-center"
-                    style="width: 80px; height: 80px; background: ${gradients[podiumIndex]}; overflow: hidden;">
+            const defaultAvatar = "https://example.com/avatar.png"; // Replace with any public avatar URL
+            // const initials = user.username ? user.username.charAt(0).toUpperCase() : "?"; // Get first letter of username
+
+            const performerCard = document.createElement("div");
+            performerCard.className = "text-center";
+
+            // performerCard.innerHTML = `
+            //     <div class="">
+            //         <div class="d-flex position-relative">
+            //             <div>
+            //                 <div class="rounded-circle mx-auto" 
+            //                     style="width: 80px; height: 80px; padding:20px; background: ${gradients[podiumIndex]}; overflow: hidden; position: relative;">
+            //                     <span class="font-bold">${initials}</span>
+                                
+            //                 </div>
+                            
+                        
+            //                 ${hasImage ? `
+            //                         <div class="position-absolute" 
+            //                             style="height:150px; width:100%; z-index:0; top:50px; left:0px;">
+            //                             <img src="${profileImage}" alt="${user.username}" 
+            //                                 style="width:100%; height:100%; object-fit:cover; border-radius:5%;">
+            //                         </div>
+            //                     ` : `<i class="fas fa-user text-white" style="font-size: 36px;"></i>`}
+
+            //                 <div class="fw-semibold text-white overflow-hidden text-center"  style="margin-top: 150px;">${user.username}</div>
+            //                 <div class="text-light small">${user.points} pts</div>
+                            
+            //             </div>
+                       
+            //                 <span class="rounded-pill" style="font-weight:800; font-size:36px;">
+            //                     ${["🥈", "🥇", "🥉"][podiumIndex]}
+            //                 </span>
                     
-                    <span class="text-white fw-bold fs-4">${initials}</span>   
-                </div>
-                <span class="position-absolute top-2 end-3 bg-white rounded-pill px-2 small shadow">
-                    ${["🥈", "🥇", "🥉"][podiumIndex]}
-                </span>
-                
-                </div>
-            </div>
-            <div class="mt-2 fw-semibold text-white">${user.username}</div>
-            <div class="text-light small">${user.points} pts</div>
-        `;
+            //         </div>
 
-        container.appendChild(performerCard);
-    });
-}
+            //     </div>
+
+                
+            // `;
+            
+            performerCard.innerHTML = `
+            <div class="container-fluid p-2">
+            <div class="d-flex flex-column align-items-center position-relative text-center">
+                
+                <div class="position-relative mb-2">
+                <div class="rounded-circle d-flex align-items-center justify-content-center"
+                    style="width: 80px; height: 80px; background: ${gradients[podiumIndex]}; overflow: hidden; position: relative;">
+                    ${hasImage ? `
+                    <img src="${profileImage}" alt="${user.username}"
+                        style="width: 100%; height: 100%; object-fit: cover;">
+                    ` : `
+                    <i class="fas fa-user text-white" style="font-size: 36px;"></i>
+                    `}
+                </div>
+                </div>
+
+                <div class="mt-2 text-white text-wrap fw-semibold w-100 overflow-hidden" style="min-height: 1.5rem;">
+                ${user.username}
+                </div>
+                <div class="text-light small">${user.points} pts</div>
+
+                <span class="position-absolute top-0 end-0 translate-middle-y rounded-pill"
+                    style="font-weight:800; font-size: 36px;">
+                ${["🥈", "🥇", "🥉"][podiumIndex]}
+                </span>
+            </div>
+            </div>
+            `;
+
+
+
+
+            container.appendChild(performerCard);
+        });
+    }
 
 
 
@@ -127,7 +178,14 @@ document.addEventListener("DOMContentLoaded", function () {
             leaderboardList.innerHTML += `
             <tr  class="rank-row p-4">
                 <td>#${index+1}</td>
-                <td class="d-flex align-items-center mt-2" style="gap: 10px;"><div style="width: 45px; height:45px;" class="border bg-secondary rounded-circle text-center"><div class="d-flex justify-content-center align-items-center pt-2">${getInitialsRegex(user.username)}</div></div><div><h6>${user.username}</h6><span class="text-secondary" style="font-size: 15px;">${user.attempts} tests</span></div></td>
+                <td class="d-flex align-items-center mt-2" style="gap: 10px;">
+                    <div style="width: 45px; height:45px;" class="border bg-secondary rounded-circle text-center">
+                        <div class="d-flex justify-content-center align-items-center pt-2">${getInitialsRegex(user.username)}</div>
+                    </div>
+                    <div>
+                        <h6>${user.username}</h6><span class="text-secondary" style="font-size: 15px;">${user.attempts} tests</span>
+                    </div>
+                </td>
                 <td>${user.attempts}</td>
                 <td>${user.points}</td>
                 <td>${user.points}%</td>

@@ -215,7 +215,7 @@ function renderQuestion(index) {
         ${questionImage}
         <form id="answer-form">
           ${optionsHTML}
-          <div class="d-flex justify-content-between mt-4">
+          <div class="d-flex flex-column flex-sm-row justify-content-between gap-2 mt-4">
             ${index > 0
               ? `<button type="button" id="prev-btn" class="btn rounded btn-md" style="background: #6C4DF61A; border-color: #6C4DF6;">Previous</button>`
               : '<div></div>'}

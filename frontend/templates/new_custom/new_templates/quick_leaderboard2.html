@@ -99,15 +99,45 @@
 
     /* round container */
 
-    .circle-bg {
-      position: fixed;
-      width: 150px;
-      height: 150px;
-      top: 1586px;
-      left: 384px;
+    .circle-1 {
+      position: absolute;
+      width: 200px;
+      height: 200px;
+      top: -100px;
+      left: -100px;
+      opacity: 0.15;
+      border-radius: 150px;
+      background-color: #6C4DF6;
+      backdrop-filter: blur(20px);
+      z-index: 0; /* Or lower than content */
+      pointer-events: none; /* Prevent interaction */
+    }
+
+
+    .circle-2 {
+      
+      width: 100px;
+      height: 100px;
+      bottom: -20px;
+      left: -50px;
       opacity: 0.15;
       border-radius: 75px;
-      background: #4DFFDF;
+      background-color: #4DFFDF;;
+      backdrop-filter: blur(20px);
+      z-index: 0; /* Or lower than content */
+      pointer-events: none; /* Prevent interaction */
+    }
+
+
+    .circle-3 {
+      
+      width: 150px;
+      height: 150px;
+      bottom: -20px;
+      right: -150px;
+      opacity: 0.15;
+      border-radius: 75px;
+      background-color: #FF4D79;;
       backdrop-filter: blur(20px);
       z-index: 0; /* Or lower than content */
       pointer-events: none; /* Prevent interaction */
@@ -216,15 +246,26 @@
 .col {
     padding: 0 10px; /* Reduce horizontal padding between columns if using default .col */
 }
-  </style>
+
+@media (min-width: 768px) {
+  .w-md-75 {
+    width: 75%;
+  }
+  .circle{
+    display: hidden;
+  }
+}
+
+
+</style>
 
 
   
 {% endblock %}
 
 {% block content %}
-<div class="container">
-  <div class="circle-bg"></div>
+<div class="container position-relative w-md-75" style="margin-bottom: 200px;">
+  
 
   <div class="d-flex justify-content-between align-items-center mb-4 py-4">
     <h2 class="fw-bold">Leaderboard</h2>
@@ -236,7 +277,9 @@
 
   <div class="row g-3 mb-4">
     <div class="col-md-4">
-      <div class="cards p-3 text-center">
+      
+      <div class="position-relative cards p-3 text-center">
+        <div class="circle-1"></div>
         <div class="text-white" style="font-weight: 400; font-size: 14px; background: #F0F0FF; -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;">Your Current Rank</div>
         <h3 class="text-custom" id="my_rank"></h3>
@@ -290,9 +333,14 @@
           </tr>
           -->
         </tbody>
+       
       </table>
+       
     </div>
+    
   </div>
+  <div class="position-absolute circle-2"></div>
+  <div class="position-absolute circle-3"></div>
 </div>
 {% endblock %}
 
