@@ -126,19 +126,27 @@
                                 </select>
                             </div>
 
-                            <!-- Use Difficulty Level Toggle -->
-                            <div class="col-md-6">
-                                <label class="form-label d-block">Use Difficulty Level?</label>
-                                <div class="form-check form-switch">
-                                    <input class="form-check-input" type="checkbox" id="use_difficulty" checked>
-                                    <label class="form-check-label" for="use_difficulty">Yes</label>
-                                </div>
-                            </div>
+                            
                             <div class="col-md-6">
                                 <label for="exam_type" class="form-label">Exam Type</label>
                                 <select class="form-select" id="exam_type" name="exam_type">
                                     <option disabled selected>Loading...</option>
                                 </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="subject" class="form-label">Subject</label>
+                                <select class="form-select" id="subject" name="subject">
+                                    <option selected disabled>Select Subject</option>
+                                </select>
+                            </div>
+
+                            <!-- Use Difficulty Level Toggle -->
+                            <div class="col-md-12">
+                                <label class="form-label d-block">Use Difficulty Level?</label>
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" id="use_difficulty" checked>
+                                    <label class="form-check-label" for="use_difficulty">Yes</label>
+                                </div>
                             </div>
                             <!-- Difficulty Levels -->
                             <div class="col-12" id="difficulty-section">

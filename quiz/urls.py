@@ -31,6 +31,8 @@ router.register(r'pastExamAttempts', PastExamAttemptViewSet, basename='pastExamA
 
 urlpatterns = [
     path('', include(router.urls)),
+    
+    path('subjects/', SubjectAPIView.as_view(), name='subject-list'),
     path('exams/exam_detail/<uuid:exam_id>/', ExamDetailView.as_view(), name='exam-detail' ),   
     path('model/exam-types/', ModelExamTypeAPIView.as_view(), name='connected_exam_types'),
     path('model-exams/', ModelTestExamView.as_view(), name='exam-list'),

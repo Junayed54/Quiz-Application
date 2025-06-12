@@ -72,6 +72,9 @@ class Exam(models.Model):
     department = models.ForeignKey('Department', on_delete=models.SET_NULL, null=True, blank=True, related_name="exam_departments")
     position = models.ForeignKey('Position', on_delete=models.SET_NULL, null=True, blank=True, related_name="exam_positions")
     
+    # Subject relation
+    subject = models.ForeignKey('Subject', on_delete=models.SET_NULL, related_name="exams", null=True, blank=True)
+
     
     total_mark = models.PositiveIntegerField()
     pass_mark = models.PositiveIntegerField()
@@ -339,7 +342,7 @@ class Question(models.Model):
     time_limit = models.IntegerField(help_text="Time limit for this question in seconds", default=60)
     created_by = models.ForeignKey(User, related_name="question_created_by", null=True, blank=True, on_delete=models.CASCADE)
     reviewed_by = models.ForeignKey(User, related_name="question_reviewed_by", null=True, blank=True, on_delete=models.CASCADE)
-    subject = models.ForeignKey(Subject, related_name='questions', on_delete=models.CASCADE, null=True, blank=True)
+    subject = models.ForeignKey(Subject, related_name='questions', on_delete=models.SET_NULL, null=True, blank=True)
     created_at = models.DateField(auto_now_add=True, null=True)
     updated_at = models.DateField(auto_now=True, null=True)
 

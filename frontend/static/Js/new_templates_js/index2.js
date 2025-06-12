@@ -43,9 +43,39 @@ document.addEventListener('DOMContentLoaded', function () {
             });
     }
 
+
+
+    function validateToken() {
+        fetch('/auth/validate-token/', {  // Endpoint for validating token
+            method: 'GET',
+            headers: {
+                'Authorization': 'Bearer ' + accessToken
+            }
+        })
+        .then(response => {
+            if (response.status === 401 || response.status === 403) {
+                // Token invalid or expired
+                // alert('Session expired or invalid. Please log in again.');
+                localStorage.removeItem('access_token');
+                localStorage.removeItem('refresh_token');
+                // window.location.href = '/login/';
+                return Promise.reject('Unauthorized');
+            }
+            return response.json();  // Token is valid, continue execution
+        })
+        .then(() => {
+            // Token is valid, continue to fetch user role
+            fetchUserRole();  // Call function to fetch user data based on role
+        })
+        .catch(error => {
+            console.error('Token validation failed:', error);
+        });
+    }
+
     // Call only if token exists
     if (accessToken) {
-        fetchUserRole();
+        validateToken()
+        // fetchUserRole();
     }
 
     // Logout functionality

@@ -48,6 +48,37 @@ async function fetchUserRole() {
 // Initialize user role before form submission
 fetchUserRole();
 
+// Fetch and display subjects
+async function loadSubjects() {
+    try {
+        const response = await fetch('/quiz/subjects/', {
+            method: 'GET',
+            headers: {
+                'Authorization': 'Bearer ' + accessToken,
+            },
+        });
+        const subjects = await response.json();
+
+        if (response.ok) {
+            const subjectSelect = document.getElementById('subject');
+            subjects.forEach(subject => {
+                const option = document.createElement('option');
+                option.value = subject.id;
+                option.textContent = subject.name;
+                subjectSelect.appendChild(option);
+            });
+        } else {
+            showToast('Failed to load subjects.', true);
+        }
+    } catch (error) {
+        showToast('Error fetching subjects.', true);
+        console.error('Error fetching subjects:', error);
+    }
+}
+
+loadSubjects();
+
+
 // Toggle display based on exam type selection
 document.getElementById('exam_method').addEventListener('change', function () {
     const examType = this.value;
@@ -127,6 +158,15 @@ document.getElementById('examForm').addEventListener('submit', async function (e
         const examTypeId = examTypeSelect.value;
         formData.append('exam_type_id', examTypeId);
     }
+
+    const subjectId = document.getElementById('subject').value;
+    if (!subjectId) {
+        loaderContainer.classList.remove('d-flex');
+        loaderContainer.classList.add('d-none');
+        showToast('Please select a subject before submitting.', true);
+        return;
+    }
+    formData.append('subject_id', subjectId);
     // If the exam type is 'question_bank', validate and collect difficulty levels
     if (document.getElementById('exam_method').value === 'question_bank') {
         let totalPercentage = 0;

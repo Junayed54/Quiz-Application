@@ -4,6 +4,13 @@ from .models import *
 from collections import Counter
 from django.contrib.auth import get_user_model
 User = get_user_model()
+
+
+class SubjectSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Subject
+        fields = ['id', 'name']
+        
 class QuestionOptionSerializer(serializers.ModelSerializer):
     class Meta:
         model = QuestionOption
