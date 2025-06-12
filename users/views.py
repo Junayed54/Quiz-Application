@@ -151,7 +151,7 @@ class VerifyOTPView(APIView):
 
 class Validate_token(APIView):
     authentication_classes = [JWTAuthentication]  # JWT authentication
-    permission_classes = [IsAuthenticated, IsTeacherOrAdmin]  # User must be authenticated
+    permission_classes = [IsAuthenticated]  # User must be authenticated
 
     def get(self, request):
         # print("hello")
