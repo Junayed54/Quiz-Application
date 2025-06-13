@@ -1,0 +1,624 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Settings Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <style>
+        :root {
+            --dark-bg: #1A0D32; /* Main background */
+            --sidebar-bg: #21133F; /* Sidebar background */
+            --card-bg: #21133F; /* Card background */
+            --purple-light: #5B2BBA; /* For active sidebar item */
+            --purple-dark: #3A1F6E; /* For some borders/elements */
+            --text-color: #E0DAED; /* General text color */
+            --text-muted: #AF8FD2; /* Muted text color */
+            --accent-green: #00FF91; /* Green for checkmarks/active */
+            --accent-orange: #FF9B00; /* Orange for 'Active' badge */
+            --gradient-card: linear-gradient(90deg, #5B2BBA, #7F3DD9); /* For premium plan card */
+
+            /* Specific colors for settings page switches/elements */
+            --switch-bg: rgba(255, 255, 255, 0.1);
+            --switch-on: var(--accent-green);
+            --setting-input-bg: rgba(255, 255, 255, 0.05);
+            --setting-input-border: rgba(255, 255, 255, 0.15);
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--dark-bg);
+            color: var(--text-color);
+            overflow-x: hidden;
+        }
+
+        /* Custom Sidebar Styles (repeated from previous pages for consistency) */
+        .sidebar {
+            background-color: var(--sidebar-bg);
+            padding: 20px;
+            min-height: 100vh;
+            color: var(--text-color);
+            border-right: 1px solid var(--purple-dark);
+            position: sticky;
+            top: 0;
+            left: 0;
+            overflow-y: auto;
+            z-index: 1000;
+        }
+
+        .sidebar .profile-section {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .sidebar .profile-image {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 3px solid var(--purple-light);
+            margin-bottom: 10px;
+        }
+
+        .sidebar .profile-name {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .sidebar .profile-email, .sidebar .profile-phone {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+
+        .sidebar .profile-progress {
+            margin-top: 15px;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+
+        .sidebar .progress {
+            height: 8px;
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+
+        .sidebar .progress-bar {
+            background-color: var(--purple-light);
+        }
+
+        .sidebar .nav-link {
+            color: var(--text-color);
+            padding: 12px 15px;
+            margin-bottom: 8px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            transition: all 0.3s ease;
+            font-size: 0.95rem;
+        }
+
+        .sidebar .nav-link i {
+            margin-right: 15px;
+            font-size: 1.2rem;
+            width: 25px;
+            text-align: center;
+        }
+
+        .sidebar .nav-link:hover {
+            background-color: rgba(255, 255, 255, 0.08);
+            color: var(--text-color);
+        }
+
+        .sidebar .nav-link.active {
+            background-color: var(--purple-light);
+            color: #fff;
+            font-weight: 500;
+        }
+
+        /* Main Content Styles (repeated for consistency) */
+        .main-content {
+            padding: 30px;
+        }
+
+        .top-navbar {
+            background-color: var(--dark-bg);
+            border-bottom: 1px solid var(--purple-dark);
+            padding-bottom: 20px;
+            margin-bottom: 25px;
+        }
+
+        .search-input {
+            background-color: var(--card-bg);
+            border: 1px solid var(--purple-dark);
+            color: var(--text-color);
+            padding-left: 40px;
+        }
+
+        .search-input::placeholder {
+            color: var(--text-muted);
+        }
+
+        .search-wrapper {
+            position: relative;
+        }
+
+        .search-wrapper i {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-muted);
+        }
+
+        .section-title {
+            color: var(--text-color);
+            font-size: 1.8rem;
+            font-weight: 600;
+            margin-bottom: 25px;
+        }
+
+        /* Settings Page Specific Styles */
+        .settings-card {
+            background-color: var(--card-bg);
+            border-radius: 12px;
+            padding: 25px;
+            margin-bottom: 25px;
+            height: 100%; /* Ensure equal height in rows */
+            border: none; /* Remove default bootstrap card border */
+        }
+
+        .settings-card .card-icon {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 1.5rem;
+            margin-right: 15px;
+            color: #fff;
+        }
+
+        .settings-card .card-icon.bg-purple {
+            background-color: var(--purple-light);
+        }
+        .settings-card .card-icon.bg-yellow {
+            background-color: #FFC107; /* Bootstrap yellow */
+        }
+        .settings-card .card-icon.bg-blue {
+            background-color: #007bff; /* Bootstrap blue */
+        }
+
+        .settings-card .card-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--text-color);
+            margin-bottom: 3px;
+        }
+
+        .settings-card .card-subtitle {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+
+        .settings-category-card {
+            padding: 25px;
+            border-radius: 12px;
+            background-color: var(--card-bg);
+            margin-bottom: 25px;
+            border: none;
+        }
+
+        .settings-category-card .card-header-flex {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .settings-category-card .card-header-flex .icon {
+            font-size: 1.5rem;
+            margin-right: 15px;
+            color: var(--text-color);
+        }
+
+        .settings-category-card .card-header-flex .title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--text-color);
+        }
+
+        .settings-category-card .setting-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .settings-category-card .setting-item:last-child {
+            border-bottom: none;
+        }
+
+        .settings-category-card .setting-item .label {
+            font-size: 0.95rem;
+            font-weight: 500;
+            color: var(--text-color);
+        }
+
+        .settings-category-card .setting-item .description {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            margin-top: 3px;
+        }
+
+        /* Custom Toggle Switch */
+        .form-check-input:checked {
+            background-color: var(--switch-on);
+            border-color: var(--switch-on);
+        }
+        .form-switch .form-check-input {
+            width: 2.5em; /* Adjust width if needed */
+            height: 1.2em; /* Adjust height if needed */
+            border-radius: 1.2em;
+            background-color: var(--switch-bg);
+            border: none;
+            transition: background-color 0.2s ease-in-out, border-color 0.2s ease-in-out;
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='-4 -4 8 8'%3e%3ccircle r='3' fill='%23fff'/%3e%3c/svg%3e");
+        }
+        .form-switch .form-check-input:focus {
+            box-shadow: 0 0 0 0.25rem rgba(0, 255, 139, 0.25); /* Focus shadow for green switch */
+        }
+
+        /* Language/Font Size/Layout Density Select/Radio Styling */
+        .setting-options-group .btn-check + .btn {
+            background-color: var(--setting-input-bg);
+            border: 1px solid var(--setting-input-border);
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            padding: 8px 15px;
+            border-radius: 8px;
+            margin-right: 5px;
+            margin-bottom: 5px; /* For wrapping buttons */
+        }
+        .setting-options-group .btn-check:checked + .btn {
+            background-color: var(--purple-light);
+            border-color: var(--purple-light);
+            color: #fff;
+        }
+        .setting-options-group .btn-check:focus + .btn {
+            box-shadow: 0 0 0 0.25rem rgba(91, 43, 186, 0.25);
+        }
+        .setting-options-group .btn {
+            white-space: nowrap; /* Prevent text wrapping within button */
+        }
+
+        /* Request Deletion/Deactivate/Reset Buttons */
+        .btn-outline-danger-custom {
+            color: #dc3545; /* Bootstrap danger color */
+            border-color: #dc3545;
+            background-color: transparent;
+            font-weight: 500;
+        }
+        .btn-outline-danger-custom:hover {
+            color: #fff;
+            background-color: #dc3545;
+        }
+
+        .btn-outline-primary-custom { /* Used for Deactivate/Reset */
+            color: var(--purple-light);
+            border-color: var(--purple-light);
+            background-color: transparent;
+            font-weight: 500;
+        }
+        .btn-outline-primary-custom:hover {
+            color: #fff;
+            background-color: var(--purple-light);
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container-fluid">
+        <div class="row">
+            <nav id="sidebar" class="col-lg-3 col-xl-2 col-md-4 d-none d-md-block sidebar">
+                <div class="profile-section">
+                    <img src="https://via.placeholder.com/80/5B2BBA/FFFFFF?text=MM" alt="Profile Picture" class="profile-image">
+                    <div class="profile-name">Md Mahbub Alom</div>
+                    <div class="profile-email">mdmahbubalom@gmail.com</div>
+                    <div class="profile-phone">+8801315075610</div>
+                    <div class="profile-progress">
+                        <small>Complete your profile - 50%</small>
+                        <div class="progress mt-2">
+                            <div class="progress-bar" role="progressbar" style="width: 50%;" aria-valuenow="50" aria-valuemin="0" aria-valuemax="100"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <ul class="nav flex-column mt-4">
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">
+                            <i class="bi bi-person"></i> My Profile
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">
+                            <i class="bi bi-wallet"></i> Billing & Subscription
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">
+                            <i class="bi bi-bookmark-fill"></i> Saved Questions <span class="badge rounded-pill bg-danger ms-2">24</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">
+                            <i class="bi bi-graph-up-arrow"></i> Performance Stats
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">
+                            <i class="bi bi-question-circle"></i> Support & Help Center
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">
+                            <i class="bi bi-shield-lock"></i> Privacy & Security
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" aria-current="page" href="#">
+                            <i class="bi bi-gear"></i> Settings
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">
+                            <i class="bi bi-box-arrow-right"></i> Log out
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+
+            <main class="col-lg-9 col-xl-10 col-md-8 ms-sm-auto px-md-4 main-content">
+                <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 top-navbar">
+                    <h1 class="section-title mb-0">Settings</h1>
+                    <div class="search-wrapper">
+                        <i class="bi bi-search"></i>
+                        <input type="text" class="form-control search-input" placeholder="Search settings...">
+                    </div>
+                </div>
+
+                <div class="row mb-4">
+                    <div class="col-md-4 mb-3">
+                        <div class="settings-card d-flex align-items-center">
+                            <div class="card-icon bg-purple">
+                                <i class="bi bi-globe"></i>
+                            </div>
+                            <div>
+                                <h5 class="card-title mb-0">English</h5>
+                                <div class="card-subtitle">Current Language</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <div class="settings-card d-flex align-items-center">
+                            <div class="card-icon bg-yellow">
+                                <i class="bi bi-moon-fill"></i>
+                            </div>
+                            <div>
+                                <h5 class="card-title mb-0">Dark</h5>
+                                <div class="card-subtitle">Current Theme</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <div class="settings-card d-flex align-items-center">
+                            <div class="card-icon bg-blue">
+                                <i class="bi bi-bell-fill"></i>
+                            </div>
+                            <div>
+                                <h5 class="card-title mb-0">5</h5>
+                                <div class="card-subtitle">Active Notifications</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row mb-4">
+                    <div class="col-12">
+                        <div class="settings-card d-flex align-items-center">
+                            <div class="card-icon bg-purple">
+                                <i class="bi bi-lock-fill"></i>
+                            </div>
+                            <div>
+                                <h5 class="card-title mb-0">Enabled</h5>
+                                <div class="card-subtitle">Privacy Settings</div>
+                            </div>
+                            <div class="form-check form-switch ms-auto">
+                                <input class="form-check-input" type="checkbox" role="switch" id="privacySwitch" checked>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+
+                <div class="row">
+                    <div class="col-lg-4 col-md-6 mb-4">
+                        <div class="settings-category-card">
+                            <div class="card-header-flex">
+                                <i class="bi bi-person-circle icon"></i>
+                                <h3 class="title mb-0">Account Preferences</h3>
+                            </div>
+                            <div class="setting-item">
+                                <div>
+                                    <div class="label">Email Notifications</div>
+                                    <div class="description">Receive important updates via email</div>
+                                </div>
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" role="switch" id="emailNotifications" checked>
+                                </div>
+                            </div>
+                            <div class="setting-item">
+                                <div>
+                                    <div class="label">Marketing Emails</div>
+                                    <div class="description">Receive promotional offers and news</div>
+                                </div>
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" role="switch" id="marketingEmails">
+                                </div>
+                            </div>
+                            <div class="setting-item">
+                                <div>
+                                    <div class="label">Study Reminders</div>
+                                    <div class="description">Get reminders for your study schedule</div>
+                                </div>
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" role="switch" id="studyReminders" checked>
+                                </div>
+                            </div>
+                            <div class="setting-item">
+                                <div>
+                                    <div class="label">Account Deletion</div>
+                                    <div class="description">Permanently delete your account</div>
+                                </div>
+                                <button class="btn btn-outline-danger-custom btn-sm">Request Deletion</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-lg-4 col-md-6 mb-4">
+                        <div class="settings-category-card">
+                            <div class="card-header-flex">
+                                <i class="bi bi-palette icon"></i>
+                                <h3 class="title mb-0">UI & Appearance</h3>
+                            </div>
+                            <div class="setting-item d-block">
+                                <div class="label mb-2">Theme</div>
+                                <div class="setting-options-group btn-group" role="group" aria-label="Theme options">
+                                    <input type="radio" class="btn-check" name="theme-options" id="themeDark" autocomplete="off" checked>
+                                    <label class="btn" for="themeDark">Dark</label>
+
+                                    <input type="radio" class="btn-check" name="theme-options" id="themeLight" autocomplete="off">
+                                    <label class="btn" for="themeLight">Light</label>
+
+                                    <input type="radio" class="btn-check" name="theme-options" id="themeSystem" autocomplete="off">
+                                    <label class="btn" for="themeSystem">System</label>
+                                </div>
+                            </div>
+                            <div class="setting-item d-block">
+                                <div class="label mb-2">Font Size</div>
+                                <div class="setting-options-group btn-group" role="group" aria-label="Font size options">
+                                    <input type="radio" class="btn-check" name="font-size-options" id="fontSmall" autocomplete="off">
+                                    <label class="btn" for="fontSmall">Small</label>
+
+                                    <input type="radio" class="btn-check" name="font-size-options" id="fontMedium" autocomplete="off" checked>
+                                    <label class="btn" for="fontMedium">Medium</label>
+
+                                    <input type="radio" class="btn-check" name="font-size-options" id="fontLarge" autocomplete="off">
+                                    <label class="btn" for="fontLarge">Large</label>
+                                </div>
+                            </div>
+                            <div class="setting-item d-block">
+                                <div class="label mb-2">Layout Density</div>
+                                <div class="setting-options-group btn-group" role="group" aria-label="Layout density options">
+                                    <input type="radio" class="btn-check" name="layout-density-options" id="densityComfortable" autocomplete="off" checked>
+                                    <label class="btn" for="densityComfortable">Comfortable</label>
+
+                                    <input type="radio" class="btn-check" name="layout-density-options" id="densityCompact" autocomplete="off">
+                                    <label class="btn" for="densityCompact">Compact</label>
+                                </div>
+                            </div>
+                            <div class="setting-item">
+                                <div>
+                                    <div class="label">Animations</div>
+                                    <div class="description">Enable interface animations</div>
+                                </div>
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" role="switch" id="animationsToggle" checked>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-lg-4 col-md-6 mb-4">
+                        <div class="settings-category-card">
+                            <div class="card-header-flex">
+                                <i class="bi bi-geo-alt icon"></i>
+                                <h3 class="title mb-0">Language & Region</h3>
+                            </div>
+                            <div class="setting-item d-block">
+                                <div class="label mb-2">Language</div>
+                                <div class="setting-options-group">
+                                    <div class="btn-group-vertical w-100" role="group" aria-label="Language options">
+                                        <input type="radio" class="btn-check" name="language-options" id="langEnglish" autocomplete="off" checked>
+                                        <label class="btn text-start w-100" for="langEnglish">English</label>
+
+                                        <input type="radio" class="btn-check" name="language-options" id="langFrench" autocomplete="off">
+                                        <label class="btn text-start w-100" for="langFrench">Français</label>
+
+                                        <input type="radio" class="btn-check" name="language-options" id="langGerman" autocomplete="off">
+                                        <label class="btn text-start w-100" for="langGerman">Deutsch</label>
+
+                                        <input type="radio" class="btn-check" name="language-options" id="langBengali" autocomplete="off">
+                                        <label class="btn text-start w-100" for="langBengali">বাংলা</label>
+
+                                        <input type="radio" class="btn-check" name="language-options" id="langChinese" autocomplete="off">
+                                        <label class="btn text-start w-100" for="langChinese">中文</label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-12">
+                        <h2 class="section-title mb-4">Advanced Settings</h2>
+                        <div class="settings-category-card">
+                            <div class="setting-item">
+                                <div>
+                                    <div class="label">Data Synchronization</div>
+                                    <div class="description">Automatically sync your progress across devices</div>
+                                </div>
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" role="switch" id="dataSync" checked>
+                                </div>
+                            </div>
+                            <div class="setting-item">
+                                <div>
+                                    <div class="label">Keyboard Shortcuts</div>
+                                    <div class="description">Enable quick navigation with keyboard</div>
+                                </div>
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" role="switch" id="keyboardShortcuts">
+                                </div>
+                            </div>
+                            <div class="setting-item">
+                                <div>
+                                    <div class="label">Deactivate Account</div>
+                                    <div class="description">Temporarily disable your account. You can reactivate later.</div>
+                                </div>
+                                <button class="btn btn-outline-primary-custom">
+                                    <i class="bi bi-power me-2"></i>Deactivate Account
+                                </button>
+                            </div>
+                            <div class="setting-item">
+                                <div>
+                                    <div class="label">Reset Preferences</div>
+                                    <div class="description">Restore all settings to default values</div>
+                                </div>
+                                <button class="btn btn-outline-primary-custom">
+                                    <i class="bi bi-arrow-counterclockwise me-2"></i>Reset Settings
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </main>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
