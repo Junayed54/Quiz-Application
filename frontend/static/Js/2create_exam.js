@@ -157,15 +157,25 @@ document.getElementById('examForm').addEventListener('submit', async function (e
         const examTypeSelect = document.getElementById('exam_type'); // Make sure your <select> has id="exam_type"
         const examTypeId = examTypeSelect.value;
         formData.append('exam_type_id', examTypeId);
+
+        const filterExamTypes = document.getElementById('filter_exam_types');
+        const selectedFilterIds = Array.from(filterExamTypes.selectedOptions).map(opt => opt.value);
+
+        // Send only if any selected
+        if (selectedFilterIds.length > 0) {
+            formData.append('filter_exam_type_ids', JSON.stringify(selectedFilterIds));
+        }
     }
 
     const subjectId = document.getElementById('subject').value;
-    if (!subjectId) {
-        loaderContainer.classList.remove('d-flex');
-        loaderContainer.classList.add('d-none');
-        showToast('Please select a subject before submitting.', true);
-        return;
-    }
+    // if (!subjectId) {
+        //subjectId=null;
+        // loaderContainer.classList.remove('d-flex');
+        // loaderContainer.classList.add('d-none');
+        // showToast('Please select a subject before submitting.', true);
+        // return;
+    //}
+   
     formData.append('subject_id', subjectId);
     // If the exam type is 'question_bank', validate and collect difficulty levels
     if (document.getElementById('exam_method').value === 'question_bank') {

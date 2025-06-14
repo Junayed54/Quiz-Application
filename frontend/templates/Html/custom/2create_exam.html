@@ -94,7 +94,7 @@
                             <!-- Total Questions and Total Marks -->
                             <div class="col-md-6">
                                 <label for="total_questions" class="form-label">Total Questions</label>
-                                <input type="number" class="form-control" id="total_questions" name="total_questions" min="1">
+                                <input type="number" class="form-control" id="total_questions" name="total_questions" min="1" required>
                             </div>
                             <div class="col-md-6">
                                 <label for="total_marks" class="form-label">Total Marks</label>
@@ -128,15 +128,24 @@
 
                             
                             <div class="col-md-6">
-                                <label for="exam_type" class="form-label">Exam Type</label>
-                                <select class="form-select" id="exam_type" name="exam_type">
+                                <label for="exam_type" class="form-label" >Exam Type</label>
+                                <select class="form-select" id="exam_type" name="exam_type" required>
                                     <option disabled selected>Loading...</option>
                                 </select>
                             </div>
+
+                            <div class="col-md-6">
+                                <label for="filter_exam_types" class="form-label">Filter Questions by Exam Types</label>
+                                <select class="form-select" id="filter_exam_types" name="filter_exam_types" multiple>
+                                    <!-- options populated here -->
+                                </select>
+                            </div>
+
+
                             <div class="col-md-6">
                                 <label for="subject" class="form-label">Subject</label>
                                 <select class="form-select" id="subject" name="subject">
-                                    <option selected disabled>Select Subject</option>
+                                    <option value="" selected disabled>Select Subject</option>
                                 </select>
                             </div>
 
@@ -252,7 +261,7 @@
             const useDifficultyCheckbox = document.getElementById("use_difficulty");
             const difficultySection = document.getElementById("difficulty-section");
             const examTypeSelect = document.getElementById("exam_type");
-
+            const filterExamTypes = document.getElementById("filter_exam_types");
             // Toggle difficulty section
             function toggleDifficultySection() {
                 difficultySection.style.display = useDifficultyCheckbox.checked ? "block" : "none";
@@ -272,13 +281,16 @@
                 .then(data => {
                     // Clear existing options
                     examTypeSelect.innerHTML = "";
-
+                    filterExamTypes.innerHTML = "";
                     // Add options
                     data.forEach(item => {
-                        const option = document.createElement("option");
-                        option.value = item.id || item.slug || item.name;
-                        option.textContent = item.name;
-                        examTypeSelect.appendChild(option);
+                        const option1 = document.createElement("option");
+                        option1.value = item.id || item.slug || item.name;
+                        option1.textContent = item.name;
+                        const option2 = option1.cloneNode(true);
+
+                        examTypeSelect.appendChild(option1);
+                        filterExamTypes.appendChild(option2);
                     });
                 })
                 .catch(error => {

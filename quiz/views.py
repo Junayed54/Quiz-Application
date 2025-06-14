@@ -1779,6 +1779,8 @@ class ExamCreateView(APIView):
     authentication_classes = [JWTAuthentication]
 
     def post(self, request, *args, **kwargs):
+        
+        # print(request.data);
         exam_title = request.data.get('exam_title')
         total_questions = int(request.data.get('total_questions', 10))
         total_marks = int(request.data.get('total_marks', 100))
@@ -1791,11 +1793,28 @@ class ExamCreateView(APIView):
         difficulty_levels = request.data.get('difficulty_levels', '{}')
         category_name = request.data.get('category')
         exam_type_id = request.data.get('exam_type_id')
+        filter_exam_type_ids = request.data.getlist('filter_exam_type_ids') or request.data.get('filter_exam_type_ids')
 
         subject_id = request.data.get('subject_id')
         organization_id = request.data.get('organization')
         department_id = request.data.get('department')
         position_id = request.data.get('position')
+        
+        if not filter_exam_type_ids:
+            raw_ids = request.data.get('filter_exam_type_ids')
+            if isinstance(raw_ids, str):
+                try:
+                    filter_exam_type_ids = json.loads(raw_ids)
+                except json.JSONDecodeError:
+                    filter_exam_type_ids = []
+
+        # Convert all values to integers if needed
+        try:
+            filter_exam_type_ids = [int(i) for i in filter_exam_type_ids]
+        except (TypeError, ValueError):
+            filter_exam_type_ids = []
+                
+        
 
         try:
             difficulty_levels = json.loads(difficulty_levels)
@@ -1844,7 +1863,7 @@ class ExamCreateView(APIView):
                     selected_questions = self._process_file_upload(request)
                 elif exam_method == 'question_bank':
                     selected_questions = self._fetch_questions_from_bank(
-                        exam_type_id=exam_type_id,
+                        filter_exam_type_ids=filter_exam_type_ids,
                         total_questions=total_questions,
                         difficulty_levels=difficulty_levels,
                         subject_id=subject_id
@@ -1983,9 +2002,9 @@ class ExamCreateView(APIView):
 
         return question
 
-    def _fetch_questions_from_bank(self, exam_type_id, total_questions, difficulty_levels, subject_id=None):
+    def _fetch_questions_from_bank(self, filter_exam_type_ids, total_questions, difficulty_levels, subject_id=None):
         # Step 1: Get all relevant PastExam instances
-        past_exams = PastExam.objects.filter(exam_type_id=exam_type_id) if exam_type_id else PastExam.objects.all()
+        past_exams = PastExam.objects.filter(exam_type_id__in=filter_exam_type_ids) if filter_exam_type_ids else PastExam.objects.all()
 
         # Step 2: Get all PastExamQuestion entries (distinct by question)
         past_exam_questions = PastExamQuestion.objects.filter(exam__in=past_exams).select_related('question').distinct()
