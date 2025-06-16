@@ -2722,20 +2722,20 @@ class PastExamViewSet(viewsets.ModelViewSet):
 
                     # 7.6 Link question to PastExam
                     # Check if PastExamQuestion already exists to avoid duplicates if reprocessing
-                    existing_past_exam_question = PastExamQuestion.objects.filter(
-                        exam=past_exam,
-                        question=question
-                    ).first()
+                    # existing_past_exam_question = PastExamQuestion.objects.filter(
+                    #     exam=past_exam,
+                    #     question=question
+                    # ).first()
 
-                    if not existing_past_exam_question:
-                        past_exam_question = PastExamQuestion.objects.create(
-                            exam=past_exam,
-                            question=question,
-                            order=index + 1  # Use DataFrame index for order
-                        )
-                    else:
-                        past_exam_question = existing_past_exam_question
-                        logging.info(f"PastExamQuestion already exists for question ID {question.id} and past exam ID {past_exam.id} at row {excel_row_num}. Reusing existing link.")
+                    # if not existing_past_exam_question:
+                    past_exam_question = PastExamQuestion.objects.create(
+                        exam=past_exam,
+                        question=question,
+                        order=index + 1  # Use DataFrame index for order
+                    )
+                    # else:
+                    #     past_exam_question = existing_past_exam_question
+                    #     logging.info(f"PastExamQuestion already exists for question ID {question.id} and past exam ID {past_exam.id} at row {excel_row_num}. Reusing existing link.")
 
 
                     # 7.7 Save question image if exists
