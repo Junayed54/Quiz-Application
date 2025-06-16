@@ -235,7 +235,7 @@ class ExamListSerializer(serializers.ModelSerializer):
     organization_name = serializers.CharField(source='organization.name', read_only=True)
     department_name = serializers.CharField(source='department.name', read_only=True)
     position_name = serializers.CharField(source='position.name', read_only=True)
-
+    subject_name = serializers.CharField(source='subject.name', read_only=True) 
     category = serializers.StringRelatedField()
 
     class Meta:
@@ -255,6 +255,7 @@ class ExamListSerializer(serializers.ModelSerializer):
             'organization_name',
             'department_name',
             'position_name',
+            'subject_name',
             'category',
             'created_by',
             'created_at',

@@ -15,11 +15,33 @@
 {% endblock %}
 {% block content %}
 <div style="background: rgb(255, 253, 208);">
-    <div class="container">
+    {% comment %} <div class="container">
         <h2 class="text-center page-heading">Model Tests</h2> <div id="examCardsContainer" class="row">
             </div>
+    </div> {% endcomment %}
+
+    <div class="container mt-4">
+        <ul class="nav nav-tabs" id="examTabs">
+            <li class="nav-item">
+                <a class="nav-link active fw-bolder" data-tab="withSubjectTab" href="#">Subject specific</a>
+            </li>
+            <li class="nav-item fw-bolder">
+                <a class="nav-link" data-tab="withoutSubjectTab" href="#">Comprehensive</a>
+            </li>
+        </ul>
+
+        <div class="tab-content mt-3">
+            <div id="withSubjectTab" class="tab-pane active">
+                <div id="examCardsContainerWithSubject" class="row"></div>
+            </div>
+            <div id="withoutSubjectTab" class="tab-pane" style="display: none;">
+                <div id="examCardsContainerWithoutSubject" class="row"></div>
+            </div>
+        </div>
+
     </div>
-    <div style="height: 150px"></div>
+
+    <div style="height: 80vh"></div>
 </div>
 
 {% endblock %}
