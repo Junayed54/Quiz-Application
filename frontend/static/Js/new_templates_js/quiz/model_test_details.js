@@ -55,9 +55,15 @@ document.addEventListener('DOMContentLoaded', function () {
         window.location.href = `/model-test/result/${examId}/`;
     });
 
-     const leaderboard = document.getElementById('leaderboard');
+    const leaderboard = document.getElementById('leaderboard');
     leaderboard.addEventListener('click', function() {
         window.location.href = `/model-test/leaderboard/${examId}/`;
+    });
+
+
+    const read = document.getElementById('read');
+    read.addEventListener('click', function() {
+        window.location.href = `/model-test/read/${examId}/`;
     });
 
     // user/model-test/leaderboard/<uuid:exam_id>/</uuid:exam_id>

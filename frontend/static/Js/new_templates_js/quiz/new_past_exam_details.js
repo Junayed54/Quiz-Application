@@ -59,4 +59,9 @@ document.addEventListener('DOMContentLoaded', function () {
     leaderboard.addEventListener('click', function() {
         window.location.href = `/past-exam/leaderboard/${pastExamId}/`;
     });
+
+    const read = document.getElementById('read');
+    read.addEventListener('click', function() {
+        window.location.href = `/past_exam/read/${pastExamId}/`;
+    });
 });

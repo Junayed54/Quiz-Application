@@ -1833,8 +1833,11 @@ class ExamCreateView(APIView):
         except ExamType.DoesNotExist:
             return Response({"error": "Invalid exam type."}, status=status.HTTP_400_BAD_REQUEST)
 
-        subject = Subject.objects.filter(id=subject_id).first() if subject_id else None
-
+        if subject_id:
+            subject = Subject.objects.filter(id=subject_id).first() if subject_id else None
+        else:
+            subject = None
+            
         organization = Organization.objects.filter(id=organization_id).first() if organization_id else None
         department = Department.objects.filter(id=department_id).first() if department_id else None
         position = Position.objects.filter(id=position_id).first() if position_id else None

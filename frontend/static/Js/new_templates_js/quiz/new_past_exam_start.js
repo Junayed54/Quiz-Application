@@ -435,6 +435,7 @@ document.addEventListener('DOMContentLoaded', function(){
         })
         .then(response => response.json())
         .then(data => {
+            console.log(data);
             const loader = document.getElementById("loader");
             loader.classList.add('d-none');
             

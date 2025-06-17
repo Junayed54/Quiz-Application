@@ -114,8 +114,9 @@
                             <!-- Negative Marks -->
                             <div class="col-md-6">
                                 <label for="negative_marks" class="form-label">Negative Marks</label>
-                                <input type="number" class="form-control" id="negative_marks" name="negative_marks" value="0.0">
+                                <input type="number" class="form-control" id="negative_marks" name="negative_marks" value="0.0" step="0.01" min="0">
                             </div>
+
 
                             <!-- Question Source -->
                             <div class="col-md-6">
@@ -136,7 +137,7 @@
 
                             <div class="col-md-6">
                                 <label for="filter_exam_types" class="form-label">Filter Questions by Exam Types</label>
-                                <select class="form-select" id="filter_exam_types" name="filter_exam_types" multiple>
+                                <select class="form-select" id="filter_exam_types" name="filter_exam_types" multiple size="1">>
                                     <!-- options populated here -->
                                 </select>
                             </div>
@@ -145,7 +146,7 @@
                             <div class="col-md-6">
                                 <label for="subject" class="form-label">Subject</label>
                                 <select class="form-select" id="subject" name="subject">
-                                    <option value="" selected disabled>Select Subject</option>
+                                    <option value="">-- Select Subject --</option>
                                 </select>
                             </div>
 
@@ -334,6 +335,18 @@
             fetchAndPopulate('/quiz/organizations/', 'organization');
             fetchAndPopulate('/quiz/positions/', 'position');
             fetchAndPopulate('/quiz/departments/', 'department');
+        });
+    </script>
+
+    <script>
+        const select = document.getElementById('filter_exam_types');
+
+        select.addEventListener('focus', () => {
+            select.size = 6; // Expand to show 6 items
+        });
+
+        select.addEventListener('blur', () => {
+            select.size = 1; // Collapse back
         });
     </script>
 

@@ -1,9 +1,22 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>{% block title %}Jobs Academy{% endblock %}</title>
+  
+  <title>শিক্ষক নিবন্ধন | MCQ পরীক্ষা প্রস্তুতি | Govt Job Preparation BD</title>
+  <meta name="description" content="শিক্ষক নিবন্ধন, প্রাথমিক, ব্যাংক, ও BCS প্রস্তুতির জন্য MCQ অনুশীলন ও পূর্ববর্তী প্রশ্ন সমূহ।">
+  <meta name="keywords" content="শিক্ষক নিবন্ধন, চাকরি প্রস্তুতি, govt job quiz, bcs mcq, bangladesh job test">
+  <link rel="canonical" href="{{ request.build_absolute_uri }}">
+
+  <!-- Open Graph (for social media) -->
+  <meta property="og:title" content="Govt Job MCQ Preparation | শিক্ষক নিবন্ধন | চাকরি প্রস্তুতি">
+  <meta property="og:description" content="Join free online mock tests and prepare for NTRCA, BCS, and more.">
+  <meta property="og:image" content="https://yoursite.com/static/images/og-banner.png">
+  <meta property="og:url" content="{{ request.build_absolute_uri }}">
+  
+  <!-- Twitter -->
+  <meta name="twitter:card" content="summary_large_image">
+
+
   <!-- ga4  -->
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-1MHLELHS64"></script>
   <script>
@@ -126,7 +139,7 @@
   </style>
 
 
-   
+  
 
   <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
   <script>
@@ -141,6 +154,17 @@
   {% block head_js %}{% endblock %}
   <script src="https://unpkg.com/@lottiefiles/lottie-player@latest/dist/lottie-player.js"></script>
   <script src="https://unpkg.com/@dotlottie/player-component@latest/dist/dotlottie-player.mjs" type="module"></script>
+
+  <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "Quiz",
+      "name": "BCS MCQ Practice Quiz",
+      "description": "Free practice quiz for BCS preliminary exam preparation.",
+      "educationalLevel": "Undergraduate",
+      "learningResourceType": "Practice Questions"
+    }
+  </script>
 </head>
 <body>
   <!-- Google Tag Manager (noscript) -->
