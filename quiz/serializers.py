@@ -58,7 +58,7 @@ class QuestionSerializer(serializers.ModelSerializer):
     class Meta:
         model = Question
         fields = [
-            'id', 'text', 'image', 'explanation', 'explanation_image', 'marks', 'exam',
+            'id', 'text', 'image', 'marks', 'exam',
             'options', 'status', 'remarks', 'category', 'created_by', 'category_name',
             'difficulty_level', 'time_limit', 'reviewed_by', 'updated_at',
             'created_at', 'subject', 'question_usage_details'  # Updated field name
@@ -82,18 +82,18 @@ class QuestionSerializer(serializers.ModelSerializer):
             QuestionOption.objects.create(question=question, **option_data)
         return question
 
-    def validate(self, data):
-        text, image = data.get('text'), data.get('image')
-        explanation = data.get('explanation')
-        explanation_image = data.get('explanation_image')
+    # def validate(self, data):
+    #     text, image = data.get('text'), data.get('image')
+    #     explanation = data.get('explanation')
+    #     explanation_image = data.get('explanation_image')
 
-        if bool(text) == bool(image):
-            raise serializers.ValidationError("Provide either 'text' or 'image', not both.")
+    #     if bool(text) == bool(image):
+    #         raise serializers.ValidationError("Provide either 'text' or 'image', not both.")
 
-        if explanation and explanation_image:
-            raise serializers.ValidationError("Provide either 'explanation' (text) or 'explanation_image', not both.")
+    #     if explanation and explanation_image:
+    #         raise serializers.ValidationError("Provide either 'explanation' (text) or 'explanation_image', not both.")
 
-        return data
+    #     return data
 
 
 
@@ -389,20 +389,26 @@ class PositionSerializer(serializers.ModelSerializer):
         
 class PastExamQuestionSerializer(serializers.ModelSerializer):
     """
-    Serializer for PastExamQuestion, handling options specific to the exam instance.
+    Serializer for PastExamQuestion, including options, explanations, and usage data.
     """
     options = serializers.SerializerMethodField()
     question = QuestionSerializer(read_only=True)
     question_usages = serializers.SerializerMethodField()
+
+    explanation = serializers.CharField(read_only=True)
+    explanation_image = serializers.ImageField(read_only=True)
+
     class Meta:
         model = PastExamQuestion
-        fields = ["id", "question", "order", "points", "options", "question_usages"]
+        fields = [
+            "id", "question", "order", "points",
+            "options", "explanation", "explanation_image", "question_usages"
+        ]
 
     def get_options(self, past_exam_question):
         """
         Retrieves and serializes options specific to this PastExamQuestion instance.
         """
-        # Directly use the passed-in past_exam_question instance.  This is the key.
         option_links = PastExamQuestionOption.objects.filter(
             question=past_exam_question
         ).select_related("option").order_by("id")
@@ -410,12 +416,11 @@ class PastExamQuestionSerializer(serializers.ModelSerializer):
         options_data = [QuestionOptionSerializer(link.option).data for link in option_links]
         return options_data
 
-
     def get_question_usages(self, past_exam_question):
         """
         Retrieves the year and exam title for all question usages related to this question.
         """
-        question_usages = past_exam_question.question.usages.all().select_related('past_exam') # Fetch all usages and related PastExam
+        question_usages = past_exam_question.question.usages.all().select_related('past_exam')
 
         usage_data = []
         for usage in question_usages:
@@ -425,7 +430,11 @@ class PastExamQuestionSerializer(serializers.ModelSerializer):
             })
         return usage_data if usage_data else None
 
-        
+
+class PastExamQuestionExplanationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = PastExamQuestion
+        fields = ['id', 'explanation', 'explanation_image']
         
 class PastExamSerializer(serializers.ModelSerializer):
     organization_name = serializers.CharField(source="organization.name", read_only=True)
@@ -465,6 +474,7 @@ class PastExamListSerializer(serializers.ModelSerializer):
     department = serializers.CharField(source='department.name', default=None)
     position = serializers.CharField(source='position.name')
     created_by = serializers.CharField(source='created_by.username', default=None)
+    missing_explanations_count = serializers.SerializerMethodField()
 
     class Meta:
         model = PastExam
@@ -481,7 +491,15 @@ class PastExamListSerializer(serializers.ModelSerializer):
             'negative_mark',
             'is_published',
             'created_by',
+            'missing_explanations_count',  # 👈 Add this
         ]
+
+    def get_missing_explanations_count(self, obj):
+        return obj.related_questions.filter(
+            models.Q(explanation__isnull=True) | models.Q(explanation__exact='') |
+            models.Q(explanation_image__isnull=True)
+        ).count()
+
 
 class PastExamCreateSerializer(serializers.ModelSerializer):
     organization = serializers.PrimaryKeyRelatedField(

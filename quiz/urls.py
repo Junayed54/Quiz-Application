@@ -129,9 +129,18 @@ urlpatterns = [
 
     
     
-] + [
+]
+urlpatterns += [
     path('attempts/user_best_attempts/', BestAttemptsView.as_view(), name='user_best_attempts'),
     path('attempts/user_attempts/', UserAttemptsView.as_view(), name='user_attempts'),
+    
+    path('past_exam/best_attempts/', BestPastExamAttemptsView.as_view(), name='best_past_exam_attempts'),
+
+    # View to get all attempts of a specific user for a past exam
+    path('past_exam/user_attempts/', UserPastExamAttemptsView.as_view(), name='user_past_exam_attempts'),
+
+    # Leaderboard view sorted from top score to lowest
+    path('past-exam/<int:exam_id>/leaderboard/', PastExamLeaderboardAPIView.as_view(), name='past_exam_leaderboard'),
 ]
 
 
@@ -161,14 +170,10 @@ urlpatterns += [
     path('my_past_exams/', TemplateView.as_view(template_name='Html/custom/past_exams/my_past_exams.html'), name='my-past-exams'),
     path('past_exam_update/<int:id>/', TemplateView.as_view(template_name='Html/custom/past_exams/past_exam_update.html'), name='past-exam-update'),
     
+    path('past-question/explanation/<int:pk>/', PastExamQuestionExplanationUpdateView.as_view(), name='update_past_question_explanation'),
     
-    path('past_exam/best_attempts/', BestPastExamAttemptsView.as_view(), name='best_past_exam_attempts'),
+    
 
-    # View to get all attempts of a specific user for a past exam
-    path('past_exam/user_attempts/', UserPastExamAttemptsView.as_view(), name='user_past_exam_attempts'),
-
-    # Leaderboard view sorted from top score to lowest
-    path('past-exam/<int:exam_id>/leaderboard/', PastExamLeaderboardAPIView.as_view(), name='past_exam_leaderboard'),
 
     
 ]

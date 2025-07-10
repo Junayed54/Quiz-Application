@@ -331,8 +331,8 @@ class Question(models.Model):
     text = models.CharField(max_length=255, unique=True, null=True, blank=True)
     image = models.ImageField(upload_to='question_images/', null=True, blank=True)
 
-    explanation = models.TextField(null=True, blank=True)
-    explanation_image = models.ImageField(upload_to='explanation_images/', null=True, blank=True)
+    # explanation = models.TextField(null=True, blank=True)
+    # explanation_image = models.ImageField(upload_to='explanation_images/', null=True, blank=True)
 
     marks = models.IntegerField()
     category = models.ForeignKey(Category, related_name='questions', on_delete=models.CASCADE, null=True, blank=True)
@@ -546,12 +546,11 @@ class PastExamQuestion(models.Model):
     order = models.IntegerField(null=True, blank=True)
     points = models.FloatField(null=True, blank=True)
 
-    # class Meta:
-    #     unique_together = ('exam', 'question')
+    # 🔥 NEW: Explanation for this specific instance
+    explanation = models.TextField(null=True, blank=True)
+    explanation_image = models.ImageField(upload_to='past_explanation_images/', null=True, blank=True)
 
 class PastExamQuestionOption(models.Model):
     question = models.ForeignKey(PastExamQuestion, on_delete=models.CASCADE, related_name='selected_options')
     option = models.ForeignKey(QuestionOption, on_delete=models.CASCADE, related_name='used_in_pastexams')
 
-    # class Meta:
-    #     unique_together = ("exam", "question", "option")
