@@ -555,7 +555,41 @@ document.addEventListener('DOMContentLoaded', function(){
             });
 
             questionWrapper.appendChild(optionsContainer);
+            // console.log(question);
+            if (question.explanation || question.explanation_image) {
+                const explanationDetails = document.createElement('details');
+                explanationDetails.classList.add('mt-3', 'ms-4', 'p-2', 'border', 'rounded', 'bg-light');
+
+                const explanationSummary = document.createElement('summary');
+                explanationSummary.textContent = 'Show Explanation';
+                explanationSummary.style.cursor = 'pointer';
+                explanationSummary.classList.add('fw-bold', 'text-primary');
+                explanationDetails.appendChild(explanationSummary);
+
+                const explanationContent = document.createElement('div');
+                explanationContent.classList.add('mt-2'); // Add margin top for spacing
+
+                if (question.explanation_image) {
+                    explanationContent.innerHTML += `
+                        <div class="explanation-image-wrapper text-center mb-2">
+                            <img src="${question.explanation_image}" alt="Explanation Image" class="img-fluid rounded-md shadow-sm" style="max-height: 250px; object-fit: contain;">
+                        </div>
+                    `;
+                }
+
+                if (question.explanation) {
+                    explanationContent.innerHTML += `<p>${question.explanation}</p>`;
+                }
+                
+                explanationDetails.appendChild(explanationContent);
+                questionWrapper.appendChild(explanationDetails);
+            }
+
+
             questionsContainer.appendChild(questionWrapper);
+
+
+
 
             if (!isLimitedAccess) {
                 window.addEventListener('scroll', showBuySubscriptionOnScroll);
