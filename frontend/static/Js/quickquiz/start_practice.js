@@ -614,7 +614,7 @@ function renderQuestion(index) {
         `;
     });
 
-    const questionTextContent = q.text ? `<div style="text-align: center;"><h2 class="question-text">${q.text}</h2></div>` : '';
+    const questionTextContent = q.text ? `<div style="text-align: center;"><h4 class="question-text">${q.text}</h4></div>` : '';
     const questionImageContent = q.image ? `<img src="${q.image}" alt="Question Image" class="img-fluid mb-2">` : '';
 
     // Inject only the question and options into #question-container
@@ -731,7 +731,7 @@ async function submitQuizData() {
         showResult(result.correct_answers, result.wrong_answers);
 
         // Hide main content (card and navigation buttons) after submission
-        document.querySelector('.container-fluid .card').style.display = 'none';
+        // document.querySelector('.container-fluid .card').style.display = 'none';
         prevButton.style.display = 'none';
         nextButton.style.display = 'none';
         submitButton.style.display = 'none';
@@ -765,3 +765,35 @@ async function handleSubmit() {
         await submitQuizData();
     }
 }
+
+
+
+  function showResult(correct, incorrect) {
+        const total = correct + incorrect;
+        const percent = total > 0 ? Math.round((correct / total) * 100) : 0;
+
+        document.getElementById("correct-count").textContent = correct;
+        document.getElementById("incorrect-count").textContent = incorrect;
+        document.getElementById("score-percent").textContent = percent + "%";
+
+        const modal = document.getElementById('resultModal');
+        modal.classList.remove('hidden');
+    }
+
+
+async function continuePractice() {
+        window.location.reload(); // Simple reload for fresh practice session
+    }
+
+async function reviewLeaderboard() {
+        window.location.href = '/user/leaderboard/';
+    }
+
+
+document.addEventListener('click', function (event) {
+        const modal = document.getElementById('resultModal');
+        const dialog = document.querySelector('.custom-modal-dialog');
+        if (!modal.classList.contains('hidden') && !dialog.contains(event.target)) {
+            modal.classList.add('hidden');
+        }
+    });
