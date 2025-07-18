@@ -150,7 +150,7 @@
     justify-content: center; /* Center the columns horizontally */
     align-items: flex-start; /* Align items to the top for vertical staggering */
     min-height: 280px; /* Adjust as needed to provide space for vertical offset */
-    background-color: #1a1a2e; /* Dark background similar to the image */
+    background: #0F1B2CB2;
     padding: 20px 0; /* Add vertical padding */
     border-radius: 10px;
     gap: 20px; /* Space between columns */
@@ -166,19 +166,6 @@
     margin-bottom: 10px; /* Space between the visual elements and text below */
 }
 
-/* The "round shape" with first letters. This is the colored circle. */
-.performer-initials-circle {
-    width: 80px;  /* Size of the circle */
-    height: 80px; /* Size of the circle */
-    border-radius: 50%;
-    border: 3px solid white; /* White border as seen in the image */
-    z-index: 1; /* Place it *behind* the main content box conceptually */
-    position: relative; /* To contain the initials text */
-    flex-shrink: 0; /* Prevent it from shrinking */
-    display: flex; /* For centering initials */
-    align-items: center;
-    justify-content: center;
-}
 
 .performer-initials-circle span {
     text-shadow: 1px 1px 2px rgba(0,0,0,0.3); /* Optional: slight shadow for text */
@@ -268,7 +255,7 @@
   
 
   <div class="d-flex justify-content-between align-items-center mb-4 py-4">
-    <h2 class="fw-bold">Leaderboard</h2>
+    <h2 class="fw-bold" style="color: #66FFF0;">Leaderboard</h2>
     <div>
       <button class="btn btn-sm me-2 text-white button" >📅This Month</button>
       <button class="btn btn-sm text-white button" onclick="refreshLeaderboard()">🔄Refresh</button>
@@ -301,12 +288,12 @@
     </div>
   </div>
 
-  <div class="mb-4 rounded" style="background: linear-gradient(180deg, rgba(15, 15, 26, 0.8) 0%, rgba(10, 10, 20, 0.8) 100%); border: 1px solid #6C4DF633;">
+  
     <div class="p-4 mb-4">
       <div class="d-flex justify-content-between align-items-center mb-3" style="border-bottom: 1px solid #FFFFFF0D">
-        <h5 class="text-white">Top Performers</h5>
-        <span class="text-white"></span>
+       
       </div>
+       <h5 class="text-white text-center">Top Performers</h5>
       <div id="top-performers" class="d-flex justify-content-center gap-4 mt-4"></div>
     </div>
 
@@ -338,7 +325,7 @@
        
     </div>
     
-  </div>
+  
   <div class="position-absolute circle-2"></div>
   <div class="position-absolute circle-3"></div>
 </div>

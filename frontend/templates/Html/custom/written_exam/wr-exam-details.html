@@ -1,0 +1,334 @@
+
+{% comment %} @SPK@include("partials/mainhead.html") {% endcomment %}
+{% include "../../partials/mainhead.html"%}
+<style>
+    <style>
+        body { background: #f8f9fa; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        .wrapper { display: flex; min-height: 100vh; }
+        .sidebar { width: 250px; background: #343a40; color: #fff; padding-top: 20px; flex-shrink: 0; }
+        .sidebar .nav-link { color: #adb5bd; }
+        .sidebar .nav-link.active { color: #fff; background: #007bff; border-radius: 5px; }
+        .sidebar .nav-link:hover { color: #fff; background: rgba(255,255,255,0.1); }
+        .main-content { flex-grow: 1; padding: 20px; }
+        .card { border: none; border-radius: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); margin-bottom: 25px; }
+        .card-header { background-color: #007bff; color: white; border-radius: 10px 10px 0 0 !important; font-weight: 600; padding: 15px 20px; }
+        .card-body p { margin-bottom: 0.5rem; }
+        .detail-item { display: flex; align-items: flex-start; margin-bottom: 10px; }
+        .detail-item i { margin-right: 10px; color: #007bff; width: 20px; text-align: center; }
+        .detail-item strong { margin-right: 5px; }
+        .list-group-item { border-left: none; border-right: none; }
+        .accordion-button:not(.collapsed) { color: #007bff; background-color: #e7f1ff; box-shadow: inset 0 -1px 0 rgba(0,0,0,.125); }
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.8);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+        }
+    </style>
+</head>
+
+<body>
+
+    {% comment %} @SPK@include("partials/switcher.html") {% endcomment %}
+    {% include "../../partials/switcher.html" %}
+    <div class="page">
+        {% comment %} @SPK@include("partials/header.html") {% endcomment %}
+        {% include "../../partials/header.html"%}
+        {% comment %} @SPK@include("partials/sidebar.html") {% endcomment %}
+        {% include "../../partials/sidebar.html" %}
+        <div class="main-content app-content">
+            <div class="container mt-4">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h1 class="h3 mb-0 text-gray-800"><span id="exam-detail-title">Exam Details: Loading...</span></h1>
+                    <a href="/wr_exams/" class="btn btn-outline-secondary">
+                        <i class="fas fa-arrow-left me-2"></i> Back to List
+                    </a>
+                </div>
+
+                <div id="loading-overlay" class="loading-overlay">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Loading exam details...</span>
+                    </div>
+                    <span class="ms-3 text-muted">Loading exam details...</span>
+                </div>
+
+                <div id="exam-details-card" class="card shadow mb-4 d-none">
+                    <div class="card-header">
+                        <span><i class="fas fa-info-circle me-2"></i> Basic Information</span>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="detail-item"><i class="fas fa-clipboard-list"></i> <strong>Title:</strong> <span id="detail-title"></span></div>
+                                <div class="detail-item"><i class="fas fa-align-left"></i> <strong>Description:</strong> <span id="detail-description"></span></div>
+                                <div class="detail-item"><i class="fas fa-flask"></i> <strong>Exam Mode:</strong> <span id="detail-exam-mode" class="text-capitalize"></span></div>
+                                <div class="detail-item"><i class="fas fa-file-invoice"></i> <strong>Exam Type:</strong> <span id="detail-exam-type"></span></div>
+                                <div class="detail-item"><i class="fas fa-calendar-alt"></i> <strong>Exam Date:</strong> <span id="detail-exam-date"></span></div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="detail-item"><i class="fas fa-calendar-plus"></i> <strong>Created At:</strong> <span id="detail-created-at"></span></div>
+                                <div class="detail-item"><i class="fas fa-calendar-check"></i> <strong>Last Updated:</strong> <span id="detail-updated-at"></span></div>
+                                <div class="detail-item"><i class="fas fa-user-tie"></i> <strong>Created By:</strong> <span id="detail-created-by"></span></div>
+                                <div class="detail-item"><i class="fas fa-building"></i> <strong>Organization:</strong> <span id="detail-organization"></span></div>
+                                <div class="detail-item"><i class="fas fa-sitemap"></i> <strong>Department:</strong> <span id="detail-department"></span></div>
+                                <div class="detail-item"><i class="fas fa-briefcase"></i> <strong>Position:</strong> <span id="detail-position"></span></div>
+                            </div>
+                        </div>
+                        <div class="detail-item mt-3"><i class="fas fa-book"></i> <strong>Subjects:</strong> <span id="detail-subjects"></span></div>
+                        <div class="detail-item"><i class="fas fa-history"></i> <strong>MCQ Exam:</strong> <span id="detail-past-exam"></span></div>
+                    </div>
+                </div>
+
+                <div class="card shadow mb-4 d-none" id="written-exams-section">
+                    <div class="card-header">
+                        <span><i class="fas fa-pencil-alt me-2"></i> Written Questions</span>
+                    </div>
+                    <div class="card-body">
+                        <div id="written-exams-list">
+                        </div>
+                    </div>
+                </div>
+
+                <div id="error-message" class="alert alert-danger d-none" role="alert">
+                    <i class="fas fa-exclamation-triangle me-2"></i> Failed to load exam details.
+                </div>
+            </div>
+
+
+        </div>
+        {% comment %} @SPK@include("partials/headersearch_modal.html") {% endcomment %}
+        {% include "../../partials/headersearch_modal.html"%}
+        {% comment %} @SPK@include("partials/footer.html") {% endcomment %}
+        {% include "../../partials/footer.html" %}
+    </div>
+
+    {% comment %} @SPK@include("partials/commonjs.html") {% endcomment %}
+    {% include "../../partials/commonjs.html"%}
+
+    {% comment %} @SPK@include("partials/custom_switcherjs.html") {% endcomment %}
+    {% include "../../partials/custom_switcherjs.html"%}
+    <script src="../../../../static/assets/js/custom.js"></script>
+
+    {% comment %} <script src = "../../../../static/Js/written_exams/wr_exams.js"></script>  {% endcomment %}
+    <script> 
+        document.addEventListener('DOMContentLoaded', () => {
+            // Get all elements once at the start to avoid repeated DOM queries
+            const loadingOverlay = document.getElementById('loading-overlay');
+            const examDetailsCard = document.getElementById('exam-details-card');
+            const writtenExamsSection = document.getElementById('written-exams-section');
+            const errorMessageDiv = document.getElementById('error-message');
+            const examTitlePlaceholder = document.getElementById('examTitlePlaceholder');
+            const examDetailTitle = document.getElementById('exam-detail-title');
+
+            const detailTitle = document.getElementById('detail-title');
+            const detailDescription = document.getElementById('detail-description');
+            const detailExamMode = document.getElementById('detail-exam-mode');
+            const detailExamType = document.getElementById('detail-exam-type');
+            const detailExamDate = document.getElementById('detail-exam-date');
+            const detailCreatedAt = document.getElementById('detail-created-at');
+            const detailUpdatedAt = document.getElementById('detail-updated-at');
+            const detailCreatedBy = document.getElementById('detail-created-by');
+            const detailOrganization = document.getElementById('detail-organization');
+            const detailDepartment = document.getElementById('detail-department');
+            const detailPosition = document.getElementById('detail-position');
+            const detailSubjects = document.getElementById('detail-subjects');
+            const detailPastExam = document.getElementById('detail-past-exam');
+            const writtenExamsList = document.getElementById('written-exams-list');
+
+
+            const accessToken = localStorage.getItem('access_token'); // Get token from localStorage
+
+            // Function to extract exam ID from URL
+            function getExamIdFromUrl() {
+                const pathParts = window.location.pathname.split('/');
+                // This assumes a URL structure like /root-exams/ID/ or similar.
+                // It takes the second-to-last part of the URL.
+                // Example: /root-exams/123/ will get '123'
+                // Example: /my-app/root-exams/123/ will get '123'
+                const id = pathParts[pathParts.length - 2]; 
+                return id;
+            }
+
+            async function fetchExamDetails() {
+                const examId = getExamIdFromUrl();
+
+                if (!examId) {
+                    if (errorMessageDiv) {
+                        errorMessageDiv.classList.remove('d-none');
+                        errorMessageDiv.textContent = 'Error: Exam ID not found in URL.';
+                    }
+                    if (loadingOverlay) loadingOverlay.classList.add('d-none');
+                    return;
+                }
+
+                if (!accessToken) {
+                    if (errorMessageDiv) {
+                        errorMessageDiv.classList.remove('d-none');
+                        errorMessageDiv.textContent = 'No access token found. Please log in.';
+                    }
+                    if (loadingOverlay) loadingOverlay.classList.add('d-none');
+                    return;
+                }
+
+                if (examDetailsCard) examDetailsCard.classList.add('d-none'); // Hide card initially
+                if (writtenExamsSection) writtenExamsSection.classList.add('d-none'); // Hide written section initially
+                if (errorMessageDiv) errorMessageDiv.classList.add('d-none'); // Hide error message
+                if (loadingOverlay) loadingOverlay.classList.remove('d-none'); // Show loading
+
+                // Confirm this URL matches your Django urlpatterns for the detailed API view.
+                // Assuming it's `/api/root-exams/<int:pk>/` as per previous discussions.
+                const apiUrl = `/api/wr-exams/${examId}/`; 
+
+                try {
+                    const response = await fetch(apiUrl, {
+                        method: 'GET',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${accessToken}` 
+                        }
+                    });
+
+                    if (!response.ok) {
+                        const errorData = await response.json();
+                        console.error('API Error:', response.status, errorData);
+                        if (errorMessageDiv) {
+                            errorMessageDiv.classList.remove('d-none');
+                            errorMessageDiv.innerHTML = `<i class="fas fa-exclamation-triangle me-2"></i> Failed to load exam details: ${errorData.detail || response.statusText}`;
+                        }
+                        return;
+                    }
+
+                    const exam = await response.json();
+                    console.log('Successfully fetched Exam Details:', exam);
+                    displayExamDetails(exam);
+
+                } catch (error) {
+                    console.error('Error fetching Exam Details:', error);
+                    if (errorMessageDiv) {
+                        errorMessageDiv.classList.remove('d-none');
+                        errorMessageDiv.innerHTML = '<i class="fas fa-exclamation-triangle me-2"></i> An error occurred while connecting to the API.';
+                    }
+                } finally {
+                    if (loadingOverlay) loadingOverlay.classList.add('d-none'); // Hide loading regardless of result
+                    if (examDetailsCard) examDetailsCard.classList.remove('d-none'); // Show the card (will contain data or error)
+                }
+            }
+
+            function displayExamDetails(exam) {
+                // Update page title and main heading
+                if (examTitlePlaceholder) examTitlePlaceholder.textContent = exam.title || 'N/A';
+                if (examDetailTitle) examDetailTitle.textContent = `Exam Details: ${exam.title || 'N/A'}`;
+
+                // Populate Basic Information - Added checks for element existence
+                if (detailTitle) detailTitle.textContent = exam.title || 'N/A';
+                if (detailDescription) detailDescription.textContent = exam.description || 'No description provided.';
+                if (detailExamMode) detailExamMode.textContent = exam.exam_mode || 'N/A';
+                if (detailExamType) detailExamType.textContent = exam.exam_type ? exam.exam_type.name : 'N/A';
+                if (detailExamDate) detailExamDate.textContent = exam.exam_date ? new Date(exam.exam_date).toLocaleDateString() : 'N/A';
+                
+                if (detailCreatedAt) detailCreatedAt.textContent = exam.created_at ? new Date(exam.created_at).toLocaleString() : 'N/A';
+                if (detailUpdatedAt) detailUpdatedAt.textContent = exam.updated_at ? new Date(exam.updated_at).toLocaleString() : 'N/A'; // Fixed typo here
+                if (detailCreatedBy) detailCreatedBy.textContent = exam.created_by ? exam.created_by.username : 'N/A';
+                if (detailOrganization) detailOrganization.textContent = exam.organization ? exam.organization.name : 'N/A';
+                if (detailDepartment) detailDepartment.textContent = exam.department ? exam.department.name : 'N/A';
+                if (detailPosition) detailPosition.textContent = exam.position ? exam.position.name : 'N/A';
+
+                const subjectsList = exam.subjects && exam.subjects.length > 0
+                    ? exam.subjects.map(s => s.name).join(', ')
+                    : 'N/A';
+                if (detailSubjects) detailSubjects.textContent = subjectsList;
+                if (detailPastExam) detailPastExam.textContent = exam.past_exam ? exam.past_exam.title || exam.past_exam.id : 'N/A';
+
+
+                // Populate Written Exams Section (if applicable)
+                if (writtenExamsSection && exam.written_exams && exam.written_exams.length > 0) {
+                    writtenExamsSection.classList.remove('d-none');
+                    if (writtenExamsList) writtenExamsList.innerHTML = ''; // Clear previous content
+
+                    exam.written_exams.forEach(writtenExam => {
+                        const writtenExamHtml = `
+                            <div class="accordion mb-3" id="accordionWrittenExam${writtenExam.id}">
+                                <div class="accordion-item">
+                                    <h2 class="accordion-header" id="headingWrittenExam${writtenExam.id}">
+                                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseWrittenExam${writtenExam.id}" aria-expanded="false" aria-controls="collapseWrittenExam${writtenExam.id}">
+                                            <i class="fas fa-file-alt me-2"></i> ${writtenExam.subject ? writtenExam.subject.name : 'Unknown Subject'} Written Exam
+                                            <span class="badge bg-primary ms-3">Total Questions: ${writtenExam.total_questions || 'N/A'}</span>
+                                            <span class="badge bg-info ms-2">Total Marks: ${writtenExam.total_marks || 'N/A'}</span>
+                                        </button>
+                                    </h2>
+                                    <div id="collapseWrittenExam${writtenExam.id}" class="accordion-collapse collapse" aria-labelledby="headingWrittenExam${writtenExam.id}" data-bs-parent="#accordionWrittenExam${writtenExam.id}">
+                                        <div class="accordion-body">
+                                            ${writtenExam.questions && writtenExam.questions.length > 0 ?
+                                                writtenExam.questions.map(question => `
+                                                    <div class="card card-body mb-3 bg-light">
+                                                        ${question.passage ? `
+                                                            <div class="alert alert-info mt-2 mb-2 p-2">
+                                                                <strong><i class="fas fa-paragraph me-1"></i> Passage:</strong>
+                                                                ${question.passage.title ? `<h6>${question.passage.title}</h6>` : ''}
+                                                                ${question.passage.text ? `<p class="small">${question.passage.text}</p>` : ''}
+                                                                ${question.passage.image ? `<img src="${question.passage.image}" alt="Passage Image" class="img-fluid my-2" style="max-width: 200px;">` : ''}
+                                                            </div>
+                                                        ` : ''}
+                                                        <h6><i class="fas fa-question-circle me-1"></i> Question ${question.question_number}: ${question.question_text}</h6>
+                                                        ${question.question_image ? `<img src="${question.question_image}" alt="Question Image" class="img-fluid my-2" style="max-width: 300px;">` : ''}
+                                                        
+
+                                                        <p class="text-success mb-1"><strong><i class="fas fa-check-circle me-1"></i> Answer:</strong> ${question.answer_text || 'N/A'}</p>
+                                                        ${question.answer_image ? `<img src="${question.answer_image}" alt="Answer Image" class="img-fluid my-2" style="max-width: 300px;">` : ''}
+                                                        <p class="text-muted small">Marks: ${question.marks}</p>
+                                                        
+                                                        ${question.explanation_text ? `<div class="explanation-section mt-2"><i class="fas fa-info-circle"></i> <strong>Explanation:</strong> <p>${question.explanation_text}</p></div>` : ''}
+                                                        ${question.explanation_image ? `<img src="${question.explanation_image}" alt="Explanation Image" class="explanation-image img-fluid mt-2" style="max-width: 300px;">` : ''}
+
+                                                        
+
+                                                        ${question.has_sub_questions && question.sub_questions && question.sub_questions.length > 0 ? `
+                                                            <div class="mt-3">
+                                                                <strong><i class="fas fa-indent me-1"></i> Sub-Questions:</strong>
+                                                                <ul class="list-group list-group-flush mt-2">
+                                                                    ${question.sub_questions.map(subQ => `
+                                                                        <li class="list-group-item bg-white">
+                                                                            <h6>Sub-Q ${subQ.number}: ${subQ.text}</h6>
+                                                                            ${subQ.image ? `<img src="${subQ.image}" alt="Sub-Question Image" class="img-fluid my-2" style="max-width: 250px;">` : ''}
+                                                                            <p class="text-success mb-1"><strong><i class="fas fa-check-circle me-1"></i> Answer:</strong> ${subQ.answer_text || 'N/A'}</p>
+                                                                            ${subQ.answer_image ? `<img src="${subQ.answer_image}" alt="Sub-Answer Image" class="img-fluid my-2" style="max-width: 250px;">` : ''}
+                                                                            
+                                                                            ${subQ.explanation_text ? `<div class="explanation-section mt-2"><i class="fas fa-info-circle"></i> <strong>Explanation:</strong> <p>${subQ.explanation_text}</p></div>` : ''}
+                                                                            ${subQ.explanation_image ? `<img src="${subQ.explanation_image}" alt="Sub-Question Explanation Image" class="explanation-image img-fluid mt-2" style="max-width: 250px;">` : ''}
+                                                                            
+                                                                            <p class="text-muted small">Marks: ${subQ.marks}</p>
+                                                                        </li>
+                                                                    `).join('')}
+                                                                </ul>
+                                                            </div>
+                                                        ` : ''}
+                                                    </div>
+                                                `).join('')
+                                            : '<p class="text-muted">No questions found for this written exam.</p>'
+                                            }
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                        if (writtenExamsList) writtenExamsList.insertAdjacentHTML('beforeend', writtenExamHtml);
+                    });
+                } else {
+                    if (writtenExamsSection) writtenExamsSection.classList.add('d-none'); // Hide if no written exams
+                }
+            }
+
+            // Initial fetch when the page loads
+            fetchExamDetails();
+        });
+    </script>
+</body>
+
+</html>
+

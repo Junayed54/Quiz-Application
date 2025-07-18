@@ -35,17 +35,18 @@ class StartPracticeSessionView(APIView):
     def post(self, request):
         user = request.user  # Assuming the user is authenticated
         subject_id = request.data.get('subject_id')
-
+        
         if not subject_id:
             return Response({'error': 'subject_id is required.'}, status=status.HTTP_400_BAD_REQUEST)
 
         try:
             subject = Subject.objects.get(id=subject_id)
+            
         except Subject.DoesNotExist:
             return Response({'error': 'Subject not found.'}, status=status.HTTP_404_NOT_FOUND)
 
         questions = list(PracticeQuestion.objects.filter(subject=subject))
-
+        
         if len(questions) < 10:
             return Response({'error': 'Not enough questions available for this subject.'}, status=status.HTTP_400_BAD_REQUEST)
 

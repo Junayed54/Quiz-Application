@@ -1,0 +1,355 @@
+{% comment %} {% extends 'new_custom/new_templates/index2.html' %}
+{% block title %}Packages{% endblock %}
+{% block style%}
+    <style>
+        body { background-color: #f0f2f5; }
+        .exam-grid { display: grid; gap: 25px; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); }
+        .exam-card { border-radius: 12px; overflow: hidden; transition: transform 0.2s ease, box-shadow 0.2s ease; background-color: #fff; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
+        .exam-card:hover { transform: translateY(-5px); box-shadow: 0 8px 25px rgba(0,0,0,0.1); }
+        .exam-card-header { padding: 15px 20px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center; }
+        .exam-card-body { padding: 20px; }
+        .exam-card-footer { padding: 15px 20px; border-top: 1px solid #eee; display: flex; justify-content: space-between; align-items: center; background-color: #fcfcfc; }
+        .exam-status-badge { font-size: 0.85em; padding: 0.4em 0.7em; border-radius: 5px; }
+        .btn-exam { border-radius: 8px; font-weight: 600; padding: 10px 20px; }
+    </style>
+{% endblock %}
+{% block content %}
+<div class="container my-5">
+        <h2 class="mb-4 text-center text-primary fw-bold">Available Exams</h2>
+        <p class="text-center text-muted mb-5">Explore and register for upcoming and active examinations.</p>
+
+        <div class="exam-grid" id="examListContainer">
+            </div>
+
+        <div id="loadingSpinner" class="text-center my-5" style="display: block;">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Loading exams...</span>
+            </div>
+            <p class="mt-2 text-muted">Loading exams...</p>
+        </div>
+        <div id="noExamsMessage" class="alert alert-info text-center my-5" style="display: none;">
+            No exams available at the moment. Check back later!
+        </div>
+        <div id="errorMessage" class="alert alert-danger text-center my-5" style="display: none;">
+            Failed to load exams. Please try again.
+        </div>
+    </div>
+
+{% endblock %}
+{% block body_js %}
+<script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const examListContainer = document.getElementById('examListContainer');
+            const loadingSpinner = document.getElementById('loadingSpinner');
+            const noExamsMessage = document.getElementById('noExamsMessage');
+            const errorMessage = document.getElementById('errorMessage');
+
+            // Function to get CSRF token (essential for POST/PUT/DELETE, good practice for GET too)
+            function getCookie(name) {
+                let cookieValue = null;
+                if (document.cookie && document.cookie !== '') {
+                    const cookies = document.cookie.split(';');
+                    for (let i = 0; i < cookies.length; i++) {
+                        const cookie = cookies[i].trim();
+                        if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                            cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                            break;
+                        }
+                    }
+                }
+                return cookieValue;
+            }
+            const csrftoken = getCookie('csrftoken'); // Get CSRF token
+
+            // Dummy API endpoint for a list of exams (you'll replace this)
+            // This endpoint should return a list of RootExam objects,
+            // possibly with related PastExam/WrittenExam details included.
+            // Example: /api/exams/
+            const API_ENDPOINT = '/api/wr-exams/'; 
+
+            fetch(API_ENDPOINT, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    // If Token auth is used
+                },
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(exams => {
+                loadingSpinner.style.display = 'none';
+                if (exams.length === 0) {
+                    noExamsMessage.style.display = 'block';
+                    return;
+                }
+
+                exams.forEach(exam => {
+                    const card = document.createElement('div');
+                    card.className = 'exam-card';
+
+                    // Determine status badge (customize based on your exam status logic)
+                    let statusBadgeClass = 'bg-secondary';
+                    let statusText = 'Unknown';
+                    const examDate = new Date(exam.exam_date);
+                    const now = new Date();
+
+                    if (exam.exam_mode === 'mcq' || exam.exam_mode === 'both') {
+                        // Assuming duration is in minutes and available
+                        const mcqDuration = exam.mcq_details ? exam.mcq_details.duration : null;
+                        if (mcqDuration) {
+                             // Simple example: Parse 'HH:MM:SS' duration string to minutes
+                            const parts = mcqDuration.split(':');
+                            if (parts.length === 3) {
+                                const hours = parseInt(parts[0]);
+                                const minutes = parseInt(parts[1]);
+                                exam.durationDisplay = `${hours * 60 + minutes} mins`;
+                            } else {
+                                exam.durationDisplay = mcqDuration + ' mins'; // Fallback if format is different
+                            }
+                        } else {
+                             exam.durationDisplay = 'N/A';
+                        }
+                    } else {
+                        exam.durationDisplay = 'N/A';
+                    }
+                    
+
+                    if (examDate && now < examDate) {
+                        statusBadgeClass = 'bg-warning text-dark';
+                        statusText = 'Upcoming';
+                    } else if (examDate && now >= examDate) {
+                        statusBadgeClass = 'bg-success';
+                        statusText = 'Active';
+                    } else {
+                        statusBadgeClass = 'bg-info'; // No date, maybe ongoing enrollment
+                        statusText = 'Ongoing';
+                    }
+
+                    // Calculate time until exam (for upcoming exams)
+                    let timeUntilText = '';
+                    if (statusText === 'Upcoming' && examDate) {
+                        const diffMs = examDate.getTime() - now.getTime();
+                        const diffDays = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
+                        if (diffDays > 0) {
+                            timeUntilText = `Starts in: ${diffDays} day${diffDays > 1 ? 's' : ''}`;
+                        } else {
+                            timeUntilText = 'Starts today!';
+                        }
+                    } else if (statusText === 'Active') {
+                        timeUntilText = 'Exam is Live!';
+                    } else {
+                        timeUntilText = 'Enrollment open';
+                    }
+
+
+                    card.innerHTML = `
+                        <div class="exam-card-header">
+                            <h5 class="mb-0 text-dark">${exam.title}</h5>
+                            <span class="badge ${statusBadgeClass} exam-status-badge">${statusText}</span>
+                        </div>
+                        <div class="exam-card-body">
+                            <p class="card-text text-muted mb-2"><i class="fas fa-book me-2"></i>Subject: ${exam.subjects && exam.subjects.length > 0 ? exam.subjects.join(', ') : 'General'}</p>
+                            <p class="card-text text-muted mb-2"><i class="fas fa-calendar-alt me-2"></i>Date: ${exam.exam_date ? new Date(exam.exam_date).toLocaleDateString() : 'TBA'}</p>
+                            <p class="card-text text-muted mb-2"><i class="fas fa-clock me-2"></i>Duration: ${exam.durationDisplay}</p>
+                            <p class="card-text text-muted mb-2"><i class="fas fa-certificate me-2"></i>Mode: ${exam.exam_mode.toUpperCase()}</p>
+                        </div>
+                        <div class="exam-card-footer">
+                            <span class="text-primary fw-bold">${timeUntilText}</span>
+                            <a href="/student/exams/${exam.id}/" class="btn btn-primary btn-sm btn-exam">View Details</a>
+                        </div>
+                    `;
+                    examListContainer.appendChild(card);
+                });
+            })
+            .catch(error => {
+                loadingSpinner.style.display = 'none';
+                errorMessage.textContent = `Error: ${error.message}`;
+                errorMessage.style.display = 'block';
+                console.error('Fetch error:', error);
+            });
+        });
+    </script>
+{% endblock %} {% endcomment %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Exam Schedule - Student View</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/2.0.8/css/dataTables.bootstrap5.min.css"/>
+    <style>
+        body { background-color: #f0f2f5; }
+        .table-container { background-color: #fff; padding: 30px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
+        .dataTables_wrapper .dataTables_filter input { border-radius: 8px; padding: 8px 12px; border: 1px solid #ddd; }
+        .dataTables_wrapper .dataTables_length select { border-radius: 8px; padding: 8px 12px; border: 1px solid #ddd; }
+        table.dataTable thead th { border-bottom: 2px solid #007bff; color: #333; font-weight: 600; }
+        .badge-status { padding: 0.5em 0.8em; border-radius: 5px; font-weight: 600; }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark shadow-sm">
+        <div class="container">
+            <a class="navbar-brand" href="#">📚 Exam Schedule</a>
+            <div class="collapse navbar-collapse">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item"><a class="nav-link" href="#"><i class="fas fa-home"></i> Home</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#"><i class="fas fa-user-circle"></i> Profile</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container my-5">
+        <h2 class="mb-4 text-center text-primary fw-bold">My Exams Schedule</h2>
+        <p class="text-center text-muted mb-5">Find details for all your assigned and available examinations below.</p>
+
+        <div class="table-container">
+            <table id="examsTable" class="table table-striped table-hover responsive" style="width:100%">
+                <thead>
+                    <tr>
+                        <th>Exam Title</th>
+                        <th>Subject</th>
+                        <th>Date</th>
+                        <th>Mode</th>
+                        <th>Duration</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    </tbody>
+            </table>
+        </div>
+
+        <div id="loadingSpinnerTable" class="text-center my-5" style="display: block;">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Loading exams...</span>
+            </div>
+            <p class="mt-2 text-muted">Loading exam schedule...</p>
+        </div>
+        <div id="noExamsMessageTable" class="alert alert-info text-center my-5" style="display: none;">
+            No exams found in your schedule.
+        </div>
+        <div id="errorMessageTable" class="alert alert-danger text-center my-5" style="display: none;">
+            Failed to load exam schedule. Please try again.
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script type="text/javascript" src="https://cdn.datatables.net/2.0.8/js/dataTables.min.js"></script>
+    <script type="text/javascript" src="https://cdn.datatables.net/2.0.8/js/dataTables.bootstrap5.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            const loadingSpinner = $('#loadingSpinnerTable');
+            const noExamsMessage = $('#noExamsMessageTable');
+            const errorMessage = $('#errorMessageTable');
+
+            function getCookie(name) {
+                let cookieValue = null;
+                if (document.cookie && document.cookie !== '') {
+                    const cookies = document.cookie.split(';');
+                    for (let i = 0; i < cookies.length; i++) {
+                        const cookie = cookies[i].trim();
+                        if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                            cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                            break;
+                        }
+                    }
+                }
+                return cookieValue;
+            }
+            const csrftoken = getCookie('csrftoken');
+
+            // Dummy API endpoint for a list of exams
+            const API_ENDPOINT = '/api/wr-exams/'; 
+
+            $.ajax({
+                url: API_ENDPOINT,
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrftoken,
+                    // 'Authorization': `Token YOUR_AUTH_TOKEN`
+                },
+                success: function(exams) {
+                    loadingSpinner.hide();
+                    if (exams.length === 0) {
+                        noExamsMessage.show();
+                        return;
+                    }
+
+                    const tableBody = $('#examsTable tbody');
+                    exams.forEach(exam => {
+                        let statusBadgeClass = 'bg-secondary';
+                        let statusText = 'Unknown';
+                        const examDate = exam.exam_date ? new Date(exam.exam_date) : null;
+                        const now = new Date();
+
+                        if (examDate && now < examDate) {
+                            statusBadgeClass = 'bg-warning text-dark';
+                            statusText = 'Upcoming';
+                        } else if (examDate && now >= examDate) {
+                            statusBadgeClass = 'bg-success';
+                            statusText = 'Active';
+                        } else {
+                            statusBadgeClass = 'bg-info';
+                            statusText = 'Ongoing';
+                        }
+
+                        let durationDisplay = 'N/A';
+                        if (exam.exam_mode === 'mcq' || exam.exam_mode === 'both') {
+                            if (exam.mcq_details && exam.mcq_details.duration) {
+                                const parts = exam.mcq_details.duration.split(':');
+                                if (parts.length === 3) {
+                                    const hours = parseInt(parts[0]);
+                                    const minutes = parseInt(parts[1]);
+                                    durationDisplay = `${hours * 60 + minutes} mins`;
+                                } else {
+                                    durationDisplay = exam.mcq_details.duration + ' mins';
+                                }
+                            }
+                        }
+
+                        const row = `
+                            <tr>
+                                <td>${exam.title}</td>
+                                <td>${exam.subjects && exam.subjects.length > 0 ? exam.subjects.join(', ') : 'General'}</td>
+                                <td>${exam.exam_date ? new Date(exam.exam_date).toLocaleDateString() : 'TBA'}</td>
+                                <td>${exam.exam_mode.toUpperCase()}</td>
+                                <td>${durationDisplay}</td>
+                                <td><span class="badge badge-status ${statusBadgeClass}">${statusText}</span></td>
+                                <td><a href="/exams/wr_exams/${exam.id}/" class="btn btn-sm btn-outline-primary">View Details</a></td>
+                            </tr>
+                        `;
+                        tableBody.append(row);
+                    });
+
+                    // Initialize DataTables
+                    $('#examsTable').DataTable({
+                        "paging": true,
+                        "searching": true,
+                        "info": true,
+                        "lengthChange": true,
+                        "autoWidth": false,
+                        "responsive": true,
+                        "order": [[2, 'asc']] // Order by Date column by default
+                    });
+                },
+                error: function(xhr, status, error) {
+                    loadingSpinner.hide();
+                    errorMessage.text(`Error: ${xhr.status} - ${error || 'Unknown error'}`);
+                    errorMessage.show();
+                    console.error('AJAX error:', error, xhr);
+                }
+            });
+        });
+    </script>
+</body>
+</html>

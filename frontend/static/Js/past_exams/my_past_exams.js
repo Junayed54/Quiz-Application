@@ -21,6 +21,7 @@ document.addEventListener("DOMContentLoaded", function () {
             return response.json();
         })
         .then((data) => {
+            console.log(data);
             if (data.length === 0) {
                 noExams.style.display = "block";
                 return;
@@ -35,23 +36,36 @@ document.addEventListener("DOMContentLoaded", function () {
                     <div class="card-body">
                         <h5 class="card-title">${exam.title}</h5>
                         <p class="card-text">
-                            <strong>Organization:</strong> ${exam.organization_name}<br>
-                            ${exam.department_name ? `<strong>Department:</strong> ${exam.department_name}<br>` : ""}
-                            <strong>Position:</strong> ${exam.position_name}<br>
+                            <strong>Organization:</strong> ${exam.organization}<br>
+                            ${exam.department ? `<strong>Department:</strong> ${exam.department}<br>` : ""}
+                            <strong>Position:</strong> ${exam.position}<br>
                             <strong>Date:</strong> ${exam.exam_date}<br>
                             <strong>Duration:</strong> ${exam.duration || "N/A"} mins<br>
                             <strong>Pass Mark:</strong> ${exam.pass_mark}%<br>
-                            <strong>Negative Mark:</strong> ${exam.negative_mark}
+                            <strong>Negative Mark:</strong> ${exam.negative_mark}<br>
+                            <strong>Total Questions:</strong> ${exam.total_questions}<br>
                         </p>
+
+                        ${exam.missing_explanations_count > 0
+                            ? `<div class="alert alert-warning p-2">
+                                    ❗ ${exam.missing_explanations_count} question${exam.missing_explanations_count > 1 ? 's are' : ' is'} missing explanation
+                            </div>`
+                            : `<div class="alert alert-success p-2">
+                                    ✅ All questions have explanations or images
+                            </div>`
+                        }
+
                         <span class="badge bg-${exam.is_published ? "success" : "danger"}">
                             ${exam.is_published ? "Published" : "Unpublished"}
                         </span>
+
                         <div class="mt-3 d-flex gap-2">
                             <button class="btn btn-primary" onclick="window.location.href = '/quiz/past_exam_update/${exam.id}/'">Update Exam</button>
                             <button class="btn btn-danger" onclick="deleteExam(${exam.id})">Delete Exam</button>
                         </div>
                     </div>
                 </div>
+
             `;
 
                 examContainer.appendChild(card);

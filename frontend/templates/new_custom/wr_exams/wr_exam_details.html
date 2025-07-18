@@ -1,0 +1,709 @@
+{% extends 'new_custom/new_templates/index2.html' %}
+
+{% block title %}Exam Details{% endblock %}
+
+{% block style %}
+<style>
+    /* Enhanced Professional and Modern Styles */
+    body {
+        background: linear-gradient(180deg, #f0f4f8 0%, #e4e9f0 100%); /* Subtle gradient background */
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; /* Modern, fallback-friendly font stack */
+        color: #1a202c; /* Darker text for better contrast */
+        line-height: 1.6;
+    }
+
+    .exam-detail-card {
+        margin: 50px auto;
+        border-radius: 16px; /* Softer, modern rounded corners */
+        box-shadow: 0 12px 48px rgba(0, 0, 0, 0.08), 0 4px 16px rgba(0, 0, 0, 0.04); /* Multi-layered shadow for depth */
+        background: rgba(255, 255, 255, 0.95); /* Glassmorphism-inspired semi-transparent background */
+        backdrop-filter: blur(10px); /* Subtle blur effect */
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        overflow: hidden;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    .exam-detail-card:hover {
+        transform: translateY(-5px); /* Subtle lift on hover */
+        box-shadow: 0 16px 56px rgba(0, 0, 0, 0.1), 0 6px 20px rgba(0, 0, 0, 0.06);
+    }
+
+    .card-header-custom {
+        background: linear-gradient(135deg, #3b82f6 0%, #1e3a8a 100%); /* Refined gradient for header */
+        color: #ffffff;
+        padding: 30px 40px;
+        border-bottom: none;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        position: relative;
+        overflow: hidden;
+    }
+    .card-header-custom::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: radial-gradient(circle at 10% 20%, rgba(255, 255, 255, 0.2) 0%, transparent 50%);
+        opacity: 0.5;
+    }
+    .card-header-custom h4 {
+        font-weight: 900; /* Bolder for emphasis */
+        margin: 0;
+        font-size: 2.4rem; /* Larger, commanding title */
+        letter-spacing: -0.02em;
+        text-shadow: 1px 1px 4px rgba(0, 0, 0, 0.15);
+        z-index: 1;
+    }
+    .exam-mode-badge {
+        font-size: 1rem;
+        padding: 0.6em 1.4em;
+        border-radius: 50px; /* Fully rounded pill */
+        background: rgba(255, 255, 255, 0.25);
+        border: 1px solid rgba(255, 255, 255, 0.5);
+        font-weight: 600;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+        transition: background 0.3s ease, transform 0.3s ease;
+        z-index: 1;
+    }
+    .exam-mode-badge:hover {
+        background: rgba(255, 255, 255, 0.35);
+        transform: scale(1.05);
+    }
+
+    .card-body-custom {
+        padding: 40px;
+        background: #ffffff;
+        border-radius: 0 0 16px 16px;
+    }
+
+    .detail-item {
+        margin-bottom: 25px;
+        font-size: 1.1rem;
+        display: flex;
+        align-items: flex-start;
+        transition: transform 0.3s ease;
+    }
+    .detail-item:hover {
+        transform: translateX(5px); /* Subtle slide effect on hover */
+    }
+    .detail-item strong {
+        color: #1f2937; /* Darker for better contrast */
+        min-width: 160px; /* Wider labels for alignment */
+        font-weight: 700;
+        line-height: 1.6;
+    }
+    .detail-item span {
+        color: #4b5563;
+        flex-grow: 1;
+        line-height: 1.6;
+    }
+    .detail-item i {
+        color: #3b82f6; /* Primary blue for icons */
+        margin-right: 16px;
+        font-size: 1.4em;
+        width: 32px;
+        text-align: center;
+        margin-top: 4px;
+        transition: color 0.3s ease;
+    }
+    .detail-item:hover i {
+        color: #1e40af; /* Darker blue on hover */
+    }
+
+    hr {
+        border-top: 1px solid rgba(0, 0, 0, 0.08);
+        margin: 50px 0;
+        background: linear-gradient(to right, transparent, rgba(0, 0, 0, 0.1), transparent);
+    }
+
+    .section-title {
+        color: #1e3a8a; /* Deep blue for section titles */
+        font-weight: 800;
+        margin-bottom: 35px;
+        font-size: 1.8rem;
+        display: flex;
+        align-items: center;
+        position: relative;
+    }
+    .section-title::before {
+        content: '';
+        width: 40px;
+        height: 3px;
+        background: #3b82f6;
+        margin-right: 12px;
+        border-radius: 2px;
+    }
+    .section-title i {
+        margin-right: 12px;
+        font-size: 1.9em;
+        color: #3b82f6;
+    }
+
+    .btn-action {
+        padding: 16px 48px;
+        font-size: 1.25rem;
+        border-radius: 50px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        min-width: 280px;
+        position: relative;
+        overflow: hidden;
+    }
+    .btn-action::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+        transition: 0.5s;
+    }
+    .btn-action:hover::before {
+        left: 100%;
+    }
+    .btn-action:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 10px 24px rgba(0, 123, 255, 0.5);
+    }
+    .btn-action.btn-success {
+        background: #10b981;
+        border-color: #10b981;
+    }
+    .btn-action.btn-success:hover {
+        background: #059669;
+        border-color: #059669;
+    }
+    .btn-action.btn-secondary {
+        background: #6b7280;
+        border-color: #6b7280;
+    }
+    .btn-action.btn-secondary:hover {
+        background: #4b5563;
+        border-color: #4b5563;
+        box-shadow: 0 10px 24px rgba(107, 114, 128, 0.4);
+    }
+
+    .spinner-container {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        min-height: 350px;
+        color: #3b82f6;
+        animation: fadeIn 0.5s ease-in;
+    }
+    .spinner-border {
+        width: 3.5rem;
+        height: 3.5rem;
+        border-width: 0.4em;
+        animation: spin 1s linear infinite, pulse 1.5s ease-in-out infinite;
+    }
+    .spinner-container p {
+        margin-top: 20px;
+        font-size: 1.2rem;
+        font-weight: 600;
+        letter-spacing: 0.03em;
+    }
+
+    .alert {
+        border-radius: 12px;
+        font-weight: 500;
+        margin-top: 35px !important;
+        padding: 25px;
+        background: rgba(239, 68, 68, 0.95); /* Glassmorphism for alert */
+        backdrop-filter: blur(5px);
+        color: #fff;
+        border: none;
+        animation: slideIn 0.5s ease;
+    }
+
+    /* Written Questions Styling */
+    .written-exam-section {
+        background: rgba(243, 244, 246, 0.9);
+        border-radius: 12px;
+        padding: 30px;
+        margin-bottom: 35px;
+        box-shadow: inset 0 0 12px rgba(0, 0, 0, 0.03);
+        transition: background 0.3s ease;
+    }
+    .written-exam-section:hover {
+        background: rgba(243, 244, 246, 1);
+    }
+    .written-question-card {
+        background: #ffffff;
+        border-radius: 12px;
+        padding: 25px;
+        margin-bottom: 30px;
+        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.06);
+        border: 1px solid rgba(0, 0, 0, 0.05);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    .written-question-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+    }
+    .written-question-card h6 {
+        font-weight: 700;
+        color: #1f2937;
+        margin-bottom: 18px;
+        font-size: 1.25rem;
+        display: flex;
+        align-items: flex-start;
+    }
+    .written-question-card h6 i {
+        color: #3b82f6;
+        margin-right: 12px;
+        font-size: 1.2em;
+        margin-top: 4px;
+    }
+    .question-image, .answer-image {
+        max-width: 100%;
+        height: auto;
+        border-radius: 10px;
+        margin: 20px 0;
+        border: 1px solid rgba(0, 0, 0, 0.08);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    }
+    .answer-section {
+        margin-top: 25px;
+        padding-top: 25px;
+        border-top: 1px dashed rgba(0, 0, 0, 0.1);
+    }
+    .answer-section strong {
+        color: #10b981; /* Vibrant green for answers */
+        font-weight: 700;
+        margin-bottom: 12px;
+        display: block;
+        font-size: 1.15rem;
+    }
+    .sub-question-card {
+        background: rgba(249, 250, 251, 0.9);
+        border-left: 5px solid #3b82f6;
+        padding: 20px;
+        margin: 20px 0;
+        border-radius: 10px;
+        box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.04);
+        transition: background 0.3s ease;
+    }
+    .sub-question-card:hover {
+        background: rgba(249, 250, 251, 1);
+    }
+    .sub-question-card p {
+        margin-bottom: 8px;
+        font-size: 1rem;
+    }
+    .sub-question-card strong {
+        color: #3b82f6;
+    }
+
+    /* Animations */
+    @keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+    }
+    @keyframes slideIn {
+        from { transform: translateY(20px); opacity: 0; }
+        to { transform: translateY(0); opacity: 1; }
+    }
+    @keyframes pulse {
+        0% { transform: scale(1); }
+        50% { transform: scale(1.1); }
+        100% { transform: scale(1); }
+    }
+
+    /* Responsive Adjustments */
+    @media (max-width: 991.98px) {
+        .card-header-custom h4 {
+            font-size: 2rem;
+        }
+        .exam-mode-badge {
+            font-size: 0.95rem;
+            padding: 0.5em 1.2em;
+        }
+        .detail-item strong {
+            min-width: 120px;
+        }
+        .section-title {
+            font-size: 1.6rem;
+        }
+        .btn-action {
+            padding: 14px 30px;
+            font-size: 1.15rem;
+            min-width: unset;
+            width: 100%;
+        }
+        .written-question-card h6 {
+            font-size: 1.15rem;
+        }
+    }
+
+    @media (max-width: 767.98px) {
+        .card-header-custom {
+            flex-direction: column;
+            align-items: flex-start;
+            padding: 25px;
+        }
+        .card-header-custom h4 {
+            font-size: 1.8rem;
+            margin-bottom: 12px;
+        }
+        .exam-mode-badge {
+            margin-top: 12px;
+        }
+        .card-body-custom {
+            padding: 30px;
+        }
+        .detail-item {
+            flex-direction: column;
+            margin-bottom: 20px;
+        }
+        .detail-item strong {
+            min-width: unset;
+            margin-bottom: 8px;
+            font-size: 1.05rem;
+        }
+        .detail-item span {
+            font-size: 1rem;
+        }
+        .detail-item i {
+            margin-right: 10px;
+            margin-bottom: 8px;
+            font-size: 1.3em;
+        }
+        .section-title {
+            font-size: 1.5rem;
+            margin-bottom: 25px;
+        }
+        .section-title i {
+            font-size: 1.6em;
+        }
+        .btn-action {
+            font-size: 1.1rem;
+            padding: 12px 25px;
+        }
+        .written-question-card {
+            padding: 20px;
+        }
+        .written-question-card h6 {
+            font-size: 1.1rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-lg-10 col-md-11">
+            <div class="exam-detail-card card">
+                <div class="card-header-custom">
+                    <h4 id="examTitle">Loading Exam Details...</h4>
+                    <span id="examModeBadge" class="exam-mode-badge"></span>
+                </div>
+                <div class="card-body-custom">
+                    <div id="loadingSpinner" class="spinner-container">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                        <p>Fetching exam data...</p>
+                    </div>
+
+                    <div id="examContent" style="display:none;">
+                        <div class="detail-item">
+                            <i class="fas fa-file-alt"></i><strong>Description:</strong> <span id="examDescription" class="text-wrap"></span>
+                        </div>
+                        <hr>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="detail-item">
+                                    <i class="fas fa-calendar-alt"></i><strong>Exam Date:</strong> <span id="examDate"></span>
+                                </div>
+                                <div class="detail-item">
+                                    <i class="fas fa-tag"></i><strong>Exam Type:</strong> <span id="examType"></span>
+                                </div>
+                                <div class="detail-item">
+                                    <i class="fas fa-layer-group"></i><strong>Subjects:</strong> <span id="examSubjects"></span>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="detail-item">
+                                    <i class="fas fa-city"></i><strong>Organization:</strong> <span id="examOrganization"></span>
+                                </div>
+                                <div class="detail-item">
+                                    <i class="fas fa-building"></i><strong>Department:</strong> <span id="examDepartment"></span>
+                                </div>
+                                <div class="detail-item">
+                                    <i class="fas fa-user-tie"></i><strong>Position:</strong> <span id="examPosition"></span>
+                                </div>
+                                <div class="detail-item d-none">
+                                    <i class="fas fa-user"></i><strong>Created By:</strong> <span id="createdBy"></span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div id="mcqDetails" style="display:none;">
+                            <h5 class="section-title mt-5"><i class="fas fa-tasks"></i>MCQ Exam Overview</h5>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="detail-item">
+                                        <i class="fas fa-hourglass-half"></i><strong>Duration:</strong> <span id="mcqDuration"></span>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="detail-item">
+                                        <i class="fas fa-question-circle"></i><strong>Total Questions:</strong> <span id="mcqTotalQuestions"></span>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="detail-item">
+                                        <i class="fas fa-percentage"></i><strong>Total Marks:</strong> <span id="mcqTotalMarks"></span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div id="writtenExamsContainer" style="display:none;">
+                            <h5 class="section-title mt-5"><i class="fas fa-pencil-alt"></i>Written Exams</h5>
+                            <div id="writtenExamList"></div>
+                        </div>
+
+                        {% comment %} <div class="mt-5 text-center">
+                            <button id="startButton" class="btn btn-success btn-lg btn-action" style="display:none;">
+                                <i class="fas fa-play-circle me-2"></i> Start Exam
+                            </button>
+                            <p class="mt-3 text-muted" id="examStatus"></p>
+                        </div> {% endcomment %}
+                    </div>
+                </div>
+            </div>
+            {% comment %} <div id="errorMessage" class="alert alert-danger mt-3 text-center" style="display:none;" role="alert">
+                Failed to load exam details.
+            </div> {% endcomment %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block body_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const pathParts = window.location.pathname.split('/');
+        let examId = null;
+        if (pathParts.length >= 3) {
+            examId = pathParts[pathParts.length - 2];
+        }
+
+        const loadingSpinner = document.getElementById('loadingSpinner');
+        const examContent = document.getElementById('examContent');
+        const errorMessage = document.getElementById('errorMessage');
+        const examTitle = document.getElementById('examTitle');
+        const examModeBadge = document.getElementById('examModeBadge');
+        const startButton = document.getElementById('startButton');
+        const examStatus = document.getElementById('examStatus');
+        const writtenExamsContainer = document.getElementById('writtenExamsContainer');
+        const writtenExamList = document.getElementById('writtenExamList');
+
+        if (!examId) {
+            errorMessage.textContent = "No exam ID provided in the URL. Please ensure the URL is correct (e.g., /student/exams/123/).";
+            errorMessage.style.display = 'block';
+            loadingSpinner.style.display = 'none';
+            return;
+        }
+
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+        const csrftoken = getCookie('csrftoken');
+
+        // Add fade-in animation for content
+        function showContentWithAnimation() {
+            examContent.style.opacity = '0';
+            examContent.style.transform = 'translateY(20px)';
+            examContent.style.display = 'block';
+            setTimeout(() => {
+                examContent.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
+                examContent.style.opacity = '1';
+                examContent.style.transform = 'translateY(0)';
+            }, 50);
+        }
+
+        fetch(`/api/wr-exams/${examId}/`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': csrftoken,
+            },
+        })
+        .then(response => {
+            if (!response.ok) {
+                if (response.status === 401 || response.status === 403) {
+                    throw new Error("Authentication required to view exam details. Please log in.");
+                } else if (response.status === 404) {
+                    throw new Error("Exam not found or might have been removed.");
+                }
+                throw new Error(`Failed to load exam details (HTTP status: ${response.status}).`);
+            }
+            return response.json();
+        })
+        .then(data => {
+            loadingSpinner.style.display = 'none';
+            showContentWithAnimation();
+
+            examTitle.textContent = data.title;
+            examModeBadge.textContent = data.exam_mode.toUpperCase();
+            document.getElementById('examDescription').textContent = data.description || 'Not provided.';
+            
+            document.getElementById('examType').textContent = data.exam_type ? data.exam_type.name : 'N/A';
+            document.getElementById('examDate').textContent = data.exam_date ? new Date(data.exam_date).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) : 'TBA';
+            document.getElementById('createdBy').textContent = data.created_by ? data.created_by.email : 'N/A';
+            document.getElementById('examOrganization').textContent = data.organization ? data.organization.name : 'N/A';
+            document.getElementById('examDepartment').textContent = data.department ? data.department.name : 'N/A';
+            document.getElementById('examPosition').textContent = data.position ? data.position.name : 'N/A';
+            
+            const subjectsHtml = data.subjects && data.subjects.length > 0
+                ? data.subjects.map(sub => `<span class="badge bg-primary me-1" style="background: #3b82f6; padding: 8px 14px; border-radius: 50px; font-weight: 600;">${sub.name}</span>`).join('')
+                : 'General';
+            document.getElementById('examSubjects').innerHTML = subjectsHtml;
+
+            if (data.past_exam) {
+                document.getElementById('mcqDetails').style.display = 'block';
+                document.getElementById('mcqDuration').textContent = data.past_exam.duration || 'N/A';
+                document.getElementById('mcqTotalQuestions').textContent = data.past_exam.total_questions || '0';
+                document.getElementById('mcqTotalMarks').textContent = data.past_exam.total_marks ? parseFloat(data.past_exam.total_marks).toFixed(2) : '0.00';
+            }
+
+            if (data.written_exams && data.written_exams.length > 0) {
+                writtenExamsContainer.style.display = 'block';
+                writtenExamList.innerHTML = '';
+
+                data.written_exams.forEach((writtenExam, writtenExamIndex) => {
+                    const writtenExamSection = document.createElement('div');
+                    writtenExamSection.className = 'written-exam-section';
+                    writtenExamSection.innerHTML = `
+                        <h5 class="section-title"><i class="fas fa-scroll"></i>Written Exam for ${writtenExam.subject ? writtenExam.subject.name : 'General'}</h5>
+                        <div class="row mb-4">
+                            <div class="col-md-6">
+                                <div class="detail-item">
+                                    <i class="fas fa-question-circle"></i><strong>Total Questions:</strong> <span>${writtenExam.total_questions || '0'}</span>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="detail-item">
+                                    <i class="fas fa-marker"></i><strong>Total Marks:</strong> <span>${writtenExam.total_marks ? parseFloat(writtenExam.total_marks).toFixed(2) : '0.00'}</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="questions-list"></div>
+                    `;
+                    writtenExamList.appendChild(writtenExamSection);
+
+                    const questionsListDiv = writtenExamSection.querySelector('.questions-list');
+
+                    if (writtenExam.questions && writtenExam.questions.length > 0) {
+                        writtenExam.questions.forEach((question, qIndex) => {
+                            const questionCard = document.createElement('div');
+                            questionCard.className = 'written-question-card';
+                            questionCard.innerHTML = `
+                                <h6><i class="fas fa-question-circle"></i>Question ${question.question_number || (qIndex + 1)}: ${question.question_text || 'No question text provided.'} (${question.marks || '0'} marks)</h6>
+                                ${question.question_image ? `<img src="${question.question_image}" alt="Question Image" class="question-image img-fluid">` : ''}
+                                
+                                ${question.explanation_text ? `<div class="explanation-section mt-2"><i class="fas fa-info-circle"></i> <strong>Explanation:</strong> <p>${question.explanation_text}</p></div>` : ''}
+                                ${question.explanation_image ? `<img src="${question.explanation_image}" alt="Explanation Image" class="explanation-image img-fluid mt-2">` : ''}
+
+                                ${question.has_sub_questions && question.sub_questions && question.sub_questions.length > 0 ?
+                                    `<div class="sub-questions-container mt-3">
+                                        <h6 class="text-muted"><i class="fas fa-indent"></i>Sub-Questions:</h6>
+                                        ${question.sub_questions.map((subQ, subQIndex) => `
+                                            <div class="sub-question-card">
+                                                <p><strong>(${subQ.number || String.fromCharCode(97 + subQIndex)})</strong> ${subQ.text || 'No sub-question text provided.'} (${subQ.marks || '0'} marks)</p>
+                                                ${subQ.image ? `<img src="${subQ.image}" alt="Sub-Question Image" class="question-image img-fluid">` : ''}
+                                                <div class="answer-section">
+                                                    <strong>Answer:</strong>
+                                                    <p>${subQ.answer_text || 'No answer provided.'}</p>
+                                                    ${subQ.answer_image ? `<img src="${subQ.answer_image}" alt="Sub-Question Answer Image" class="answer-image img-fluid">` : ''}
+                                                </div>
+                                                ${subQ.explanation_text ? `<div class="explanation-section mt-2"><i class="fas fa-info-circle"></i> <strong>Explanation:</strong> <p>${subQ.explanation_text}</p></div>` : ''}
+                                                ${subQ.explanation_image ? `<img src="${subQ.explanation_image}" alt="Sub-Question Explanation Image" class="explanation-image img-fluid mt-2">` : ''}
+                                            </div>
+                                        `).join('')}
+                                    </div>`
+                                    : ''
+                                }
+
+                                ${!question.has_sub_questions ? `
+                                    <div class="answer-section">
+                                        <strong>Answer:</strong>
+                                        <p>${question.answer_text || 'No answer provided.'}</p>
+                                        ${question.answer_image ? `<img src="${question.answer_image}" alt="Answer Image" class="answer-image img-fluid">` : ''}
+                                    </div>
+                                ` : ''}
+                            `;
+                            questionsListDiv.appendChild(questionCard);
+                        });
+                    } else {
+                        questionsListDiv.innerHTML = '<div class="alert alert-info text-center" style="border-radius: 10px; padding: 20px;">No questions found for this written exam.</div>';
+                    }
+                });
+            }
+
+            const examDateTime = data.exam_date ? new Date(data.exam_date) : null;
+            const now = new Date();
+            if (examDateTime) {
+                const msUntil = examDateTime.getTime() - now.getTime();
+                const daysUntil = Math.ceil(msUntil / (1000 * 60 * 60 * 24));
+                const formattedExamDate = new Date(examDateTime).toLocaleString('en-US', { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+
+                if (msUntil > 0) {
+                    startButton.style.display = 'block';
+                    startButton.disabled = true;
+                    examStatus.textContent = `Exam begins on ${formattedExamDate}. (${daysUntil} day${daysUntil !== 1 ? 's' : ''} left)`;
+                    startButton.classList.remove('btn-success');
+                    startButton.classList.add('btn-secondary');
+                    startButton.innerHTML = '<i class="fas fa-clock me-2"></i> Upcoming';
+                } else {
+                    startButton.style.display = 'block';
+                    startButton.disabled = false;
+                    startButton.classList.add('btn-success');
+                    startButton.classList.remove('btn-secondary');
+                    examStatus.textContent = "Exam is currently active. Good luck!";
+                    startButton.innerHTML = '<i class="fas fa-play-circle me-2"></i> Start Exam';
+                }
+            } else {
+                startButton.style.display = 'none';
+                examStatus.textContent = "Exam date not set. Please contact administration for details.";
+                examStatus.classList.add('text-danger');
+            }
+        })
+        .catch(error => {
+            loadingSpinner.style.display = 'none';
+            errorMessage.textContent = error.message || 'An unknown error occurred while fetching exam details.';
+            errorMessage.style.display = 'block';
+            errorMessage.style.opacity = '0';
+            errorMessage.style.transform = 'translateY(20px)';
+            setTimeout(() => {
+                errorMessage.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
+                errorMessage.style.opacity = '1';
+                errorMessage.style.transform = 'translateY(0)';
+            }, 50);
+            console.error('Error:', error);
+        });
+    });
+</script>
+{% endblock %}

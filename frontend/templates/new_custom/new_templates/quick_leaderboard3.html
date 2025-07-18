@@ -1,495 +1,387 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Leaderboard Dashboard</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
-    <style>
-        :root {
-            --dark-bg: #1a1a2e;
-            --card-bg: #2c2c44;
-            --top-performer-bg: #3e3e5e;
-            --purple-accent: #8a2be2; /* Adjusted for better visibility */
-            --text-color: #ffffff;
-            --light-text: #bbb;
-            --border-color: #4a4a6e;
-            --green-positive: #28a745;
-            --red-negative: #dc3545;
-            --orange-expert: #ffa500;
-            --medium-green-intermediate: #008000;
-        }
+{% extends 'new_custom/new_templates/index2.html' %}
+{% load static %}
 
-        body {
-            background-color: var(--dark-bg);
-            color: var(--text-color);
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; /* Slightly more modern font */
-            margin: 0;
-            padding: 0;
-        }
+{% block title %}Leaderboard{% endblock %}
 
-        .container-fluid {
-            padding: 25px; /* Adjust padding around the whole content */
-        }
+{% block style %}
+<style>
+    /* Custom gradient for main text highlights */
+    .text-custom-gradient {
+        background: linear-gradient(90deg, #FFFFFF 0%, #66FFF0 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        font-weight: 700; /* Ensure font-weight is applied */
+    }
 
-        /* Header */
-        .header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 30px;
-        }
-        .header h1 {
-            font-size: 2rem;
-            font-weight: 600;
-            color: var(--text-color);
-        }
-        .header .btn {
-            background-color: var(--card-bg);
-            color: var(--text-color);
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
-            padding: 8px 15px;
-            font-size: 0.9rem;
-            transition: all 0.2s ease-in-out;
-        }
-        .header .btn:hover {
-            background-color: var(--top-performer-bg);
-            border-color: var(--purple-accent);
-        }
-        .header .btn i {
-            margin-right: 5px;
-        }
+    /* Specific button styling for the refresh/month buttons */
+    .btn-custom {
+        background: rgba(108, 77, 246, 0.1); /* A slightly transparent purple */
+        border: 1px solid #6C4DF6;
+        color: white;
+        transition: box-shadow 0.2s ease-in-out;
+    }
 
-        /* Metric Cards */
-        .metric-card {
-            background-color: var(--card-bg);
-            border-radius: 15px;
-            padding: 20px 25px;
-            margin-bottom: 20px;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
-            text-align: center;
-            height: 100%; /* Ensure cards have equal height */
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-        }
-        .metric-card-title {
-            color: var(--light-text);
-            font-size: 0.95rem;
-            margin-bottom: 10px;
-        }
-        .metric-value {
-            font-size: 2.5rem;
-            font-weight: bold;
-            color: var(--purple-accent);
-        }
-        .metric-card .progress {
-            height: 8px;
-            background-color: rgba(138, 43, 226, 0.2); /* Lighter version of purple */
-            border-radius: 5px;
-            margin-top: 15px;
-        }
-        .metric-card .progress-bar {
-            background-color: var(--purple-accent);
-            border-radius: 5px;
-        }
+    .btn-custom:hover {
+        box-shadow: 0px 0px 15px 0px rgba(108, 77, 246, 0.5); /* Glowing effect on hover */
+    }
 
-        /* Top Performers Section */
-        .top-performers-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: baseline;
-            margin-bottom: 20px;
-            padding: 0 10px;
-        }
-        .top-performers-header h3 {
-            font-size: 1.5rem;
-            font-weight: 600;
-            color: var(--text-color);
-        }
-        .top-performers-header span {
-            font-size: 0.9rem;
-            color: var(--light-text);
-        }
+    /* Background colors for the overall page and cards */
+    body {
+        background-color: #1A202C; /* Updated: Main body background */
+        color: white; /* Default text color */
+    }
+    .card-dark-bg{
+        background-color: #1e293b;
 
-        .performer-card {
-            background-color: var(--top-performer-bg);
-            border-radius: 15px;
-            padding: 25px 20px;
-            text-align: center;
-            margin-bottom: 20px;
-            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.15);
-            position: relative; /* For the rank badge */
-            height: 100%;
-        }
+    }
+    
+    .top-performer-card {
+    background-color: #1e293b;
+    transition: transform 0.4s ease, box-shadow 0.4s ease, border-color 0.4s ease;
+    transform: translateY(0);
+    border: 1px solid transparent; /* ensure border exists to animate */
+    border-radius: 0.5rem; /* optional: gives smooth edges */
+    
+}
 
-        .performer-image-wrapper {
-            position: relative;
-            display: inline-block;
-            margin-bottom: 15px;
-        }
+.top-performer-card:hover {
+    transform: translateY(-10px);
+    box-shadow: 0px 100px 160px 0px;
+    
+}
 
-        .performer-image {
-            width: 90px;
-            height: 90px;
-            border-radius: 50%;
-            object-fit: cover;
-            border: 3px solid var(--purple-accent);
-            box-shadow: 0 0 0 5px rgba(138, 43, 226, 0.2); /* Outer glow for the circle */
-        }
+    /* --- Custom Table Styles Start --- */
+    .table-dark-bg {
+        width: 100%;
+        border-collapse: separate !important;
+        border-spacing: 0 0.75rem; /* horizontal 0, vertical spacing */
+        background-color: transparent;
+    }
 
-        .performer-initials-badge {
-            position: absolute;
-            top: -8px;
-            left: 50%;
-            transform: translateX(-50%);
-            background-color: var(--purple-accent);
-            color: var(--text-color);
-            border-radius: 50%;
-            width: 35px;
-            height: 35px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: bold;
-            font-size: 0.9rem;
-            border: 2px solid var(--top-performer-bg); /* Matches card background */
-        }
-        .performer-card h5 {
-            font-size: 1.1rem;
-            font-weight: 600;
-            margin-bottom: 5px;
-        }
-        .performer-card p {
-            font-size: 0.95rem;
-            color: var(--light-text);
-            margin-bottom: 0;
-        }
 
-        /* Leaderboard Table */
-        .leaderboard-table-card {
-            background-color: var(--card-bg);
-            border-radius: 15px;
-            padding: 0; /* Remove padding for the card itself, let table handle it */
-            overflow: hidden; /* Ensures rounded corners for table */
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
-        }
+    /* Style for alternating table body rows (optional, for stripe effect) */
+    .table-dark-bg tbody tr:nth-child(odd) {
+        background-color: #10263399; /* Your desired background for odd rows */
+    }
 
-        .leaderboard-table {
-            color: var(--text-color);
-            margin-bottom: 0; /* Remove default table margin */
-        }
+    
 
-        .leaderboard-table th {
-            background-color: var(--card-bg); /* Same as card bg */
-            border-bottom: 1px solid var(--border-color);
-            color: var(--light-text);
-            font-weight: 500;
-            padding: 15px 20px;
-            font-size: 0.9rem;
-            text-transform: uppercase;
-        }
+    table thead tr td{
+        color: #8DE7DD;
 
-        .leaderboard-table td {
-            padding: 15px 20px;
-            vertical-align: middle;
-            border-top: 1px solid var(--border-color);
-            font-size: 0.95rem;
-        }
-        .leaderboard-table tbody tr:first-child td {
-            border-top: none; /* No top border for the first row */
-        }
+    }
 
-        .leaderboard-table tbody tr:hover {
-            background-color: var(--top-performer-bg); /* Slight hover effect */
-        }
+    
+    #leaderboard-table-body tr {
+        background-color: #1e293b; /* Dark background for rows */
+        border-radius: 8px;
+        overflow: hidden;
+        transition: all 0.3s ease-in-out;
+    }
 
-        .player-info {
-            display: flex;
-            align-items: center;
-        }
-        .player-avatar {
-            width: 45px;
-            height: 45px;
-            border-radius: 50%;
-            object-fit: cover;
-            margin-right: 12px;
-            border: 2px solid rgba(138, 43, 226, 0.5); /* Subtle border for avatars */
-        }
-        .player-name {
-            font-weight: 600;
-            color: var(--text-color);
-        }
 
-        /* Status Badges */
-        .status-badge {
-            display: inline-block;
-            padding: 4px 10px;
-            border-radius: 15px;
-            font-size: 0.75rem;
-            font-weight: 500;
-            margin-top: 4px;
-        }
-        .status-advanced {
-            background-color: rgba(138, 43, 226, 0.2);
-            color: var(--purple-accent);
-        }
-        .status-expert {
-            background-color: rgba(255, 165, 0, 0.2);
-            color: var(--orange-expert);
-        }
-        .status-intermediate {
-            background-color: rgba(0, 128, 0, 0.2);
-            color: var(--medium-green-intermediate);
-        }
+    #leaderboard-table-body tr td:first-child {
+        border-top-left-radius: 0.75rem;
+        border-bottom-left-radius: 0.75rem;
+    }
 
-        /* Score & Change */
-        .score-points {
-            font-weight: bold;
-            color: var(--purple-accent);
-            font-size: 1.05rem;
-        }
-        .score-change-positive {
-            color: var(--green-positive);
-            font-weight: 500;
-        }
-        .score-change-negative {
-            color: var(--red-negative);
-            font-weight: 500;
-        }
-        .score-change-neutral {
-            color: var(--light-text);
-        }
+    #leaderboard-table-body tr td:last-child {
+        border-top-right-radius: 0.75rem;
+        border-bottom-right-radius: 0.75rem;
+    }
+    
 
-        /* Highlighted row for "You" */
-        .leaderboard-table tbody tr.you-row {
-            background-color: rgba(138, 43, 226, 0.15); /* Light purple background */
-            border-left: 5px solid var(--purple-accent); /* Left border to highlight */
+    .form-control::placeholder {
+        color: white;
+        opacity: 0.7;
+    }
+
+  
+.glow-gold {
+  color: #f472b6; /* Tailwind's pink-400 */
+  text-shadow:
+    0 0 6px rgba(244, 114, 182, 0.3),
+    0 0 12px rgba(244, 114, 182, 0.4),
+    0 0 18px rgba(244, 114, 182, 0.5);
+}
+
+
+
+
+
+   
+    /* Apply border-radius to header corners for rounded table look */
+    .table-dark-bg thead th:first-child {
+        border-top-left-radius: 0.75rem;
+        border-bottom-left-radius: 0.75rem;
+    }
+    .table-dark-bg thead th:last-child {
+        border-top-right-radius: 0.75rem;
+        border-bottom-right-radius: 0.75rem;
+    }
+    /* --- Custom Table Styles End --- */
+
+
+    /* General styling for the dynamically generated top performer cards */
+    /* The specific gradients, borders, and shadows for these cards are now handled inline by JS */
+    .performer-card-common {
+        padding: 1.5rem; /* Equivalent to p-6 */
+        border-radius: 0.75rem; /* Equivalent to rounded-xl */
+        text-align: center;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: space-between;
+        min-height: 300px; /* Equivalent to min-h-[300px] */
+        position: relative; /* For absolute positioning of badges */
+    }
+
+    /* Specific styles for the table badges */
+    .table-badge {
+        display: inline-flex;
+        align-items: center;
+        padding: 0.25rem 0.75rem; /* px-3 py-1 */
+        border-radius: 9999px; /* rounded-full */
+        font-size: 0.75rem; /* text-xs */
+        font-weight: 600; /* font-semibold */
+        margin-right: 0.25rem; /* Small margin between badges */
+        margin-bottom: 0.25rem; /* For stacked badges */
+    }
+    .table-badge-top { background-color: #FACC15; color: #333; } /* Yellow for Top Performer */
+    .table-badge-fast { background-color: #06B6D4; color: #333; } /* Cyan for Fast Learner */
+    .table-badge-consistent { background-color: #F97316; color: #333; } /* Orange for Consistent */
+    .table-badge-analytical { background-color: #3B82F6; color: #fff; } /* Blue for Analytical */
+    .table-badge-creative { background-color: #84CC16; color: #333; } /* Green for Creative */
+    .table-badge-critical { background-color: #C026D3; color: #fff; } /* Purple for Critical Thinker */
+    /* Add more badge styles as needed, matching the lowercase, no-space format */
+
+
+    /* Custom Progress Bar for Table */
+    .progress-bar-bg {
+        background-color: #2D3748; /* Darker background for the bar */
+        height: 0.5rem; /* h-2 */
+        border-radius: 0.25rem; /* rounded-full */
+    }
+    .progress-fill {
+        background-color: #4DFFDF; /* Bright aqua fill color */
+        height: 100%;
+        border-radius: 0.25rem;
+    }
+
+     /* Style for the "You" row in the table */
+    .leaderboard-you-row {
+        background: #13E0B41A !important; /* Updated background color with opacity */
+
+    }
+
+    /* Ensure the rounded corners are visible by setting overflow hidden on the parent */
+    .table-responsive-wrapper {
+        background: #0B1A2699;
+        border: 1px solid #13E0B41A
+    }
+
+    /* Global styling for images within cards/tables */
+    .profile-img-lg { /* This might be overridden by JS inline styles for top-3 */
+        width: 7rem; /* w-28 */
+        height: 7rem; /* h-28 */
+        object-fit: cover;
+        border-radius: 50%;
+        border: 4px solid white;
+        margin-bottom: 1rem; /* mb-4 */
+    }
+    .profile-img-sm {
+        width: 2.5rem; /* w-10 */
+        height: 2.5rem; /* h-10 */
+        object-fit: cover;
+        border-radius: 50%;
+        margin-right: 0.75rem; /* mr-3 */
+    }
+    /* Initial avatar placeholder for initials */
+    .initials-avatar {
+        width: 45px;
+        height: 45px;
+        background-color: #37474f; /* A dark grey for placeholder */
+        color: white;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        border-radius: 50%;
+        font-weight: bold;
+        font-size: 1.1rem; /* Larger font for initials */
+        border: 1px solid rgba(255,255,255,0.2);
+    }
+
+    /* Glowing Background Elements */
+    .circle-bg {
+        position: absolute;
+        border-radius: 50%;
+        opacity: 0.15;
+        backdrop-filter: blur(20px);
+        z-index: 0;
+        pointer-events: none;
+    }
+    .circle-1 { width: 200px; height: 200px; top: -100px; left: -100px; background: #FFD700; }
+    .circle-2 { width: 100px; height: 100px; bottom: -20px; left: -50px; background: #C0C0C0; }
+    .circle-3 { width: 150px; height: 150px; bottom: -25px; right: 50px; background: #CD7F32; }
+
+    /* Hide circles on small screens for better responsiveness */
+    @media (max-width: 767.98px) {
+        .circle-bg {
+            display: none;
         }
-        .leaderboard-table tbody tr.you-row:hover {
-            background-color: rgba(138, 43, 226, 0.25);
-        }
-    </style>
-</head>
-<body>
-    <div class="container-fluid">
-        <div class="header">
-            <h1>Leaderboard</h1>
-            <div class="d-flex">
-                <button class="btn me-2">This Month</button>
-                <button class="btn"><i class="bi bi-arrow-clockwise"></i> Refresh</button>
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid min-vh-100 py-4 position-relative">
+
+    <div class="circle-bg circle-1 d-none d-md-block"></div>
+    <div class="circle-bg circle-2 d-none d-md-block"></div>
+    <div class="circle-bg circle-3 d-none d-md-block"></div>
+
+    <div class="container position-relative z-1">
+
+        <div class="d-flex flex-column flex-md-row justify-content-between align-items-center mb-5">
+            <!-- Left Side -->
+            <div class=" mb-4 mb-md-0">
+                <h1 class="h2 fw-bold mb-0" style="color: #66FFF0;">🏆 Leaderboard</h1>
             </div>
-        </div>
 
-        <div class="row mb-4">
-            <div class="col-md-3">
-                <div class="metric-card">
-                    <p class="metric-card-title">Your Current Rank</p>
-                    <h2 class="metric-value">#8</h2>
+            <!-- Right Side -->
+            <div class="d-flex flex-column flex-sm-row align-items-center gap-3">
+                <!-- Search Input -->
+                <div class="input-group" style="max-width: 280px;">
+                    <input 
+                        type="text" 
+                        class="form-control text-white border border-primary rounded-pill"
+                        placeholder="🔍 Search students..." 
+                        aria-label="Search students"
+                        style="background-color: transparent; padding-left: 1rem;"
+                    >
                 </div>
-            </div>
-            <div class="col-md-3">
-                <div class="metric-card">
-                    <p class="metric-card-title">Points This Month</p>
-                    <h2 class="metric-value">1,140</h2>
-                </div>
-            </div>
-            <div class="col-md-3">
-                <div class="metric-card">
-                    <p class="metric-card-title">Completed Tests</p>
-                    <h2 class="metric-value">9</h2>
-                </div>
-            </div>
-            <div class="col-md-3">
-                <div class="metric-card">
-                    <p class="metric-card-title">Progress to next Rank</p>
-                    <h2 class="metric-value">65%</h2>
-                    <div class="progress">
-                        <div class="progress-bar" role="progressbar" style="width: 65%;" aria-valuenow="65" aria-valuemin="0" aria-valuemax="100"></div>
-                    </div>
+
+                <!-- Notification Button -->
+                <div class="position-relative">
+                    <button class="btn bg-card-dark-bg py-2 rounded-circle shadow border border-primary">
+                        <i class="fas fa-bell fa-lg text-warning"></i>
+                        <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">3</span>
+                    </button>
                 </div>
             </div>
         </div>
 
-        <div class="top-performers-header">
-            <h3>Top Performers</h3>
-            <span>May 2025</span>
+
+        <div class="row g-4" style="margin-bottom: 120px;">
+            <div class="col-12 col-sm-6 col-lg-4">
+                <div class="card card-dark-bg p-4 rounded-3 shadow">
+                    <div class="d-flex align-items-center text-sm mb-2" style="color: #8DE7DD;">
+                        
+                        📈 Current Rank
+                    </div>
+                    <h3 class="text-custom-gradient display-4 fw-bold mb-2" id="my_rank">#--</h3> {# Placeholder for JS #}
+                    <div class="d-flex align-items-center small" style="color: #13E0B4;">
+                        
+                        -- from last month
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-12 col-sm-6 col-lg-4">
+                <div class="card card-dark-bg p-4 rounded-3 shadow">
+                    <div class="d-flex align-items-center text-sm mb-2"  style="color: #8DE7DD;">
+                        ⭐ Points This Month
+                    </div>
+                    <h3 class="text-custom-gradient display-4 fw-bold mb-2" id="my_points" >--</h3> {# Placeholder for JS #}
+                    <div class="d-flex align-items-center small" style="color: #8DE7DD;">
+                        <i class="fas fa-arrow-up"></i> {# Font Awesome Arrow Up Icon #}
+                        -- from last month
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-12 col-sm-6 col-lg-4">
+                <div class="card card-dark-bg p-4 rounded-3 shadow">
+                    <div class="d-flex align-items-center text-sm mb-2" style="color: #8DE7DD;">
+                        <i class="fas fa-check-circl text-success" style="font-size: 1.25rem;"></i> {# Font Awesome Check Circle Icon #}
+                        ✅ Completed Tasks
+                    </div>
+                    <h3 class="text-custom-gradient display-4 fw-bold mb-2" id="my_complete_test">--/--</h3> {# Placeholder for JS #}
+                    <div class="small" style="color: #13E0B4;">
+                        --% completion rate
+                    </div>
+                </div>
+            </div>
+
+            {% comment %} <div class="col-12 col-sm-6 col-lg-3">
+                <div class="card card-dark-bg p-4 rounded-3 shadow">
+                    <div class="d-flex align-items-center text-danger text-sm mb-2">
+                        <i class="fas fa-chart-line me-2 text-danger" style="font-size: 1.25rem;"></i> {# Font Awesome Chart Line Icon #}
+                        Progress to Next Rank
+                    </div>
+                    <h3 class="text-custom-gradient display-4 fw-bold mb-2">--%</h3> {# Placeholder for JS #}
+                    <div class="w-100">
+                        <div class="d-flex justify-content-between align-items-center small text-white mb-1">
+                            <span>Rank #--</span>
+                            <span>-- points needed</span>
+                        </div>
+                        <div class="progress progress-bar-bg" style="height: 0.5rem;">
+                            <div class="progress-bar progress-fill" role="progressbar" style="width: 0%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+                        </div>
+                    </div>
+                </div>
+            </div> {% endcomment %}
         </div>
 
-        <div class="row mb-5">
-            <div class="col-md-4">
-                <div class="performer-card">
-                    <div class="performer-image-wrapper">
-                        <img src="../../../static/images/profile.jpeg" class="performer-image" alt="Rafiul Islam">
-                        <span class="performer-initials-badge">RI</span>
-                    </div>
-                    <h5>Rafiul Islam</h5>
-                    <p>1465 pts</p>
-                </div>
-            </div>
-            <div class="col-md-4">
-                <div class="performer-card">
-                    <div class="performer-image-wrapper">
-                        <img src="https://via.placeholder.com/90/8a2be2/FFFFFF?text=SA" class="performer-image" alt="Sadia Ahmed">
-                        <span class="performer-initials-badge">SA</span>
-                    </div>
-                    <h5>Sadia Ahmed</h5>
-                    <p>1520 pts</p>
-                </div>
-            </div>
-            <div class="col-md-4">
-                <div class="performer-card">
-                    <div class="performer-image-wrapper">
-                        <img src="https://via.placeholder.com/90/8a2be2/FFFFFF?text=TS" class="performer-image" alt="Tahmina">
-                        <span class="performer-initials-badge">TS</span>
-                    </div>
-                    <h5>Tahmina</h5>
-                    <p>1380 pts</p>
-                </div>
+        <div class="card p-3" style="background: #0B1A26B2; border: 1px solid #13E0B426; ">
+            <h2 class="h3 fw-bold text-center mb-4 d-inline-flex align-items-center justify-content-center p-2 rounded"
+                style="
+                    background: linear-gradient(90deg, #13E0B4 0%, #0FFFE6 100%);
+                    -webkit-background-clip: text;
+                    -webkit-text-fill-color: transparent;
+                    box-shadow: 0px 0px 10px 0px #13E0B499;
+                    width: fit-content;
+                    margin: 0 auto;
+                ">
+                <i class="fas fa-medal fa-lg me-2 glow-gold glow-animated" style="color: white;"></i>
+                Top 3 Performers
+            </h2>
+
+            <div class="row g-4 mb-5" id="top-performers">
             </div>
         </div>
 
-        <div class="leaderboard-table-card">
-            <div class="table-responsive">
-                <table class="table leaderboard-table table-borderless">
-                    <thead>
-                        <tr>
-                            <th scope="col">RANK</th>
-                            <th scope="col">PLAYER</th>
-                            <th scope="col">TESTS</th>
-                            <th scope="col">SCORES</th>
-                            <th scope="col">CHANGE</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td>#1</td>
-                            <td>
-                                <div class="player-info">
-                                    <img src="https://via.placeholder.com/45/8a2be2/FFFFFF?text=SA" class="player-avatar" alt="Sadia Ahmed">
-                                    <div>
-                                        <span class="player-name">Sadia Ahmed</span><br>
-                                        <span class="status-badge status-advanced">12 tests | Advanced</span>
-                                    </div>
-                                </div>
-                            </td>
-                            <td>12</td>
-                            <td class="score-points">1,520</td>
-                            <td class="score-change-neutral">-</td>
-                        </tr>
-                        <tr>
-                            <td>#2</td>
-                            <td>
-                                <div class="player-info">
-                                    <img src="https://via.placeholder.com/45/8a2be2/FFFFFF?text=RI" class="player-avatar" alt="Rafiul Islam">
-                                    <div>
-                                        <span class="player-name">Rafiul Islam</span><br>
-                                        <span class="status-badge status-advanced">11 tests | Advanced</span>
-                                    </div>
-                                </div>
-                            </td>
-                            <td>11</td>
-                            <td class="score-points">1,465</td>
-                            <td class="score-change-positive">+1</td>
-                        </tr>
-                        <tr>
-                            <td>#3</td>
-                            <td>
-                                <div class="player-info">
-                                    <img src="https://via.placeholder.com/45/8a2be2/FFFFFF?text=TS" class="player-avatar" alt="Tahmina">
-                                    <div>
-                                        <span class="player-name">Tahmina</span><br>
-                                        <span class="status-badge status-expert">10 tests | Expert</span>
-                                    </div>
-                                </div>
-                            </td>
-                            <td>10</td>
-                            <td class="score-points" style="color: var(--orange-expert);">1,380</td>
-                            <td class="score-change-negative">-1</td>
-                        </tr>
-                        <tr>
-                            <td>#4</td>
-                            <td>
-                                <div class="player-info">
-                                    <img src="https://via.placeholder.com/45/8a2be2/FFFFFF?text=HM" class="player-avatar" alt="Hasan Mahmud">
-                                    <div>
-                                        <span class="player-name">Hasan Mahmud</span><br>
-                                        <span class="status-badge status-advanced">12 tests | Advanced</span>
-                                    </div>
-                                </div>
-                            </td>
-                            <td>12</td>
-                            <td class="score-points">1,305</td>
-                            <td class="score-change-positive">+2</td>
-                        </tr>
-                        <tr>
-                            <td>#5</td>
-                            <td>
-                                <div class="player-info">
-                                    <img src="https://via.placeholder.com/45/8a2be2/FFFFFF?text=FN" class="player-avatar" alt="Farzana Noor">
-                                    <div>
-                                        <span class="player-name">Farzana Noor</span><br>
-                                        <span class="status-badge status-intermediate">11 tests | Intermediate</span>
-                                    </div>
-                                </div>
-                            </td>
-                            <td>11</td>
-                            <td class="score-points" style="color: var(--medium-green-intermediate);">1,250</td>
-                            <td class="score-change-positive">+1</td>
-                        </tr>
-                        <tr>
-                            <td>#6</td>
-                            <td>
-                                <div class="player-info">
-                                    <img src="https://via.placeholder.com/45/8a2be2/FFFFFF?text=AR" class="player-avatar" alt="Arif Rahman">
-                                    <div>
-                                        <span class="player-name">Arif Rahman</span><br>
-                                        <span class="status-badge status-advanced">10 tests | Advanced</span>
-                                    </div>
-                                </div>
-                            </td>
-                            <td>10</td>
-                            <td class="score-points">1,215</td>
-                            <td class="score-change-negative">-2</td>
-                        </tr>
-                        <tr>
-                            <td>#7</td>
-                            <td>
-                                <div class="player-info">
-                                    <img src="https://via.placeholder.com/45/8a2be2/FFFFFF?text=SK" class="player-avatar" alt="Shahriar Khan">
-                                    <div>
-                                        <span class="player-name">Shahriar Khan</span><br>
-                                        <span class="status-badge status-intermediate">9 tests | Intermediate</span>
-                                    </div>
-                                </div>
-                            </td>
-                            <td>9</td>
-                            <td class="score-points" style="color: var(--medium-green-intermediate);">1,175</td>
-                            <td class="score-change-neutral">-</td>
-                        </tr>
-                        <tr class="you-row">
-                            <td>#8</td>
-                            <td>
-                                <div class="player-info">
-                                    <img src="https://via.placeholder.com/45/8a2be2/FFFFFF?text=YO" class="player-avatar" alt="You">
-                                    <div>
-                                        <span class="player-name">You</span><br>
-                                        <span class="status-badge status-advanced">9 completed tests</span>
-                                    </div>
-                                </div>
-                            </td>
-                            <td>9</td>
-                            <td class="score-points">1,140 pts</td>
-                            <td class="score-change-neutral">-</td>
-                        </tr>
+        <div class="d-flex flex-column flex-sm-row justify-content-between align-items-center mb-4">
+            
+            {% comment %} <div class="btn-group bg-card-dark-bg p-1 rounded-pill shadow" role="group" aria-label="Course filters">
+                <button type="button" class="btn btn-primary rounded-pill px-4 py-2 fw-medium me-1">All</button>
+                <button type="button" class="btn btn-outline-light rounded-pill px-4 py-2 fw-medium text-gray-300 border-0 hover-bg-dark">English</button>
+                <button type="button" class="btn btn-outline-light rounded-pill px-4 py-2 fw-medium text-gray-300 border-0 hover-bg-dark">Mathematics</button>
+                <button type="button" class="btn btn-outline-light rounded-pill px-4 py-2 fw-medium text-gray-300 border-0 hover-bg-dark">Biology</button>
+            </div> {% endcomment %}
+        </div>
+
+        <div class="table-responsive-wrapper rounded-3 shadow mb-5">
+            <table class="table-dark-bg mb-0 p-4 rounded"> {# Updated: Removed "table" and "table-dark" classes #}
+                <h2 class="h4 fw-bold px-4 pt-3 mb-sm-0" style="color: #66FFF0">Top Performers</h2>
+                <thead class="" >
+                    <tr style="color: #8DE7DD;">
+                        <th scope="col" class="px-4 py-3 text-start text-uppercase small fw-medium rounded-top-left-cell">Rank</th>
+                        <th scope="col" class="px-4 py-3 text-start text-uppercase small fw-medium">Student</th>
+                        <th scope="col" class="px-4 py-3 text-start text-uppercase small fw-medium">Attempts</th>
+                        <th scope="col" class="px-4 py-3 text-start text-uppercase small fw-medium">Points</th>
+                        <th scope="col" class="px-4 py-3 text-start text-uppercase small fw-medium">Badges</th>
+                    </tr>
+                </thead>
+                <tbody id="leaderboard-table-body">
                     </tbody>
-                </table>
-            </div>
+            </table>
         </div>
-    </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-</body>
-</html>
+    </div>
+</div>
+{% endblock %}
+
+{% block body_js %}
+<script src="../../../static/Js/quickquiz/leaderboard.js"></script>
+{% endblock %}

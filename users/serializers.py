@@ -28,6 +28,57 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
         else:
             raise serializers.ValidationError('Must include "phone_number" and "password".')
 
+
+# class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
+#     phone_number = serializers.CharField()
+#     password = serializers.CharField()
+#     device_id = serializers.CharField(write_only=True, required=True)
+
+#     def validate(self, attrs):
+#         phone_number = attrs.get('phone_number')
+#         password = attrs.get('password')
+#         device_id = attrs.get('device_id')
+#         request = self.context.get('request')
+
+#         if not (phone_number and password):
+#             raise serializers.ValidationError('Must include "phone_number" and "password".')
+
+#         user = authenticate(request=request, phone_number=phone_number, password=password)
+#         if not user:
+#             raise serializers.ValidationError('Invalid phone number or password.')
+
+#         # Check or register device
+#         user_agent = request.META.get('HTTP_USER_AGENT', '')
+#         ip_address = request.META.get('REMOTE_ADDR', '')
+
+#         devices = UserDevice.objects.filter(user=user)
+
+#         if not devices.filter(device_id=device_id).exists():
+#             if devices.count() >= 2:
+#                 raise serializers.ValidationError("Device limit reached. You can only use 2 devices.")
+#             # Add new device
+#             UserDevice.objects.create(
+#                 user=user,
+#                 device_id=device_id,
+#                 user_agent=user_agent,
+#                 ip_address=ip_address
+#             )
+#         else:
+#             # Update last_used timestamp
+#             device = devices.get(device_id=device_id)
+#             device.last_used = now()
+#             device.save()
+
+#         # Pass validated user to the parent class
+#         self.user = user
+#         data = super().validate(attrs)
+
+#         # Add custom fields to the response
+#         data['user_id'] = user.id
+#         data['username'] = user.username
+#         data['role'] = user.role
+#         return data
+
 class UserSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True, required=False)
     role = serializers.ChoiceField(choices=User.ROLE_CHOICES, required=False)
