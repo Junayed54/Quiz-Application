@@ -442,7 +442,7 @@ document.addEventListener("DOMContentLoaded", function () {
             // Determine if this is the "me" user and apply special styling
             // meNotInTop10 = me && !top10.some(u => u.username === me.username && u.rank === me.rank);
             const isMeRow = me && user.username === me.username; // Assuming rank and username uniquely identify "me"
-            console.log(isMeRow, user.username, me.username, user.rank, me.rank);
+            // console.log(isMeRow, user.username, me.username, user.rank, me.rank);
             const rowClass = isMeRow ? "align-middle leaderboard-you-row" : "align-middle";
             
             const profileImageSrc = user.profile_image ? user.profile_image : getStaticImageUrl('user.png');
