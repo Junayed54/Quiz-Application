@@ -138,6 +138,11 @@
         border-color: transparent !important;
     }
 
+
+    .mobile-nav a.active-tab {
+      color: #0d6efd !important; /* Bootstrap primary color or your preferred one */
+    }
+
   </style>
 
 
@@ -327,7 +332,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       </div>
 
       <div class="col-md-6">
-        <img src="../../../static/images/index images/image_2.png" alt="image" >
+        <img src="../../../static/images/index images/image_2.png" alt="image" class="image-fluid w-100" >
     
       </div>
     </div>
@@ -345,7 +350,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   <div class="container">
     <div class="row align-items-center">
       <div class="col-md-6  text-md-start text-sm-center  mb-4 mb-md-0">
-        <div class="d-inline-block  mb-3 pb-1">
+        <div class="d-inline-block  mb-3">
           <h2 class="mb-0">ফলাফল / লিডার বোর্ড</h2>
         </div>
         <div>
@@ -359,8 +364,8 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         </div>
         {% comment %} <a href="#" class="btn btn-custom">Check</a> {% endcomment %}
       </div>
-      <div class="col-md-6">
-        <img src="../../../static/images/index images/image_3.png" class="img-fluid">
+      <div class="col-md-6 col-12">
+        <img src="../../../static/images/index images/image_3.png" class="img-fluid w-100">
       </div>
     </div>
     <div class="border border-1 w-100" style="margin-top: 50px;"></div>
@@ -470,9 +475,52 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   </div>
 </footer>
 
+<!-- Sticky bottom nav for mobile only -->
+<div class="d-md-none fixed-bottom bg-light border-top shadow-sm py-4 px-1 mobile-nav">
+  <div class="d-flex justify-content-around text-center">
+    
+    <!-- Home -->
+    <a href="/" class="text-dark text-decoration-none">
+      <i class="fa-solid fa-house fa-lg d-block p-1"></i>
+      <small class="fw-bold">Home</small>
+    </a>
+    
+    <!-- Quiz -->
+    <a href="/quizzes/" class="text-dark text-decoration-none">
+      <i class="fa-solid fa-clipboard-question fa-lg d-block p-1"></i>
+      <small class="fw-bold">Quiz</small>
+    </a>
+
+    <!-- Exams -->
+    <a href="/past_exams/" class="text-dark text-decoration-none">
+      <i class="fa-solid fa-file-lines fa-lg d-block p-1"></i>
+      <small class="fw-bold">Exams</small>
+    </a>
+
+    <!-- About -->
+    <a href="/about-us/" class="text-dark text-decoration-none">
+      <i class="fa-solid fa-circle-info fa-lg d-block p-1"></i>
+      <small class="fw-bold">About</small>
+    </a>
+
+  </div>
+</div>
+
+
 <script>
   // Automatically set current year
   document.getElementById("year").textContent = new Date().getFullYear();
+</script>
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const navLinks = document.querySelectorAll(".mobile-nav a");
+
+    navLinks.forEach(link => {
+      if (window.location.pathname === link.getAttribute("href")) {
+        link.classList.add("active-tab");
+      }
+    });
+  });
 </script>
 
 
