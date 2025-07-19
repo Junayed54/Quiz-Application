@@ -198,29 +198,29 @@ CHANNEL_LAYERS = {
 # }
 
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'quiz_portal',  # Your database name
-        'USER': 'root',     # The new user you just created
-        'PASSWORD': 'Bridgers@123',  # The password for the new user
-        'HOST': 'localhost',
-        'PORT': '3306',  # Default MySQL port
-    }
-}
-
-
-
 # DATABASES = {
 #     'default': {
-#         'ENGINE': 'django.db.backends.postgresql',
-#         'NAME': 'quiz_portal',
-#         'USER': 'root',
-#         'PASSWORD': 'Bridgers@123',
+#         'ENGINE': 'django.db.backends.mysql',
+#         'NAME': 'quiz_portal',  # Your database name
+#         'USER': 'root',     # The new user you just created
+#         'PASSWORD': 'Bridgers@123',  # The password for the new user
 #         'HOST': 'localhost',
-#         'PORT': '5432',
+#         'PORT': '3306',  # Default MySQL port
 #     }
 # }
+
+
+
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'quiz_portal',
+        'USER': 'root',
+        'PASSWORD': 'Bridgers@123',
+        'HOST': 'localhost',
+        'PORT': '5432',
+    }
+}
 
 
 
