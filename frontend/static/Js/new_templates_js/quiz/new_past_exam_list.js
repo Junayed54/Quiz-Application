@@ -1,54 +1,15 @@
 document.addEventListener('DOMContentLoaded', function () {
     const accessToken = localStorage.getItem('access_token');
-    // if (!accessToken) {
-    //     window.location.href = '/login/';
-    //     return;
-    // }
+    
     const urlParams = new URLSearchParams(window.location.search);
 
     const exam_type_id =  window.location.pathname.split('/')[2];
     console.log(exam_type_id);
     const loader = document.getElementById('loader');
-    // const headers = {
-    //     'Authorization': `Bearer ${accessToken}`,
-    //     'Content-Type': 'application/json'
-    // };
-
-    // // Populate dropdowns (department, position, organization)
-    // const fetchDropdown = (url, elementId, placeholder) => {
-    //     fetch(url, { headers })
-    //         .then(response => response.json())
-    //         .then(data => {
-    //             const select = document.getElementById(elementId);
-    //             select.innerHTML = `<option value="">${placeholder}</option>`;
-    //             data.forEach(item => {
-    //                 const option = document.createElement('option');
-    //                 option.value = item.id;
-    //                 option.textContent = item.name;
-    //                 select.appendChild(option);
-    //             });
-    //         })
-    //         .catch(error => console.error(`Error loading ${elementId}:`, error));
-    // };
-
-    // fetchDropdown('/quiz/departments/', 'department', 'Select Department');
-    // fetchDropdown('/quiz/positions/', 'position', 'Select Position');
-    // fetchDropdown('/quiz/organizations/', 'organization', 'Select Organization');
 
     // Fetch both current and past exams
     const fetchExams = () => {
-        // const department = document.getElementById('department').value;
-        // const position = document.getElementById('position').value;
-        // const organization = document.getElementById('organization').value;
-
-        // const queryParams = new URLSearchParams({ department, position, organization });
-
-        // Fetch current exams
-        // fetch(`/quiz/exams/?${queryParams}`, { headers })
-        //     .then(res => res.json())
-        //     .then(data => renderExams(data, 'exams-list', false))
-        //     .catch(err => console.error('Error loading exams:', err));
-
+        
         // Fetch past exams
         fetch(`/quiz/exam-type/past-exams/?exam_type=${exam_type_id}`)
         .then(res => {
@@ -75,11 +36,27 @@ document.addEventListener('DOMContentLoaded', function () {
                 <div class="card-body d-flex justify-content-between align-items-stretch" style="gap: 1rem;">
                     <div style="width: 50%;">
                         <h3 class="card-title">${exam.title}</h3>
-                        <div style="display: flex; gap: 3px; margin-bottom: 2px; font-size: 14px; color: #F97316;">
-                            <div class="p-1 rounded" style="background: #FFEDD5">${exam.total_questions} প্রশ্ন</div>
-                            <div class="p-1 rounded" style="background: #FFEDD5">${exam.total_questions} নম্বর</div>
-                            <div class="p-1 rounded" style="background: #FFEDD5">${exam.duration} মিনিট</div>
-                        </div>
+                        <div style="
+    display: flex;
+    gap: 3px;
+    margin-bottom: 2px;
+    font-size: clamp(10px, 1.5vw, 14px);
+    color: #F97316;
+    flex-wrap: wrap;">
+    
+    <div class="p-1 rounded" style="background: #FFEDD5;">
+        ${exam.total_questions} প্রশ্ন
+    </div>
+    
+    <div class="p-1 rounded" style="background: #FFEDD5;">
+        ${exam.total_questions} নম্বর
+    </div>
+    
+    <div class="p-1 rounded" style="background: #FFEDD5;">
+        ${exam.duration} মিনিট
+    </div>
+</div>
+
                         <div class="mt-2">
                             <p class="card-text">পদঃ ${exam.position}</p>
                             <p class="card-text">সংস্থাঃ ${exam.organization}</p>
