@@ -15,7 +15,7 @@
     }
     #past-exam-title {
       white-space: nowrap;
-      overflow: hidden;
+      overflow: hidden
       text-overflow: ellipsis;
       max-width: 100%; /* or a fixed width like 300px */
       display: block;
@@ -92,12 +92,12 @@
     <div class="row justify-content-center">
       <div class="col-lg-6 col-md-8 col-sm-10">
         <div class="card bg-white">
-            <div class="d-flex justify-content-between align-items-center g-4" style="margin-bottom: 34px;">
-                <h1 class="card-title text-center" id="past-exam-title"></h1>
-                <div class="text-center">
+            {% comment %} <div class="d-flex justify-content-between align-items-center g-4" style="margin-bottom: 34px;"> {% endcomment %}
+                <h1 class="card-title text-center mb-4" id="past-exam-title"></h1>
+                {% comment %} <div class="text-center">
                     <span class="unpublished-badge" id="past-exam-status"></span>
-                </div>
-            </div>
+                </div> {% endcomment %}
+            {% comment %} </div> {% endcomment %}
 
           <div class="row">
             <div class="col-sm-6">

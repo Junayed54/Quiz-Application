@@ -37,25 +37,25 @@ document.addEventListener('DOMContentLoaded', function () {
                     <div style="width: 50%;">
                         <h3 class="card-title">${exam.title}</h3>
                         <div style="
-    display: flex;
-    gap: 3px;
-    margin-bottom: 2px;
-    font-size: clamp(10px, 1.5vw, 14px);
-    color: #F97316;
-    flex-wrap: wrap;">
-    
-    <div class="p-1 rounded" style="background: #FFEDD5;">
-        ${exam.total_questions} প্রশ্ন
-    </div>
-    
-    <div class="p-1 rounded" style="background: #FFEDD5;">
-        ${exam.total_questions} নম্বর
-    </div>
-    
-    <div class="p-1 rounded" style="background: #FFEDD5;">
-        ${exam.duration} মিনিট
-    </div>
-</div>
+                            display: flex;
+                            gap: 3px;
+                            margin-bottom: 2px;
+                            font-size: clamp(10px, 1.5vw, 14px);
+                            color: #F97316;
+                            flex-wrap: wrap;">
+                            
+                            <div class="p-1 rounded" style="background: #FFEDD5;">
+                                ${exam.total_questions} প্রশ্ন
+                            </div>
+                            
+                            <div class="p-1 rounded" style="background: #FFEDD5;">
+                                ${exam.total_questions} নম্বর
+                            </div>
+                            
+                            <div class="p-1 rounded" style="background: #FFEDD5;">
+                                ${exam.duration} মিনিট
+                            </div>
+                        </div>
 
                         <div class="mt-2">
                             <p class="card-text">পদঃ ${exam.position}</p>

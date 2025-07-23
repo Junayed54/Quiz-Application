@@ -137,9 +137,13 @@ class PracticeLeaderboardAPIView(APIView):
 
     def get(self, request):
         # Fetch top 10 users based on points
+        # top_users_points = (
+        #     UserPoints.objects.select_related('user')
+        #     .order_by('-points')[:10]
+        # )
         top_users_points = (
             UserPoints.objects.select_related('user')
-            .order_by('-points')[:10]
+            .order_by('-points')
         )
 
         top_data = []

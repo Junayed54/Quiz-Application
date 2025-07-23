@@ -1,212 +1,452 @@
 {% extends 'new_custom/new_templates/index2.html'%}
 {% block title %}About Us | Jobs Academy{% endblock %}
 {% block style %}
-  <style>
-   
+<style>
+    /* General Enhancements */
+    body {
+        font-family: 'Arial', sans-serif; /* Or a suitable Bengali-friendly font */
+    }
+
     .hero-section {
-      background: linear-gradient(90deg, #00C9FF 0%, #92FE9D 100%);
-      
-      color: white;
-      padding: 100px 0;
-      text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+        background: linear-gradient(90deg, #00C9FF 0%, #92FE9D 100%);
+        color: white;
+        padding: 120px 0; /* More padding for a grander feel */
+        text-shadow: 0 4px 8px rgba(0, 0, 0, 0.4); /* Stronger shadow */
+        position: relative;
+        overflow: hidden; /* For potential background patterns */
+    }
+
+    .hero-section::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: url('https://www.transparenttextures.com/patterns/cubes.png') repeat; /* Subtle pattern */
+        opacity: 0.1;
+        z-index: 1;
+    }
+
+    .hero-section .container {
+        position: relative;
+        z-index: 2; /* Ensure text is above pattern */
     }
 
     .hero-section .display-5 {
-        font-weight: 700;
-        letter-spacing: 1px;
-    }
-    .section-title {
-      font-size: 2.2rem; /* Slightly larger titles */
-      font-weight: 700;
-      color: #212529;
-      margin-bottom: 1.5rem;
-    }
-    .highlight {
-      color: #0d6efd; /* Bootstrap primary blue */
-    }
-    .team-member img {
-      border-radius: 50%;
-      width: 130px; /* Slightly larger team photos */
-      height: 130px;
-      object-fit: cover;
-      border: 4px solid #0d6efd; /* A more prominent border */
-      box-shadow: 0 4px 15px rgba(0,0,0,0.1); /* Subtle shadow for depth */
-      transition: all 0.3s ease; /* Smooth transition for hover */
-    }
-    .team-member img:hover {
-      transform: scale(1.05);
-      transition: transform 0.3s ease;
-      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        font-weight: 800; /* Even bolder */
+        letter-spacing: 1.5px;
+        font-size: 3.5rem; /* Larger hero title */
     }
 
-    .contact-info-box {
-      background-color: #6190E8;  /* fallback for old browsers */
-      background: -webkit-linear-gradient(to right, #A7BFE8, #6190E8);  /* Chrome 10-25, Safari 5.1-6 */
-      background: linear-gradient(to right, #A7BFE8, #6190E8); /* W3C, IE 10+/ Edge, Firefox 16+, Chrome 26+, Opera 12+, Safari 7+ */
-      padding: 30px; /* More padding */
-      border-radius: 12px; /* More rounded corners */
-      text-align: center;
-      margin-bottom: 25px;
-      box-shadow: 0 5px 20px rgba(0,0,0,0.08); /* More pronounced shadow */
-      border: 1px solid #e9ecef; /* Light border */
-      transition: all 0.3s ease; /* Smooth transition for hover */
+    .hero-section .lead {
+        font-size: 1.3rem; /* Larger lead text */
+        margin-top: 1.5rem;
     }
-    .contact-info-box:hover {
-        transform: translateY(-5px); /* Lift on hover */
-        box-shadow: 0 8px 30px rgba(0,0,0,0.15); /* Stronger shadow on hover */
+
+    .section-title {
+        font-size: 2.8rem; /* Larger titles */
+        font-weight: 800; /* Bolder */
+        color: #1a2a6c; /* A deeper, more professional blue */
+        margin-bottom: 2rem;
+        position: relative;
+        display: inline-block; /* For underline effect */
+        padding-bottom: 0.5rem;
     }
-    .contact-info-box i {
-      font-size: 2.2rem; /* Larger icons */
-      color: #0d6efd;
-      margin-bottom: 15px;
+
+    .section-title::after {
+        content: '';
+        position: absolute;
+        left: 50%;
+        transform: translateX(-50%);
+        bottom: 0;
+        height: 4px;
+        width: 80px; /* Short underline */
+        background-color: #0d6efd; /* Primary blue */
+        border-radius: 2px;
     }
-    .contact-info-box h5 {
-      font-size: 1.2rem;
-      font-weight: 700;
-      color: #212529;
-      margin-bottom: 10px;
+
+    .highlight {
+        color: #0d6efd; /* Bootstrap primary blue */
     }
-    .contact-info-box p {
-      font-size: 1rem; /* Slightly larger text */
-      color: #555;
-      margin-bottom: 0;
+
+    /* About Who We Are Image Section */
+    .about-image img {
+        border-radius: 15px; /* More rounded */
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15); /* Stronger shadow */
+        transition: transform 0.3s ease;
     }
+
+    .about-image img:hover {
+        transform: translateY(-8px); /* Lift on hover */
+    }
+
+    /* What We Offer Section */
+    .feature-card {
+        background: #ffffff;
+        border-radius: 12px;
+        padding: 30px;
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
+        transition: all 0.3s ease;
+        text-align: center;
+        height: 100%; /* Ensure cards are same height */
+    }
+
+    .feature-card:hover {
+        transform: translateY(-10px);
+        box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);
+    }
+
+    .feature-card i {
+        font-size: 3.5rem; /* Larger icons */
+        color: #0d6efd;
+        margin-bottom: 20px;
+        display: block; /* For proper centering */
+    }
+
+    .feature-card h5 {
+        font-weight: 700;
+        color: #212529;
+        margin-bottom: 15px;
+        font-size: 1.5rem;
+    }
+
+    .feature-card p {
+        color: #555;
+        font-size: 1rem;
+    }
+
+    /* Mission & Vision Section */
     .p-4.border.rounded {
-        border-color: #dee2e6 !important; /* Lighter border for these boxes */
-        box-shadow: 0 2px 10px rgba(0,0,0,0.04);
+        border-color: #dee2e6 !important;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.06); /* Slightly more prominent shadow */
+        transition: all 0.3s ease;
+        padding: 2.5rem !important; /* More padding */
+        border-radius: 15px !important; /* More rounded */
+    }
+
+    .p-4.border.rounded:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    }
+
+    .p-4.border.rounded h5 {
+        font-size: 1.4rem;
+        margin-bottom: 1rem;
+    }
+
+    /* Team Member Section */
+    .team-member img {
+        border-radius: 50%;
+        width: 150px; /* Even larger team photos */
+        height: 150px;
+        object-fit: cover;
+        border: 6px solid #0d6efd; /* Thicker border */
+        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
         transition: all 0.3s ease;
     }
-    .p-4.border.rounded:hover {
-        transform: translateY(-3px);
-        box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+
+    .team-member img:hover {
+        transform: scale(1.08) rotate(3deg); /* Slight rotation on hover */
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
     }
-    
-  </style>
+
+    .team-member h6 {
+        font-size: 1.3rem; /* Larger name */
+        margin-top: 15px;
+    }
+
+    .team-member p {
+        font-size: 0.95rem; /* Slightly larger role */
+    }
+
+    /* Contact Info Boxes */
+    .contact-info-box {
+        background: linear-gradient(to right, #A7BFE8, #6190E8);
+        color: white; /* Changed text color to white for better contrast with gradient */
+        padding: 40px; /* More padding */
+        border-radius: 15px; /* More rounded corners */
+        text-align: center;
+        margin-bottom: 30px;
+        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1); /* More pronounced shadow */
+        border: none; /* No border for gradient */
+        transition: all 0.3s ease;
+    }
+
+    .contact-info-box:hover {
+        transform: translateY(-10px);
+        box-shadow: 0 12px 45px rgba(0, 0, 0, 0.2); /* Stronger shadow on hover */
+    }
+
+    .contact-info-box i {
+        font-size: 3rem; /* Larger icons */
+        color: white; /* Icons also white */
+        margin-bottom: 20px;
+    }
+
+    .contact-info-box h5 {
+        font-size: 1.5rem; /* Larger heading */
+        font-weight: 700;
+        color: white;
+        margin-bottom: 10px;
+    }
+
+    .contact-info-box p {
+        font-size: 1.1rem; /* Larger text */
+        color: rgba(255, 255, 255, 0.9); /* Slightly transparent white */
+        margin-bottom: 0;
+    }
+
+    .contact-info-box p a {
+        color: white; /* Links also white */
+        text-decoration: underline; /* Underline for links */
+    }
+
+    .list-unstyled li {
+        margin-bottom: 10px;
+        font-size: 1.1rem;
+        color: #555;
+    }
+
+    .list-unstyled li i {
+        color: #0d6efd;
+        margin-right: 10px;
+        font-size: 1.3rem;
+    }
+
+    .btn-primary {
+        background-color: #0d6efd;
+        border-color: #0d6efd;
+        padding: 15px 30px;
+        font-size: 1.2rem;
+        border-radius: 50px; /* Pill shape */
+        transition: all 0.3s ease;
+    }
+
+    .btn-primary:hover {
+        background-color: #0b5ed7;
+        border-color: #0b5ed7;
+        transform: translateY(-3px);
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+    }
+</style>
 {% endblock %}
 {% block content %}
 
-  <section class="hero-section text-center">
+<section class="hero-section text-center">
     <div class="container">
-      <h1 class="display-5 fw-bold">About <span class="highlight">Jobs Academy</span></h1>
-      <p class="lead mt-3">
-        Empowering your journey to success through smart preparation and real-time mock assessments.
-      </p>
+        <h1 class="display-5 fw-bold">About <span class="highlight">Jobs Academy</span></h1>
+        <p class="lead mt-3">
+            Jobs Academy – আপনার ভিবষ্যেতর জন্য প্রস্তুিতর বি মান সঙ্গী
+        </p>
     </div>
-  </section>
+</section>
 
-  <section class="py-5 bg-light">
+<section class="py-5 bg-light">
     <div class="container">
-      <div class="row align-items-center">
-        <div class="col-md-6 mb-4 mb-md-0">
-          <img src="https://images.unsplash.com/photo-1602425672649-3cc8b89c9f6d?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
-            class="img-fluid rounded shadow" alt="Students in Bangladesh Classroom">
-
+        <div class="row align-items-center">
+            <div class="col-md-6 mb-4 mb-md-0 about-image">
+                <img src="https://images.unsplash.com/photo-1602425672649-3cc8b89c9f6d?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
+                    class="img-fluid rounded shadow" alt="Students in Bangladesh Classroom">
+            </div>
+            <div class="col-md-6">
+                <h2 class="section-title text-center text-md-start">আমরা কারা</h2>
+                <p class="text-muted mt-4">
+                    Jobs Academy বাংলােদেশর একটি অগ্রণী অনলাইন িশক্ষা ও ক্যািরয়ার প্রস্তুিতর প্ল্যাটফম, যা মলত চাকিরপ্রাথ, িশক্ষাথ এবং সরকাির িনেয়াগ পরীক্ষাথেদর জন্য দক্ষতািভি ক এবং বাস্তবিভি ক অনশীলেনর সেযাগ তির কের।
+                </p>
+                <p class="text-muted">
+                    আমােদর প্ল্যাটফমটি তির হেয়েছ এই ধারণােক কন্দ্র কের — “সঠিক প্রস্তুিত, সমেয়াপেযাগী অনশীলন, এবং িনেজেক জানার মাধ্যেম সফলতা অজন সম্ভব।”
+                </p>
+                <p class="text-muted">
+                    আমরা িবশ্বাস কির, দেশর প্রিতটি িশক্ষাথ এবং প্রিতেযািগতামলক চাকির প্রত্যাশীর জন্য প্রেয়াজন এমন একটি প্ল্যাটফম, যখােন ব্যিক্তগতকত শখা, িনয়িমত মক পরীক্ষা, সময় িভি ক পারফরম্যান্স িবে ষণ এবং সঠিক িদকিনেদশনা একসােথ পাওয়া যােব — এবং Jobs Academy ঠিক সটিই বাস্তবায়ন করেছ।
+                </p>
+            </div>
         </div>
-        <div class="col-md-6">
-          <h2 class="section-title">Who We Are</h2>
-          <p class="text-muted mt-3">
-            Jobs Academy is a leading online platform offering expertly crafted mock exams, quizzes, and practice tests tailored for students, job seekers, and government exam aspirants in **Bangladesh**.
-          </p>
-          <p class="text-muted">
-            Our mission is to bridge the gap between preparation and performance by providing a reliable, engaging, and adaptive test experience, specifically designed to meet the unique needs of job markets and educational systems in the region.
-          </p>
-        </div>
-      </div>
     </div>
-  </section>
+</section>
 
-
-
-  <section class="py-5">
+<section class="py-5">
     <div class="container text-center">
-      <h2 class="section-title mb-4">Our Mission & Vision</h2>
-      <div class="row">
-        <div class="col-md-6 mb-4">
-          <div class="p-4 border rounded h-100 shadow-sm">
-            <h5 class="mb-3 text-primary">🎯 Mission</h5>
-            <p class="text-muted">
-              To provide affordable, accessible, and accurate mock exam solutions that prepare users for success in real-world exams and assessments across **Bangladesh**.
-            </p>
-          </div>
+        <h2 class="section-title mb-5">আমরা যা অফার কির – িবস্তািরত এক নজের</h2>
+        <div class="row g-4">
+            <div class="col-md-6 col-lg-3">
+                <div class="feature-card">
+                    <i class="fas fa-file-alt"></i>
+                    <h5>পরীক্ষািভি ক মক টস্ট ও প্রশ্নব্যাংক</h5>
+                    <p>আমােদর প্ল্যাটফেম রেয়েছ িবিসএস, ব্যাংক িনেয়াগ, িশক্ষক িনবন্ধন, প্রাথিমক সহকারী িশক্ষক িনেয়াগ, িবশ্বিবদ্যালয় ভিত পরীক্ষা, সরকাির ও বসরকাির চাকিরর জন্য িবভাগিভি ক প্রশ্ন সট। প্রিতটি প্রশ্ন তির হেয়েছ সমেয়াপেযাগী িসেলবাস ও পরীক্ষার ট্রন্ড অনসাের।</p>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-3">
+                <div class="feature-card">
+                    <i class="fas fa-question-circle"></i>
+                    <h5>ইেন্টিলেজন্ট কুইজ ও চ্যাপ্টারিভি ক প্র্যাকটিস সট</h5>
+                    <p>শুধ মক টস্ট নয়, বরং টিপকিভি ক কুইজ, অধ্যায়িভি ক প্রশ্ন, এবং প্রিতটি প্রেশ্নর পছেন যিক্তসম্পন্ন ব্যাখ্যা যক্ত কের দওয়া হেয়েছ, যন িশখন এবং অনশীলন একসােথ চেল।</p>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-3">
+                <div class="feature-card">
+                    <i class="fas fa-chart-line"></i>
+                    <h5>িরেয়ল টাইম পারফরম্যান্স অ্যানালাইটিক্স</h5>
+                    <p>আপনার প্রিতটি পরীক্ষার ফলাফল, সময় ব্যবস্থাপনা, ভেলর ধরন, উন্নিতর সম্ভাবনা এবং আেগর পরীক্ষাগুেলার সেঙ্গ তলনামলক িবে ষণ আমরা সরবরাহ কির, যােত আপিন িনেজর উন্নয়ন বঝেত পােরন এবং করণীয় িনধারণ করেত পােরন।</p>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-3">
+                <div class="feature-card">
+                    <i class="fas fa-user-tie"></i>
+                    <h5>িবষয়িভি ক এক্সপাটেদর কেন্টন্ট িকউেরশন</h5>
+                    <p>প্রিতটি িবষয় ও িবভােগ অিভজ্ঞ িশক্ষকেদর তত্ত্বাবধােন প্রশ্ন সট ও সমাধান তির করা হয়। আমরা িনি ত কির যন প্রিতটি প্রশ্ন মানসম্পন্ন, সঠিক এবং পরীক্ষার জন্য উপেযাগী হয়।</p>
+                </div>
+            </div>
+            <div class="col-12">
+                <div class="feature-card">
+                    <i class="fas fa-mobile-alt"></i>
+                    <h5>একটি সহজ, দ্রুত ও মাবাইল-ন্ডিল অনলাইন অিভজ্ঞতা</h5>
+                    <p>Jobs Academy তির হেয়েছ এমনভােব, যা সহেজই মাবাইল, ট্যাব বা কিম্পউটার থেক ব্যবহারেযাগ্য। কানও অ্যাপ ছাড়াই ওেয়ব ব্রাউজার থেকই পণ িফচার উপেভাগ করা যায়।</p>
+                </div>
+            </div>
         </div>
-        <div class="col-md-6 mb-4">
-          <div class="p-4 border rounded h-100 shadow-sm">
-            <h5 class="mb-3 text-primary">👁️ Vision</h5>
-            <p class="text-muted">
-              To become the most trusted platform for competitive exam preparation in the digital era, setting the standard for excellence in **Bangladesh**.
-            </p>
-          </div>
-        </div>
-      </div>
     </div>
-  </section>
+</section>
 
-
-
-  <section class="py-5 bg-light">
+<section class="py-5 bg-light">
     <div class="container text-center">
-      <h2 class="section-title mb-5">Meet Our Team</h2>
-      <div class="row g-4 justify-content-center">
-        <div class="col-md-3 col-sm-6 team-member">
-          <img src="https://images.unsplash.com/photo-1607746882042-944635dfe10e?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80"
-              alt="Jonayed Shanto" class="img-fluid mb-2" />
-          <h6 class="fw-bold mb-0">Fatima Rahman</h6>
-          <p class="text-muted small">Founder & Full Stack Developer</p>
+        <h2 class="section-title mb-4">আমােদর িমশন ও িভশন</h2>
+        <div class="row">
+            <div class="col-md-6 mb-4">
+                <div class="p-4 border rounded h-100 shadow-sm">
+                    <h5 class="mb-3 text-primary">🎯 Mission</h5>
+                    <p class="text-muted">
+                        Jobs Academy-এর মল লক্ষ্য হে — “প্রস্তুিত ও পারফরম্যােন্সর মেধ্য বাস্তবিভি ক সতবন্ধন তির করা।”
+                        আমরা িবশ্বাস কির, বাংলােদেশর চাকির প্রাথেদর সফলতা শুধ বই পড়ার ওপর িনভর কের না, বরং স্মাট অনশীলন, ডটা-বইজড প্রস্তুিত এবং আত্মিবশ্বাস গেড় তালার ওপর িনভর কের। এই িবশ্বাস থেকই আমােদর প্রিতটি িফচার ও সবা তির হেয়েছ।
+                    </p>
+                </div>
+            </div>
+            <div class="col-md-6 mb-4">
+                <div class="p-4 border rounded h-100 shadow-sm">
+                    <h5 class="mb-3 text-primary">👁️ Vision</h5>
+                    <p class="text-muted">
+                        আমরা এমন একটি প্ল্যাটফম গেড় তলিছ, যা:
+                    </p>
+                    <ul class="list-unstyled text-start">
+                        <li><i class="fas fa-check-circle"></i> িশক্ষাথেদর পরীক্ষার জন্য প্রেয়াজনীয় প্রস্তুিত দয়</li>
+                        <li><i class="fas fa-check-circle"></i> চাকিরপ্রাথেদর আত্মিবশ্বাস বাড়ায়</li>
+                        <li><i class="fas fa-check-circle"></i> সময় বাঁচায় এবং ফলাফল িনভরেযাগ্য কের তােল</li>
+                        <li><i class="fas fa-check-circle"></i> দেশর চাকিরর বাজার ও িশক্ষাব্যবস্থার বাস্তব চািহদার সেঙ্গ খাপ খায়</li>
+                    </ul>
+                </div>
+            </div>
         </div>
-        <div class="col-md-3 col-sm-6 team-member">
-          <img src="https://images.unsplash.com/photo-1557862921-37829c790f19?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80"
-              alt="Fatima Rahman" class="img-fluid mb-2" />
-          <h6 class="fw-bold mb-0">Junayed Shanto</h6>
-          <p class="text-muted small">Content Strategist</p>
-        </div>
-        <div class="col-md-3 col-sm-6 team-member">
-          <img src="https://i.pravatar.cc/150?img=9" alt="Rakib Hasan" class="img-fluid mb-2" />
-          <h6 class="fw-bold mb-0">Nazma Akter</h6>
-          <p class="text-muted small">Quality Assurance</p>
-        </div>
-        <div class="col-md-3 col-sm-6 team-member">
-            <img src="https://i.pravatar.cc/150?img=11" alt="Nazma Akter" class="img-fluid mb-2" />
-            <h6 class="fw-bold mb-0">Rakib Hasan</h6>
-            <p class="text-muted small">Backend Engineer</p>
-        </div>
-      </div>
     </div>
-  </section>
+</section>
 
+<section class="py-5">
+    <div class="container">
+        <h2 class="section-title text-center mb-5">আমােদর প্ল্যাটফম যােদর জন্য</h2>
+        <div class="row justify-content-center">
+            <div class="col-md-8">
+                <ul class="list-group list-group-flush shadow-sm rounded">
+                    <li class="list-group-item d-flex align-items-center"><i class="fas fa-user-graduate fa-lg me-3 text-primary"></i> িবিসএস পরীক্ষাথ</li>
+                    <li class="list-group-item d-flex align-items-center"><i class="fas fa-money-check-alt fa-lg me-3 text-primary"></i> ব্যাংক/বীমা/সরকাির িনেয়াগপ্রাথ</li>
+                    <li class="list-group-item d-flex align-items-center"><i class="fas fa-chalkboard-teacher fa-lg me-3 text-primary"></i> িশক্ষক িনবন্ধন ও প্রাথিমক িনেয়াগ পরীক্ষাথ</li>
+                    <li class="list-group-item d-flex align-items-center"><i class="fas fa-university fa-lg me-3 text-primary"></i> িবশ্বিবদ্যালয় ভিত পরীক্ষাথ</li>
+                    <li class="list-group-item d-flex align-items-center"><i class="fas fa-briefcase fa-lg me-3 text-primary"></i> একািধক চাকিরর প্রস্তুিত নওয়া ক্যািন্ডেডট</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</section>
 
+<section class="py-5 bg-light">
+    <div class="container">
+        <h2 class="section-title text-center mb-5">কন Jobs Academy সবার থেক আলাদা?</h2>
+        <div class="row justify-content-center">
+            <div class="col-md-8">
+                <ul class="list-group list-group-flush shadow-sm rounded">
+                    <li class="list-group-item d-flex align-items-center"><i class="fas fa-star fa-lg me-3 text-warning"></i> সমেয়াপেযাগী ও পরীক্ষামখী কেন্টন্ট</li>
+                    <li class="list-group-item d-flex align-items-center"><i class="fas fa-check-square fa-lg me-3 text-success"></i> প্রিতটি প্রেশ্ন িবে ষণসহ সমাধান</li>
+                    <li class="list-group-item d-flex align-items-center"><i class="fas fa-language fa-lg me-3 text-info"></i> বাংলা ও ইংেরিজ – উভয় ভাষায় কুইজ</li>
+                    <li class="list-group-item d-flex align-items-center"><i class="fas fa-mobile-alt fa-lg me-3 text-danger"></i> মাবাইল ন্ডিল িডজাইন, কান অ্যােপ ঝােমলা নই</li>
+                    <li class="list-group-item d-flex align-items-center"><i class="fas fa-trophy fa-lg me-3 text-primary"></i> অেটা রজাল্ট জনােরশন ও র◌্যাংিকং</li>
+                    <li class="list-group-item d-flex align-items-center"><i class="fas fa-user-chart fa-lg me-3 text-secondary"></i> আত্ম-উন্নয়েনর জন্য পােসানাল ড্যাশেবাড ও ট্র্যািকং িসেস্টম</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</section>
 
-  <section class="py-5">
+<section class="py-5">
     <div class="container text-center">
-      <h2 class="section-title mb-4">Get in Touch</h2>
-      <p class="lead text-muted mb-5">Have questions or feedback? We'd love to hear from you!</p>
-      <div class="row justify-content-center g-4">
-        <div class="col-md-4 col-sm-6">
-          <div class="contact-info-box">
-            <i class="fas fa-envelope"></i>
-            <h5>Email Us</h5>
-            <p><a href="mailto:info@jobsacademy.com" class="text-decoration-none text-primary">info@jobsacademy.com</a></p>
-          </div>
+        <h2 class="section-title mb-5">Meet Our Team</h2>
+        <div class="row g-4 justify-content-center">
+            <div class="col-md-3 col-sm-6 team-member">
+                <img src="https://images.unsplash.com/photo-1607746882042-944635dfe10e?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80"
+                    alt="Jonayed Shanto" class="img-fluid mb-2" />
+                <h6 class="fw-bold mb-0">Fatima Rahman</h6>
+                <p class="text-muted small">Founder & Full Stack Developer</p>
+            </div>
+            <div class="col-md-3 col-sm-6 team-member">
+                <img src="https://images.unsplash.com/photo-1557862921-37829c790f19?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80"
+                    alt="Fatima Rahman" class="img-fluid mb-2" />
+                <h6 class="fw-bold mb-0">Junayed Shanto</h6>
+                <p class="text-muted small">Content Strategist</p>
+            </div>
+            <div class="col-md-3 col-sm-6 team-member">
+                <img src="https://i.pravatar.cc/150?img=9" alt="Rakib Hasan" class="img-fluid mb-2" />
+                <h6 class="fw-bold mb-0">Nazma Akter</h6>
+                <p class="text-muted small">Quality Assurance</p>
+            </div>
+            <div class="col-md-3 col-sm-6 team-member">
+                <img src="https://i.pravatar.cc/150?img=11" alt="Nazma Akter" class="img-fluid mb-2" />
+                <h6 class="fw-bold mb-0">Rakib Hasan</h6>
+                <p class="text-muted small">Backend Engineer</p>
+            </div>
         </div>
-        <div class="col-md-4 col-sm-6">
-          <div class="contact-info-box">
-            <i class="fas fa-phone-alt"></i>
-            <h5>Call Us</h5>
-            <p><a href="tel:+8801234567890" class="text-decoration-none text-primary">+880 1234 567890</a></p>
-          </div>
-        </div>
-        <div class="col-md-4 col-sm-12">
-          <div class="contact-info-box">
-            <i class="fas fa-map-marker-alt"></i>
-            <h5>Our Location</h5>
-            <p>123 Academy Lane, Baradi, Dhaka, Bangladesh</p>
-          </div>
-        </div>
-      </div>
-      <div class="mt-5">
-        <a href="/contact-us.html" class="btn btn-primary btn-lg shadow-sm">Send Us a Message <i class="fas fa-arrow-right ms-2"></i></a>
-      </div>
     </div>
-  </section>
+</section>
 
-  
-  {% endblock %}
+<section class="py-5 bg-light">
+    <div class="container text-center">
+        <h2 class="section-title mb-4">আমােদর প্রিতশ্রুিত</h2>
+        <p class="lead text-muted mb-5">
+            Jobs Academy কবল একটি অনশীলনমলক প্ল্যাটফম নয় — এটি একটি িডিজটাল সহচর, যা আপনােক প্রিতিদন আরও এক ধাপ এিগেয় িনেত সাহায্য করেব।
+        </p>
+        <p class="lead text-muted mb-5 fw-bold">প্রস্তুিতর শুরু হাক এখান থেকই!</p>
+        <a href="www.jobsacademy.com" class="btn btn-primary btn-lg shadow-sm">আজই জেয়ন করুন Jobs Academy-ত <i class="fas fa-arrow-right ms-2"></i></a>
+        <p class="text-muted mt-3 small">Use anywhere. Learn anytime. Succeed every time.</p>
+    </div>
+</section>
+
+<section class="py-5">
+    <div class="container text-center">
+        <h2 class="section-title mb-4">Get in Touch</h2>
+        <p class="lead text-muted mb-5">Have questions or feedback? We'd love to hear from you!</p>
+        <div class="row justify-content-center g-4">
+            <div class="col-md-4 col-sm-6">
+                <div class="contact-info-box">
+                    <i class="fas fa-envelope"></i>
+                    <h5>Email Us</h5>
+                    <p><a href="mailto:info@jobsacademy.com" class="text-decoration-none">info@jobsacademy.com</a></p>
+                </div>
+            </div>
+            <div class="col-md-4 col-sm-6">
+                <div class="contact-info-box">
+                    <i class="fas fa-phone-alt"></i>
+                    <h5>Call Us</h5>
+                    <p><a href="tel:+8801234567890" class="text-decoration-none">+880 1234 567890</a></p>
+                </div>
+            </div>
+            <div class="col-md-4 col-sm-12">
+                <div class="contact-info-box">
+                    <i class="fas fa-map-marker-alt"></i>
+                    <h5>Our Location</h5>
+                    <p>123 Academy Lane, Baradi, Dhaka, Bangladesh</p>
+                </div>
+            </div>
+        </div>
+        <div class="mt-5">
+            <a href="/contact-us.html" class="btn btn-primary btn-lg shadow-sm">Send Us a Message <i class="fas fa-arrow-right ms-2"></i></a>
+        </div>
+    </div>
+</section>
+
+{% endblock %}
