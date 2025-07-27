@@ -4,16 +4,16 @@
 <style>
     /* General Enhancements */
     body {
-        font-family: 'Arial', sans-serif; /* Or a suitable Bengali-friendly font */
+        font-family: 'Arial', sans-serif;
     }
 
     .hero-section {
         background: linear-gradient(90deg, #00C9FF 0%, #92FE9D 100%);
         color: white;
-        padding: 120px 0; /* More padding for a grander feel */
-        text-shadow: 0 4px 8px rgba(0, 0, 0, 0.4); /* Stronger shadow */
+        padding: 120px 0;
+        text-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
         position: relative;
-        overflow: hidden; /* For potential background patterns */
+        overflow: hidden;
     }
 
     .hero-section::before {
@@ -23,34 +23,34 @@
         left: 0;
         right: 0;
         bottom: 0;
-        background: url('https://www.transparenttextures.com/patterns/cubes.png') repeat; /* Subtle pattern */
+        background: url('https://www.transparenttextures.com/patterns/cubes.png') repeat;
         opacity: 0.1;
         z-index: 1;
     }
 
     .hero-section .container {
         position: relative;
-        z-index: 2; /* Ensure text is above pattern */
+        z-index: 2;
     }
 
     .hero-section .display-5 {
-        font-weight: 800; /* Even bolder */
+        font-weight: 800;
         letter-spacing: 1.5px;
-        font-size: 3.5rem; /* Larger hero title */
+        font-size: 3.5rem;
     }
 
     .hero-section .lead {
-        font-size: 1.3rem; /* Larger lead text */
+        font-size: 1.3rem;
         margin-top: 1.5rem;
     }
 
     .section-title {
-        font-size: 2.8rem; /* Larger titles */
-        font-weight: 800; /* Bolder */
-        color: #1a2a6c; /* A deeper, more professional blue */
+        font-size: 2.8rem;
+        font-weight: 800;
+        color: #1a2a6c;
         margin-bottom: 2rem;
         position: relative;
-        display: inline-block; /* For underline effect */
+        display: inline-block;
         padding-bottom: 0.5rem;
     }
 
@@ -61,24 +61,112 @@
         transform: translateX(-50%);
         bottom: 0;
         height: 4px;
-        width: 80px; /* Short underline */
-        background-color: #0d6efd; /* Primary blue */
+        width: 80px;
+        background-color: #0d6efd;
         border-radius: 2px;
     }
 
     .highlight {
-        color: #0d6efd; /* Bootstrap primary blue */
+        color: #0d6efd;
     }
 
-    /* About Who We Are Image Section */
+    /* --- About Who We Are Image Section & Ad Overlay --- */
+    .about-image {
+        position: relative; /* Essential for absolute positioning of the ad overlay */
+        min-height: 250px; /* Ensure there's space for the ad if image is hidden */
+        display: flex; /* For centering content within it if needed */
+        justify-content: center;
+        align-items: center;
+        border-radius: 15px; /* Match overlay border-radius for consistency */
+        overflow: hidden; /* To keep ad and image within bounds */
+        background-color: #f0f0f0; /* Placeholder background if image is hidden */
+    }
+
     .about-image img {
-        border-radius: 15px; /* More rounded */
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15); /* Stronger shadow */
+        border-radius: 15px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
         transition: transform 0.3s ease;
+        display: block; /* Ensure image behaves as a block element */
+        width: 100%;
+        height: 100%;
+        object-fit: cover; /* Cover the container */
     }
 
     .about-image img:hover {
-        transform: translateY(-8px); /* Lift on hover */
+        transform: translateY(-8px);
+    }
+
+    /* Ad Overlay inside about-image */
+    .ad-overlay-wrapper-image-section {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 300px;
+        height: 250px;
+        background-color: rgba(255, 255, 255, 0.98); /* Near opaque white */
+        border-radius: 15px; /* Match parent's border-radius */
+        box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2); /* Shadow for the overlay */
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        opacity: 0; /* Start invisible */
+        transform: scale(0.9); /* Start slightly smaller for zoom effect */
+        animation: fadeInScaleUp 0.6s forwards ease-out; /* Animation */
+        z-index: 10; /* Ensure it's above the image */
+    }
+
+    /* Adjust iframe size to fit well within the overlay */
+    .ad-overlay-wrapper-image-section iframe {
+        width: 100%; /* Take full width of its container (minus padding) */
+        height: 100%; /* Take full height of its container (minus padding) */
+        max-width: 300px; /* Constrain to ad dimensions */
+        max-height: 250px; /* Constrain to ad dimensions */
+        border-radius: 8px; /* Slight border-radius for the iframe */
+        display: block;
+    }
+
+    /* Animation for the ad overlay */
+    @keyframes fadeInScaleUp {
+        from {
+            opacity: 0;
+            transform: scale(0.9);
+        }
+        to {
+            opacity: 1;
+            transform: scale(1);
+        }
+    }
+
+    /* Close Button for Image Section Overlay */
+    .ad-overlay-wrapper-image-section .close-overlay-button {
+        position: absolute;
+        top: -10px; /* Position outside the top-right corner */
+        right: -10px;
+        background-color: #dc3545; /* Red for close button */
+        color: white;
+        border-radius: 50%;
+        width: 28px;
+        height: 28px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        font-size: 18px;
+        font-weight: bold;
+        cursor: pointer;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+        transition: background-color 0.2s ease, transform 0.2s ease;
+        z-index: 11; /* Above the ad overlay */
+    }
+
+    .ad-overlay-wrapper-image-section .close-overlay-button:hover {
+        background-color: #c82333;
+        transform: scale(1.1);
+    }
+
+    /* Hide the image if the ad overlay is active/shown (Optional, but makes sense) */
+    .ad-overlay-active .about-image img {
+        opacity: 0;
+        pointer-events: none; /* Prevent interaction with hidden image */
     }
 
     /* What We Offer Section */
@@ -89,7 +177,7 @@
         box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
         transition: all 0.3s ease;
         text-align: center;
-        height: 100%; /* Ensure cards are same height */
+        height: 100%;
     }
 
     .feature-card:hover {
@@ -98,10 +186,10 @@
     }
 
     .feature-card i {
-        font-size: 3.5rem; /* Larger icons */
+        font-size: 3.5rem;
         color: #0d6efd;
         margin-bottom: 20px;
-        display: block; /* For proper centering */
+        display: block;
     }
 
     .feature-card h5 {
@@ -119,10 +207,10 @@
     /* Mission & Vision Section */
     .p-4.border.rounded {
         border-color: #dee2e6 !important;
-        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.06); /* Slightly more prominent shadow */
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.06);
         transition: all 0.3s ease;
-        padding: 2.5rem !important; /* More padding */
-        border-radius: 15px !important; /* More rounded */
+        padding: 2.5rem !important;
+        border-radius: 15px !important;
     }
 
     .p-4.border.rounded:hover {
@@ -138,68 +226,68 @@
     /* Team Member Section */
     .team-member img {
         border-radius: 50%;
-        width: 150px; /* Even larger team photos */
+        width: 150px;
         height: 150px;
         object-fit: cover;
-        border: 6px solid #0d6efd; /* Thicker border */
+        border: 6px solid #0d6efd;
         box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
         transition: all 0.3s ease;
     }
 
     .team-member img:hover {
-        transform: scale(1.08) rotate(3deg); /* Slight rotation on hover */
+        transform: scale(1.08) rotate(3deg);
         box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
     }
 
     .team-member h6 {
-        font-size: 1.3rem; /* Larger name */
+        font-size: 1.3rem;
         margin-top: 15px;
     }
 
     .team-member p {
-        font-size: 0.95rem; /* Slightly larger role */
+        font-size: 0.95rem;
     }
 
     /* Contact Info Boxes */
     .contact-info-box {
         background: linear-gradient(to right, #A7BFE8, #6190E8);
-        color: white; /* Changed text color to white for better contrast with gradient */
-        padding: 40px; /* More padding */
-        border-radius: 15px; /* More rounded corners */
+        color: white;
+        padding: 40px;
+        border-radius: 15px;
         text-align: center;
         margin-bottom: 30px;
-        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1); /* More pronounced shadow */
-        border: none; /* No border for gradient */
+        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1);
+        border: none;
         transition: all 0.3s ease;
     }
 
     .contact-info-box:hover {
         transform: translateY(-10px);
-        box-shadow: 0 12px 45px rgba(0, 0, 0, 0.2); /* Stronger shadow on hover */
+        box-shadow: 0 12px 45px rgba(0, 0, 0, 0.2);
     }
 
     .contact-info-box i {
-        font-size: 3rem; /* Larger icons */
-        color: white; /* Icons also white */
+        font-size: 3rem;
+        color: white;
         margin-bottom: 20px;
     }
 
     .contact-info-box h5 {
-        font-size: 1.5rem; /* Larger heading */
+        font-size: 1.5rem;
         font-weight: 700;
         color: white;
         margin-bottom: 10px;
     }
 
     .contact-info-box p {
-        font-size: 1.1rem; /* Larger text */
-        color: rgba(255, 255, 255, 0.9); /* Slightly transparent white */
+        font-size: 1.1rem;
+        color: rgba(255, 255, 255, 0.9);
         margin-bottom: 0;
     }
 
     .contact-info-box p a {
-        color: white; /* Links also white */
-        text-decoration: underline; /* Underline for links */
+        color: white;
+        text-decoration: underline;
     }
 
     .list-unstyled li {
@@ -219,7 +307,7 @@
         border-color: #0d6efd;
         padding: 15px 30px;
         font-size: 1.2rem;
-        border-radius: 50px; /* Pill shape */
+        border-radius: 50px;
         transition: all 0.3s ease;
     }
 
@@ -228,6 +316,27 @@
         border-color: #0b5ed7;
         transform: translateY(-3px);
         box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+    }
+
+    /* Responsive adjustments */
+    @media (max-width: 768px) {
+        .about-image {
+            min-height: 250px; /* Ensure space for the ad on mobile too */
+        }
+        .ad-overlay-wrapper-image-section {
+            padding: 2px;
+        }
+        .ad-overlay-wrapper-image-section iframe {
+            max-width: 100%; /* Allow iframe to take full width */
+            max-height: 200px; /* Adjust max height for smaller screens */
+        }
+        .ad-overlay-wrapper-image-section .close-overlay-button {
+            top: -8px;
+            right: -8px;
+            width: 24px;
+            height: 24px;
+            font-size: 16px;
+        }
     }
 </style>
 {% endblock %}
@@ -244,22 +353,30 @@
 <section class="py-5 bg-light">
     <div class="container">
         <div class="row align-items-center">
-            <div class="col-md-6 mb-4 mb-md-0 about-image">
+            <div class="col-md-6 mb-4 mb-md-0 about-image" id="aboutImageContainer">
                 <img src="https://www.thoughtco.com/thmb/DeGX61cIGjBegQuiA2iT8HdhDG4%3D/1500x0/filters%3Ano_upscale%28%29%3Amax_bytes%28150000%29%3Astrip_icc%28%29/focused-creative-businessman-writing-in-notebook-at-laptop-769721281-5b775a2e46e0fb0025b5d693.jpg"
                 class="img-fluid rounded shadow"
                 alt="Students learning in classroom at Jobs Academy">
 
+                <!-- <div class="ad-overlay-wrapper-image-section" id="imageAdOverlay">
+                    <span class="close-overlay-button" onclick="document.getElementById('imageAdOverlay').style.display='none';">&times;</span>
+                    <iframe id='ae866144' name='ae866144' src='http://161.97.141.58:8080/www/delivery/afr.php?zoneid=4&amp;cb=INSERT_RANDOM_NUMBER_HERE' frameborder='0' scrolling='no' width='300' height='250' allow='autoplay'>
+                        <a href='http://161.97.141.58:8080/www/delivery/ck.php?n=ae70f3df&amp;cb=INSERT_RANDOM_NUMBER_HERE' target='_blank'>
+                            <img src='http://161.97.141.58:8080/www/delivery/avw.php?zoneid=4&amp;cb=INSERT_RANDOM_NUMBER_HERE&amp;n=ae70f3df' border='0' alt='' />
+                        </a>
+                    </iframe>
+                </div> -->
             </div>
             <div class="col-md-6">
                 <h2 class="section-title text-center text-md-start">আমরা কারা</h2>
                 <p class="text-muted mt-4">
-                    Jobs Academy বাংলাদেশের একটি অগ্রণী অনলাইন শিক্ষা ও ক্যারিয়ার প্রস্তুতির প্ল্যাটফর্ম, যা মূলত চাকরিপ্রার্থী, শিক্ষার্থী এবং সরকারি নিয়োগ পরীক্ষার্থীদের জন্য দক্ষতাভিত্তিক এবং বাস্তবভিত্তিক অনুশীলনের সুযোগ তৈরি করে।
+                    Jobs Academy বাংলাদেশের একটি অগ্রণী অনলাইন শিক্ষা ও ক্যারিয়ার প্রস্তুতির প্ল্যাটফর্ম, যা মূলত চাকরিপ্রার্থী, শিক্ষার্থী এবং সরকারি নিয়োগ পরীক্ষার্থীদের জন্য দক্ষতাভিত্তিক এবং বাস্তবভিত্তিক অনুশীলনের সুযোগ তৈরি করে।
                 </p>
                 <p class="text-muted">
-                    আমাদের প্ল্যাটফর্মটি তৈরি হয়েছে এই ধারণাকে কেন্দ্র করে — “সঠিক প্রস্তুতি, সময়োপযোগী অনুশীলন, এবং নিজেকে জানার মাধ্যমে সফলতা অর্জন সম্ভব।
+                    আমাদের প্ল্যাটফর্মটি তৈরি হয়েছে এই ধারণাকে কেন্দ্র করে — “সঠিক প্রস্তুতি, সময়োপযোগী অনুশীলন, এবং নিজেকে জানার মাধ্যমে সফলতা অর্জন সম্ভব।
                 </p>
                 <p class="text-muted">
-                    আমরা বিশ্বাস করি, দেশের প্রতিটি শিক্ষার্থী এবং প্রতিযোগিতামূলক চাকরি প্রত্যাশীর জন্য প্রয়োজন এমন একটি প্ল্যাটফর্ম, যেখানে ব্যক্তিগতকৃত শেখা, নিয়মিত মক পরীক্ষা, সময় ভিত্তিক পারফরম্যান্স বিশ্লেষণ এবং সঠিক দিকনির্দেশনা একসাথে পাওয়া যাবে — এবং Jobs Academy ঠিক সেটিই বাস্তবায়ন করছে।                </p>
+                    আমরা বিশ্বাস করি, দেশের প্রতিটি শিক্ষার্থী এবং প্রতিযোগিতামূলক চাকরি প্রত্যাশীর জন্য প্রয়োজন এমন একটি প্ল্যাটফর্ম, যেখানে ব্যক্তিগতকৃত শেখা, নিয়মিত মক পরীক্ষা, সময় ভিত্তিক পারফরম্যান্স বিশ্লেষণ এবং সঠিক দিকনির্দেশনা একসাথে পাওয়া যাবে — এবং Jobs Academy ঠিক সেটিই বাস্তবায়ন করছে।                </p>
             </div>
         </div>
     </div>
@@ -273,35 +390,35 @@
                 <div class="feature-card">
                     <i class="fas fa-file-alt"></i>
                     <h5>📘 পরীক্ষাভিত্তিক মক টেস্ট ও প্রশ্নব্যাংক</h5>
-                    <p>আমাদের প্ল্যাটফর্মে রয়েছে বিসিএস, ব্যাংক নিয়োগ, শিক্ষক নিবন্ধন, প্রাথমিক সহকারী শিক্ষক নিয়োগ, বিশ্ববিদ্যালয় ভর্তি পরীক্ষা, সরকারি ও বেসরকারি চাকরির জন্য বিভাগভিত্তিক প্রশ্ন সেট। প্রতিটি প্রশ্ন তৈরি হয়েছে সময়োপযোগী সিলেবাস ও পরীক্ষার ট্রেন্ড অনুসারে।</p>
+                    <p>আমাদের প্ল্যাটফর্মে রয়েছে বিসিএস, ব্যাংক নিয়োগ, শিক্ষক নিবন্ধন, প্রাথমিক সহকারী শিক্ষক নিয়োগ, বিশ্ববিদ্যালয় ভর্তি পরীক্ষা, সরকারি ও বেসরকারি চাকরির জন্য বিভাগভিত্তিক প্রশ্ন সেট। প্রতিটি প্রশ্ন তৈরি হয়েছে সময়োপযোগী সিলেবাস ও পরীক্ষার ট্রেন্ড অনুসারে।</p>
                 </div>
             </div>
             <div class="col-md-6 col-lg-3">
                 <div class="feature-card">
                     <i class="fas fa-question-circle"></i>
                     <h5>ইন্টেলিজেন্ট কুইজ ও চ্যাপ্টারভিত্তিক প্র্যাকটিস সেট</h5>
-                    <p>শুধু মক টেস্ট নয়, বরং টপিকভিত্তিক কুইজ, অধ্যায়ভিত্তিক প্রশ্ন, এবং প্রতিটি প্রশ্নের পেছনে যুক্তিসম্পন্ন ব্যাখ্যা যুক্ত করে দেওয়া হয়েছে, যেন শিখন এবং অনুশীলন একসাথে চলে।</p>
+                    <p>শুধু মক টেস্ট নয়, বরং টপিকভিত্তিক কুইজ, অধ্যায়ভিত্তিক প্রশ্ন, এবং প্রতিটি প্রশ্নের পেছনে যুক্তিসম্পন্ন ব্যাখ্যা যুক্ত করে দেওয়া হয়েছে, যেন শিখন এবং অনুশীলন একসাথে চলে।</p>
                 </div>
             </div>
             <div class="col-md-6 col-lg-3">
                 <div class="feature-card">
                     <i class="fas fa-chart-line"></i>
-                    <h5>📊 রিয়েল টাইম পারফরম্যান্স অ্যানালিটিক্স</h5>
-                    <p>আপনার প্রতিটি পরীক্ষার ফলাফল, সময় ব্যবস্থাপনা, ভুলের ধরন, উন্নতির সম্ভাবনা এবং আগের পরীক্ষাগুলোর সঙ্গে তুলনামূলক বিশ্লেষণ আমরা সরবরাহ করি, যাতে আপনি নিজের উন্নয়ন বুঝতে পারেন এবং করণীয় নির্ধারণ করতে পারেন।</p>
+                    <h5>📊 রিয়েল টাইম পারফরম্যান্স অ্যানালিটিক্স</h5>
+                    <p>আপনার প্রতিটি পরীক্ষার ফলাফল, সময় ব্যবস্থাপনা, ভুলের ধরন, উন্নতির সম্ভাবনা এবং আগের পরীক্ষাগুলোর সঙ্গে তুলনামূলক বিশ্লেষণ আমরা সরবরাহ করি, যাতে আপনি নিজের উন্নয়ন বুঝতে পারেন এবং করণীয় নির্ধারণ করতে পারেন।</p>
                 </div>
             </div>
             <div class="col-md-6 col-lg-3">
                 <div class="feature-card">
                     <i class="fas fa-user-tie"></i>
-                    <h5>🏫 বিষয়ভিত্তিক এক্সপার্টদের কন্টেন্ট কিউরেশন</h5>
-                    <p>প্রতিটি বিষয় ও বিভাগে অভিজ্ঞ শিক্ষকদের তত্ত্বাবধানে প্রশ্ন সেট ও সমাধান তৈরি করা হয়। আমরা নিশ্চিত করি যেন প্রতিটি প্রশ্ন মানসম্পন্ন, সঠিক এবং পরীক্ষার জন্য উপযোগী হয়।</p>
+                    <h5>🏫 বিষয়ভিত্তিক এক্সপার্টদের কন্টেন্ট কিউরেশন</h5>
+                    <p>প্রতিটি বিষয় ও বিভাগে অভিজ্ঞ শিক্ষকদের তত্ত্বাবধানে প্রশ্ন সেট ও সমাধান তৈরি করা হয়। আমরা নিশ্চিত করি যেন প্রতিটি প্রশ্ন মানসম্পন্ন, সঠিক এবং পরীক্ষার জন্য উপযোগী হয়।</p>
                 </div>
             </div>
             <div class="col-12">
                 <div class="feature-card">
                     <i class="fas fa-mobile-alt"></i>
                     <h5>🌐 একটি সহজ, দ্রুত ও মোবাইল-ফ্রেন্ডলি অনলাইন অভিজ্ঞতা</h5>
-                    <p>Jobs Academy তৈরি হয়েছে এমনভাবে, যা সহজেই মোবাইল, ট্যাব বা কম্পিউটার থেকে ব্যবহারযোগ্য। কোনও অ্যাপ ছাড়াই ওয়েব ব্রাউজার থেকেই পূর্ণ ফিচার উপভোগ করা যায়।</p>
+                    <p>Jobs Academy তৈরি হয়েছে এমনভাবে, যা সহজেই মোবাইল, ট্যাব বা কম্পিউটার থেকে ব্যবহারযোগ্য। কোনও অ্যাপ ছাড়াই ওয়েব ব্রাউজার থেকেই পূর্ণ ফিচার উপভোগ করা যায়।</p>
                 </div>
             </div>
         </div>
@@ -319,7 +436,7 @@
                         Jobs Academy-এর মূল লক্ষ্য হচ্ছে — “প্রস্তুতি ও পারফরম্যান্সের মধ্যে বাস্তবভিত্তিক সেতুবন্ধন তৈরি করা।”
                     </p>
                     <p>
-                        আমরা বিশ্বাস করি, বাংলাদেশের চাকরি প্রার্থীদের সফলতা শুধু বই পড়ার ওপর নির্ভর করে না, বরং স্মার্ট অনুশীলন, ডেটা-বেইজড প্রস্তুতি এবং আত্মবিশ্বাস গড়ে তোলার ওপর নির্ভর করে। এই বিশ্বাস থেকেই আমাদের প্রতিটি ফিচার ও সেবা তৈরি হয়েছে।
+                        আমরা বিশ্বাস করি, বাংলাদেশের চাকরি প্রার্থীদের সফলতা শুধু বই পড়ার ওপর নির্ভর করে না, বরং স্মার্ট অনুশীলন, ডেটা-বেইজড প্রস্তুতি এবং আত্মবিশ্বাস গড়ে তোলার ওপর নির্ভর করে। এই বিশ্বাস থেকেই আমাদের প্রতিটি ফিচার ও সেবা তৈরি হয়েছে।
                     </p>
                 </div>
             </div>
@@ -327,13 +444,13 @@
                 <div class="p-4 border rounded h-100 shadow-sm">
                     <h5 class="mb-3 text-primary">👁️ Vision</h5>
                     <p class="text-muted">
-                        আমরা এমন একটি প্ল্যাটফর্ম গড়ে তুলছি, যা :
+                        আমরা এমন একটি প্ল্যাটফর্ম গড়ে তুলছি, যা :
                     </p>
                     <ul class="list-unstyled text-start">
-                        <li><i class="fas fa-check-circle"></i>শিক্ষার্থীদের পরীক্ষার জন্য প্রয়োজনীয় প্রস্তুতি দেয়</li>
-                        <li><i class="fas fa-check-circle"></i>চাকরিপ্রার্থীদের আত্মবিশ্বাস বাড়ায়</li>
-                        <li><i class="fas fa-check-circle"></i>সময় বাঁচায় এবং ফলাফল নির্ভরযোগ্য করে তোলে</li>
-                        <li><i class="fas fa-check-circle"></i>দেশের চাকরির বাজার ও শিক্ষাব্যবস্থার বাস্তব চাহিদার সঙ্গে খাপ খায়</li>
+                        <li><i class="fas fa-check-circle"></i>শিক্ষার্থীদের পরীক্ষার জন্য প্রয়োজনীয় প্রস্তুতি দেয়</li>
+                        <li><i class="fas fa-check-circle"></i>চাকরিপ্রার্থীদের আত্মবিশ্বাস বাড়ায়</li>
+                        <li><i class="fas fa-check-circle"></i>সময় বাঁচায় এবং ফলাফল নির্ভরযোগ্য করে তোলে</li>
+                        <li><i class="fas fa-check-circle"></i>দেশের চাকরির বাজার ও শিক্ষাব্যবস্থার বাস্তব চাহিদার সঙ্গে খাপ খায়</li>
                     </ul>
                 </div>
             </div>
@@ -348,10 +465,10 @@
             <div class="col-md-8">
                 <ul class="list-group list-group-flush shadow-sm rounded">
                     <li class="list-group-item d-flex align-items-center"><i class="fas fa-user-graduate fa-lg me-3 text-primary"></i>বিসিএস পরীক্ষার্থী</li>
-                    <li class="list-group-item d-flex align-items-center"><i class="fas fa-money-check-alt fa-lg me-3 text-primary"></i>ব্যাংক/বীমা/সরকারি নিয়োগপ্রার্থী</li>
-                    <li class="list-group-item d-flex align-items-center"><i class="fas fa-chalkboard-teacher fa-lg me-3 text-primary"></i>শিক্ষক নিবন্ধন ও প্রাথমিক নিয়োগ পরীক্ষার্থী</li>
-                    <li class="list-group-item d-flex align-items-center"><i class="fas fa-university fa-lg me-3 text-primary"></i> বিশ্ববিদ্যালয় ভর্তি পরীক্ষার্থী</li>
-                    <li class="list-group-item d-flex align-items-center"><i class="fas fa-briefcase fa-lg me-3 text-primary"></i>একাধিক চাকরির প্রস্তুতি নেওয়া ক্যান্ডিডেট</li>
+                    <li class="list-group-item d-flex align-items-center"><i class="fas fa-money-check-alt fa-lg me-3 text-primary"></i>ব্যাংক/বীমা/সরকারি নিয়োগপ্রার্থী</li>
+                    <li class="list-group-item d-flex align-items-center"><i class="fas fa-chalkboard-teacher fa-lg me-3 text-primary"></i>শিক্ষক নিবন্ধন ও প্রাথমিক নিয়োগ পরীক্ষার্থী</li>
+                    <li class="list-group-item d-flex align-items-center"><i class="fas fa-university fa-lg me-3 text-primary"></i> বিশ্ববিদ্যালয় ভর্তি পরীক্ষার্থী</li>
+                    <li class="list-group-item d-flex align-items-center"><i class="fas fa-briefcase fa-lg me-3 text-primary"></i>একাধিক চাকরির প্রস্তুতি নেওয়া ক্যান্ডিডেট</li>
                 </ul>
             </div>
         </div>
@@ -364,12 +481,12 @@
         <div class="row justify-content-center">
             <div class="col-md-8">
                 <ul class="list-group list-group-flush shadow-sm rounded">
-                    <li class="list-group-item d-flex align-items-center"><i class="fas fa-star fa-lg me-3 text-warning"></i>সময়োপযোগী ও পরীক্ষামুখী কন্টেন্ট</li>
+                    <li class="list-group-item d-flex align-items-center"><i class="fas fa-star fa-lg me-3 text-warning"></i>সময়োপযোগী ও পরীক্ষামুখী কন্টেন্ট</li>
                     <li class="list-group-item d-flex align-items-center"><i class="fas fa-check-square fa-lg me-3 text-success"></i>প্রতিটি প্রশ্নে বিশ্লেষণসহ সমাধান</li>
-                    <li class="list-group-item d-flex align-items-center"><i class="fas fa-language fa-lg me-3 text-info"></i>বাংলা ও ইংরেজি – উভয় ভাষায় কুইজ</li>
+                    <li class="list-group-item d-flex align-items-center"><i class="fas fa-language fa-lg me-3 text-info"></i>বাংলা ও ইংরেজি – উভয় ভাষায় কুইজ</li>
                     <li class="list-group-item d-flex align-items-center"><i class="fas fa-mobile-alt fa-lg me-3 text-danger"></i>মোবাইল ফ্রেন্ডলি ডিজাইন, কোন অ্যাপে ঝামেলা নেই</li>
                     <li class="list-group-item d-flex align-items-center"><i class="fas fa-trophy fa-lg me-3 text-primary"></i>অটো রেজাল্ট জেনারেশন ও র্যাংকিং</li>
-                    <li class="list-group-item d-flex align-items-center"><i class="fa-solid fa-chart-simple me-3 text secondary"></i>আত্ম-উন্নয়নের জন্য পার্সোনাল ড্যাশবোর্ড ও ট্র্যাকিং সিস্টেম</li>
+                    <li class="list-group-item d-flex align-items-center"><i class="fa-solid fa-chart-simple me-3 text secondary"></i>আত্ম-উন্নয়নের জন্য পার্সোনাল ড্যাশবোর্ড ও ট্র্যাকিং সিস্টেম</li>
                 </ul>
             </div>
         </div>
@@ -381,10 +498,10 @@
     <div class="container text-center">
         <h2 class="section-title mb-4">আমাদের প্রতিশ্রুতি</h2>
         <p class="lead text-muted mb-5">
-            Jobs Academy কেবল একটি অনুশীলনমূলক প্ল্যাটফর্ম নয় — এটি একটি ডিজিটাল সহচর, যা আপনাকে প্রতিদিন আরও এক ধাপ এগিয়ে নিতে সাহায্য করবে।
+            Jobs Academy কেবল একটি অনুশীলনমূলক প্ল্যাটফর্ম নয় — এটি একটি ডিজিটাল সহচর, যা আপনাকে প্রতিদিন আরও এক ধাপ এগিয়ে নিতে সাহায্য করবে।
         </p>
         <p class="lead text-muted mb-5 fw-bold">প্রস্তুতির শুরু হোক এখান থেকেই!</p>
-        <a href="https://jobs.academy" class="btn btn-primary btn-lg shadow-sm">আজই জয়েন করুন Jobs Academy-তে এবং নিজেকে প্রস্তুত করুন জীবনের পরবর্তী বড় ধাপে সাফল্যের জন্য।<i class="fas fa-arrow-right ms-2"></i></a>
+        <a href="https://jobs.academy" class="btn btn-primary btn-lg shadow-sm">আজই জয়েন করুন Jobs Academy-তে এবং নিজেকে প্রস্তুত করুন জীবনের পরবর্তী বড় ধাপে সাফল্যের জন্য।<i class="fas fa-arrow-right ms-2"></i></a>
         <p class="text-muted mt-3 small">Use anywhere. Learn anytime. Succeed every time.</p>
     </div>
 </section>
@@ -402,7 +519,7 @@
             <div class="col-md-3 col-sm-6 team-member">
                 <img src="https://images.unsplash.com/photo-1557862921-37829c790f19?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80"
                     alt="Fatima Rahman" class="img-fluid mb-2" />
-                <h6 class="fw-bold mb-0">Junayed Shanto</h6>
+                <h6 class="fw-bold mb-0">Shahriar Ahmed</h6>
                 <p class="text-muted small">Content Strategist</p>
             </div>
             <div class="col-md-3 col-sm-6 team-member">

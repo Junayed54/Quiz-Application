@@ -5,6 +5,7 @@
         body {
             font-family: 'Inter', sans-serif;
             background: rgb(255, 253, 208);
+             /* Added for floating banner */
         }
         .card {
             padding: 0;
@@ -32,7 +33,7 @@
             background-color: #cc5200;
             border-color: #cc5200;
         }
-        
+
         .btn-outline-secondary:hover {
             background-color: #f8f9fa;
             border-color: #ff6600;
@@ -67,59 +68,134 @@
             align-items: center;
             height: 100vh;
             background: #f9f9f9;
-          }
-          
-          .ripple-loader {
+        }
+
+        .ripple-loader {
             width: 48px;
             height: 48px;
             position: relative;
-          }
-          
-          .ripple-loader::before,
-          .ripple-loader::after {
+        }
+
+        .ripple-loader::before,
+        .ripple-loader::after {
             content: "";
             position: absolute;
             border: 4px solid #007bff;
             border-radius: 50%;
             animation: ripple 1.2s infinite;
-          }
-          
-          .ripple-loader::after {
+        }
+
+        .ripple-loader::after {
             animation-delay: 0.6s;
-          }
-          
-          @keyframes ripple {
+        }
+
+        @keyframes ripple {
             0% {
-              width: 0;
-              height: 0;
-              opacity: 1;
+                width: 0;
+                height: 0;
+                opacity: 1;
             }
             100% {
-              width: 48px;
-              height: 48px;
-              opacity: 0;
+                width: 48px;
+                height: 48px;
+                opacity: 0;
             }
-          }
+        }
+
+        /* --- Floating Banner CSS --- */
+        .floating-banner {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 1000;
+            background-color: rgba(255, 255, 255, 0.9);
+            border: 1px solid #ddd;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            padding: 5px;
+            border-radius: 8px;
+            /* Animation properties */
+            transform: translateX(100%); /* Start off-screen to the right */
+            animation: slideIn 0.8s forwards ease-out; /* Animation definition */
+        }
+
+        /* Keyframe animation for sliding in */
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%); /* Start completely off-screen to the right */
+            }
+            to {
+                transform: translateX(0); /* End at its defined 'right' position */
+            }
+        }
+
+        /* --- Close Button CSS --- */
+        .floating-banner .close-button {
+            position: absolute;
+            top: -10px; /* Adjust as needed to position outside the banner */
+            right: -10px; /* Adjust as needed */
+            background-color: #ff6600;
+            color: white;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+            transition: background-color 0.2s ease;
+        }
+
+        .floating-banner .close-button:hover {
+            background-color: #cc5200;
+        }
+
+        /* Responsive Design (Optional, but recommended) */
+        @media (max-width: 768px) {
+            .floating-banner {
+                width: calc(100% - 40px); /* Full width minus margins */
+                right: 20px;
+                left: 20px;
+                bottom: 20px;
+                border-radius: 8px; /* Maintain rounded corners */
+                transform: translateX(100%); /* Ensure it slides from right on smaller screens too */
+            }
+            body {
+                padding-bottom: 280px; /* Adjust if banner height changes significantly */
+            }
+            .floating-banner .close-button {
+                top: -8px;
+                right: -8px;
+            }
+        }
     </style>
 {% endblock %}
 {% block content %}
 
     <div class="container py-4">
-        <h2 class="mb-4 text-center" style="color: rgb(114, 125, 115); text-shadow: 2px 4px 4px 0px rgba(0, 0, 0, 0.25);">পূর্ববর্তী পরীক্ষাগুলো</h2>
+        <h2 class="mb-4 text-center" style="color: rgb(114, 125, 115); text-shadow: 2px 4px 4px 0px rgba(0, 0, 0, 0.25);">পূর্ববর্তী পরীক্ষাগুলো</h2>
         <div class="row">
             <div class="loader-container" id="loader">
                 <div class="ripple-loader"></div>
             </div>
-            <div class="col-md-10 mx-auto"  id="all_exams">
-                
-                  
-            
+            <div class="col-md-10 mx-auto" id="all_exams">
+
+
             </div>
         </div>
     </div>
     <div style="height: 210px"></div>
 
+    <!-- <div class="floating-banner" id="floatingAdBanner">
+        <span class="close-button" onclick="document.getElementById('floatingAdBanner').style.display='none';">&times;</span>
+        <iframe id='ae866144' name='ae866144' src='http://161.97.141.58:8080/www/delivery/afr.php?zoneid=4&amp;cb=INSERT_RANDOM_NUMBER_HERE' frameborder='0' scrolling='no' width='300' height='250' allow='autoplay'>
+            <a href='http://161.97.141.58:8080/www/delivery/ck.php?n=ae70f3df&amp;cb=INSERT_RANDOM_NUMBER_HERE' target='_blank'>
+                <img src='http://161.97.141.58:8080/www/delivery/avw.php?zoneid=4&amp;cb=INSERT_RANDOM_NUMBER_HERE&amp;n=ae70f3df' border='0' alt='' />
+            </a>
+        </iframe>
+    </div> -->
 {% endblock %}
 
 {% block body_js %}<script src="../../../static/Js/new_templates_js/quiz/new_past_exam_list.js"></script> {% endblock %}
-
