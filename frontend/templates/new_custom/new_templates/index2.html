@@ -1,21 +1,24 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  
+  <meta charset="UTF-8">
   <title>পরীক্ষা ও চাকরির প্রস্তুতি | শিক্ষা ও ক্যারিয়ার গাইড BD</title>
-  <meta name="description" content="শিক্ষক নিবন্ধন, প্রাথমিক, ব্যাংক, ও BCS প্রস্তুতির জন্য MCQ অনুশীলন ও পূর্ববর্তী প্রশ্ন সমূহ।">
-  <meta name="keywords" content="শিক্ষক নিবন্ধন, চাকরি প্রস্তুতি, govt job quiz, bcs mcq, bangladesh job test">
+  <meta name="description" content="Jobs Academy-তে শিক্ষক নিবন্ধন, প্রাথমিক, ব্যাংক, ও BCS সহ সকল সরকারি চাকরির জন্য সম্পূর্ণ প্রস্তুতি নিন। বিনামূল্যে অনলাইন MCQ পরীক্ষা, বিগত বছরের প্রশ্ন সমাধান, এবং বিস্তারিত ফলাফল বিশ্লেষণ পান।">
+  <meta name="keywords" content="শিক্ষক নিবন্ধন প্রস্তুতি, প্রাথমিক শিক্ষক নিয়োগ পরীক্ষা, ব্যাংক জব প্রস্তুতি, বিসিএস প্রস্তুতি, সরকারি চাকরির প্রশ্ন, মডেল টেস্ট, অনলাইন কুইজ, Jobs Academy, Bangladesh job preparation">
   <link rel="canonical" href="{{ request.build_absolute_uri }}">
 
   <!-- Open Graph (for social media) -->
   <meta property="og:title" content="Govt Job Preparation | শিক্ষক নিবন্ধন | চাকরি প্রস্তুতি">
-  <meta property="og:description" content="Join free online mock tests and prepare for NTRCA, BCS, and more.">
+  <meta property="og:description" content="Jobs Academy-তে শিক্ষক নিবন্ধন, প্রাথমিক, ব্যাংক, ও BCS সহ সকল সরকারি চাকরির জন্য সম্পূর্ণ প্রস্তুতি নিন। বিনামূল্যে অনলাইন MCQ পরীক্ষা, বিগত বছরের প্রশ্ন সমাধান, এবং বিস্তারিত ফলাফল বিশ্লেষণ পান।">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta property="og:image" content="https://yoursite.com/static/images/og-banner.png">
   <meta property="og:url" content="{{ request.build_absolute_uri }}">
-  
+  <meta property="og:type" content="website">
   <!-- Twitter -->
   <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="সরকারি চাকরির প্রস্তুতি | Jobs Academy: মডেল টেস্ট ও বিগত বছরের প্রশ্ন">
+    <meta name="twitter:description" content="Jobs Academy-তে শিক্ষক নিবন্ধন, প্রাথমিক, ব্যাংক, ও BCS সহ সকল সরকারি চাকরির জন্য সম্পূর্ণ প্রস্তুতি নিন। বিনামূল্যে অনলাইন MCQ পরীক্ষা, বিগত বছরের প্রশ্ন সমাধান, এবং বিস্তারিত ফলাফল বিশ্লেষণ পান।">
+    <meta name="twitter:image" content="https://yoursite.com/static/images/og-banner.png">
 
 
   <!-- ga4  -->
@@ -180,13 +183,28 @@
   <script type="application/ld+json">
     {
       "@context": "https://schema.org",
-      "@type": "Quiz",
-      "name": "BCS MCQ Practice Quiz",
-      "description": "Free practice quiz for BCS preliminary exam preparation.",
-      "educationalLevel": "Undergraduate",
-      "learningResourceType": "Practice Questions"
+      "@type": "Organization",
+      "name": "Jobs Academy",
+      "url": "{{ request.build_absolute_uri }}",
+      "logo": "https://yoursite.com/static/images/jobs_academy4.png",
+      "description": "Jobs Academy provides online mock tests, previous year questions, and comprehensive study materials for government job preparation in Bangladesh, including NTRCA, BCS, Primary, and Bank exams.",
+      "sameAs": [
+        "https://www.facebook.com/profile.php?id=61575841160427"
+        // Add other social media profiles if you have them, e.g., "https://twitter.com/YourTwitter"
+      ]
     }
   </script>
+
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "Quiz",
+        "name": "BCS MCQ Practice Quiz",
+        "description": "Free practice quiz for BCS preliminary exam preparation.",
+        "educationalLevel": "Undergraduate",
+        "learningResourceType": "Practice Questions"
+      }
+    </script>
 
 
     <!-- Google ads manager link -->
@@ -537,26 +555,26 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   <div class="d-flex justify-content-around text-center">
     
     <!-- Home -->
-    <a href="/" class="text-dark text-decoration-none">
-      <i class="fa-solid fa-house fa-lg d-block p-1"></i>
+    <a href="/" class="text-dark text-decoration-none text-center">
+      <i class="fa-solid fa-house fa-lg d-block p-2"></i>
       <small class="fw-bold">Home</small>
     </a>
     
     <!-- Quiz -->
-    <a href="/quizzes/" class="text-dark text-decoration-none">
-      <i class="fa-solid fa-clipboard-question fa-lg d-block p-1"></i>
+    <a href="/quizzes/" class="text-dark text-decoration-none text-center">
+      <i class="fa-solid fa-clipboard-question fa-lg d-block p-2"></i>
       <small class="fw-bold">Quiz</small>
     </a>
 
     <!-- Exams -->
-    <a href="/past_exams/" class="text-dark text-decoration-none">
-      <i class="fa-solid fa-file-lines fa-lg d-block p-1"></i>
+    <a href="/past_exams/" class="text-dark text-decoration-none text-center">
+      <i class="fa-solid fa-file-lines fa-lg d-block p-2"></i>
       <small class="fw-bold">Exams</small>
     </a>
 
     <!-- About -->
-    <a href="/about-us/" class="text-dark text-decoration-none">
-      <i class="fa-solid fa-circle-info fa-lg d-block p-1"></i>
+    <a href="/about-us/" class="text-dark text-decoration-none text-center">
+      <i class="fa-solid fa-circle-info fa-lg d-block p-2"></i>
       <small class="fw-bold">About</small>
     </a>
 
