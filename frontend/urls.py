@@ -40,3 +40,17 @@ urlpatterns += [
     path('exams/wr_exams/', TemplateView.as_view(template_name="new_custom/wr_exams/wr_exams.html")),
     path('exams/wr_exams/<int:id>/', TemplateView.as_view(template_name="new_custom/wr_exams/wr_exam_details.html")),
 ]
+
+
+from django.views.static import serve
+from django.conf import settings
+from django.urls import re_path
+import os
+# ads.txt urls
+urlpatterns += [
+    re_path(r'^ads\.txt$', serve, {
+        'path': 'ads.txt',
+        'document_root': os.path.join(settings.BASE_DIR, 'frontend/static'),
+        'show_indexes': False
+    }),
+]
