@@ -328,7 +328,7 @@ class Question(models.Model):
     ]
     
     exams = models.ManyToManyField('Exam', related_name='questions', blank=True)
-    text = models.CharField(max_length=255, unique=True, null=True, blank=True)
+    text = models.TextField(unique=True, null=True, blank=True)
     image = models.ImageField(upload_to='question_images/', null=True, blank=True)
 
     # explanation = models.TextField(null=True, blank=True)
@@ -374,7 +374,7 @@ class Question(models.Model):
 
 class QuestionOption(models.Model):
     question = models.ForeignKey(Question, related_name='options', on_delete=models.CASCADE)
-    text = models.CharField(max_length=255, blank=True, null=True)  # Optional text
+    text = models.TextField(null=True, blank=True)  # Optional text
     image = models.ImageField(upload_to="question_options/", blank=True, null=True)  # Image option
     is_correct = models.BooleanField(default=False)
 
@@ -450,7 +450,7 @@ class Leaderboard(models.Model):
 
 
 class PastExam(models.Model):
-    title = models.CharField(max_length=255, unique=True)  # Exam Name
+    title = models.TextField(unique=True)  # Exam Name
     organization = models.ForeignKey(Organization, on_delete=models.CASCADE, related_name="exams")
     department = models.ForeignKey(Department, on_delete=models.SET_NULL, null=True, blank=True, related_name="exams")
     position = models.ForeignKey(Position, on_delete=models.CASCADE, related_name="exams")
