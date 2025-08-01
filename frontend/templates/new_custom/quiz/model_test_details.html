@@ -67,14 +67,36 @@
       border-radius: 0.375rem;
       background: #0F766E;
       color: white;
+
+      border: none;
+      padding: 12px 25px;
+      border-radius: 8px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+      transition: all 0.2s ease-out;
+      cursor: pointer;
+      position: relative;
+      overflow: hidden;
     }
     
     
 
-    .btn{
-        
-        
-    }
+/* Hover Effect: Brighter, slightly lifted */
+.btn-custom:hover {
+    background: #13ada1; /* Brighter amber to a classic orange */
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+    transform: translateY(-2px);
+}
+
+/* Active Effect: "Sinking" look */
+.btn-custom:active {
+    background: #4fcdc3;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    transform: translateY(2px);
+    outline: none;
+}
 
     @media (max-width: 768px) {
       .info-box {
@@ -114,12 +136,12 @@
                 <span class="info-box-value" id="past-exam-total-marks"></span>
               </div>
             </div>
-            <div class="col-sm-6">
+            <!-- <div class="col-sm-6">
               <div class="info-box">
                 <span class="info-box-label">Exam Date</span>
                 <span class="info-box-value" id='past-exam-date'></span>
               </div>
-            </div>
+            </div> -->
             <div class="col-sm-6">
               <div class="info-box">
                 <span class="info-box-label">Negative Marks</span>
@@ -147,9 +169,10 @@
             <div class="col-sm-6">
               <div class="info-box">
                 <span class="info-box-label">Duration</span>
-                <span class="info-box-value"><span id='past-exam-duration'></span> Min</span>
+                <span class="info-box-value"><span id="past-exam-duration"></span></span>
               </div>
             </div>
+
             <div class="col-sm-6">
               <div class="info-box">
                 <span class="info-box-label">Your Score</span>

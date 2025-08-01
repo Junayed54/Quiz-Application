@@ -1,299 +1,175 @@
-{% extends 'new_custom/new_templates/index2.html' %}
-{% block title %}Contact Us | Jobs Academy{% endblock %}
-{% block style %}
-<style>
-    /* General body and background */
-    body {
-        font-family: 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-        background-color: #f8f9fa; /* Light background for the whole page */
-        color: #343a40; /* Dark gray text */
-    }
-
-    /* Hero Section - consistent with About Us */
-    .hero-section {
-        background: linear-gradient(90deg, #00C9FF 0%, #92FE9D 100%);
-        color: white;
-        padding: 120px 0;
-        text-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
-        position: relative;
-        overflow: hidden;
-    }
-
-    .hero-section::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background: url('https://www.transparenttextures.com/patterns/cubes.png') repeat;
-        opacity: 0.1;
-        z-index: 1;
-    }
-
-    .hero-section .container {
-        position: relative;
-        z-index: 2;
-    }
-
-    .hero-section .display-5 {
-        font-weight: 800;
-        letter-spacing: 1.5px;
-        font-size: 3.5rem;
-    }
-
-    .hero-section .lead {
-        font-size: 1.3rem;
-        margin-top: 1.5rem;
-    }
-
-    /* Section Title - consistent with About Us */
-    .section-title {
-        font-size: 2.8rem;
-        font-weight: 800;
-        color: #1a2a6c; /* A deeper, more professional blue */
-        margin-bottom: 2rem;
-        position: relative;
-        display: inline-block;
-        padding-bottom: 0.5rem;
-    }
-
-    .section-title::after {
-        content: '';
-        position: absolute;
-        left: 50%;
-        transform: translateX(-50%);
-        bottom: 0;
-        height: 4px;
-        width: 80px;
-        background-color: #0d6efd; /* Primary blue */
-        border-radius: 2px;
-    }
-
-    .highlight {
-        color: #0d6efd; /* Bootstrap primary blue */
-    }
-
-    /* Contact Section Container */
-    .contact-content-section {
-        padding: 60px 0;
-        background-color: #ffffff;
-        border-radius: 8px;
-        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08); /* Stronger shadow for the main box */
-    }
-
-    /* Info Boxes */
-    .info-box {
-        background: linear-gradient(135deg, #f0f4f8 0%, #e0e6ed 100%); /* Subtle gradient for info boxes */
-        padding: 30px; /* More padding */
-        border-radius: 12px; /* More rounded */
-        margin-bottom: 25px;
-        text-align: center;
-        height: 100%;
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        align-items: center;
-        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05); /* Subtle shadow */
-        transition: all 0.3s ease;
-        border: 1px solid #dcdfe4; /* Light border */
-    }
-
-    .info-box:hover {
-        transform: translateY(-8px); /* Lift on hover */
-        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1); /* Stronger shadow on hover */
-    }
-
-    .info-box i {
-        font-size: 3.2rem; /* Larger icons */
-        color: #0d6efd; /* Primary blue */
-        margin-bottom: 20px;
-        display: block;
-    }
-
-    .info-box h5 {
-        font-size: 1.5rem; /* Larger heading */
-        font-weight: 700;
-        color: #1a2a6c; /* Dark blue */
-        margin-bottom: 10px;
-    }
-
-    .info-box p {
-        font-size: 1.05rem; /* Slightly larger text */
-        color: #555;
-        line-height: 1.6;
-        margin-bottom: 0;
-    }
-
-    /* Form Styling */
-    .form-control {
-        border-radius: 8px;
-        padding: 12px 15px;
-        border: 1px solid #ced4da;
-    }
-
-    .form-control:focus {
-        border-color: #0d6efd; /* Primary blue focus */
-        box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
-    }
-
-    .form-label {
-        font-weight: 600;
-        color: #343a40;
-        margin-bottom: 8px;
-    }
-
-    .btn-primary {
-        background-color: #0d6efd;
-        border-color: #0d6efd;
-        padding: 15px 35px; /* Larger button */
-        font-size: 1.2rem;
-        font-weight: 600;
-        border-radius: 50px; /* Pill shape */
-        transition: all 0.3s ease;
-        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-    }
-
-    .btn-primary:hover {
-        background-color: #0b5ed7;
-        border-color: #0b5ed7;
-        transform: translateY(-3px);
-        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
-    }
-
-    /* Map Container */
-    .map-container {
-        height: 450px; /* Slightly taller map */
-        border-radius: 12px; /* More rounded */
-        overflow: hidden;
-        box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1); /* Prominent shadow */
-        background-color: #e9ecef;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        color: #6c757d;
-        font-size: 1.2rem;
-        text-align: center;
-    }
-
-    .map-container iframe {
-        border: 0;
-        width: 100%;
-        height: 100%;
-    }
-
-    /* Responsive adjustments */
-    @media (max-width: 767.98px) {
-        .section-title {
-            font-size: 2.2rem;
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Video with VAST Ad and Floating Ad (videojs-vast-vpaid 2.0.2)</title>
+    
+    <link href="https://vjs.zencdn.net/7.20.3/video-js.css" rel="stylesheet" /> 
+    
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/videojs-vast-vpaid/2.0.2/videojs.vast.vpaid.min.css" rel="stylesheet" />
+    
+    <style>
+        /* Optional: Center the big play button */
+        .video-js .vjs-big-play-button {
+            top: 45%;
+            left: 45%;
+            transform: translate(-50%, -50%); /* For perfect centering */
         }
-        .hero-section {
-            padding: 80px 0;
-        }
-        .hero-section .display-5 {
-            font-size: 2.5rem;
-        }
-        .hero-section .lead {
-            font-size: 1rem;
-        }
-        .info-box {
-            margin-bottom: 20px;
-            padding: 20px;
-        }
-        .info-box i {
-            font-size: 2.5rem;
-        }
-        .info-box h5 {
-            font-size: 1.3rem;
-        }
-        .map-container {
-            height: 300px;
-        }
-    }
-</style>
-{% endblock %}
-{% block content %}
 
-<section class="hero-section text-center">
-    <div class="container">
-        <h1 class="display-5 fw-bold">Contact <span class="highlight">Jobs Academy</span></h1>
-        <p class="lead mt-3">
-            We'd love to hear from you. Reach out to us for any queries or support.
-        </p>
-    </div>
-</section>
+        /* Styles for the floating ad */
+        #floating-ad-container {
+            position: fixed;
+            top: 20px; /* Adjust as needed */
+            right: 20px; /* Adjust as needed */
+            width: 300px; /* Example width */
+            background-color: #f9f9f9;
+            border: 1px solid #ccc;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            padding: 10px;
+            z-index: 1000; /* Ensure it's above other content */
+            display: none; /* Hidden by default, show on scroll */
+        }
 
-<div class="container">
-    <div class="row justify-content-center">
-        <div class="col-lg-10">
-            <div class="contact-content-section">
-                <h2 class="text-center section-title mb-5 mx-4">Get in Touch</h2>
-                <div class="row">
-                    <div class="col-md-5 mb-4">
-                        <div class="row">
-                            <div class="col-12 mb-3">
-                                <div class="info-box">
-                                    <i class="fas fa-map-marker-alt"></i>
-                                    <h5>Our Office</h5>
-                                    <p>Ionic Tower<br>KA-62/3, Level-06, School Road, Kalachandpur, Gulshan-2<br>Dhaka-1212</p>
-                                </div>
-                            </div>
-                            <div class="col-12 mb-3">
-                                <div class="info-box">
-                                    <i class="fas fa-envelope"></i>
-                                    <h5>Email Us</h5>
-                                    <p><a href="mailto:info@jobs.academy">info@jobs.academy</a></p>
-                                    <p><a href="mailto:support@jobs.academy">support@jobs.academy</a></p>
-                                    <p class="small text-muted mt-2">Ionic Tower, KA-62/3, Level-06, School Road, Kalachandpur, Gulshan-2, Dhaka-1212</p>
-                                </div>
-                            </div>
-                            <div class="col-12">
-                                <div class="info-box">
-                                    <i class="fas fa-phone-alt"></i>
-                                    <h5>Call Us</h5>
-                                    <p>Hotline:+8801950193794</p>
-                                    <p>24/7 Support</p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-md-7">
-                        <form>
-                            <div class="mb-3">
-                                <label for="name" class="form-label">Your Name</label>
-                                <input type="text" class="form-control" id="name" placeholder="Enter your name" required>
-                            </div>
-                            <div class="mb-3">
-                                <label for="email" class="form-label">Your Email</label>
-                                <input type="email" class="form-control" id="email" placeholder="name@example.com" required>
-                            </div>
-                            <div class="mb-3">
-                                <label for="subject" class="form-label">Subject</label>
-                                <input type="text" class="form-control" id="subject" placeholder="Subject of your message" required>
-                            </div>
-                            <div class="mb-3">
-                                <label for="message" class="form-label">Your Message</label>
-                                <textarea class="form-control" id="message" rows="5" placeholder="Type your message here..." required></textarea>
-                            </div>
-                            <div class="d-grid gap-2">
-                                <button type="submit" class="btn btn-secondary" aria-pressed="true">Send Message</button>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-            </div>
+        #floating-ad-container.show {
+            display: block;
+        }
+
+        #floating-ad-content img {
+            max-width: 100%;
+            height: auto;
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        #close-floating-ad {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            cursor: pointer;
+            font-size: 18px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        #close-floating-ad:hover {
+            color: #000;
+        }
+    </style>
+</head>
+<body>
+
+    <video id="my-video" class="video-js vjs-default-skin" width="640" height="360" controls preload="auto">
+        <source src="https://www.dropbox.com/scl/fi/wu5l36aztwtaj659f4gg7/2025-04-07-10-25-08.mp4?rlkey=31n1ah9tm6665s78nqxm013w6&st=69l3jfos&dl=1" type="video/mp4">
+        Your browser does not support HTML5 video.
+    </video>
+
+    <div id="floating-ad-container">
+        <span id="close-floating-ad">&times;</span>
+        <h4>Sponsored Content</h4>
+        <div id="floating-ad-content">
+            <img src="https://via.placeholder.com/300x250?text=Your+Ad+Here" alt="Floating Ad">
+            <p>This is a sample floating ad. Click the 'X' to close it.</p>
         </div>
     </div>
 
-    <div class="row justify-content-center mt-5">
-        <div class="col-lg-10">
-            <h2 class="text-center section-title mb-4">Find Us on the Map</h2>
-            <div class="map-container">
-                <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d1825.132532450532!2d90.41849156555138!3d23.799757972922114!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3755c709e9e1c1b7%3A0xc4a1b0b5e0220a2e!2sIonic%20Tower!5e0!3m2!1sen!2sbd!4v1700000000000!5m2!1sen!2sbd"
-                    width="100%" height="100%" style="border:0;" allowfullscreen="" loading="lazy"
-                    referrerpolicy="no-referrer-when-downgrade"></iframe>
-                </div>
-        </div>
-    </div>
-</div>
-{% endblock %}
+    <p style="height: 1000px; margin-top: 50px;">Scroll down to see the floating ad appear!</p>
+    <p style="height: 500px;">More content...</p>
+
+
+    <script src="https://vjs.zencdn.net/7.20.3/video.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/videojs-vast-vpaid/2.0.2/videojs_5.vast.vpaid.min.js"></script>
+
+    <script>
+        const player = videojs('my-video');
+        let adPlayedInVideo = false;
+        let videoResumeTime = 0; // Store the time to resume the main video from
+
+        console.log('Script loaded. VideoJS player created.');
+
+        player.ready(function () {
+            console.log('VideoJS player is ready.');
+            
+            // Set up ad event listeners ONCE in the player.ready function.
+            player.on('adended', function () {
+                console.log('VAST Ad Ended. Resuming main video from', videoResumeTime);
+                player.currentTime(videoResumeTime); // Seek back to where it paused
+                player.play(); // Resume main video playback
+            });
+
+            player.on('aderror', function (e) {
+                console.error('VAST Ad Error:', e);
+                // In case of an ad error, resume the main video
+                console.log('Ad error. Resuming main video from', videoResumeTime);
+                player.currentTime(videoResumeTime); // Seek back to where it paused
+                player.play(); 
+            });
+
+            player.on('adstart', function() {
+                console.log('VAST Ad Started.');
+            });
+            player.on('adskip', function() {
+                console.log('VAST Ad Skipped.');
+                console.log('Ad skipped. Resuming main video from', videoResumeTime);
+                player.currentTime(videoResumeTime);
+                player.play();
+            });
+
+            // Listen for time updates on the main video
+            player.on('timeupdate', function () {
+                const currentTime = player.currentTime();
+                // console.log('Time update:', currentTime.toFixed(2)); // Uncomment for detailed timing
+
+                if (!adPlayedInVideo && currentTime >= 5) {
+                    adPlayedInVideo = true; // Set flag to true to prevent re-triggering
+
+                    videoResumeTime = currentTime; // Store current time before pausing
+                    player.pause(); // PAUSE THE MAIN VIDEO FIRST
+
+                    console.log('--- 5 seconds reached. Pausing video and initializing VAST ad ---');
+                    
+                    // Initialize the VAST plugin ONLY AT THIS MOMENT
+                    // 'playAdAlways: true' will tell it to play as soon as it's set up.
+                    player.vastClient({
+                        adTagUrl: "http://161.97.141.58:8080/www/delivery/fc.php?script=apVideo:vast2&zoneid=7",
+                        playAdAlways: true, 
+                        verbosity: 4, // Increase verbosity for detailed console logging
+                        // You might need these if your VAST contains VPAID Flash creatives
+                        // vpaidFlashLoaderPath: "https://cdnjs.cloudflare.com/ajax/libs/videojs-vast-vpaid/2.0.2/VPAIDFlash.swf", 
+                        // vpaidFlashPath: "https://cdnjs.cloudflare.com/ajax/libs/videojs-vast-vpaid/2.0.2/VPAIDFlash.swf"
+                    });
+
+                    // Remove the timeupdate listener once the ad has been triggered
+                    player.off('timeupdate'); 
+                    console.log('Timeupdate listener removed.');
+                }
+            });
+        });
+
+        // JavaScript for the floating ad (remains the same)
+        const floatingAdContainer = document.getElementById('floating-ad-container');
+        const closeFloatingAd = document.getElementById('close-floating-ad');
+        let floatingAdVisible = false;
+
+        // Show floating ad on scroll
+        window.addEventListener('scroll', function() {
+            if (!floatingAdVisible && window.scrollY > 200) { // Show after scrolling 200px
+                floatingAdContainer.classList.add('show');
+                floatingAdVisible = true;
+            }
+            // Optional: Hide floating ad if scrolled back up
+            if (floatingAdVisible && window.scrollY < 200) {
+                floatingAdContainer.classList.remove('show');
+                floatingAdVisible = false;
+            }
+        });
+
+        // Close floating ad
+        closeFloatingAd.addEventListener('click', function() {
+            floatingAdContainer.classList.remove('show');
+            floatingAdVisible = false; 
+        });
+
+    </script>
+
+</body>
+</html>
