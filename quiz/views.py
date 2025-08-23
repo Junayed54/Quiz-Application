@@ -2653,10 +2653,11 @@ class PastExamByTypeListView(ListAPIView):
     def get_queryset(self):
         exam_type_id = self.request.query_params.get('exam_type')
         # queryset = PastExam.objects.filter(is_published=True)
-        print(exam_type_id)
+        queryset = PastExam.objects.filter(root_exam__isnull=True)  
+        # print(exam_type_id)
         if exam_type_id:
-            queryset = PastExam.objects.filter(exam_type_id=exam_type_id)
-        
+            queryset = queryset.filter(exam_type_id=exam_type_id)
+
         return queryset
 
 

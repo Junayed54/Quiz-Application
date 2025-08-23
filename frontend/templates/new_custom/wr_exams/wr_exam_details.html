@@ -143,14 +143,13 @@
     }
 
     .btn-action {
-        padding: 16px 48px;
+        
         font-size: 1.25rem;
         border-radius: 50px;
         font-weight: 700;
         text-transform: uppercase;
         letter-spacing: 0.05em;
         transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-        min-width: 280px;
         position: relative;
         overflow: hidden;
     }
@@ -332,12 +331,7 @@
         .section-title {
             font-size: 1.6rem;
         }
-        .btn-action {
-            padding: 14px 30px;
-            font-size: 1.15rem;
-            min-width: unset;
-            width: 100%;
-        }
+        
         .written-question-card h6 {
             font-size: 1.15rem;
         }
@@ -383,10 +377,7 @@
         .section-title i {
             font-size: 1.6em;
         }
-        .btn-action {
-            font-size: 1.1rem;
-            padding: 12px 25px;
-        }
+        
         .written-question-card {
             padding: 20px;
         }
@@ -441,7 +432,7 @@
                                 <div class="detail-item">
                                     <i class="fas fa-user-tie"></i><strong>Position:</strong> <span id="examPosition"></span>
                                 </div>
-                                <div class="detail-item d-none">
+                                <div class="detail-item">
                                     <i class="fas fa-user"></i><strong>Created By:</strong> <span id="createdBy"></span>
                                 </div>
                             </div>
@@ -465,6 +456,9 @@
                                         <i class="fas fa-percentage"></i><strong>Total Marks:</strong> <span id="mcqTotalMarks"></span>
                                     </div>
                                 </div>
+                                <a id="mcqButton_details" href="#" class="btn btn-success btn-action">
+                                    <i class="fas fa-info-circle me-2"></i> Details
+                                </a>
                             </div>
                         </div>
 
@@ -504,7 +498,7 @@
         const errorMessage = document.getElementById('errorMessage');
         const examTitle = document.getElementById('examTitle');
         const examModeBadge = document.getElementById('examModeBadge');
-        const startButton = document.getElementById('startButton');
+        const mcqButton = document.getElementById('mcqButton_details');
         const examStatus = document.getElementById('examStatus');
         const writtenExamsContainer = document.getElementById('writtenExamsContainer');
         const writtenExamList = document.getElementById('writtenExamList');
@@ -563,6 +557,7 @@
             return response.json();
         })
         .then(data => {
+            console.log(data);
             loadingSpinner.style.display = 'none';
             showContentWithAnimation();
 
@@ -572,7 +567,7 @@
             
             document.getElementById('examType').textContent = data.exam_type ? data.exam_type.name : 'N/A';
             document.getElementById('examDate').textContent = data.exam_date ? new Date(data.exam_date).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) : 'TBA';
-            document.getElementById('createdBy').textContent = data.created_by ? data.created_by.email : 'N/A';
+            document.getElementById('createdBy').textContent = data.created_by.username;
             document.getElementById('examOrganization').textContent = data.organization ? data.organization.name : 'N/A';
             document.getElementById('examDepartment').textContent = data.department ? data.department.name : 'N/A';
             document.getElementById('examPosition').textContent = data.position ? data.position.name : 'N/A';
@@ -587,6 +582,18 @@
                 document.getElementById('mcqDuration').textContent = data.past_exam.duration || 'N/A';
                 document.getElementById('mcqTotalQuestions').textContent = data.past_exam.total_questions || '0';
                 document.getElementById('mcqTotalMarks').textContent = data.past_exam.total_marks ? parseFloat(data.past_exam.total_marks).toFixed(2) : '0.00';
+                
+            }
+             const mcqButton = document.getElementById('mcqButton_details');
+            if (data.past_exam) {
+                document.getElementById('mcqDetails').style.display = 'block';
+                // ... populate mcq details ...
+
+                // Set the dynamic URL for the button
+                mcqButton.href = `/past_exam_details/${data.past_exam.id}/`;
+                mcqButton.classList.remove('d-none'); // Ensure the button is visible
+            } else {
+                mcqButton.classList.add('d-none'); // Hide the button if no past exam data
             }
 
             if (data.written_exams && data.written_exams.length > 0) {
@@ -690,6 +697,8 @@
                 examStatus.textContent = "Exam date not set. Please contact administration for details.";
                 examStatus.classList.add('text-danger');
             }
+
+            
         })
         .catch(error => {
             loadingSpinner.style.display = 'none';

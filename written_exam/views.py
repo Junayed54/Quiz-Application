@@ -9,6 +9,7 @@ import openpyxl
 from openpyxl.utils import get_column_letter
 from io import BytesIO
 from PIL import Image
+from rest_framework.permissions import AllowAny
 from django.core.files.base import ContentFile
 from django.db import transaction
 from rest_framework.views import APIView
@@ -833,36 +834,74 @@ class CreateWrittenExamAPIView(APIView):
 
 
 
-class RootExamListView(generics.ListAPIView):
+# class RootExamListView(generics.ListAPIView):
     
+#     serializer_class = RootExamSerializer
+#     # permission_classes = [IsAuthenticated] # <--- REMOVE OR COMMENT OUT THIS LINE
+#     permission_classes = [] # Allow any access
+
+#     def get_queryset(self):
+#         """
+#         Filters the queryset based on the user's role,
+#         but now also accessible to unauthenticated users.
+#         """
+#         user = self.request.user
+
+#         # Handle unauthenticated users: They won't have a role,
+#         # so decide what they should see.
+#         if not user.is_authenticated:
+#             # For example, let unauthenticated users see all exams.
+#             # Or you could return RootExam.objects.none() if they should see nothing.
+#             return RootExam.objects.all().order_by('-created_at') # 🚨 Security Consideration Here!
+
+#         # Existing logic for authenticated users remains the same
+#         if user.role == User.ADMIN or user.role == User.STUDENT:
+#             return RootExam.objects.all().order_by('-created_at')
+
+#         elif user.role == User.TEACHER or user.role == User.OPERATOR:
+#             return RootExam.objects.filter(created_by=user).order_by('-created_at')
+
+#         return RootExam.objects.none()
+
+
+
+class RootExamListView(generics.ListAPIView):
     serializer_class = RootExamSerializer
-    # permission_classes = [IsAuthenticated] # <--- REMOVE OR COMMENT OUT THIS LINE
-    permission_classes = [] # Allow any access
+    permission_classes = [AllowAny]  # Allow any access
 
     def get_queryset(self):
         """
-        Filters the queryset based on the user's role,
-        but now also accessible to unauthenticated users.
+        Filters the queryset based on exam type, and additionally by user role.
         """
         user = self.request.user
+        
+        # Get the exam_type_id from the URL query parameters
+        exam_type_id = self.request.query_params.get('exam_type')
 
-        # Handle unauthenticated users: They won't have a role,
-        # so decide what they should see.
-        if not user.is_authenticated:
-            # For example, let unauthenticated users see all exams.
-            # Or you could return RootExam.objects.none() if they should see nothing.
-            return RootExam.objects.all().order_by('-created_at') # 🚨 Security Consideration Here!
+        # Start with the base queryset
+        queryset = RootExam.objects.all().order_by('-created_at')
 
-        # Existing logic for authenticated users remains the same
-        if user.role == User.ADMIN or user.role == User.STUDENT:
-            return RootExam.objects.all().order_by('-created_at')
+        # Always filter by exam_type if the parameter is provided
+        if exam_type_id:
+            queryset = queryset.filter(exam_type__id=exam_type_id)
 
-        elif user.role == User.TEACHER or user.role == User.OPERATOR:
-            return RootExam.objects.filter(created_by=user).order_by('-created_at')
+        # Apply additional filters based on user role if the user is authenticated
+        if user.is_authenticated:
+            if user.role in [user.ADMIN, user.STUDENT]:
+                # ADMIN and STUDENT can see all exams of the specified type
+                pass
+            
+            elif user.role in [user.TEACHER, user.OPERATOR]:
+                # TEACHER and OPERATOR can only see exams they created of the specified type
+                queryset = queryset.filter(created_by=user)
+        
+        # Prefetch related data to optimize performance and prevent N+1 queries
+        queryset = queryset.prefetch_related('written_exams', 'exam_type', 'subjects', 'organization', 'department', 'position')
+        
+        return queryset
 
-        return RootExam.objects.none()
-
-
+    
+    
 class RootExamDetailView(generics.RetrieveAPIView):
     """
     API view to retrieve a single RootExam instance by its ID.

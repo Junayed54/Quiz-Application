@@ -491,6 +491,7 @@ class PastExamListSerializer(serializers.ModelSerializer):
             'negative_mark',
             'is_published',
             'created_by',
+            'created_at',
             'missing_explanations_count',  # 👈 Add this
         ]
 

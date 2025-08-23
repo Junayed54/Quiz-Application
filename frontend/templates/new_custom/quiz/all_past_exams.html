@@ -111,7 +111,7 @@
             background-color: rgba(255, 255, 255, 0.9);
             border: 1px solid #ddd;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-            padding: 5px;
+            padding: 2px;
             border-radius: 8px;
             /* Animation properties */
             transform: translateX(100%); /* Start off-screen to the right */
@@ -129,23 +129,24 @@
         }
 
         /* --- Close Button CSS --- */
-        .floating-banner .close-button {
-            position: absolute;
-            top: -10px; /* Adjust as needed to position outside the banner */
-            right: -10px; /* Adjust as needed */
-            background-color: #ff6600;
-            color: white;
-            border-radius: 50%;
-            width: 24px;
-            height: 24px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-size: 16px;
-            font-weight: bold;
-            cursor: pointer;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-            transition: background-color 0.2s ease;
+        /* --- Floating Banner CSS --- */
+        .floating-banner {
+            position: fixed;
+            /* Adjust position for the new size */
+            top: 20%; /* Example: place it 20% from the top */
+            right: 20px;
+            /* Or you can place it on the left side: */
+            /* left: 20px; */ 
+            z-index: 1000;
+            /* Ad styles... */
+            background-color: rgba(255, 255, 255, 0.9);
+            border: 1px solid #ddd;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            padding: 2px;
+            border-radius: 8px;
+            /* Animation properties */
+            transform: translateX(100%); /* Start off-screen to the right */
+            animation: slideIn 0.8s forwards ease-out; /* Animation definition */
         }
 
         .floating-banner .close-button:hover {
@@ -180,13 +181,25 @@
             <div class="loader-container" id="loader">
                 <div class="ripple-loader"></div>
             </div>
+
+            <div class="col-md-10 mx-auto" id="all_wr_exams">
+                
+            </div>
             <div class="col-md-10 mx-auto" id="all_exams">
 
 
             </div>
+
+
         </div>
     </div>
     <div style="height: 210px"></div>
+    <div class="floating-banner" id="floatingAdBanner">
+        <span class="close-button" onclick="document.getElementById('floatingAdBanner').style.display='none';">&times;</span>
+        <iframe id='a384078a' name='a384078a' src='http://161.97.141.58:8080/www/delivery/afr.php?zoneid=8&amp;cb=INSERT_RANDOM_NUMBER_HERE' frameborder='0' scrolling='no' width='90' height='300' allow='autoplay'><a href='http://161.97.141.58:8080/www/delivery/ck.php?n=adcafdd2&amp;cb=INSERT_RANDOM_NUMBER_HERE' target='_blank'><img src='http://161.97.141.58:8080/www/delivery/avw.php?zoneid=8&amp;cb=INSERT_RANDOM_NUMBER_HERE&amp;n=adcafdd2' border='0' alt='' /></a></iframe>
+    </div>
+
+    
 
     <!-- <div class="floating-banner" id="floatingAdBanner">
         <span class="close-button" onclick="document.getElementById('floatingAdBanner').style.display='none';">&times;</span>

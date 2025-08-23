@@ -18,7 +18,7 @@ document.addEventListener('DOMContentLoaded', function () {
         .then(response => response.json())
         .then(data => {
             if (data) {
-                console.log(data);
+                console.log("data", data);
                const title_text = `${data.title}`;
                 // Populate Past Exam Details
                 const titleElement = document.getElementById('past-exam-title')
@@ -34,7 +34,33 @@ document.addEventListener('DOMContentLoaded', function () {
                 document.getElementById('past-exam-position').textContent = data.position;
                 document.getElementById('past-exam-date').textContent = new Date(data.exam_date).toLocaleDateString();
                 document.getElementById('past-exam-duration').textContent = data.duration || 'N/A';
-                document.getElementById('past-exam-status').textContent = data.is_published ? 'Published' : 'Unpublished';
+                // document.getElementById('past-exam-status').textContent = data.is_published ? 'Published' : 'Unpublished';
+                // console.log("hello", data.created_by);
+                document.getElementById('exam-created-by').textContent = data.created_by || 'N/A';
+                 const createdAtElement = document.getElementById('exam-created-at');
+                if (data.created_at) {
+                    // Create a new Date object from the ISO 8601 string
+                    const date = new Date(data.created_at);
+
+                    // Format the date and time into a readable string
+                    const formattedDate = date.toLocaleDateString('en-US', {
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric'
+                    });
+
+                    const formattedTime = date.toLocaleTimeString('en-US', {
+                        hour: '2-digit',
+                        minute: '2-digit',
+                        hour12: true
+                    });
+                    
+                    // Combine the formatted date and time
+                    createdAtElement.textContent = `${formattedDate}`;
+
+                } else {
+                    createdAtElement.textContent = 'N/A';
+                }
             }
         })
         .catch(error => console.error('Error fetching past exam details:', error));

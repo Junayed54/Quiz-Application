@@ -11,14 +11,14 @@
   <meta property="og:title" content="Govt Job Preparation | শিক্ষক নিবন্ধন | চাকরি প্রস্তুতি">
   <meta property="og:description" content="Jobs Academy-তে শিক্ষক নিবন্ধন, প্রাথমিক, ব্যাংক, ও BCS সহ সকল সরকারি চাকরির জন্য সম্পূর্ণ প্রস্তুতি নিন। বিনামূল্যে অনলাইন MCQ পরীক্ষা, বিগত বছরের প্রশ্ন সমাধান, এবং বিস্তারিত ফলাফল বিশ্লেষণ পান।">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta property="og:image" content="https://yoursite.com/static/images/og-banner.png">
+  <meta property="og:image" content="https://jobs.academy/static/images/og-banner.png">
   <meta property="og:url" content="{{ request.build_absolute_uri }}">
   <meta property="og:type" content="website">
   <!-- Twitter -->
   <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="সরকারি চাকরির প্রস্তুতি | Jobs Academy: মডেল টেস্ট ও বিগত বছরের প্রশ্ন">
     <meta name="twitter:description" content="Jobs Academy-তে শিক্ষক নিবন্ধন, প্রাথমিক, ব্যাংক, ও BCS সহ সকল সরকারি চাকরির জন্য সম্পূর্ণ প্রস্তুতি নিন। বিনামূল্যে অনলাইন MCQ পরীক্ষা, বিগত বছরের প্রশ্ন সমাধান, এবং বিস্তারিত ফলাফল বিশ্লেষণ পান।">
-    <meta name="twitter:image" content="https://yoursite.com/static/images/og-banner.png">
+    <meta name="twitter:image" content="https://jobs.academy/static/images/og-banner.png">
 
 
   <!-- ga4  -->
@@ -165,7 +165,46 @@
     }
   </style>
 
+  <style>
 
+   .ad-container-overlay {
+  position: fixed;
+  top: 50%;
+  right: -230px; /* Hides the ad container off-screen to the right. Use a negative value equal to its width. */
+  transform: translateY(-20%);
+  transition: right 0.8s ease-out; /* Animates the 'right' property for a smooth slide. */
+  z-index: 1050;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2); /* Adds a subtle shadow for depth. */
+  border-radius: 8px; /* Rounds the corners of the ad. */
+  /* Ensures the close button doesn't go outside the container. */
+}
+
+.ad-container-overlay.visible {
+  right: 20%; /* Slides the ad to the center of the screen. */
+  transform: translate(20%, -20%);
+}
+
+.close-ad-btn {
+  position: absolute;
+  top: 0;
+  right: 0;
+  background-color: #ff4b4b;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 24px;
+  height: 24px;
+  font-size: 16px;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  transform: translate(50%, -50%);
+  z-index: 10;
+}
+
+  </style>
   <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
   <script>
     window.OneSignalDeferred = window.OneSignalDeferred || [];
@@ -502,6 +541,11 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   </div>
 </section>  {% endcomment %}
 
+<div class="ad-container-overlay" id="ad-container-overlay">
+  <button id="close-ad-btn" class="close-ad-btn">&times;</button>
+  <iframe id='ada1ff71' name='ada1ff71' src='http://161.97.141.58:8080/www/delivery/afr.php?zoneid=13&amp;cb=INSERT_RANDOM_NUMBER_HERE' frameborder='0' scrolling='no' width='230' height='154' allow='autoplay'><a href='http://161.97.141.58:8080/www/delivery/ck.php?n=ace1ab7c&amp;cb=INSERT_RANDOM_NUMBER_HERE' target='_blank'><img src='http://161.97.141.58:8080/www/delivery/avw.php?zoneid=13&amp;cb=INSERT_RANDOM_NUMBER_HERE&amp;n=ace1ab7c' border='0' alt='' /></a></iframe>
+</div>
+
 {% endblock %}
 
 
@@ -606,6 +650,30 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     var dropdownMenu = document.querySelector('.question-dropdown');
     dropdownMenu.style.display = dropdownMenu.style.display === 'block' ? 'none' : 'block';
     event.preventDefault();
+  });
+</script>
+<script>
+  document.addEventListener("DOMContentLoaded", function() {
+    const adContainer = document.getElementById("ad-container-overlay");
+    const closeBtn = document.getElementById("close-ad-btn");
+
+    // Show the ad by adding the 'visible' class after a delay
+    setTimeout(function() {
+      if (adContainer) {
+        adContainer.classList.add('visible');
+      }
+    }, 2000); // Ad slides in after 2 seconds
+
+    if (closeBtn && adContainer) {
+      closeBtn.addEventListener("click", function() {
+        // Hide the ad by removing the 'visible' class
+        adContainer.classList.remove('visible');
+        // You can also hide it permanently after closing
+        setTimeout(() => {
+          adContainer.style.display = 'none';
+        }, 800); // Hides it after the transition completes
+      });
+    }
   });
 </script>
 <script src="../../../static/Js/new_templates_js/index2.js"></script>

@@ -462,6 +462,7 @@ class PastExam(models.Model):
     total_questions = models.PositiveIntegerField(default=0) 
     pass_mark = models.PositiveIntegerField(default=50)  # Minimum passing percentage
     negative_mark = models.FloatField(default=0.0)  # Penalty per wrong answer
+    created_at = models.DateTimeField(auto_now_add=True, null=True)
     created_by = models.ForeignKey(
         User, 
         on_delete=models.SET_NULL, 
