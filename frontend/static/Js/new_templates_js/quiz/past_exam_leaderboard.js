@@ -244,8 +244,8 @@ document.addEventListener('DOMContentLoaded', function () {
                     const row = `
                         <tr>
                             <th scope="row">${index + 1}</th>
-                            <td>${entry.user}</td>
-                            <td>${entry.score}</td>
+                            <td>${entry.username}</td>
+                            <td>${entry.best_score}</td>
                         </tr>
                     `;
                     leaderboardContainer.innerHTML += row;

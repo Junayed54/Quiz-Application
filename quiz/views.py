@@ -35,6 +35,7 @@ import json
 import uuid
 from django.core.exceptions import ObjectDoesNotExist
 # import logging
+from django.db.models import Max
 import pandas as pd
 from .pagination import CustomPageNumberPagination
 from django.contrib.auth import get_user_model
@@ -3393,11 +3394,20 @@ class PastExamLeaderboardAPIView(APIView):
 
         data = []
         for index, attempt in enumerate(attempts, start=1):
+            # Calculate best score for this user in this exam
+            best_score = (
+                PastExamAttempt.objects
+                .filter(user=attempt.user, past_exam__id=exam_id)
+                .aggregate(max_score=Max('score'))['max_score']
+            )
+
             data.append({
                 'username': attempt.user.username,
                 'user_id': attempt.user.id,
                 'position': index,
                 'exam_title': attempt.past_exam.title,
+                'current_score': attempt.score,
+                'best_score': best_score
             })
 
         return Response(data, status=status.HTTP_200_OK)

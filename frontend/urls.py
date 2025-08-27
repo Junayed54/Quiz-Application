@@ -41,6 +41,13 @@ urlpatterns += [
     path('exams/wr_exams/<int:id>/', TemplateView.as_view(template_name="new_custom/wr_exams/wr_exam_details.html")),
 ]
 
+# jobs news urls
+
+urlpatterns +=[
+    path('job-news/', TemplateView.as_view(template_name="new_custom/jobs/all_jobs.html")),
+    path('job-news/<int:id>/', TemplateView.as_view(template_name="new_custom/jobs/job_details.html")),
+]
+
 
 from django.views.static import serve
 from django.conf import settings
