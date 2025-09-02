@@ -1,9 +1,6 @@
 {% extends 'new_custom/new_templates/index2.html' %}
 {% block title %}Exam Details{% endblock %}
 {% block style %}
-<!-- {% block head_link %}
-<link href="https://vjs.zencdn.net/7.20.3/video-js.css" rel="stylesheet" />
-{% endblock %} -->
 <style>
     body {
         font-family: 'Inter', sans-serif;
@@ -167,11 +164,11 @@
 
     /* video ad */
     .video-js {
-      width: 640px;
-      height: 360px;
-      margin: auto;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-      border-radius: 8px;
+        width: 640px;
+        height: 360px;
+        margin: auto;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        border-radius: 8px;
     }
 
 
@@ -216,210 +213,93 @@
 {% block content %}
 <div class="container ">
     <div class="main-content-wrapper">
-        <div class="main-card-container">
+        <div class="main-card-container my-4">
             <div class="card bg-white">
                 <h1 class="card-title text-center mb-4" id="past-exam-title"></h1>
                 <div class="row">
                     <div class="col-sm-6">
                         <div class="info-box">
-                            <span class="info-box-label">Total Question</span>
+                            <span class="info-box-label">মোট প্রশ্ন</span>
                             <span class="info-box-value" id="past-exam-total-questions"></span>
                         </div>
                     </div>
                     <div class="col-sm-6">
                         <div class="info-box">
-                            <span class="info-box-label">Total Marks</span>
+                            <span class="info-box-label">মোট নম্বর</span>
                             <span class="info-box-value" id="past-exam-total-marks"></span>
                         </div>
                     </div>
                     <div class="col-sm-6">
                         <div class="info-box">
-                            <span class="info-box-label">Exam Date</span>
+                            <span class="info-box-label">পরীক্ষার তারিখ</span>
                             <span class="info-box-value" id='past-exam-date'></span>
                         </div>
                     </div>
                     <div class="col-sm-6">
                         <div class="info-box">
-                            <span class="info-box-label">Negative Marks</span>
+                            <span class="info-box-label">নেগেটিভ নম্বর</span>
                             <span class="info-box-value" id='past-exam-negative-marks'></span>
                         </div>
                     </div>
                     <div class="col-sm-6">
                         <div class="info-box">
-                            <span class="info-box-label">Organization</span>
+                            <span class="info-box-label">প্রতিষ্ঠান</span>
                             <span class="info-box-value" id='past-exam-organization'></span>
                         </div>
                     </div>
                     <div class="col-sm-6">
                         <div class="info-box">
-                            <span class="info-box-label">Department</span>
+                            <span class="info-box-label">বিভাগ</span>
                             <span class="info-box-value" id='past-exam-department'></span>
                         </div>
                     </div>
                     <div class="col-sm-6">
                         <div class="info-box">
-                            <span class="info-box-label">Position</span>
+                            <span class="info-box-label">পদ</span>
                             <span class="info-box-value" id="past-exam-position"></span>
                         </div>
                     </div>
                     <div class="col-sm-6">
                         <div class="info-box">
-                            <span class="info-box-label">Duration</span>
-                            <span class="info-box-value"><span id='past-exam-duration'></span> Min</span>
+                            <span class="info-box-label">সময়কাল</span>
+                            <span class="info-box-value"><span id='past-exam-duration'></span> মিনিট</span>
                         </div>
                     </div>
-                    <!-- <div class="col-sm-6">
-                        <div class="info-box">
-                            <span class="info-box-label">Your Score</span>
-                            <span class="info-box-value">--</span>
-                        </div>
-                    </div> -->
                     <div class="col-sm-6">
                         <div class="info-box">
-                            <span class="info-box-label">Created By</span>
+                            <span class="info-box-label">প্রণেতা</span>
                             <span class="info-box-value"><span id='exam-created-by'></span></span>
                         </div>
                     </div>
                     <div class="col-sm-6">
                         <div class="info-box">
-                            <span class="info-box-label">Created At</span>
+                            <span class="info-box-label">প্রণীত তারিখ</span>
                             <span class="info-box-value"><span id='exam-created-at'></span></span>
                         </div>
                     </div>
                 </div>
                 <div class="row mt-3">
                     <div class="col-6 mb-2">
-                        <button class="btn w-100 btn-custom" id="read">Read Exam</button>
+                        <button class="btn w-100 btn-custom" id="read">অনুশীলন করুন</button>
                     </div>
                     <div class="col-6 mb-2">
-                        <button class="btn w-100 btn-custom" id="start-exam-btn">Start Exam</button>
+                        <button class="btn w-100 btn-custom" id="start-exam-btn">মূল্যায়ন</button>
                     </div>
                     <div class="col-6 mb-2">
-                        <button class="btn w-100 btn-custom" id="leaderboard">Leaderboard</button>
+                        <button class="btn w-100 btn-custom" id="leaderboard">লিডারবোর্ডে</button>
                     </div>
                     <div class="col-6 mb-2">
-                        <button class="btn w-100 btn-custom" id="past_result">Result</button>
+                        <button class="btn w-100 btn-custom" id="past_result">রেজাল্ট</button>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 </div>
-<div class="responsive-iframe-container" id="floatingAdContainer">
-    <span class="close-button" onclick="document.getElementById('floatingAdContainer').style.display='none';">&times;</span>
-    <iframe id='a41ead97' name='a41ead97' src='http://161.97.141.58:8080/www/delivery/afr.php?zoneid=9&amp;cb=INSERT_RANDOM_NUMBER_HERE' frameborder='0' scrolling='no' width='600' height='200' allow='autoplay'><a href='http://161.97.141.58:8080/www/delivery/ck.php?n=a5b92602&amp;cb=INSERT_RANDOM_NUMBER_HERE' target='_blank'><img src='http://161.97.141.58:8080/www/delivery/avw.php?zoneid=9&amp;cb=INSERT_RANDOM_NUMBER_HERE&amp;n=a5b92602' border='0' alt='' /></a></iframe>
-
-</div>
-
-
-
-<!-- <div class="video-frame mb-4">
-  <video id="ad-video" class="video-js vjs-default-skin" autoplay muted controls preload="auto" playsinline>
-    <source src="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4" type="video/mp4" />
-  </video>
-</div> -->
-
-
 
 {% endblock %}
 
 {% block body_js %}
-    <!-- Core Video.js -->
-  <!-- <script src="https://vjs.zencdn.net/7.20.3/video.min.js"></script> -->
-
-  <!-- Ads Plugin -->
-  <!-- <script src="https://cdn.jsdelivr.net/npm/videojs-contrib-ads@6.9.0/dist/videojs-contrib-ads.min.js"></script> -->
-
-  <!-- VAST/VPAID Plugin -->
-  <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/videojs-vast-vpaid/2.0.2/videojs_5.vast.vpaid.min.js"></script> -->
-
-    <!-- <script>
-        const player = videojs('ad-video');
-
-        player.ready(function () {
-        player.vastClient({
-            adTagUrl: 'http://161.97.141.58:8080/www/delivery/fc.php?script=apVideo:vast2&zoneid=12',
-            playAdAlways: true,
-            adCancelTimeout: 5000,
-            adsEnabled: true
-        });
-        });
-    </script> -->
-
-      <!-- <script>
-    // Initialize Video.js player
-    const player = videojs('ad-video');
-
-    player.ready(function () {
-      // Explicitly initialize the ads plugin
-      try {
-        player.ads({ debug: true }); // Enable debug mode for ads plugin
-        console.log('Ads plugin initialized successfully');
-      } catch (e) {
-        console.error('Failed to initialize ads plugin:', e);
-      }
-
-      // Initialize VAST/VPAID plugin
-      try {
-        player.vastClient({
-          adTagUrl: 'http://161.97.141.58:8080/www/delivery/fc.php?script=apVideo:vast2&zoneid=12',
-          playAdAlways: true,
-          adCancelTimeout: 5000,
-          adsEnabled: true
-        });
-        console.log('VAST/VPAID plugin initialized');
-      } catch (e) {
-        console.error('Failed to initialize VAST/VPAID plugin:', e);
-      }
-
-      // Set up mid-roll ad at 5 seconds
-      player.on('timeupdate', function () {
-        const currentTime = player.currentTime();
-        if (currentTime >= 15 && !player.hasPlayedAd) {
-          player.hasPlayedAd = true;
-          // Check if ads plugin is available
-          if (player.ads && typeof player.ads.startLinearAdMode === 'function') {
-            player.ads.startLinearAdMode();
-            console.log('Starting mid-roll ad at 5 seconds');
-            player.vastClient({
-              adTagUrl: 'http://161.97.141.58:8080/www/delivery/fc.php?script=apVideo:vast2&zoneid=12',
-              playAdAlways: true
-            });
-          } else {
-            console.error('Ads plugin not properly initialized: startLinearAdMode is not a function');
-            // Fallback: continue video playback
-            player.play();
-          }
-        }
-      });
-
-      // Resume video after ad completes
-      player.on('adend', function () {
-        if (player.ads && typeof player.ads.endLinearAdMode === 'function') {
-          player.ads.endLinearAdMode();
-          console.log('Ad completed, resuming video');
-        } else {
-          console.error('Ads plugin not properly initialized: endLinearAdMode is not a function');
-          player.play();
-        }
-      });
-
-      // Detailed ad error handling
-      player.on('aderror', function (event) {
-        const error = event.getError ? event.getError() : event;
-        console.error('Ad Error Details:', {
-          message: error.message || 'Unknown error',
-          code: error.code || 'N/A',
-          adTagUrl: 'http://161.97.141.58:8080/www/delivery/fc.php?script=apVideo:vast2&zoneid=12'
-        });
-        if (player.ads && typeof player.ads.endLinearAdMode === 'function') {
-          player.ads.endLinearAdMode();
-        } else {
-          player.play();
-        }
-      });
-    });
-  </script> -->
 
 <script src="../../../static/Js/new_templates_js/quiz/new_past_exam_details.js"></script>
 {% endblock %}

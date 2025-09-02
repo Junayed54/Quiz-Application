@@ -1,7 +1,6 @@
-
 {% extends 'new_custom/new_templates/index2.html' %}
 
-{% block title %}Job Details{% endblock %}
+{% block title %}চাকরির বিস্তারিত{% endblock %}
 
 {% block style %}
 <style>
@@ -151,6 +150,9 @@
         transition: background-color 0.3s ease, transform 0.2s ease;
     }
 
+    .model-exam-btn{
+        background-color: olivedrab;
+    }
     .detail-btn:hover {
         background-color: #2b6cb0;
         transform: translateY(-1px);
@@ -250,7 +252,7 @@
             <div id="job-details" class="job-detail-container">
                 <div class="loading">
                     <div class="spinner"></div>
-                    <p>Loading job details...</p>
+                    <p>চাকরির বিবরণ লোড হচ্ছে...</p>
                 </div>
             </div>
         </main>
@@ -262,7 +264,7 @@
     document.addEventListener('DOMContentLoaded', () => {
         const jobDetailsContainer = document.getElementById('job-details');
 
-        // Extract job ID from URL (e.g., /job-news/3/)
+        // URL থেকে চাকরির আইডি (ID) বের করা (যেমন: /job-news/3/)
         const pathSegments = window.location.pathname.split('/');
         const jobId = pathSegments[pathSegments.length - 2];
 
@@ -271,7 +273,7 @@
         } else {
             jobDetailsContainer.innerHTML = `
                 <div class="error">
-                    <p>Invalid job ID provided.</p>
+                    <p>প্রদত্ত চাকরির আইডি অবৈধ।</p>
                 </div>
             `;
         }
@@ -288,7 +290,7 @@
                     if (response.status === 404) {
                         jobDetailsContainer.innerHTML = `
                             <div class="error">
-                                <p>Job not found.</p>
+                                <p>চাকরিটি খুঁজে পাওয়া যায়নি।</p>
                             </div>
                         `;
                     } else {
@@ -300,10 +302,10 @@
                 const job = await response.json();
                 renderJobDetails(job);
             } catch (error) {
-                console.error('Error fetching job details:', error);
+                console.error('চাকরির বিস্তারিত আনতে সমস্যা:', error);
                 jobDetailsContainer.innerHTML = `
                     <div class="error">
-                        <p>Unable to load job details. Please try again later.</p>
+                        <p>চাকরির বিস্তারিত লোড করা সম্ভব হয়নি। অনুগ্রহ করে পরে আবার চেষ্টা করুন।</p>
                     </div>
                 `;
             }
@@ -311,48 +313,49 @@
 
         function renderJobDetails(job) {
             const deadline = job.deadline
-                ? new Date(job.deadline).toLocaleDateString('en-US', {
-                      year: 'numeric',
-                      month: 'long',
-                      day: 'numeric'
-                  })
-                : 'Not Specified';
+                ? new Date(job.deadline).toLocaleDateString('bn-BD', {
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric'
+                })
+                : 'উল্লেখ করা হয়নি';
             const postedOn = job.posted_on
-                ? new Date(job.posted_on).toLocaleDateString('en-US', {
-                      year: 'numeric',
-                      month: 'long',
-                      day: 'numeric'
-                  })
-                : 'Not Specified';
+                ? new Date(job.posted_on).toLocaleDateString('bn-BD', {
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric'
+                })
+                : 'উল্লেখ করা হয়নি';
 
             jobDetailsContainer.innerHTML = `
                 <div class="detail-header">
                     <h1>${sanitizeHTML(job.title)}</h1>
-                    <p>Posted On: ${postedOn}</p>
+                    <p>প্রকাশের তারিখ: ${postedOn}</p>
                 </div>
 
                 <div class="detail-meta">
-                    <p class="organization" aria-label="Organization"><strong>Organization:</strong> ${sanitizeHTML(job.organization?.name || 'Not Specified')}</p>
-                    <p class="department" aria-label="Department"><strong>Department:</strong> ${sanitizeHTML(job.department?.name || 'Not Specified')}</p>
-                    <p class="position" aria-label="Position"><strong>Position:</strong> ${sanitizeHTML(job.position?.name || 'Not Specified')}</p>
-                    <p class="location" aria-label="Location"><strong>Location:</strong> ${sanitizeHTML(job.location || 'Not Specified')}</p>
-                    <p class="deadline" aria-label="Application Deadline"><strong>Application Deadline:</strong> ${deadline}</p>
+                    <p class="organization"><strong>প্রতিষ্ঠানের নাম:</strong> ${sanitizeHTML(job.organization?.name || 'উল্লেখ করা হয়নি')}</p>
+                    <p class="department"><strong>বিভাগের নাম:</strong> ${sanitizeHTML(job.department?.name || 'উল্লেখ করা হয়নি')}</p>
+                    <p class="position"><strong>পদের নাম:</strong> ${sanitizeHTML(job.position?.name || 'উল্লেখ করা হয়নি')}</p>
+                    <p class="location"><strong>অবস্থান:</strong> ${sanitizeHTML(job.location || 'উল্লেখ করা হয়নি')}</p>
+                    <p class="deadline"><strong>আবেদনের শেষ তারিখ:</strong> ${deadline}</p>
                 </div>
 
                 <div class="detail-description">
-                    <h2>Job Description</h2>
-                    <p>${sanitizeHTML(job.description || 'No description provided.')}</p>
+                    <h2>চাকরির বিবরণ</h2>
+                    ${job.description || '<p>কোনো বিবরণ দেওয়া হয়নি।</p>'} <!-- No escaping here -->
                 </div>
 
                 <div class="detail-links">
-                    <a href="${job.official_link || '#'}" target="_blank" class="detail-btn" rel="noopener noreferrer" aria-label="Visit official link for ${job.title}">Apply Now</a>
-                    ${job.pdf ? `<a href="${job.pdf}" target="_blank" class="detail-btn pdf-btn" rel="noopener noreferrer" aria-label="Download PDF for ${job.title}">Download PDF</a>` : ''}
-                    <a href="/past_exams/" class="detail-btn exam-btn" aria-label="Practice previous exams for ${job.title}">Practice Previous Exams</a>
+                    <a href="${job.official_link || '#'}" target="_blank" class="detail-btn">অফিসিয়াল লিংক</a>
+                    ${job.pdf ? `<a href="${job.pdf}" target="_blank" class="detail-btn pdf-btn">পিডিএফ ডাউনলোড করুন</a>` : ''}
+                    <a href="/past_exams/" class="detail-btn exam-btn">পূর্ববর্তী পরীক্ষার অনুশীলন করুন</a>
+                    <a href="/model-tests/" class="detail-btn model-exam-btn">মডেল টেস্ট পরীক্ষা অনুশীলন করুন</a>
                 </div>
             `;
         }
 
-        // Basic HTML sanitization to prevent XSS
+        // XSS প্রতিরোধ করার জন্য বেসিক HTML স্যানিটাইজেশন
         function sanitizeHTML(str) {
             const div = document.createElement('div');
             div.textContent = str;

@@ -1,6 +1,6 @@
 {% extends 'new_custom/new_templates/index2.html' %}
 
-{% block title %}Government Jobs Portal{% endblock %}
+{% block title %}সরকারি চাকরির পোর্টাল{% endblock %}
 
 {% block style %}
     <style>
@@ -254,13 +254,13 @@
         <main class="job-main">
             <div class="job-container">
                 <header class="page-header">
-                    <h1>Government Job Opportunities</h1>
-                    <p>Explore the latest government job listings and apply today.</p>
+                    <h1>চাকরির প্রজ্ঞাপন</h1>
+                    <p>সাম্প্রতিক সরকারি চাকরির বিজ্ঞপ্তিগুলো দেখুন এবং আজই আবেদন করুন।</p>
                 </header>
                 <div id="job-listings" class="job-grid">
                     <div class="loading">
                         <div class="spinner"></div>
-                        <p>Loading job listings...</p>
+                        <p>চাকরির তালিকা লোড হচ্ছে...</p>
                     </div>
                 </div>
             </div>
@@ -289,22 +289,22 @@
                     const jobs = await response.json();
                     renderJobs(jobs);
                 } catch (error) {
-                    console.error('Error fetching jobs:', error);
+                    console.error('চাকরির তালিকা আনতে সমস্যা:', error);
                     jobListingsContainer.innerHTML = `
                         <div class="error">
-                            <p>Unable to load job listings. Please try again later.</p>
+                            <p>চাকরির তালিকা লোড করা সম্ভব হয়নি। অনুগ্রহ করে পরে আবার চেষ্টা করুন।</p>
                         </div>
                     `;
                 }
             }
 
             function renderJobs(jobs) {
-                jobListingsContainer.innerHTML = ''; // Clear loading state
+                jobListingsContainer.innerHTML = ''; // Loading অবস্থা পরিষ্কার করা
 
                 if (!jobs || jobs.length === 0) {
                     jobListingsContainer.innerHTML = `
                         <div class="error">
-                            <p>No job listings found at this time.</p>
+                            <p>এই মুহূর্তে কোনো চাকরির বিজ্ঞপ্তি পাওয়া যায়নি।</p>
                         </div>
                     `;
                     return;
@@ -313,21 +313,26 @@
                 jobs.forEach(job => {
                     const jobCard = document.createElement('div');
                     jobCard.classList.add('job-card');
-                    jobCard.setAttribute('tabindex', '0'); // Make card focusable
+                    jobCard.setAttribute('tabindex', '0'); // কার্ডটি ফোকাসযোগ্য করা
 
+                    // তারিখকে বাংলা ফরম্যাটে রূপান্তর করা
                     const deadline = job.deadline
-                        ? new Date(job.deadline).toLocaleDateString('en-US', {
+                        ? new Date(job.deadline).toLocaleDateString('bn-BD', {
                               year: 'numeric',
                               month: 'long',
                               day: 'numeric'
                           })
-                        : 'Not Specified';
-                    const location = job.location || 'Not Specified';
+                        : 'উল্লেখ করা হয়নি';
+                    
+                    const location = job.location || 'উল্লেখ করা হয়নি';
+                    
+                    // বর্ণনাকে সংক্ষিপ্ত করা এবং বাংলাতে অনুবাদ করা
                     const description = job.description
-                        ? `${job.description.substring(0, 120)}...`
-                        : 'No description available.';
+                        ? job.description.substring(0, 120) + `...`
+                        : 'কোনো বিবরণ উপলব্ধ নেই।';
+                    
                     const officialLink = job.official_link || '#';
-                    const detailsPageUrl = `/job-news/${job.id}/`;
+                    const detailsPageUrl = `/job-circular/${job.id}/`;
 
                     jobCard.innerHTML = `
                         <div class="job-card-header">
@@ -335,21 +340,20 @@
                         </div>
                         <div class="job-card-content">
                             <div class="job-meta">
-                                <span aria-label="Location">${location}</span>
-                                <span class="deadline" aria-label="Application Deadline">Deadline: ${deadline}</span>
+                                <span aria-label="অবস্থান">${location}</span>
+                                <span class="deadline" aria-label="আবেদনের শেষ তারিখ">আবেদনের শেষ তারিখ: ${deadline}</span>
                             </div>
-                            <p class="job-description">${sanitizeHTML(description)}</p>
+                            <p class="job-description">${description}</p>
                             <div class="btn-group">
-                                <a href="${detailsPageUrl}" class="job-btn secondary" aria-label="View details for ${job.title}">Details</a>
-                                <a href="${officialLink}" target="_blank" class="job-btn" rel="noopener noreferrer" aria-label="Visit official link for ${job.title}">Apply Now</a>
-                            </div>
+                                <a href="${detailsPageUrl}" class="job-btn secondary" aria-label="${job.title} পদের বিস্তারিত দেখুন">বিস্তারিত</a>
+                                </div>
                         </div>
                     `;
                     jobListingsContainer.appendChild(jobCard);
                 });
             }
 
-            // Basic HTML sanitization to prevent XSS
+            // XSS প্রতিরোধ করার জন্য বেসিক HTML স্যানিটাইজেশন
             function sanitizeHTML(str) {
                 const div = document.createElement('div');
                 div.textContent = str;

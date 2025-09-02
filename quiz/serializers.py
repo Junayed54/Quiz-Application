@@ -474,6 +474,7 @@ class PastExamListSerializer(serializers.ModelSerializer):
     department = serializers.CharField(source='department.name', default=None)
     position = serializers.CharField(source='position.name')
     created_by = serializers.CharField(source='created_by.username', default=None)
+    exam_type = serializers.CharField(source='exam_type.name')
     missing_explanations_count = serializers.SerializerMethodField()
 
     class Meta:
@@ -481,6 +482,7 @@ class PastExamListSerializer(serializers.ModelSerializer):
         fields = [
             'id',
             'title',
+            'exam_type',
             'organization',
             'department',
             'position',

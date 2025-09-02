@@ -18,6 +18,7 @@ urlpatterns = [
     path('', include('govt_jobs.urls')),
     path('', include('quickquiz.urls')),
     path('', include('written_exam.urls')),
+    path('', include('news.urls')),
 ]
 # urlpatterns += websocket_urlpatterns
 if settings.DEBUG:

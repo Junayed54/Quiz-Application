@@ -42,6 +42,9 @@ document.addEventListener('DOMContentLoaded', () => {
     jobForm.addEventListener('submit', async function(e) {
         e.preventDefault();
 
+        // Update the underlying textarea for TinyMCE
+        tinymce.triggerSave();
+        
         const formData = new FormData(jobForm);
         const orgVal = organizationSelect.value;
         const deptVal = departmentSelect.value;

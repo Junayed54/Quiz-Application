@@ -114,7 +114,22 @@
     <!-- Custom JS -->
     <script src="../../../../static/assets/js/custom.js"></script>
 
-    <!-- My exam js -->
+    <!-- My custom js -->
+
+    <!-- TinyMCE -->
+    <script src="https://cdn.tiny.cloud/1/st4fnovtgltk2a3hyidbexwpgf2nxhumf1bhz0w54uk9j4vk/tinymce/6/tinymce.min.js" referrerpolicy="origin"></script>
+    <script>
+    tinymce.init({
+        selector: 'textarea[name="description"]',  // target only Job Description field
+        plugins: 'link image table lists code',
+        toolbar: 'undo redo | styles | bold italic underline | alignleft aligncenter alignright | bullist numlist | table image link | code',
+        menubar: true,
+        branding: false,
+        height: 400,
+    });
+    </script>
+
+
      <script src = "../../../../static/Js/govt_jobs/govt_job_form.js"></script>
 
 

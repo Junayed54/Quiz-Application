@@ -44,10 +44,15 @@ urlpatterns += [
 # jobs news urls
 
 urlpatterns +=[
-    path('job-news/', TemplateView.as_view(template_name="new_custom/jobs/all_jobs.html")),
-    path('job-news/<int:id>/', TemplateView.as_view(template_name="new_custom/jobs/job_details.html")),
+    path('job-circular/', TemplateView.as_view(template_name="new_custom/jobs/all_jobs.html")),
+    path('job-circular/<int:id>/', TemplateView.as_view(template_name="new_custom/jobs/job_details.html")),
 ]
 
+# News
+urlpatterns +=[
+    path('news/', TemplateView.as_view(template_name='new_custom/news/all_news.html')),
+    path('news/details/<int:pk>/', TemplateView.as_view(template_name='new_custom/news/news_details.html')),
+]
 
 from django.views.static import serve
 from django.conf import settings

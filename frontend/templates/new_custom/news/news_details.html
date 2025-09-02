@@ -1,0 +1,220 @@
+{% extends 'new_custom/new_templates/index2.html' %}
+{% block title %}চাকরি নউজ{% endblock %}
+{% block style %}  
+<style>
+    
+    .main-content {
+      background-color: #fff;
+      padding: 2.5rem;
+      border-radius: 10px;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+    }
+    .sidebar {
+      background-color: #fff;
+      padding: 1.5rem;
+      border-radius: 10px;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+    }
+    .news-title {
+      font-size: 2.5rem;
+      font-weight: bold;
+      color: #231651;
+      margin-bottom: 0.5rem;
+    }
+    .news-meta {
+      font-size: 0.9rem;
+      color: #777;
+      margin-bottom: 1.5rem;
+    }
+    .news-image {
+      max-width: 100%;
+      height: auto;
+      border-radius: 8px;
+      margin-bottom: 2rem;
+    }
+    .news-content p {
+      line-height: 1.8;
+      font-size: 1.1rem;
+      color: #444;
+      text-align: justify;
+      margin-bottom: 1rem;
+    }
+
+    /* ✅ Make TinyMCE images responsive */
+    .news-content img {
+      max-width: 100%;
+      height: auto;
+      display: block;
+      margin: 1rem auto;
+      border-radius: 6px;
+    }
+
+    .recommended-title {
+      font-size: 1.25rem;
+      font-weight: bold;
+      color: #231651;
+      margin-bottom: 1rem;
+    }
+    .recommended-item {
+      display: flex;
+      gap: 1rem;
+      margin-bottom: 1rem;
+      text-decoration: none;
+      color: inherit;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+      padding: 0.75rem;
+      border-radius: 8px;
+    }
+    .recommended-item:hover {
+      background-color: #f8f9fa;
+      transform: translateX(5px);
+    }
+    .recommended-item-img {
+      width: 80px;
+      height: 80px;
+      object-fit: cover;
+      border-radius: 5px;
+    }
+    .recommended-item-text {
+      flex: 1;
+    }
+    .recommended-item-title {
+      font-weight: bold;
+      font-size: 0.9rem;
+      line-height: 1.4;
+    }
+    .recommended-item-date {
+      font-size: 0.75rem;
+      color: #999;
+    }
+  </style>
+{% endblock %}
+{% block content %}
+
+  <main class="container my-5">
+    <div class="row g-4">
+      <div class="col-lg-8">
+        <article class="main-content">
+          <h1 class="news-title" id="news-detail-title">Loading...</h1>
+          
+          <div class="news-meta">
+            <span id="news-detail-author"></span> | <span id="news-detail-date"></span>
+          </div>
+
+          <div id="news-image-container" class="text-center">
+            </div>
+
+          <div id="news-detail-content" class="news-content">
+            </div>
+        </article>
+      </div>
+
+      <div class="col-lg-4">
+        <div class="sidebar">
+          <h2 class="recommended-title">অন্যান্য খবর</h2>
+          <div id="recommended-news-list">
+            </div>
+        </div>
+      </div>
+    </div>
+  </main>
+{% endblock %}
+{% block body_js %}
+  <script>
+    document.addEventListener("DOMContentLoaded", async function() {
+      // Get the news ID from the URL (e.g., /news/123 -> ID = 123)
+      const newsId = window.location.pathname.split('/').filter(Boolean).pop();
+      const apiBaseUrl = '/api/news/';
+
+      // Get DOM elements for news detail
+      const titleEl = document.getElementById('news-detail-title');
+      const authorEl = document.getElementById('news-detail-author');
+      const dateEl = document.getElementById('news-detail-date');
+      const imageContainer = document.getElementById('news-image-container');
+      const contentEl = document.getElementById('news-detail-content');
+      const recommendedListEl = document.getElementById('recommended-news-list');
+
+      // Function to format the date
+      function formatDate(dateString) {
+        const options = { year: 'numeric', month: 'long', day: 'numeric' };
+        const date = new Date(dateString);
+        return date.toLocaleDateString('bn-BD', options);
+      }
+      
+      // Function to fetch and display single news item
+      async function fetchNewsDetails(id) {
+        try {
+          const response = await fetch(`${apiBaseUrl}${id}/`);
+          if (!response.ok) {
+            throw new Error('News not found');
+          }
+          const news = await response.json();
+          
+          titleEl.textContent = news.title;
+          authorEl.textContent = `লেখক: ${news.author_name || 'Jobs Academy'}`; // Assuming 'author_name' is available
+          dateEl.textContent = `প্রকাশিত: ${formatDate(news.published_date)}`;
+          
+          if (news.images && news.images.length > 0) {
+            const img = document.createElement('img');
+            img.src = news.images[0].image_url; // Use 'image_url' from your API
+            img.alt = news.title;
+            img.className = 'img-fluid news-image';
+            imageContainer.appendChild(img);
+          } else {
+            imageContainer.innerHTML = '<p class="text-muted text-center">কোনো ছবি নেই</p>';
+          }
+
+          contentEl.innerHTML = news.content;
+          document.title = `${news.title} - Jobs Academy`; // Update page title
+        } catch (error) {
+          titleEl.textContent = 'সংবাদ পাওয়া যায়নি';
+          contentEl.innerHTML = '<p class="text-danger">এই সংবাদটি খুঁজে পাওয়া যায়নি।</p>';
+          console.error("Error fetching news details:", error);
+        }
+      }
+
+      // Function to fetch and display recommended news
+      async function fetchRecommendedNews() {
+        try {
+          const response = await fetch(`${apiBaseUrl}?limit=5`); // Assuming a limit parameter is supported
+          if (!response.ok) {
+            throw new Error('Could not fetch recommended news');
+          }
+          const allNews = await response.json();
+          
+          const recommendedNews = allNews.filter(news => news.id.toString() !== newsId).slice(0, 4);
+
+          if (recommendedNews.length > 0) {
+            recommendedNews.forEach(news => {
+              const itemLink = document.createElement('a');
+              itemLink.href = `/news/details/${news.id}`;
+              itemLink.className = 'recommended-item';
+              
+              const imageUrl = news.images && news.images.length > 0 ? news.images[0].image_url : 'https://via.placeholder.com/80';
+
+              itemLink.innerHTML = `
+                <img src="${imageUrl}" class="recommended-item-img" alt="${news.title}">
+                <div class="recommended-item-text">
+                  <div class="recommended-item-title">${news.title}</div>
+                  <div class="recommended-item-date">${formatDate(news.published_date)}</div>
+                </div>
+              `;
+              recommendedListEl.appendChild(itemLink);
+            });
+          } else {
+            recommendedListEl.innerHTML = '<p class="text-muted">অন্যান্য খবর নেই।</p>';
+          }
+        } catch (error) {
+          console.error("Error fetching recommended news:", error);
+          recommendedListEl.innerHTML = '<p class="text-danger">অন্যান্য খবর লোড করতে সমস্যা হয়েছে।</p>';
+        }
+      }
+      
+      // Execute both functions
+      if (newsId) {
+        fetchNewsDetails(newsId);
+        fetchRecommendedNews();
+      }
+    });
+  </script>
+{% endblock %}

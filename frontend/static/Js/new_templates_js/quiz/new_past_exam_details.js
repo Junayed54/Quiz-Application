@@ -3,63 +3,72 @@ document.addEventListener('DOMContentLoaded', function () {
     
     // Extract past_exam_id from the URL
     const urlParams = new URLSearchParams(window.location.search);
-    const pastExamId = window.location.pathname.split('/')[2];  // Ensure the past_exam_id is passed in the URL
+    const pastExamId = window.location.pathname.split('/')[2]; 
     console.log(pastExamId);
     
 
     const pastExamDetailsUrl = `/quiz/past_exams/?exam_id=${pastExamId}`;
     
-    
+    // Function to convert Western numerals to Bengali numerals
+    const convertToBengaliNumerals = (number) => {
+        const bengaliDigits = ['০', '১', '২', '৩', '৪', '৫', '৬', '৭', '৮', '৯'];
+        return String(number).split('').map(digit => {
+            if (digit === '.') {
+                return '.'; // Keep decimal point as is
+            }
+            return bengaliDigits[parseInt(digit)];
+        }).join('');
+    };
+
+    // Function to format a date string into a readable Bengali format
+    const formatBengaliDate = (dateString) => {
+        if (!dateString) return 'প্রযোজ্য নয়';
+        
+        const date = new Date(dateString);
+        const options = {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric'
+        };
+        
+        // Format the date using Bengali locale and options
+        const formattedDate = date.toLocaleDateString('bn-BD', options);
+        return formattedDate;
+    };
+
+
     function fetchPastExamDetails() {
         fetch(pastExamDetailsUrl, {
             method: 'GET',
-            
         })
         .then(response => response.json())
         .then(data => {
             if (data) {
                 console.log("data", data);
-               const title_text = `${data.title}`;
+                const title_text = `${data.title}`;
+                
                 // Populate Past Exam Details
                 const titleElement = document.getElementById('past-exam-title')
                 titleElement.textContent = title_text;
-
                 titleElement.setAttribute('title', title_text); 
-                document.getElementById('past-exam-total-questions').textContent = data.total_questions;
-                document.getElementById('past-exam-total-marks').textContent = data.total_questions;
-                document.getElementById('past-exam-negative-marks').textContent = data.negative_marks || 'N/A';
-                document.getElementById('past-exam-duration').textContent = data.duration;
+                
+                // Update text to Bengali numerals and strings
+                document.getElementById('past-exam-total-questions').textContent = convertToBengaliNumerals(data.total_questions);
+                document.getElementById('past-exam-total-marks').textContent = convertToBengaliNumerals(data.total_questions);
+                document.getElementById('past-exam-negative-marks').textContent = data.negative_marks ? convertToBengaliNumerals(data.negative_marks) : 'প্রযোজ্য নয়';
+                document.getElementById('past-exam-duration').textContent = convertToBengaliNumerals(data.duration);
                 document.getElementById('past-exam-organization').textContent = data.organization;
-                document.getElementById('past-exam-department').textContent = data.department || 'N/A';
+                document.getElementById('past-exam-department').textContent = data.department || 'প্রযোজ্য নয়';
                 document.getElementById('past-exam-position').textContent = data.position;
-                document.getElementById('past-exam-date').textContent = new Date(data.exam_date).toLocaleDateString();
-                document.getElementById('past-exam-duration').textContent = data.duration || 'N/A';
-                // document.getElementById('past-exam-status').textContent = data.is_published ? 'Published' : 'Unpublished';
-                // console.log("hello", data.created_by);
-                document.getElementById('exam-created-by').textContent = data.created_by || 'N/A';
-                 const createdAtElement = document.getElementById('exam-created-at');
+                document.getElementById('past-exam-date').textContent = formatBengaliDate(data.exam_date); // Use new formatting function
+                document.getElementById('past-exam-duration').textContent = data.duration ? convertToBengaliNumerals(data.duration) : 'প্রযোজ্য নয়';
+                document.getElementById('exam-created-by').textContent = data.created_by || 'প্রযোজ্য নয়';
+                
+                const createdAtElement = document.getElementById('exam-created-at');
                 if (data.created_at) {
-                    // Create a new Date object from the ISO 8601 string
-                    const date = new Date(data.created_at);
-
-                    // Format the date and time into a readable string
-                    const formattedDate = date.toLocaleDateString('en-US', {
-                        year: 'numeric',
-                        month: 'long',
-                        day: 'numeric'
-                    });
-
-                    const formattedTime = date.toLocaleTimeString('en-US', {
-                        hour: '2-digit',
-                        minute: '2-digit',
-                        hour12: true
-                    });
-                    
-                    // Combine the formatted date and time
-                    createdAtElement.textContent = `${formattedDate}`;
-
+                    createdAtElement.textContent = formatBengaliDate(data.created_at); // Use new formatting function
                 } else {
-                    createdAtElement.textContent = 'N/A';
+                    createdAtElement.textContent = 'প্রযোজ্য নয়';
                 }
             }
         })
@@ -69,7 +78,6 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // Fetch past exam details and questions on page load
     fetchPastExamDetails();
-    // fetchPastExamQuestions();
 
     const startExam = document.getElementById('start-exam-btn');
     startExam.addEventListener('click', function() {
