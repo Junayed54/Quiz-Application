@@ -4,6 +4,8 @@ from django.contrib import admin
 from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
+from django.urls import re_path
+from django.views.static import serve
 from quiz.routing import websocket_urlpatterns
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -19,7 +21,18 @@ urlpatterns = [
     path('', include('quickquiz.urls')),
     path('', include('written_exam.urls')),
     path('', include('news.urls')),
+    
+    path('', include("notifications.urls")),
+    
+    # Expose firebase-messaging-sw.js at root
+    re_path(r'^firebase-messaging-sw.js$', serve, {
+        'path': 'firebase-messaging-sw.js',
+        'document_root': settings.BASE_DIR,
+    }),
 ]
+
+
+
 # urlpatterns += websocket_urlpatterns
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

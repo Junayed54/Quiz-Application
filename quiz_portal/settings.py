@@ -79,6 +79,7 @@ INSTALLED_APPS = [
     'quickquiz.apps.QuickquizConfig',
     'written_exam',
     'news',
+    'notifications',
     
     
 ]
@@ -104,7 +105,7 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'django.middleware.locale.LocaleMiddleware',
     'allauth.account.middleware.AccountMiddleware',
-    
+    'notifications.middleware.ActivityLoggerMiddleware'
 ]
 
 # Root URL configuration
@@ -326,5 +327,12 @@ LOGIN_URL = '/login/'  # Some dummy URL
 # GA_MEASUREMENT_ID="G-1MHLELHS64" 
 
 
+# firbase
+import firebase_admin
+from firebase_admin import credentials
+
+cred_path = os.path.join(BASE_DIR, 'credentials.json')
+cred = credentials.Certificate(cred_path)
+firebase_admin.initialize_app(cred)
 
 

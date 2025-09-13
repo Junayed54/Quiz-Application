@@ -171,7 +171,7 @@
   .navbar-nav .nav-item .nav-link {
     color: #231651;
     background-color: transparent;
-    border: 2px solid #231651;
+    border: 3px solid #231651;
     border-radius: 10px;
     padding: 8px 20px;
     margin: 0 5px;
@@ -180,7 +180,7 @@
 
   .navbar-nav .nav-item .nav-link:hover {
     
-    background-color: rgba(241, 157, 157, 0.7);
+    background-color: rgba(241, 157, 157, 0.1);
     border-color: hsla(0, 53%, 86%, 0.7);
   }
 
@@ -668,9 +668,6 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   });
 </script>
 
-
-{% block body_js %}{% endblock %}
-
 <script>
   document.getElementById('navbarDropdown').addEventListener('click', function(event) {
     var dropdownMenu = document.querySelector('.question-dropdown');
@@ -719,6 +716,242 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     });
   });
 </script>
+
+
+
+<!-- workable script -->
+<!--
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-app.js";
+  import { getMessaging, getToken } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-messaging.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyCpnkyTVh76T6aIdpi_LpxIiV47Jw9V7Hg",
+    authDomain: "jobs-academy.firebaseapp.com",
+    projectId: "jobs-academy",
+    storageBucket: "jobs-academy.firebasestorage.app",
+    messagingSenderId: "524525708923",
+    appId: "1:524525708923:web:09f0ba0e9eae09267ea4de",
+    measurementId: "G-11T4YEDB7B"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const messaging = getMessaging(app);
+  const vapidKey = "BFMGzMAe0aF68SMjCu4SlR6zcsPuRjmKmSmv72AebLIMicG3-_LgqlFPTh4AeQiIAiaoHSZQNjFuHNqXNjGX-YA";
+  const btn = document.getElementById('enable-notifications');
+
+  // Get access token if user is logged in
+  const getAccessToken = () => {
+    return localStorage.getItem('access_token'); // Adjust if stored elsewhere
+  };
+
+  // Generate or retrieve device_id
+  const getOrCreateDeviceId = () => {
+    let deviceId = localStorage.getItem('device_id');
+    if (!deviceId) {
+      deviceId = crypto.randomUUID();
+      localStorage.setItem('device_id', deviceId);
+      document.cookie = `device_id=${deviceId}; path=/; max-age=31536000`; // 1 year
+    }
+    return deviceId;
+  };
+
+  // Get public IP address
+  const getPublicIP = async () => {
+    try {
+      const res = await fetch('https://api.ipify.org?format=json');
+      const data = await res.json();
+      return data.ip;
+    } catch {
+      return null;
+    }
+  };
+
+  // Send token + device info to backend
+  const saveToken = async (token) => {
+    const deviceId = getOrCreateDeviceId();
+    const ipAddress = await getPublicIP();
+    const accessToken = getAccessToken();
+
+    const headers = {
+      'Content-Type': 'application/json'
+    };
+
+    if (accessToken) {
+      headers['Authorization'] = `Bearer ${accessToken}`;
+    }
+
+    fetch('/api/device-token/', {
+      method: 'POST',
+      headers: headers,
+      credentials: 'include',
+      body: JSON.stringify({
+        token,
+        device_id: deviceId,
+        device_type: 'web',
+        ip_address: ipAddress
+      })
+    })
+    .then(res => res.json())
+    .then(data => console.log('Token saved:', data))
+    .catch(err => console.error('Save failed:', err));
+  };
+
+  const requestAndSendToken = (registration) => {
+    getToken(messaging, { vapidKey, serviceWorkerRegistration: registration })
+      .then((token) => {
+        if (token) {
+          console.log("FCM Token:", token);
+          saveToken(token);
+        } else {
+          console.warn("No token available.");
+        }
+      })
+      .catch(err => console.error("Token error:", err));
+  };
+
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('/firebase-messaging-sw.js')
+      .then((reg) => {
+        console.log('Service Worker registered');
+
+        if (Notification.permission === 'granted') {
+          requestAndSendToken(reg);
+        } else if (Notification.permission !== 'denied') {
+          btn.style.display = 'inline-block';
+          btn.addEventListener('click', () => {
+            Notification.requestPermission().then(permission => {
+              if (permission === 'granted') requestAndSendToken(reg);
+              else console.warn("Permission denied by user.");
+            });
+          });
+        } else {
+          console.warn("Notifications denied earlier.");
+        }
+      })
+      .catch(err => console.error("SW registration failed:", err));
+  }
+</script>
+-->
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-app.js";
+  import { getMessaging, getToken } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-messaging.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyCpnkyTVh76T6aIdpi_LpxIiV47Jw9V7Hg",
+    authDomain: "jobs-academy.firebaseapp.com",
+    projectId: "jobs-academy",
+    storageBucket: "jobs-academy.firebasestorage.app",
+    messagingSenderId: "524525708923",
+    appId: "1:524525708923:web:09f0ba0e9eae09267ea4de",
+    measurementId: "G-11T4YEDB7B"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const messaging = getMessaging(app);
+  const vapidKey = "BFMGzMAe0aF68SMjCu4SlR6zcsPuRjmKmSmv72AebLIMicG3-_LgqlFPTh4AeQiIAiaoHSZQNjFuHNqXNjGX-YA";
+  const btn = document.getElementById('enable-notifications');
+
+  const getAccessToken = () => {
+    const token = localStorage.getItem('access_token');
+    if (token) {
+      
+      document.cookie = `access_token=${token}; path=/; max-age=3600`; // 1 hour
+    }
+    return token;
+  };
+
+  const getOrCreateDeviceId = () => {
+    let deviceId = localStorage.getItem('device_id');
+    if (!deviceId) {
+      deviceId = crypto.randomUUID();
+      localStorage.setItem('device_id', deviceId);
+      document.cookie = `device_id=${deviceId}; path=/; max-age=31536000`; // 1 year
+    }
+    return deviceId;
+  };
+
+  const getPublicIP = async () => {
+    try {
+      const res = await fetch('https://api.ipify.org?format=json');
+      const data = await res.json();
+      return data.ip;
+    } catch {
+      return null;
+    }
+  };
+
+  const saveToken = async (token) => {
+    const deviceId = getOrCreateDeviceId();
+    const ipAddress = await getPublicIP();
+    const accessToken = getAccessToken();
+
+    // Set FCM token as cookie
+    document.cookie = `fcm_token=${token}; path=/; max-age=31536000`; // 1 year
+
+    const headers = {
+      'Content-Type': 'application/json'
+    };
+
+    if (accessToken) {
+      headers['Authorization'] = `Bearer ${accessToken}`;
+    }
+
+    fetch('/api/device-token/', {
+      method: 'POST',
+      headers: headers,
+      credentials: 'include',
+      body: JSON.stringify({
+        token,
+        device_id: deviceId,
+        device_type: 'web',
+        ip_address: ipAddress
+      })
+    })
+    .then(res => res.json())
+    .then(data => console.log('Token saved:', data))
+    .catch(err => console.error('Save failed:', err));
+  };
+
+  const requestAndSendToken = (registration) => {
+    getToken(messaging, { vapidKey, serviceWorkerRegistration: registration })
+      .then((token) => {
+        if (token) {
+          console.log("FCM Token:", token);
+          saveToken(token);
+        } else {
+          console.warn("No token available.");
+        }
+      })
+      .catch(err => console.error("Token error:", err));
+  };
+
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('/firebase-messaging-sw.js')
+      .then((reg) => {
+        console.log('Service Worker registered');
+
+        if (Notification.permission === 'granted') {
+          requestAndSendToken(reg);
+        } else if (Notification.permission !== 'denied') {
+          btn.style.display = 'inline-block';
+          btn.addEventListener('click', () => {
+            Notification.requestPermission().then(permission => {
+              if (permission === 'granted') requestAndSendToken(reg);
+              else console.warn("Permission denied by user.");
+            });
+          });
+        } else {
+          console.warn("Notifications denied earlier.");
+        }
+      })
+      .catch(err => console.error("SW registration failed:", err));
+  }
+</script>
+
+
+{% block body_js %}{% endblock %}
 <script src="../../../static/Js/new_templates_js/index2.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>

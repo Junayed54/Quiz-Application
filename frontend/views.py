@@ -33,7 +33,11 @@ def login_view(request):
 def exam_list_view(request):
     return render(request, 'exams.html')
 
+# views.py
+from django.views.generic import TemplateView
+from notifications.middleware import ActivityLoggerMixin
 
-
-# def questions(request, id):
-    
+class LoggedTemplateView(ActivityLoggerMixin, TemplateView):
+    def dispatch(self, request, *args, **kwargs):
+        self.log_activity(request)
+        return super().dispatch(request, *args, **kwargs)

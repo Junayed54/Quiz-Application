@@ -54,6 +54,12 @@ urlpatterns +=[
     path('news/details/<int:pk>/', TemplateView.as_view(template_name='new_custom/news/news_details.html')),
 ]
 
+
+urlpatterns +=[
+    path('notification/send/', TemplateView.as_view(template_name="new_custom/notifications/send_notification.html")),
+]
+
+
 from django.views.static import serve
 from django.conf import settings
 from django.urls import re_path
