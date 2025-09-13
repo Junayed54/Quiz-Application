@@ -15,7 +15,7 @@
             <form id="query-form" class="mb-4">
                 <div class="mb-3">
                 <label for="query" class="form-label">Enter Query</label>
-                <textarea class="form-control" id="query" rows="4" placeholder="SELECT user FROM UserActivity WHERE path != '/quiz/' AND timestamp >= NOW() - INTERVAL '30 days'"></textarea>
+                <textarea class="form-control" id="query" rows="4" placeholder="SELECT user FROM notifications_useractivity WHERE path != '/quiz/' AND timestamp >= NOW() - INTERVAL '30 days'"></textarea>
                 </div>
                 <button type="submit" class="btn btn-primary">Run Query</button>
             </form>
