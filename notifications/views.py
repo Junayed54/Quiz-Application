@@ -77,19 +77,19 @@ from django.db import DatabaseError
 
 
 class RegisterDeviceTokenView(APIView):
-    # authentication_classes = []  # Allow both guests and authorized users
-    permission_classes = []
+    permission_classes = []  # Allow both guests and authenticated users
 
     def post(self, request):
-        
+        # Step 1: Extract Authorization header
         auth_header = request.headers.get('Authorization')
         print("Authorization header:", auth_header)
 
+        access_token = None
         if auth_header and auth_header.startswith('Bearer '):
             access_token = auth_header.split(' ')[1]
             print("Access token:", access_token)
 
-        # Step 1: Authenticate user from JWT in headers
+        # Step 2: Try to authenticate user via JWT
         user = None
         try:
             validated_user = JWTAuthentication().authenticate(request)
@@ -99,30 +99,28 @@ class RegisterDeviceTokenView(APIView):
         except Exception as e:
             print("JWT authentication failed:", str(e))
 
-        # Step 2: Extract token from request
+        # Step 3: Extract token from request
         token = request.data.get('token')
         if not token:
             return Response({'error': 'Missing token'}, status=status.HTTP_400_BAD_REQUEST)
 
-        # Step 3: Retrieve existing DeviceToken
-        try:
-            instance, created = DeviceToken.objects.get_or_create(token=token)
-        except DeviceToken.DoesNotExist:
-            return Response({'error': 'Token not registered'}, status=status.HTTP_404_NOT_FOUND)
+        # Step 4: Create or update DeviceToken
+        instance, created = DeviceToken.objects.get_or_create(token=token)
 
-        # Step 4: Update fields except token
         instance.device_type = request.data.get('device_type', instance.device_type)
         instance.device_id = request.data.get('device_id', instance.device_id)
         instance.ip_address = request.data.get('ip_address', instance.ip_address)
 
+        # Step 5: Link user if authenticated
         if user and user != instance.user:
-            print(f"Updating user from {instance.user} to {user}")
+            print(f"Linking token to user: {user}")
             instance.user = user
-        
+
         instance.save()
 
+        # Step 6: Respond with status
         return Response({
-            'message': 'Token updated',
+            'message': 'Token created' if created else 'Token updated',
             'token': instance.token
         }, status=status.HTTP_200_OK)
 
