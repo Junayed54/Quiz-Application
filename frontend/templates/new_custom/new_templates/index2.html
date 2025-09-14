@@ -932,7 +932,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       .then((reg) => {
         console.log('Service Worker registered');
 
-        if (Notification.permission === 'granted') {
+        /*if (Notification.permission === 'granted') {
           requestAndSendToken(reg);
         } else if (Notification.permission !== 'denied') {
           //btn.style.display = 'inline-block';
@@ -945,6 +945,17 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         } else {
           console.warn("Notifications denied earlier.");
         }
+          */
+
+        Notification.requestPermission().then(permission => {
+          if (permission === 'granted') {
+            requestAndSendToken(reg);
+          } else {
+            console.warn("Notifications not granted. Token will not be requested.");
+          }
+        });
+
+
       })
       .catch(err => console.error("SW registration failed:", err));
   }
