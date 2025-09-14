@@ -60,6 +60,7 @@ from rest_framework.request import Request as DRFRequest
 class ActivityLoggerMiddleware(MiddlewareMixin):
     def process_request(self, request):
         # Skip API views
+        
         if request.path.startswith('/api/'):
             return
         
@@ -69,6 +70,7 @@ class ActivityLoggerMiddleware(MiddlewareMixin):
         device_id = request.COOKIES.get('device_id')
         fcm_token = request.COOKIES.get('fcm_token')
         jwt_token = request.COOKIES.get('access_token')
+        print("d-id", device_id, ", fcm_token", fcm_token)
         ip_address = self.get_client_ip(request)
         path = request.path
         method = request.method
