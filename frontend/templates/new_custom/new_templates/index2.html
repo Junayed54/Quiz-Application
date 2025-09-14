@@ -446,7 +446,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
           </ul>
         </div>
 
-        <div class="" style="">
+        <div class="">
           <a href="/model-tests/" class="btn btn-custom mt-4" style="">Start</a>
         </div>
       </div>
@@ -926,7 +926,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       })
       .catch(err => console.error("Token error:", err));
   };
-
+  
   if ('serviceWorker' in navigator) {
     navigator.serviceWorker.register('/firebase-messaging-sw.js')
       .then((reg) => {
@@ -935,7 +935,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         if (Notification.permission === 'granted') {
           requestAndSendToken(reg);
         } else if (Notification.permission !== 'denied') {
-          btn.style.display = 'inline-block';
+          //btn.style.display = 'inline-block';
           btn.addEventListener('click', () => {
             Notification.requestPermission().then(permission => {
               if (permission === 'granted') requestAndSendToken(reg);
