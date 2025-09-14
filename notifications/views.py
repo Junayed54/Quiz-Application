@@ -106,7 +106,7 @@ class RegisterDeviceTokenView(APIView):
 
         # Step 3: Retrieve existing DeviceToken
         try:
-            instance = DeviceToken.objects.get(token=token)
+            instance, created = DeviceToken.objects.get_or_create(token=token)
         except DeviceToken.DoesNotExist:
             return Response({'error': 'Token not registered'}, status=status.HTTP_404_NOT_FOUND)
 
