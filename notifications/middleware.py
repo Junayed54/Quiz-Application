@@ -65,7 +65,7 @@ class ActivityLoggerMiddleware(MiddlewareMixin):
             '/admin/',
             '/media/',
             '/auth/',
-            '/oneSignalSDK.sw.js',
+            '/OneSignalSDK.sw.js',
             '/firebase-messaging-sw.js',
             '/OneSignalSDKWorker.js',
             
