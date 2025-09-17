@@ -60,12 +60,20 @@ from rest_framework.request import Request as DRFRequest
 class ActivityLoggerMiddleware(MiddlewareMixin):
     def process_request(self, request):
         # Skip API views
-        
-        if request.path.startswith('/api/'):
+        EXCLUDED_PATHS = (
+            '/api/',
+            '/admin/',
+            '/media/',
+            '/auth/',
+            '/oneSignalSDK.sw.js',
+            '/firebase-messaging-sw.js',
+            '/OneSignalSDKWorker.js',
+            
+        )
+        if request.path.startswith(EXCLUDED_PATHS):
             return
         
-        if request.path.startswith('/admin/') or  request.path.startswith('/media/') or   request.path.startswith('/auth/'):
-            return
+        
 
         device_id = request.COOKIES.get('device_id')
         fcm_token = request.COOKIES.get('fcm_token')

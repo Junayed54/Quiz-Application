@@ -2,6 +2,7 @@
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from .models import *
+from rest_framework.permissions import AllowAny
 
 @api_view(["POST"])
 def save_device_token(request):
@@ -46,7 +47,7 @@ import os
 from django.shortcuts import render, HttpResponse
 import time
 
-def send_data_message(token, title, body, image_url=None):
+def send_data_message(token, title, body, image_url=None, click_action_url=None):
     
     # print(token, title, body, image_url)
     data = {
@@ -58,6 +59,19 @@ def send_data_message(token, title, body, image_url=None):
     if image_url:
         data["image"]=image_url
     
+    if click_action_url:
+        notification_id = str(int(time.time()))
+        # Create tracking URL (redirect style)
+        tracking_url = (
+            f"https://jobs.academy/api/track-click/"
+            f"?next={click_action_url}"
+            f"&notification_id={notification_id}"
+            f"&fcm_token={token}"
+        )
+        
+        
+        data["url"] = tracking_url  # This will be used in the service worker
+        
     message = messaging.Message(data=data, token=token)
 
     response = messaging.send(message)
@@ -183,15 +197,17 @@ class SegmentUsersView(APIView):
         }, status=status.HTTP_200_OK)
         
         
+        
 class SendNotificationView(APIView):
-    permission_classes = [IsAuthenticated]  # ✅ Restrict to admin users
+    permission_classes = [IsAuthenticated]  # ✅ Restrict to authenticated users
 
     def post(self, request):
         tokens = request.data.get('tokens', [])
         title = request.data.get('title')
         body = request.data.get('body')
         image_url = request.data.get('image')
-        # print(tokens)
+        click_action_url = request.data.get('url')  # 🔗 Optional link for notification click
+
         if not tokens or not title or not body:
             return Response({'error': 'Missing required fields'}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -200,14 +216,95 @@ class SendNotificationView(APIView):
 
         for token in tokens:
             try:
-                send_data_message(token, title, body, image_url)
+                send_data_message(
+                    token=token,
+                    title=title,
+                    body=body,
+                    image_url=image_url,
+                    click_action_url=click_action_url
+                )
                 sent.append(token)
             except Exception as e:
-                print(f"Failed to send to {token}: {str(e)}")
+                print(f"[Notification Error] Token: {token} | Error: {str(e)}")
                 failed.append(token)
 
         return Response({
-            'message': f'Notification sent to {len(sent)} users',
+            'message': f'Notification attempted for {len(tokens)} tokens',
+            'sent_count': len(sent),
+            'failed_count': len(failed),
             'sent': sent,
             'failed': failed
         }, status=status.HTTP_200_OK)
+        
+        
+
+class LogActivityView(APIView):
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        data = request.data
+
+        device_id = data.get('device_id')
+        token = data.get('token')
+        path = data.get('path')
+        method = data.get('method', 'GET')
+        ip_address = self.get_client_ip(request)
+
+        user = None
+        jwt_token = request.COOKIES.get('access_token')
+        if jwt_token:
+            try:
+                validated_user = JWTAuthentication().authenticate(request)
+                if validated_user:
+                    user = validated_user[0]
+            except Exception:
+                pass  # Invalid token, treat as guest
+
+        if not device_id or not path:
+            return Response({'error': 'Missing required fields'}, status=status.HTTP_400_BAD_REQUEST)
+
+        UserActivity.objects.create(
+            user=user,
+            device_id=device_id,
+            token=token,
+            ip_address=ip_address,
+            path=path,
+            method=method
+        )
+
+        return Response({'status': 'activity logged'}, status=status.HTTP_201_CREATED)
+
+    def get_client_ip(self, request):
+        x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
+        if x_forwarded_for:
+            return x_forwarded_for.split(',')[0].strip()
+        return request.META.get('REMOTE_ADDR')
+    
+    
+class TrackClickAPIView(APIView):
+    permission_classes = [AllowAny]  # allow both logged-in and anonymous users
+
+    def post(self, request):
+        notification_id = request.data.get("notification_id")
+        target_url = request.data.get("target_url", "/")
+        fcm_token = request.data.get("fcm_token")
+
+        user = request.user if request.user.is_authenticated else None
+        ip = request.META.get("REMOTE_ADDR")
+        user_agent = request.META.get("HTTP_USER_AGENT", "")
+
+        click = NotificationClick.objects.create(
+            user=user,
+            fcm_token=fcm_token,
+            notification_id=notification_id,
+            target_url=target_url,
+            ip=ip,
+            user_agent=user_agent,
+            clicked_at=now()
+        )
+
+        return Response({
+            "status": "success",
+            "message": "Click recorded",
+            "click_id": click.id
+        })

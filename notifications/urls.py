@@ -8,7 +8,9 @@ urlpatterns = [
     path("api/notifications/send/", SendNotificationView.as_view(), name="send_notification"),
     path('api/device-token/', RegisterDeviceTokenView.as_view()),
     path('api/segment-users/', SegmentUsersView.as_view(), name='segment-users'),
+    path('api/log-activity/', LogActivityView.as_view(), name='log-activity'),
     path('api/send-notification/', SendNotificationView.as_view(), name='send-notification'),
+    path("api/track-click/", TrackClickAPIView.as_view(), name="track_click_api"),
 ]
 
 

@@ -52,6 +52,55 @@ class UserActivity(models.Model):
         return f"{self.device_id} visited {self.path}"
 
 
+
+class NotificationClick(models.Model):
+    user = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        help_text="User who clicked (if authenticated)"
+    )
+    fcm_token = models.CharField(
+        max_length=255,
+        null=True,
+        blank=True,
+        help_text="FCM token of the device that clicked"
+    )
+    notification_id = models.CharField(
+        max_length=255,
+        null=True,
+        blank=True,
+        help_text="ID or unique identifier of the notification"
+    )
+    target_url = models.CharField(
+        max_length=500,
+        help_text="Where the user was redirected after clicking"
+    )
+    clicked_at = models.DateTimeField(
+        auto_now_add=True,
+        help_text="Timestamp when the notification was clicked"
+    )
+    ip = models.GenericIPAddressField(
+        null=True,
+        blank=True,
+        help_text="IP address of the client"
+    )
+    user_agent = models.TextField(
+        null=True,
+        blank=True,
+        help_text="Browser/device user agent"
+    )
+
+    class Meta:
+        ordering = ["-clicked_at"]
+
+    def __str__(self):
+        if self.user:
+            return f"{self.user} clicked {self.notification_id} → {self.target_url}"
+        return f"Anonymous clicked {self.notification_id} → {self.target_url}"
+
+
 # 3. NotificationLog: Records each notification attempt and delivery stats
 class NotificationLog(models.Model):
     title = models.CharField(max_length=255)
