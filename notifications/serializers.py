@@ -1,24 +1,93 @@
-# serializers.py
 from rest_framework import serializers
-from .models import DeviceToken
+from .models import DeviceToken, UserActivity, NotificationLog, NotificationClick
+
 
 class DeviceTokenSerializer(serializers.ModelSerializer):
     class Meta:
         model = DeviceToken
-        fields = ['token', 'device_type', 'device_id', 'ip_address']
+        fields = [
+            "id",
+            "user",
+            "token",
+            "device_type",
+            "device_id",
+            "ip_address",
+            "user_agent",
+            "is_active",
+            "created_at",
+            "updated_at",
+        ]
+        read_only_fields = ["created_at", "updated_at"]
 
-    def update(self, instance, validated_data):
-        user = self.context.get('user')  # ✅ Extract user from context
 
-        instance.device_type = validated_data.get('device_type', instance.device_type)
-        instance.device_id = validated_data.get('device_id', instance.device_id)
-        instance.ip_address = validated_data.get('ip_address', instance.ip_address)
+class UserActivitySerializer(serializers.ModelSerializer):
+    user = serializers.StringRelatedField(read_only=True)
+    device = serializers.StringRelatedField(read_only=True)
 
-        # ✅ Only update user if it's present and different
-        if user and user != instance.user:
-            print(f"Updating user from {instance.user} to {user}")
-            instance.user = user
+    class Meta:
+        model = UserActivity
+        fields = [
+            "id",
+            "user",
+            "device",
+            "path",
+            "method",
+            "ip_address",
+            "timestamp",
+        ]
+        read_only_fields = ["timestamp"]
 
-        instance.save()
-        return instance
 
+class NotificationLogSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = NotificationLog
+        fields = [
+            "id",
+            "title",
+            "body",
+            "tokens",
+            "success_count",
+            "failure_count",
+            "sent_at",
+        ]
+        read_only_fields = ["success_count", "failure_count", "sent_at"]
+
+
+class NotificationClickSerializer(serializers.ModelSerializer):
+    user = serializers.StringRelatedField(read_only=True)
+    device = serializers.StringRelatedField(read_only=True)
+    notification = serializers.StringRelatedField(read_only=True)
+
+    class Meta:
+        model = NotificationClick
+        fields = [
+            "id",
+            "user",
+            "device",
+            "notification",
+            "target_url",
+            "clicked_at",
+            "ip_address",
+            "user_agent",
+        ]
+        read_only_fields = ["clicked_at"]
+
+
+
+
+class LogActivityInputSerializer(serializers.Serializer):
+    device_id = serializers.CharField(max_length=255)
+    token = serializers.CharField(max_length=255, required=False, allow_blank=True)
+    path = serializers.CharField(max_length=500)
+    method = serializers.CharField(max_length=10, default="GET")
+    ip_address = serializers.IPAddressField(required=False)
+
+
+class SendNotificationInputSerializer(serializers.Serializer):
+    tokens = serializers.ListField(
+        child=serializers.CharField(), allow_empty=False
+    )
+    title = serializers.CharField(max_length=255)
+    body = serializers.CharField()
+    image = serializers.URLField(required=False, allow_blank=True, allow_null=True)
+    url = serializers.URLField(required=False, allow_blank=True, allow_null=True)

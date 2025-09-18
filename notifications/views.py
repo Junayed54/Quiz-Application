@@ -2,6 +2,7 @@
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from .models import *
+from .serializers import *
 from rest_framework.permissions import AllowAny
 
 @api_view(["POST"])
@@ -151,16 +152,19 @@ class RegisterDeviceTokenView(APIView):
 #   )
 
 class SegmentUsersView(APIView):
-    permission_classes = []  # Add admin-only restriction if needed
+    permission_classes = []  # ⚠️ You may want IsAdminUser or custom permission
 
     def post(self, request):
         query = request.data.get('query')
         if not query:
             return Response({'error': 'Missing query'}, status=status.HTTP_400_BAD_REQUEST)
 
-        # ✅ Basic safety check
+        # ✅ Safety: allow only SELECT queries on UserActivity
         if not query.lower().strip().startswith('select') or 'useractivity' not in query.lower():
-            return Response({'error': 'Only SELECT queries on UserActivity are allowed'}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {'error': 'Only SELECT queries on UserActivity are allowed'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
 
         try:
             queryset = UserActivity.objects.raw(query)
@@ -175,13 +179,13 @@ class SegmentUsersView(APIView):
         for row in queryset:
             if row.user_id:
                 user_ids.add(row.user_id)
-            if row.device_id:
+            if row.device_id:  # now FK → holds DeviceToken.pk
                 device_ids.add(row.device_id)
 
         tokens_qs = DeviceToken.objects.filter(
             user_id__in=user_ids
         ) | DeviceToken.objects.filter(
-            device_id__in=device_ids
+            id__in=device_ids  # FK → DeviceToken.pk
         )
 
         tokens = tokens_qs.values('token', 'user__username', 'device_id')
@@ -191,51 +195,78 @@ class SegmentUsersView(APIView):
                 {
                     'token': t['token'],
                     'user': t['user__username'],
-                    'device_id': t['device_id']
-                } for t in tokens
+                    'device_id': t['device_id'],
+                }
+                for t in tokens
             ]
         }, status=status.HTTP_200_OK)
         
         
         
 class SendNotificationView(APIView):
-    permission_classes = [IsAuthenticated]  # ✅ Restrict to authenticated users
+    permission_classes = [IsAuthenticated]
 
     def post(self, request):
-        tokens = request.data.get('tokens', [])
-        title = request.data.get('title')
-        body = request.data.get('body')
-        image_url = request.data.get('image')
-        click_action_url = request.data.get('url')  # 🔗 Optional link for notification click
+        serializer = SendNotificationInputSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        data = serializer.validated_data
 
-        if not tokens or not title or not body:
-            return Response({'error': 'Missing required fields'}, status=status.HTTP_400_BAD_REQUEST)
+        tokens = data['tokens']
+        title = data['title']
+        body = data['body']
+        image_url = data.get('image')
+        click_action_url = data.get('url')
 
-        sent = []
-        failed = []
+        sent_count = 0
+        failed_count = 0
 
-        for token in tokens:
-            try:
-                send_data_message(
-                    token=token,
+        # 🚀 Batch send if many tokens
+        if len(tokens) > 10:  # You can adjust this threshold
+            message = messaging.MulticastMessage(
+                notification=messaging.Notification(
                     title=title,
                     body=body,
-                    image_url=image_url,
-                    click_action_url=click_action_url
-                )
-                sent.append(token)
-            except Exception as e:
-                print(f"[Notification Error] Token: {token} | Error: {str(e)}")
-                failed.append(token)
+                    image=image_url,
+                ),
+                data={"url": click_action_url} if click_action_url else {},
+                tokens=tokens,
+            )
+            response = messaging.send_multicast(message)
+            sent_count = response.success_count
+            failed_count = response.failure_count
+        else:
+            # Fallback: send individually
+            for token in tokens:
+                try:
+                    # Assuming a function send_data_message exists
+                    messaging.send(
+                        messaging.Message(
+                            notification=messaging.Notification(title, body, image_url),
+                            data={"url": click_action_url} if click_action_url else {},
+                            token=token
+                        )
+                    )
+                    sent_count += 1
+                except Exception as e:
+                    logger.error(f"Notification failed for token={token}, error={e}")
+                    failed_count += 1
+        
+        # 📝 Log the notification attempt
+        NotificationLog.objects.create(
+            title=title,
+            body=body,
+            tokens=tokens,
+            success_count=sent_count,
+            failure_count=failed_count
+        )
 
         return Response({
-            'message': f'Notification attempted for {len(tokens)} tokens',
-            'sent_count': len(sent),
-            'failed_count': len(failed),
-            'sent': sent,
-            'failed': failed
+            'message': f'Notification send attempt complete for {len(tokens)} tokens.',
+            'sent_count': sent_count,
+            'failed_count': failed_count
         }, status=status.HTTP_200_OK)
-        
+
+
         
 
 class LogActivityView(APIView):
@@ -245,14 +276,17 @@ class LogActivityView(APIView):
         data = request.data
 
         device_id = data.get('device_id')
-        token = data.get('token')
+        fcm_token = data.get('token')  # This is FCM token
         path = data.get('path')
         method = data.get('method', 'GET')
-        ip_address = self.get_client_ip(request)
+        ip_address = data.get('ip_address') or self.get_client_ip(request)
+        user_agent = request.META.get("HTTP_USER_AGENT", "")
 
         user = None
-        jwt_token = request.COOKIES.get('access_token')
-        if jwt_token:
+
+        # JWT from header Authorization: Bearer <token>
+        auth_header = request.headers.get('Authorization')
+        if auth_header and auth_header.startswith('Bearer '):
             try:
                 validated_user = JWTAuthentication().authenticate(request)
                 if validated_user:
@@ -260,16 +294,46 @@ class LogActivityView(APIView):
             except Exception:
                 pass  # Invalid token, treat as guest
 
+        # Required fields check
         if not device_id or not path:
             return Response({'error': 'Missing required fields'}, status=status.HTTP_400_BAD_REQUEST)
 
+        # Ensure device exists
+        device = None
+        if device_id and fcm_token:
+            device, _ = DeviceToken.objects.get_or_create(
+                device_id=device_id,
+                defaults={
+                    "user": user,
+                    "token": fcm_token,
+                    "device_type": "web",  # adjust if you can detect platform
+                    "ip_address": ip_address,
+                    "user_agent": user_agent,
+                },
+            )
+            updated = False
+            if user and device.user != user:
+                device.user = user
+                updated = True
+            if fcm_token and device.token != fcm_token:
+                device.token = fcm_token
+                updated = True
+            if ip_address and device.ip_address != ip_address:
+                device.ip_address = ip_address
+                updated = True
+            if user_agent and device.user_agent != user_agent:
+                device.user_agent = user_agent
+                updated = True
+            if updated:
+                device.save()
+
+        # Save activity
         UserActivity.objects.create(
             user=user,
-            device_id=device_id,
-            token=token,
-            ip_address=ip_address,
+            device=device,
             path=path,
-            method=method
+            method=method,
+            ip_address=ip_address,
         )
 
         return Response({'status': 'activity logged'}, status=status.HTTP_201_CREATED)
@@ -281,6 +345,7 @@ class LogActivityView(APIView):
         return request.META.get('REMOTE_ADDR')
     
     
+    
 class TrackClickAPIView(APIView):
     permission_classes = [AllowAny]  # allow both logged-in and anonymous users
 
@@ -290,21 +355,41 @@ class TrackClickAPIView(APIView):
         fcm_token = request.data.get("fcm_token")
 
         user = request.user if request.user.is_authenticated else None
-        ip = request.META.get("REMOTE_ADDR")
+        ip_address = self.get_client_ip(request)
         user_agent = request.META.get("HTTP_USER_AGENT", "")
 
+        # Resolve Notification object
+        notification = None
+        if notification_id:
+            notification = NotificationLog.objects.filter(id=notification_id).first()
+
+        # Resolve DeviceToken object
+        device = None
+        if fcm_token:
+            device = DeviceToken.objects.filter(token=fcm_token).first()
+
+        # Create click log
         click = NotificationClick.objects.create(
             user=user,
-            fcm_token=fcm_token,
-            notification_id=notification_id,
+            device=device,
+            notification=notification,
             target_url=target_url,
-            ip=ip,
+            ip_address=ip_address,
             user_agent=user_agent,
             clicked_at=now()
         )
 
-        return Response({
-            "status": "success",
-            "message": "Click recorded",
-            "click_id": click.id
-        })
+        return Response(
+            {
+                "status": "success",
+                "message": "Click recorded",
+                "click_id": click.id,
+            },
+            status=status.HTTP_201_CREATED,
+        )
+
+    def get_client_ip(self, request):
+        x_forwarded_for = request.META.get("HTTP_X_FORWARDED_FOR")
+        if x_forwarded_for:
+            return x_forwarded_for.split(",")[0].strip()
+        return request.META.get("REMOTE_ADDR")

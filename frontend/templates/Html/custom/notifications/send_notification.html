@@ -49,6 +49,12 @@
                     <label for="body" class="form-label">Body</label>
                     <textarea class="form-control" id="body" rows="3" placeholder="Notification message" required></textarea>
                 </div>
+                <!-- Add this inside your notification form -->
+                <div class="mb-3">
+                  <label for="url" class="form-label">Click Action URL (optional)</label>
+                  <input type="url" class="form-control" id="url" placeholder="https://yourdomain.com/target-page">
+                </div>
+
                 <div class="mb-3">
                     <label for="image" class="form-label">Image URL (optional)</label>
                     <input type="url" class="form-control" id="image" placeholder="https://example.com/image.jpg">
@@ -124,6 +130,7 @@ document.getElementById('notification-form').addEventListener('submit', async (e
   const title = document.getElementById('title').value;
   const body = document.getElementById('body').value;
   const image = document.getElementById('image').value;
+  const url = document.getElementById('url').value;  // 🔗 New field
   const token = localStorage.getItem('access_token');
 
   try {
@@ -137,6 +144,7 @@ document.getElementById('notification-form').addEventListener('submit', async (e
         title,
         body,
         image,
+        url,  // 🔗 Include in payload
         tokens: window.matchedTokens
       })
     });
@@ -162,9 +170,7 @@ document.getElementById('notification-form').addEventListener('submit', async (e
     });
   }
 });
+
 </script>
-
-
-
 </body>
 </html>

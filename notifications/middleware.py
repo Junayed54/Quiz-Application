@@ -1,5 +1,5 @@
 from django.utils.deprecation import MiddlewareMixin
-from .models import UserActivity
+from .models import *
 from rest_framework_simplejwt.authentication import JWTAuthentication
 
 from rest_framework.request import Request as DRFRequest
@@ -59,26 +59,25 @@ from rest_framework.request import Request as DRFRequest
 
 class ActivityLoggerMiddleware(MiddlewareMixin):
     def process_request(self, request):
-        # Skip API views
+        # Skip API views & assets
         EXCLUDED_PATHS = (
             '/api/',
             '/admin/',
+            '/favicon.ico',
             '/media/',
             '/auth/',
             '/OneSignalSDK.sw.js',
             '/firebase-messaging-sw.js',
             '/OneSignalSDKWorker.js',
-            
         )
         if request.path.startswith(EXCLUDED_PATHS):
             return
-        
-        
 
+        # Extract values from cookies
         device_id = request.COOKIES.get('device_id')
         fcm_token = request.COOKIES.get('fcm_token')
         jwt_token = request.COOKIES.get('access_token')
-        print("d-id", device_id, ", fcm_token", fcm_token)
+
         ip_address = self.get_client_ip(request)
         path = request.path
         method = request.method
@@ -90,25 +89,52 @@ class ActivityLoggerMiddleware(MiddlewareMixin):
                 validated_user = JWTAuthentication().authenticate(request)
                 if validated_user:
                     user = validated_user[0]
-                    request.user = user  # Optional override
+                    request.user = user  # override request.user
             except Exception:
                 pass  # Invalid token, treat as guest
 
-        if device_id:
-            UserActivity.objects.create(
-                user=user,
+        device = None
+        if device_id and fcm_token:
+            # Get or create device record
+            device, _ = DeviceToken.objects.get_or_create(
                 device_id=device_id,
-                token=fcm_token,
-                ip_address=ip_address,
-                path=path,
-                method=method
+                defaults={
+                    "user": user,
+                    "token": fcm_token,
+                    "device_type": "web",  # adjust if you can detect device type
+                    "ip_address": ip_address,
+                },
             )
+            # If token changed or user updated → update record
+            updated = False
+            if user and device.user != user:
+                device.user = user
+                updated = True
+            if fcm_token and device.token != fcm_token:
+                device.token = fcm_token
+                updated = True
+            if ip_address and device.ip_address != ip_address:
+                device.ip_address = ip_address
+                updated = True
+            if updated:
+                device.save()
+
+        # Log activity
+        UserActivity.objects.create(
+            user=user,
+            device=device,
+            path=path,
+            method=method,
+            ip_address=ip_address,
+        )
 
     def get_client_ip(self, request):
+        """Get client IP from request headers"""
         x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
         if x_forwarded_for:
             return x_forwarded_for.split(',')[0].strip()
         return request.META.get('REMOTE_ADDR')
+    
     
     
 class ActivityLoggerMixin:

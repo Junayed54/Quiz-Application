@@ -248,7 +248,7 @@
 }
 
   </style>
-  <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
+  <!-- <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
   <script>
     window.OneSignalDeferred = window.OneSignalDeferred || [];
     OneSignalDeferred.push(async function(OneSignal) {
@@ -256,7 +256,7 @@
         appId: "41dbe94e-e4ab-4320-b148-6c006ae2d013",
       });
     });
-  </script>
+  </script> -->
   {% block style %}{% endblock %}
   {% block head_js %}{% endblock %}
   <script src="https://unpkg.com/@lottiefiles/lottie-player@latest/dist/lottie-player.js"></script>
@@ -268,7 +268,7 @@
       "@type": "Organization",
       "name": "Jobs Academy",
       "url": "{{ request.build_absolute_uri }}",
-      "logo": "https://yoursite.com/static/images/jobs_academy4.png",
+      "logo": "https://jobs.academy/static/images/jobs_academy4.png",
       "description": "Jobs Academy provides online mock tests, previous year questions, and comprehensive study materials for government job preparation in Bangladesh, including NTRCA, BCS, Primary, and Bank exams.",
       "sameAs": [
         "https://www.facebook.com/profile.php?id=61575841160427"
@@ -850,6 +850,14 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
   const app = initializeApp(firebaseConfig);
   const messaging = getMessaging(app);
+  import { onMessage } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-messaging.js";
+
+  onMessage(messaging, (payload) => {
+    console.log("Foreground message received:", payload);
+    const { title, body } = payload.notification;
+    new Notification(title, { body });
+  });
+
   const vapidKey = "BFMGzMAe0aF68SMjCu4SlR6zcsPuRjmKmSmv72AebLIMicG3-_LgqlFPTh4AeQiIAiaoHSZQNjFuHNqXNjGX-YA";
   const btn = document.getElementById('enable-notifications');
 
