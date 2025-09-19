@@ -178,7 +178,9 @@
     /* Ensure the rounded corners are visible by setting overflow hidden on the parent */
     .table-responsive-wrapper {
         background: #0B1A2699;
-        border: 1px solid #13E0B41A
+        border: 1px solid #13E0B41A;
+        overflow-x: auto; /* Enables horizontal scrolling */
+        -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
     }
 
     /* Global styling for images within cards/tables */

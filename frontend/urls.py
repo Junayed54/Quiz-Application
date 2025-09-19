@@ -10,7 +10,7 @@ urlpatterns = [
     path('contact-us/', TemplateView.as_view(template_name="new_custom/new_templates/contact_us.html"), name='contact_us'),
     path('signup/', signup_view, name='sign_up'),
     path('login/', login_view, name='log_in'),
-    
+    path('privacy-policy/', TemplateView.as_view(template_name="new_custom/new_templates/privacy-policy.html")),
     
     
     path('past_exams/', TemplateView.as_view(template_name="new_custom/quiz/exam_types.html"), name ='universities'),
