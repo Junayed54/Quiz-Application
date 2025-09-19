@@ -3,6 +3,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // DOM elements
     const logout = document.getElementById('logout_btn');
+    const delete_btm = document.getElementById('delete_account_btn');
     const login = document.getElementById('login_btn');
     const signup = document.getElementById('signup_btn'); // FIXED here
     const user_name = document.getElementById('username');
@@ -31,6 +32,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
                 // Show/hide buttons based on login
                 if (logout) logout.classList.remove('d-none');
+                if (delete_btm) delete_btm.classList.remove('d-none');
                 if (login) login.classList.add('d-none');
                 if (signup) signup.classList.add('d-none');
 

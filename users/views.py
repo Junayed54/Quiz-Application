@@ -69,6 +69,33 @@ class LogoutView(APIView):
         logout(request)
         return Response({'message': 'Logout successful'}, status=status.HTTP_200_OK)
 
+class DeleteMyAccountAPIView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def delete(self, request):
+        phone_number = request.data.get("phone_number")
+        password = request.data.get("password")
+
+        if not phone_number or not password:
+            return Response(
+                {"detail": "Phone number and password are required."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        # Verify credentials
+        user = authenticate(username=phone_number, password=password)
+        if not user or user != request.user:
+            return Response(
+                {"detail": "Invalid phone number or password."},
+                status=status.HTTP_401_UNAUTHORIZED
+            )
+
+        # Delete user account
+        request.user.delete()
+        return Response(
+            {"detail": "Your account has been deleted successfully."},
+            status=status.HTTP_200_OK
+        )
 
 class UserRoleView(APIView):
     authentication_classes = [JWTAuthentication]

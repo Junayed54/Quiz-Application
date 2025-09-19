@@ -7,6 +7,8 @@ from django.views.generic import TemplateView
 urlpatterns = [
     path('signup/', SignupView.as_view(), name='signup'),
     path('login/', TokenObtainPairView.as_view(), name='login'),
+    path('delete-my-account/', DeleteMyAccountAPIView.as_view(), name='delete_my_account'),
+
     path('token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path('logout/', LogoutView.as_view(), name='logout'),
     path('user-role/', UserRoleView.as_view(), name='get_user_role'),

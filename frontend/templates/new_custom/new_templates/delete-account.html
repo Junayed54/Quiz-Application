@@ -1,0 +1,112 @@
+{% extends 'new_custom/new_templates/index2.html' %}
+
+{% block title %}Delete Account | Jobs Academy{% endblock %}
+
+{% block style %}
+<style>
+    .delete-account-container {
+        max-width: 500px;
+        margin: 50px auto;
+        padding: 30px;
+        background-color: #f8f9fa;
+        border-radius: 10px;
+        box-shadow: 0 0 15px rgba(0,0,0,0.1);
+    }
+
+    .delete-account-container h2 {
+        margin-bottom: 20px;
+        color: #dc3545;
+        text-align: center;
+    }
+
+    .form-group {
+        margin-bottom: 15px;
+    }
+
+    .btn-delete {
+        background-color: #dc3545;
+        color: white;
+        width: 100%;
+    }
+
+    .btn-delete:hover {
+        background-color: #c82333;
+    }
+
+    .alert {
+        margin-top: 20px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="delete-account-container">
+    <h2>Delete Your Account</h2>
+    <p>Please enter your phone number and password to permanently delete your account. This action cannot be undone.</p>
+    
+    <div id="alert-container"></div>
+
+    <div class="form-group">
+        <label for="phone_number">Phone Number</label>
+        <input type="text" id="phone_number" class="form-control" placeholder="Enter your phone number" required>
+    </div>
+    <div class="form-group">
+        <label for="password">Password</label>
+        <input type="password" id="password" class="form-control" placeholder="Enter your password" required>
+    </div>
+    <button class="btn btn-delete" id="deleteBtn">Delete Account</button>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+document.getElementById('deleteBtn').addEventListener('click', async () => {
+    const phone_number = document.getElementById('phone_number').value.trim();
+    const password = document.getElementById('password').value.trim();
+
+    if (!phone_number || !password) {
+        Swal.fire('Error', 'Please enter both phone number and password.', 'error');
+        return;
+    }
+
+    // Confirmation dialog
+    const result = await Swal.fire({
+        title: 'Are you sure?',
+        text: "This action will permanently delete your account!",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#dc3545',
+        cancelButtonColor: '#6c757d',
+        confirmButtonText: 'Yes, delete it!'
+    });
+
+    if (!result.isConfirmed) return;
+
+    try {
+        const token = localStorage.getItem('access_token'); // JWT token from Flutter WebView local storage
+        const response = await fetch('/auth/delete-my-account/', {
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({
+                phone_number: phone_number,
+                password: password
+            })
+        });
+
+        const data = await response.json();
+        if (response.ok) {
+            Swal.fire('Deleted!', data.detail || 'Your account has been deleted successfully.', 'success')
+                .then(() => window.location.href = '/'); // redirect
+        } else {
+            Swal.fire('Error', data.detail || 'Failed to delete account. Please check your credentials.', 'error');
+        }
+    } catch (error) {
+        console.error(error);
+        Swal.fire('Error', 'Something went wrong. Please try again later.', 'error');
+    }
+});
+</script>
+
+{% endblock %}
