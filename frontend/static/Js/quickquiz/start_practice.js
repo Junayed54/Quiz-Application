@@ -461,7 +461,7 @@ function renderSubjectTabs(subjects) {
         const tab = `
             <li class="nav-item" role="presentation">
                 <button
-                    class="nav-link ${isActive}"
+                    class="nav-link ${isActive} border border-2 border-primary"
                     id="subject-tab-${subject.id}"
                     data-bs-toggle="tab"
                     type="button"

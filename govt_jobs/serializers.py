@@ -13,6 +13,10 @@ class GovernmentJobSerializer(serializers.ModelSerializer):
     department_id = serializers.IntegerField(write_only=True, required=False)  # Optional for update
     position_id = serializers.IntegerField(write_only=True, required=False)  # Optional for update
 
+    # Override PDF field to return absolute URL
+    pdf = serializers.SerializerMethodField()
+    
+    
     class Meta:
         model = GovernmentJob
         fields = '__all__'
@@ -57,3 +61,12 @@ class GovernmentJobSerializer(serializers.ModelSerializer):
         
         instance.save()
         return instance
+    
+    def get_pdf(self, obj):
+        request = self.context.get('request')
+        if obj.pdf:
+            if request:
+                return request.build_absolute_uri(obj.pdf.url)  # full URL with domain
+            return obj.pdf.url  # fallback relative URL
+        return None
+

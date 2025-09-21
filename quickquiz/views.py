@@ -19,14 +19,19 @@ from .serializers import *
 from django.contrib.auth import get_user_model
 User = get_user_model()
 
-
+from django.db.models import Count
 
 
 
 class SubjectViewSet(viewsets.ModelViewSet):
-    queryset = Subject.objects.all()
+    # queryset = Subject.objects.all()
     serializer_class = SubjectSerializer
     
+    def get_queryset(self):
+        return (
+            Subject.objects.annotate(question_count=Count("practicequestion"))
+            .filter(question_count__gte=10)  # only subjects with at least 10 questions
+        )
     
 # Start a new Practice Session
 class StartPracticeSessionView(APIView):
@@ -229,6 +234,15 @@ class PracticeQuestionUploadView(APIView):
         from django.core.files.base import ContentFile
         return ContentFile(image_data, name=filename)
 
+
+    def safe_str(self, val):
+        import pandas as pd
+        if pd.isna(val):
+            return ""
+        return str(val).strip()
+
+    
+
     def post(self, request, *args, **kwargs):
         file = request.FILES.get('file')
         if not file or not file.name.endswith('.xlsx'):
@@ -241,7 +255,7 @@ class PracticeQuestionUploadView(APIView):
 
             # Normalize headers
             df.columns = df.iloc[0].astype(str).str.strip().str.lower()
-            df = df[1:]
+            df = df[1:].reset_index(drop=True)
 
             image_map = self.extract_images(wb)
 
@@ -257,28 +271,30 @@ class PracticeQuestionUploadView(APIView):
             OPTION_LABELS = ['a', 'b', 'c', 'd']
 
             with transaction.atomic():
+                last_subject = None  # Track last non-empty subject
+
                 for index, row in df.iterrows():
                     excel_row_num = index + 2
 
-                    question_text = str(row.get('question', '')).strip()
+                    question_text = self.safe_str(row.get('question'))
                     q_cell = f"{get_column_letter(df.columns.get_loc('question') + 1)}{excel_row_num}"
                     question_image = self.get_image_data_from_map(image_map.get(q_cell))
 
                     if not question_text and not question_image:
-                        skipped_count += 1
+                        # skipped_count += 1
                         continue
 
-                    # if PracticeQuestion.objects.filter(text=question_text).exists():
-                    #     skipped_count += 1
-                    #     continue
+                    # Handle subject
+                    subject_name = self.safe_str(row.get('subject'))
 
-                    # Get or create subject from Excel
-                    subject_name = str(row.get('subject', '')).strip()
                     subject = None
                     if subject_name:
                         subject, _ = Subject.objects.get_or_create(name=subject_name)
+                        last_subject = subject  # update last_subject if new one found
+                    else:
+                        subject = last_subject  # use previous subject if blank
 
-                    # Create the question
+                    # Create question
                     question = PracticeQuestion.objects.create(
                         text=question_text,
                         marks=1,
@@ -291,10 +307,10 @@ class PracticeQuestionUploadView(APIView):
                         if q_file:
                             question.image.save(q_file.name, q_file, save=True)
 
-                    correct = str(row.get("answer", "")).strip().lower()
+                    correct = self.safe_str(row.get("answer")).lower()
                     standard_correct = LABEL_MAP.get(correct, correct)
 
-                    # Map option columns to standardized labels
+                    # Map options
                     option_columns = {}
                     for col in df.columns:
                         key = str(col).strip()
@@ -310,7 +326,8 @@ class PracticeQuestionUploadView(APIView):
                         col_index = df.columns.get_loc(col_key)
                         cell_ref = f"{get_column_letter(col_index + 1)}{excel_row_num}"
                         opt_image = self.get_image_data_from_map(image_map.get(cell_ref))
-                        opt_text = str(row.get(col_key, "")).strip()
+                        opt_text = self.safe_str(row.get(col_key))
+
 
                         is_correct = (standard_correct == label or standard_correct == opt_text.lower())
 
@@ -332,6 +349,7 @@ class PracticeQuestionUploadView(APIView):
                             )
 
                     created_count += 1
+
 
             return Response({
                 "message": "Upload complete",
