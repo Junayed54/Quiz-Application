@@ -199,9 +199,12 @@ document.addEventListener('DOMContentLoaded', function(){
 
                 if (question.explanation_image) {
                     explanationContent.innerHTML += `
-                        <div class="explanation-image-wrapper text-center mb-2">
-                            <img src="${question.explanation_image}" alt="Explanation Image" class="img-fluid rounded-md shadow-sm" style="max-height: 250px; object-fit: contain;">
+                        <div class="explanation-image-wrapper text-center mb-2" style="overflow: hidden;">
+                            <img src="${question.explanation_image}" alt="Explanation Image"
+                                class="rounded-md shadow-sm"
+                                style="max-height: 250px; max-width: 100%; object-fit: contain; display: inline-block;">
                         </div>
+
                     `;
                 }
 

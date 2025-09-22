@@ -64,13 +64,13 @@ document.addEventListener('DOMContentLoaded', () => {
         const posOptions = Array.from(positionSelect.selectedOptions).map(opt => opt.value);
 
         // Append all selected IDs
-        posOptions.forEach(id => formData.append('position_ids[]', id));
+        posOptions.forEach(id => formData.append('position_ids', id));
 
 
         if (orgVal) formData.append('organization_id', orgVal);
         if (deptVal) formData.append('department_id', deptVal);
         // if (posVals.length > 0) formData.append('position_ids', posVals); // Corrected: use posVals length
-
+        // console.log(formData);
         try {
             const response = await fetch('/api/govt-jobs/', {
                 method: 'POST',
