@@ -3,6 +3,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const jobForm = document.getElementById('jobForm');
     const messageDiv = document.getElementById('message');
+    // Get a reference to the loader element
+    const loaderDiv = document.getElementById('loader');
+    const submitButton = jobForm.querySelector('button[type="submit"]');
+
     const organizationSelect = document.getElementById('organizationSelect');
     const departmentSelect = document.getElementById('departmentSelect');
     const positionSelect = document.getElementById('positionSelect');
@@ -44,15 +48,28 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Update the underlying textarea for TinyMCE
         tinymce.triggerSave();
-        
+
+        // --- Start of Loader Implementation ---
+        // Show loader and disable button
+        loaderDiv.style.display = 'block';
+        messageDiv.innerHTML = ''; // Clear previous messages
+        submitButton.disabled = true;
+        // --- End of Loader Implementation ---
+
         const formData = new FormData(jobForm);
         const orgVal = organizationSelect.value;
         const deptVal = departmentSelect.value;
-        const posVal = positionSelect.value;
+        
+        // Collect multiple selected positions
+        const posOptions = Array.from(positionSelect.selectedOptions).map(opt => opt.value);
+
+        // Append all selected IDs
+        posOptions.forEach(id => formData.append('position_ids[]', id));
+
 
         if (orgVal) formData.append('organization_id', orgVal);
         if (deptVal) formData.append('department_id', deptVal);
-        if (posVal) formData.append('position_id', posVal);
+        // if (posVals.length > 0) formData.append('position_ids', posVals); // Corrected: use posVals length
 
         try {
             const response = await fetch('/api/govt-jobs/', {
@@ -81,6 +98,12 @@ document.addEventListener('DOMContentLoaded', () => {
         } catch (error) {
             console.error(error);
             messageDiv.innerHTML = `<div class="alert alert-danger">An error occurred. Please try again.</div>`;
+        } finally {
+            // --- Start of Loader Implementation ---
+            // Hide loader and re-enable button
+            loaderDiv.style.display = 'none';
+            submitButton.disabled = false;
+            // --- End of Loader Implementation ---
         }
     });
 
@@ -162,5 +185,4 @@ document.addEventListener('DOMContentLoaded', () => {
             console.error(err);
         }
     });
-
 });

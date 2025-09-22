@@ -30,7 +30,8 @@
             <div class="container">
                 <div class="form-container">
                   <h2 class="text-center mb-4">Add Government Job</h2>
-                  <div id="message"></div>
+                  
+
                   <form id="jobForm">
                     <div class="mb-3">
                         <label class="form-label">Job Title</label>
@@ -58,9 +59,10 @@
                     <!-- Position Select (Not required) -->
                     <div class="mb-3">
                         <label class="form-label">Position</label>
-                        <select name="position" id="positionSelect" class="form-control">
+                        <select name="position" id="positionSelect" class="form-control" multiple>
                             <option value="">Select a Position (optional)</option>
                         </select>
+                        <small class="text-muted">Hold Ctrl (Windows) or Cmd (Mac) to select multiple positions.</small>
                         <button type="button" id="createPositionBtn" class="btn btn-link">Create Position</button>
                     </div>
                 
@@ -91,7 +93,13 @@
                 
                     <button type="submit" class="btn btn-primary w-100">Submit</button>
                   </form>
-                
+                  <div id="loader" class="text-center mt-4" style="display: none;">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                        <p class="mt-2">Submitting job...</p>
+                    </div>
+                  <div class="mt-4" id="message"></div>
                 </div>
             </div>
             

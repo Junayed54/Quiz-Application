@@ -43,7 +43,8 @@ EMAIL_HOST_USER = 'jonaetshanto8@gmail.com'
 EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD')
 
 ALLOWED_HOSTS = ['127.0.0.1','localhost', '217.76.63.211', '161.97.141.58', 'jobs.academy', 'www.jobs.academy']
-
+USE_X_FORWARDED_HOST = True
+SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 # Application definition
 INSTALLED_APPS = [
     # Django apps

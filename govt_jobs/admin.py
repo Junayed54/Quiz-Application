@@ -7,7 +7,7 @@ class GovernmentJobAdmin(admin.ModelAdmin):
         'title',
         'organization',
         'department',
-        'position',
+        'get_positions',   # custom method for many-to-many
         'location',
         'deadline',
         'posted_on',
@@ -15,7 +15,7 @@ class GovernmentJobAdmin(admin.ModelAdmin):
     list_filter = (
         'organization',
         'department',
-        'position',
+        'positions',   # now plural
         'location',
         'posted_on',
         'deadline',
@@ -25,7 +25,7 @@ class GovernmentJobAdmin(admin.ModelAdmin):
         'description',
         'organization__name',
         'department__name',
-        'position__name',
+        'positions__title',   # updated for M2M
         'location',
     )
     date_hierarchy = 'posted_on'
@@ -33,7 +33,7 @@ class GovernmentJobAdmin(admin.ModelAdmin):
 
     fieldsets = (
         (None, {
-            'fields': ('title', 'organization', 'department', 'position', 'location')
+            'fields': ('title', 'organization', 'department', 'positions', 'location')
         }),
         ('Job Details', {
             'fields': ('description', 'official_link', 'pdf')
@@ -43,3 +43,8 @@ class GovernmentJobAdmin(admin.ModelAdmin):
         }),
     )
 
+    filter_horizontal = ('positions',)  # adds a nice widget for selecting multiple
+
+    def get_positions(self, obj):
+        return ", ".join([pos.title for pos in obj.positions.all()])
+    get_positions.short_description = "Positions"
