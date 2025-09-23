@@ -5,6 +5,9 @@ from .models import *
 from .serializers import *
 from rest_framework.permissions import AllowAny
 from django.apps import apps
+from django.utils.timezone import now
+
+# Example usage
 
 @api_view(["POST"])
 def save_device_token(request):
@@ -90,6 +93,9 @@ from .models import DeviceToken
 from .serializers import DeviceTokenSerializer
 from django.db import connection
 from django.db import DatabaseError
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 class RegisterDeviceTokenView(APIView):
