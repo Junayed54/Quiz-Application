@@ -4,6 +4,7 @@ from rest_framework.response import Response
 from .models import *
 from .serializers import *
 from rest_framework.permissions import AllowAny
+from django.apps import apps
 
 @api_view(["POST"])
 def save_device_token(request):
@@ -151,56 +152,38 @@ class RegisterDeviceTokenView(APIView):
 #       AND timestamp >= datetime('now', '-30 days')
 #   )
 
-class SegmentUsersView(APIView):
-    permission_classes = []  # ⚠️ You may want IsAdminUser or custom permission
+ALLOWED_MODELS = ['UserActivity', 'DeviceToken']
 
-    def post(self, request):
-        query = request.data.get('query')
-        if not query:
-            return Response({'error': 'Missing query'}, status=status.HTTP_400_BAD_REQUEST)
+class SegmentUsersRawView(APIView):
+    """
+    Accepts raw SELECT queries only and executes them on the database.
+    """
 
-        # ✅ Safety: allow only SELECT queries on UserActivity
-        if not query.lower().strip().startswith('select') or 'useractivity' not in query.lower():
-            return Response(
-                {'error': 'Only SELECT queries on UserActivity are allowed'},
-                status=status.HTTP_400_BAD_REQUEST
-            )
+    def post(self, request, format=None):
+        raw_query = request.data.get("query")
+        if not raw_query:
+            return Response({"error": "Missing 'query' in request."}, status=status.HTTP_400_BAD_REQUEST)
 
         try:
-            queryset = UserActivity.objects.raw(query)
-        except DatabaseError as db_err:
-            return Response({'error': str(db_err)}, status=status.HTTP_400_BAD_REQUEST)
-        except Exception as e:
-            return Response({'error': f'Unexpected error: {str(e)}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            with connection.cursor() as cursor:
+                cursor.execute(raw_query)
+                columns = [col[0] for col in cursor.description]
+                rows = cursor.fetchall()
 
-        user_ids = set()
-        device_ids = set()
-
-        for row in queryset:
-            if row.user_id:
-                user_ids.add(row.user_id)
-            if row.device_id:  # now FK → holds DeviceToken.pk
-                device_ids.add(row.device_id)
-
-        tokens_qs = DeviceToken.objects.filter(
-            user_id__in=user_ids
-        ) | DeviceToken.objects.filter(
-            id__in=device_ids  # FK → DeviceToken.pk
-        )
-
-        tokens = tokens_qs.values('token', 'user__username', 'device_id')
-
-        return Response({
-            'users': [
-                {
-                    'token': t['token'],
-                    'user': t['user__username'],
-                    'device_id': t['device_id'],
+            # Normalize expected fields
+            def extract(row):
+                row_dict = dict(zip(columns, row))
+                return {
+                    "user": row_dict.get("user_id"),
+                    "device_id": row_dict.get("device_id"),
+                    "token": row_dict.get("token")
                 }
-                for t in tokens
-            ]
-        }, status=status.HTTP_200_OK)
-        
+
+            users = [extract(row) for row in rows]
+            return Response({"users": users})
+
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
         
         
 class SendNotificationView(APIView):
