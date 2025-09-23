@@ -125,6 +125,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (res.ok) {
                 alert('Organization created');
                 populateSelect('/quiz/organizations/', organizationSelect, 'Select an Organization (optional)');
+                organizationSelect.value = data.id;
             } else {
                 alert('Error: ' + JSON.stringify(data));
             }
@@ -136,7 +137,12 @@ document.addEventListener('DOMContentLoaded', () => {
     // Create Department
     createDepartmentBtn.addEventListener('click', async () => {
         const name = prompt('Enter department name:');
-        if (!name) return;
+        const orgId = organizationSelect.value; // Get the selected organization ID
+
+        if (!name || !orgId) {
+            alert('You must enter a department name and select an organization first.');
+            return;
+        }
 
         try {
             const res = await fetch('/quiz/departments/', {
@@ -145,12 +151,15 @@ document.addEventListener('DOMContentLoaded', () => {
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${token}`
                 },
-                body: JSON.stringify({ name })
+                // Include the organization_id in the request body
+                body: JSON.stringify({ name: name, organization: orgId }) 
             });
             const data = await res.json();
             if (res.ok) {
                 alert('Department created');
                 populateSelect('/quiz/departments/', departmentSelect, 'Select a Department (optional)');
+                departmentSelect.value = data.id; // Set the selected value to the new ID
+
             } else {
                 alert('Error: ' + JSON.stringify(data));
             }
@@ -172,12 +181,13 @@ document.addEventListener('DOMContentLoaded', () => {
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${token}`
                 },
-                body: JSON.stringify({ title: name, organization: orgId })
+                body: JSON.stringify({ name: name, organization: orgId })
             });
             const data = await res.json();
             if (res.ok) {
                 alert('Position created');
                 populateSelect('/quiz/positions/', positionSelect, 'Select a Position (optional)');
+                positionSelect.value = data.id;
             } else {
                 alert('Error: ' + JSON.stringify(data));
             }
