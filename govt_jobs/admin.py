@@ -34,7 +34,7 @@ class GovernmentJobAdmin(admin.ModelAdmin):
         'description',
         'organization__name',
         'department__name',
-        'positions__title',   # updated for M2M
+        'positions__name',   # updated for M2M
         'location',
     )
     date_hierarchy = 'posted_on'
@@ -55,7 +55,7 @@ class GovernmentJobAdmin(admin.ModelAdmin):
     filter_horizontal = ('positions',)  # adds a nice widget for selecting multiple
 
     def get_positions(self, obj):
-        return ", ".join([pos.title for pos in obj.positions.all()])
+        return ", ".join([pos.name for pos in obj.positions.all()])
     get_positions.short_description = "Positions"
 
 @admin.register(Notice)

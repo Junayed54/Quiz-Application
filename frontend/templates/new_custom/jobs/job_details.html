@@ -148,6 +148,12 @@
         text-align: left;
         vertical-align: middle;
         border-bottom: 1px solid var(--border-color); /* Only bottom border for clean look */
+        border-right: 1px solid var(--border-color); 
+    }
+
+     /* FIX: Remove the right border from the last column cells */
+    th:last-child, td:last-child {
+        border-right: none;
     }
 
     th {
