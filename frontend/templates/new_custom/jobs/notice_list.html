@@ -1,0 +1,140 @@
+{% extends 'new_custom/new_templates/index2.html' %}
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <h1 class="text-center mb-4 pb-2 border-bottom fw-bold text-primary">আনুষ্ঠানিক বিজ্ঞপ্তি সমূহ</h1>
+            
+            <div id="notices-container" class="mt-4">
+                <div id="loading-spinner" class="text-center p-5">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">লোড হচ্ছে...</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+---
+
+{% block body_js %}
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const noticesContainer = document.getElementById("notices-container");
+        const initialLoadingSpinner = document.getElementById("loading-spinner");
+
+        // Set the maximum number of characters for the description summary
+        const SUMMARY_LENGTH = 120; 
+
+        // Helper function to truncate the description and add Bengali fallback text
+        function getSummary(description) {
+            if (!description) {
+                return "এই ঘোষণা সম্পর্কে আরো বিস্তারিত তথ্যের জন্য 'বিস্তারিত দেখুন'-এ ক্লিক করুন।"; // Bengali: Click 'Details' for more info.
+            }
+            if (description.length > SUMMARY_LENGTH) {
+                return description.substring(0, SUMMARY_LENGTH) + '...';
+            }
+            return description;
+        }
+
+        // Helper function for the Details Button (always links to the detail page)
+        function getDetailsButton(noticeId) {
+            // Links to the assumed Django detail view URL
+            const detailLink = `/notices/${noticeId}/details/`;
+            
+            return `
+                <a href="${detailLink}" 
+                   class="btn btn-primary btn-sm d-inline-flex align-items-center shadow-sm">
+                    বিস্তারিত দেখুন
+                    <i class="bi bi-arrow-right-short ms-2"></i>
+                </a>
+            `;
+        }
+
+        function renderNotices(notices) {
+            // Use a list group for a professional, cohesive look
+            const listGroup = document.createElement('ul');
+            listGroup.className = 'list-group shadow-sm';
+
+            notices.forEach(notice => {
+                const noticeItem = document.createElement('li');
+                // Use flex utilities for responsive layout
+                noticeItem.className = 'list-group-item d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center p-3 p-md-4';
+                
+                // Get the Bengali date format for 'Posted'
+                const postedDate = new Date(notice.created_at).toLocaleDateString('bn-BD');
+
+                noticeItem.innerHTML = `
+                    <div class="me-md-3 mb-2 mb-md-0 notice-text-area">
+                        <h5 class="mb-1 fw-bold text-dark">${notice.title}</h5>
+                        
+                        <p class="text-muted mb-2 mb-md-0 small">
+                            প্রকাশের তারিখ: 
+                            <span class="badge text-bg-light fw-normal">${postedDate}</span>
+                        </p>
+                        
+                        <p class="text-secondary small mt-2">
+                            ${getSummary(notice.description)}
+                        </p>
+                    </div>
+                    
+                    ${getDetailsButton(notice.id)}
+                `;
+                listGroup.appendChild(noticeItem);
+            });
+            
+            noticesContainer.appendChild(listGroup);
+        }
+
+        async function fetchNotices() {
+            // Re-create a temporary spinner inside the container as the original is removed by JS
+            const tempSpinner = document.createElement('div');
+            tempSpinner.className = 'text-center p-5';
+            tempSpinner.innerHTML = `<div class="spinner-border text-primary" role="status"><span class="visually-hidden">লোড হচ্ছে...</span></div>`;
+            
+            // Move the initial spinner/placeholder outside the container before fetching
+            // and append the temporary one for better loading management.
+            if(initialLoadingSpinner) initialLoadingSpinner.remove();
+            noticesContainer.appendChild(tempSpinner);
+
+            try {
+                const response = await fetch("/api/notices/");
+                
+                tempSpinner.remove(); // Remove temporary spinner on successful response
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const notices = await response.json();
+                
+                if (notices.length === 0) {
+                    noticesContainer.innerHTML = `
+                        <div class="alert alert-info text-center" role="alert">
+                            <i class="bi bi-info-circle-fill me-2"></i>
+                            কোনো আনুষ্ঠানিক বিজ্ঞপ্তি বর্তমানে পাওয়া যায়নি।
+                        </div>
+                    `;
+                    return;
+                }
+
+                renderNotices(notices);
+
+            } catch (error) {
+                console.error("Error fetching notices:", error);
+                tempSpinner.remove();
+                noticesContainer.innerHTML = `
+                    <div class="alert alert-danger text-center" role="alert">
+                        <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                        বিজ্ঞপ্তি লোড করতে ব্যর্থ হয়েছে। অনুগ্রহ করে পরে আবার চেষ্টা করুন।
+                    </div>
+                `;
+            }
+        }
+
+        fetchNotices();
+    });
+</script>
+{% endblock %}

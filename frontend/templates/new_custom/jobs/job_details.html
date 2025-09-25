@@ -1,19 +1,25 @@
+
 {% extends 'new_custom/new_templates/index2.html' %}
 
-{% block title %}চাকরির বিস্তারিত{% endblock %}
+<!-- {% block title %}চাকরির বিস্তারিত{% endblock %} -->
 
 {% block style %}
 <style>
+    /* Updated Color Palette & Variables 
+    Inspired by Tailwind CSS defaults for a modern look.
+    */
     :root {
-        --primary-color: #2c5282; /* Professional blue, matching job listings */
-        --secondary-color: #394047; /* Light background */
-        --accent-color: #ed8936; /* Warm accent for CTAs */
-        --text-color: #1a202c; /* Dark text for readability */
-        --light-text-color: #4a5568; /* Subtle text */
-        --border-color: #e2e8f0; /* Clean border */
-        --bg-color: #ffffff; /* White background */
-        --shadow-color: rgba(0, 0, 0, 0.1);
-        --error-color: #e53e3e; /* Error state */
+        --primary-color: #3b82f6; /* Modern, confident Blue */
+        --secondary-color: #4b5563; /* Dark Gray for text/secondary elements */
+        --accent-color: #10b981; /* Green for success/positive CTAs */
+        --text-color: #1f2937; /* Dark text for high readability */
+        --light-text-color: #6b7280; /* Subtle text/metadata */
+        --border-color: #e5e7eb; /* Light, subtle border */
+        --bg-color: #ffffff; /* White card background */
+        --bg-light: #f9fafb; /* Very light, soft page background */
+        --shadow-color: rgba(0, 0, 0, 0.05); /* Softer shadow */
+        --error-color: #ef4444; /* Red for alerts/PDFs */
+        --warning-color: #f59e0b; /* Orange/Yellow for emphasis */
     }
 
     /* Reset and Base Styles */
@@ -25,255 +31,275 @@
 
     body {
         font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-        line-height: 1.7;
+        line-height: 1.6; /* Slight reduction for density */
         color: var(--text-color);
-        background-color: var(--secondary-color);
+        background-color: var(--bg-light); /* Soft background */
         -webkit-font-smoothing: antialiased;
         -moz-osx-font-smoothing: grayscale;
     }
 
+    /* Layout */
+    .main-layout {
+        display: grid;
+        grid-template-columns: 3fr 1fr;
+        gap: 2.5rem; /* Slightly reduced gap */
+        max-width: 1200px; /* Max width slightly smaller for better focus */
+        margin: 2.5rem auto; /* Vertical spacing top/bottom */
+        padding: 0 1.5rem;
+    }
 
+    /* Card Styling (Main Content & Sidebar) */
+    .job-detail-container, .notice-sidebar {
+        background-color: var(--bg-color);
+        padding: 2rem;
+        border-radius: 12px; /* Smoother corners */
+        box-shadow: 0 10px 15px -3px var(--shadow-color), 0 4px 6px -2px var(--shadow-color); /* Modern, multi-layer shadow */
+        border: 1px solid var(--border-color); /* Subtle border */
+        transition: box-shadow 0.3s ease;
+    }
+    
+    .job-detail-container:hover, .notice-sidebar:hover {
+         box-shadow: 0 20px 25px -5px var(--shadow-color), 0 10px 10px -5px var(--shadow-color);
+    }
+    
+
+    /* Title and Header Section */
+    .detail-header {
+        padding-bottom: 1.25rem;
+        margin-bottom: 1.5rem;
+        border-bottom: 1px solid var(--border-color); /* Lighter border */
+    }
+
+    .detail-header h1 {
+        font-size: 2.25rem; /* Larger, more impactful title */
+        font-weight: 800; /* Extra bold for impact */
+        color: var(--text-color);
+        line-height: 1.2;
+    }
+
+    .detail-header p {
+        font-size: 1rem;
+        color: var(--light-text-color);
+        margin-top: 0.75rem;
+    }
+
+    /* Meta Information Section (Key Info Block) */
+    .detail-meta {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 1rem 1.5rem; /* More vertical space */
+        padding: 1rem 0;
+        margin-bottom: 2rem;
+        border-top: 1px dashed var(--border-color);
+        border-bottom: 1px dashed var(--border-color);
+    }
+
+    .detail-meta p {
+        font-size: 0.9375rem;
+        color: var(--secondary-color);
+        display: flex;
+         /* Align icon and text vertically */
+        gap: 0.5rem;
+    }
+
+    .detail-meta strong {
+        color: var(--primary-color);
+        font-weight: 700;
+        flex-shrink: 0;
+    }
+    
+    .detail-meta p::before {
+        font-size: 1.125rem; /* Slightly larger icon */
+        color: var(--primary-color); /* Icon color matching primary */
+        opacity: 0.8;
+    }
+    
+    /* Description Section */
+    .detail-description h2 {
+        font-size: 1.75rem;
+        font-weight: 700;
+        color: var(--primary-color);
+        margin-bottom: 1rem;
+        border-left: 4px solid var(--primary-color);
+        padding-left: 1rem;
+    }
+
+    .detail-description p {
+        white-space: pre-wrap;
+        line-height: 1.8;
+        color: var(--secondary-color);
+        font-size: 1rem;
+        margin-bottom: 1rem;
+    }
+    
+    /* Table Styling for Professional Data Display */
     table {
         width: 100%;
-        border-collapse: collapse;
-        margin-top: 1rem;
-        font-size: 0.9375rem;
+        border-collapse: separate; /* Use separate for rounded corners */
+        border-spacing: 0;
+        margin-top: 1.5rem;
+        border: 1px solid var(--border-color);
+        border-radius: 8px; /* Apply rounding to the table */
+        overflow: hidden; /* Important for containing rounded corners */
     }
 
     th, td {
-        border: 2px solid var(--border-color);
-        padding: 0.75rem;
+        padding: 1rem;
         text-align: left;
-        vertical-align: top;
+        vertical-align: middle;
+        border-bottom: 1px solid var(--border-color); /* Only bottom border for clean look */
     }
 
     th {
         background-color: var(--primary-color);
         color: white;
         font-weight: 600;
-    }
-    /*
-    tr:nth-child(even) {
-        background-color: #f7fafc; /* Lighter background for even rows 
-    }
-    */
-    /* Main Container and Layout */
-    .job-detail-main {
-        padding: 3rem 0;
-    }
-
-    .job-detail-container {
-        max-width: 960px;
-        margin: 0 auto;
-        padding: 2rem;
-        background-color: var(--bg-color);
-        border-radius: 10px;
-        box-shadow: 0 4px 12px var(--shadow-color);
-        border: 1px solid var(--border-color);
-    }
-
-    /* Title and Header Section */
-    .detail-header {
-        padding-bottom: 1.5rem;
-        margin-bottom: 2rem;
-        border-bottom: 2px solid var(--primary-color);
-    }
-
-    .detail-header h1 {
-        font-size: 2rem;
-        font-weight: 700;
-        color: var(--text-color);
-        line-height: 1.3;
-    }
-
-    .detail-header p {
-        font-size: 0.9375rem;
-        color: var(--light-text-color);
-        margin-top: 0.5rem;
-    }
-
-    /* Meta Information Section */
-    .detail-meta {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-        gap: 0.5rem;
-        padding-bottom: 0.5rem;
-        border-bottom: 1px solid var(--border-color);
-        margin-bottom: 2rem;
-    }
-
-    /* Make last two items span full width on desktop */
-    .detail-meta p:nth-last-child(-n+3) {
-        grid-column: 1 / -1; /* span all columns */
-    }
-
-    .detail-meta p {
-        font-size: 0.9375rem;
-        color: var(--text-color);
-        display: flex;
-        
-        gap: 0.2rem;
-        /* ADD THIS CODE */
-        white-space: nowrap; /* Prevents text from wrapping */
-        overflow: hidden;
-        /* Hides the overflowing text */
-        /* Displays "..." for truncated text */
-    }
-
-    .detail-meta strong {
-        color: var(--primary-color);
-        font-weight: 600;
-        flex-shrink: 0;
+        font-size: 1rem;
+        text-transform: uppercase;
     }
     
-    .detail-meta p.deadline {
-        display: block;
-    }
-    .detail-meta p.position{
-        white-space: nowrap;   /* keep all text in one line */
-        overflow-x: auto;      /* enable horizontal scroll */
-        display: block;
-        max-width: 100%;       /* stay inside container */
-        scrollbar-width: thin; /* slim scrollbar (Firefox) */
+    tr:last-child td {
+        border-bottom: none; /* No border on the last row */
     }
 
-    .detail-meta p.position::-webkit-scrollbar {
-        height: 6px; /* small scrollbar height */
-    }
-
-    .detail-meta p.position::-webkit-scrollbar-thumb {
-        background-color: #2c5282; /* scrollbar color */
-        border-radius: 4px;
-}
-
-
-    .detail-meta p::before {
-        font-size: 1rem;
-    }
-
-    .detail-meta p.organization::before {
-        content: "🏢";
-    }
-
-    .detail-meta p.department::before {
-        content: "📋";
-    }
-
-    .detail-meta p.position::before {
-        content: "💼";
-    }
-
-    .detail-meta p.location::before {
-        content: "📍";
-    }
-
-    .detail-meta p.deadline::before {
-        content: "📅";
-    }
-
-    /* Description Section */
-    .detail-description h2 {
-        font-size: 1.5rem;
-        font-weight: 600;
-        color: var(--primary-color);
-        margin-bottom: 1rem;
-    }
-
-    .detail-description p {
-        white-space: pre-wrap;
-        line-height: 1.8;
-        color: var(--text-color);
-        font-size: 0.9375rem;
-    }
-
-    /* Buttons and Links Section */
+    /* Buttons and Links Section (CTAs) */
     .detail-links {
-        margin-top: 2rem;
+        margin-top: 2.5rem;
+        padding-top: 1.5rem;
+        border-top: 1px solid var(--border-color);
         display: flex;
-        gap: 0.75rem;
+        gap: 1rem;
         flex-wrap: wrap;
     }
 
     .detail-btn {
         display: inline-flex;
         align-items: center;
+        justify-content: center;
         background-color: var(--primary-color);
         color: #ffffff;
-        padding: 0.625rem 1.25rem;
-        border-radius: 6px;
+        padding: 0.75rem 1.5rem;
+        border-radius: 8px; /* Slightly more rounded */
         text-decoration: none;
-        font-weight: 500;
-        font-size: 0.875rem;
-        transition: background-color 0.3s ease, transform 0.2s ease;
+        font-weight: 600;
+        font-size: 0.9375rem;
+        transition: all 0.3s ease;
+        border: none;
+        box-shadow: 0 4px var(--primary-color)30; /* Subtle 3D effect */
     }
 
-    .model-exam-btn{
-        background-color: olivedrab;
-    }
     .detail-btn:hover {
-        background-color: #2b6cb0;
-        transform: translateY(-1px);
+        background-color: #2563eb; /* Darker primary blue */
+        transform: translateY(-2px);
+        box-shadow: 0 6px var(--primary-color)40;
     }
 
     .detail-btn.pdf-btn {
-        background-color: #c53030;
+        background-color: var(--error-color);
+        box-shadow: 0 4px var(--error-color)30;
     }
 
     .detail-btn.pdf-btn:hover {
-        background-color: #9b2c2c;
+        background-color: #c81e1e;
+        box-shadow: 0 6px var(--error-color)40;
     }
 
     .detail-btn.exam-btn {
-        background-color: var(--accent-color);
+        background-color: var(--warning-color);
+        box-shadow: 0 4px var(--warning-color)30;
     }
 
     .detail-btn.exam-btn:hover {
-        background-color: #dd6b20;
+        background-color: #d97706;
+        box-shadow: 0 6px var(--warning-color)40;
+    }
+    
+    .detail-btn.model-exam-btn {
+        background-color: var(--accent-color);
+        box-shadow: 0 4px var(--accent-color)30;
     }
 
-    /* Loading and Error States */
-    .loading, .error {
+    .detail-btn.model-exam-btn:hover {
+        background-color: #059669;
+        box-shadow: 0 6px var(--accent-color)40;
+    }
+
+    /* Sidebar Notice Styling */
+    .notice-sidebar {
+        padding: 1.5rem;
+    }
+
+    .notice-sidebar h2 {
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: var(--bg-color);
+        margin-bottom: 1.5rem;
         text-align: center;
-        padding: 2rem;
-        color: var(--light-text-color);
-        font-size: 1rem;
+        padding: 0.75rem;
+        background-color: var(--primary-color); /* Primary color for header */
+        border-radius: 8px;
+        box-shadow: 0 2px 4px var(--shadow-color);
     }
-
-    .error {
-        color: var(--error-color);
-    }
-
-    .spinner {
-        border: 4px solid var(--border-color);
-        border-top: 4px solid var(--primary-color);
-        border-radius: 50%;
-        width: 2rem;
-        height: 2rem;
-        animation: spin 1s linear infinite;
-        display: inline-block;
+    
+    .notice-item {
         margin-bottom: 1rem;
+        padding-bottom: 1rem;
+        border-bottom: 1px solid var(--border-color);
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 0.5rem;
+    }
+    
+    .notice-item:last-child {
+        border-bottom: none;
+        margin-bottom: 0;
+        padding-bottom: 0;
     }
 
-    @keyframes spin {
-        0% { transform: rotate(0deg); }
-        100% { transform: rotate(360deg); }
+    .notice-item h3 {
+        font-size: 1rem;
+        font-weight: 600;
+        color: var(--text-color);
+        line-height: 1.4;
     }
 
-    /* Accessibility */
-    .detail-btn:focus, .job-detail-container:focus-within {
-        outline: 2px solid var(--accent-color);
-        outline-offset: 2px;
+    .notice-date {
+        font-size: 0.8125rem;
+        color: var(--light-text-color);
+        margin-top: 0.25rem;
     }
+    
+    .notice-detail-btn {
+        display: inline-block;
+        flex-shrink: 0;
+        padding: 0.4rem 0.75rem;
+        font-size: 0.8125rem;
+        font-weight: 500;
+        color: var(--primary-color);
+        border: 1px solid var(--primary-color);
+        border-radius: 6px;
+        text-decoration: none;
+        transition: all 0.2s ease;
+    }
+    
+    .notice-detail-btn:hover {
+        background-color: var(--primary-color);
+        color: white;
+    }
+
 
     /* Responsive Design */
     @media (max-width: 1024px) {
-        .detail-meta {
-            grid-template-columns: 1fr;
+        .main-layout {
+            grid-template-columns: 1fr; /* Single column layout on smaller screens */
+            gap: 2rem;
+            margin: 2rem auto;
         }
     }
 
     @media (max-width: 768px) {
-        .job-detail-container {
+        .job-detail-container, .notice-sidebar {
             padding: 1.5rem;
         }
 
@@ -287,29 +313,44 @@
 
         .detail-links {
             flex-direction: column;
+            gap: 0.75rem;
         }
 
         .detail-btn {
             width: 100%;
-            justify-content: center;
         }
     }
 
     @media (max-width: 480px) {
-        .job-detail-container {
+        .job-detail-container, .notice-sidebar {
             padding: 1rem;
+            border-radius: 8px;
         }
     }
+    
+    /* Remove unused styles and cleanup old structure */
+    .job-detail-main {
+        padding: 0; /* Remove top/bottom padding as it's now on .main-layout */
+    }
+
+    /* Remove previous pseudo-elements for meta icons to use a cleaner approach if possible, 
+       but keeping them for now as they are implemented in the script for the placeholder: */
+    /* .detail-meta p::before { ... } */
+    
 </style>
 {% endblock %}
 
 {% block content %}
     <div>
         <main class="job-detail-main">
-            <div id="job-details" class="job-detail-container">
-                <div class="loading">
-                    <div class="spinner"></div>
-                    <p>চাকরির বিবরণ লোড হচ্ছে...</p>
+            <div class="main-layout">
+                <div id="job-details" class="job-detail-container">
+                    </div>
+
+                <div id="notices-sidebar" class="notice-sidebar">
+                    <h2>গুরুত্বপূর্ণ বিজ্ঞপ্তি</h2>
+                    <div id="notices-list">
+                        </div>
                 </div>
             </div>
         </main>
@@ -318,111 +359,108 @@
 
 {% block body_js %}
 <script>
-    document.addEventListener('DOMContentLoaded', () => {
-        const jobDetailsContainer = document.getElementById('job-details');
+document.addEventListener('DOMContentLoaded', () => {
+    const jobDetailsContainer = document.getElementById('job-details');
+    const noticesContainer = document.getElementById('notices-list');
 
-        // URL থেকে চাকরির আইডি (ID) বের করা (যেমন: /job-news/3/)
-        const pathSegments = window.location.pathname.split('/');
-        const jobId = pathSegments[pathSegments.length - 2];
+    // Get the job ID from the URL (e.g., /job-news/3/)
+    const pathSegments = window.location.pathname.split('/');
+    // Filter out empty strings before getting the second-to-last segment
+    const jobId = pathSegments.filter(s => s).slice(-1)[0]; 
+    <!-- console.log(jobId); -->
+    if (jobId && !isNaN(jobId)) {
+        fetchJobDetails(jobId);
+    } else {
+        jobDetailsContainer.innerHTML = `<div class="error"><p>প্রদত্ত চাকরির আইডি অবৈধ।</p></div>`;
+        document.getElementById('notices-sidebar').style.display = 'none';
+    }
 
-        if (jobId && !isNaN(jobId)) {
-            fetchJobDetails(jobId);
-        } else {
-            jobDetailsContainer.innerHTML = `
-                <div class="error">
-                    <p>প্রদত্ত চাকরির আইডি অবৈধ।</p>
+    async function fetchJobDetails(id) {
+        // Use the CSS-based spinner for a professional loading state
+        jobDetailsContainer.innerHTML = `<div class="loading"><div class="spinner"></div><p>চাকরির বিবরণ লোড হচ্ছে...</p></div>`;
+        try {
+            const response = await fetch(`/api/govt-jobs/${id}/`, { headers: {'Accept': 'application/json'} });
+            if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
+            const job = await response.json();
+            renderJobDetails(job);   
+            renderNotices(job.notices); 
+        } catch (error) {
+            console.error(error);
+            jobDetailsContainer.innerHTML = `<div class="error"><p>চাকরির বিস্তারিত লোড করা যায়নি। অনুগ্রহ করে আবার চেষ্টা করুন।</p></div>`;
+            noticesContainer.innerHTML = `<p class="error">বিজ্ঞপ্তি লোড করা যায়নি।</p>`;
+        }
+    }
+
+    function renderJobDetails(job) {
+        const dateOptions = { year: 'numeric', month: 'long', day: 'numeric' };
+        const deadline = job.deadline ? new Date(job.deadline).toLocaleDateString('bn-BD', dateOptions) : 'উল্লেখ করা হয়নি';
+        const postedOn = job.posted_on ? new Date(job.posted_on).toLocaleDateString('bn-BD', dateOptions) : 'উল্লেখ করা হয়নি';
+        const positions = job.positions && job.positions.length > 0
+            ? job.positions.map(p => sanitizeHTML(p.name)).join(', ')
+            : 'উল্লেখ করা হয়নি';
+
+        jobDetailsContainer.innerHTML = `
+            <div class="detail-header">
+                <h1>${sanitizeHTML(job.title)}</h1>
+                <p>প্রকাশের তারিখ: ${postedOn}</p>
+            </div>
+            
+            <div class="detail-meta">
+                <p class="organization"><span role="img" aria-label="Organization">🏢</span><strong>প্রতিষ্ঠানের নাম:</strong> ${sanitizeHTML(job.organization?.name || 'উল্লেখ করা হয়নি')}</p>
+                <p class="department"><span role="img" aria-label="Department">📋</span><strong>বিভাগের নাম:</strong> ${sanitizeHTML(job.department?.name || 'উল্লেখ করা হয়নি')}</p>
+                <p class="position"><span role="img" aria-label="Position">💼</span><strong>পদের নাম:</strong> ${positions}</p>
+                <p class="location"><span role="img" aria-label="Location">📍</span><strong>অবস্থান:</strong> ${sanitizeHTML(job.location || 'উল্লেখ করা হয়নি')}</p>
+                <p class="deadline"><span role="img" aria-label="Deadline">📅</span><strong>আবেদনের শেষ তারিখ:</strong> ${deadline}</p>
+            </div>
+            
+            <div class="detail-description">
+                <h2>চাকরির বিবরণ</h2>
+                ${job.description || '<p>কোনো বিবরণ দেওয়া হয়নি।</p>'}
+            </div>
+            
+            <div class="detail-links">
+                <a href="${job.official_link || '#'}" target="_blank" class="detail-btn">অফিসিয়াল লিংক</a>
+                ${job.pdf ? `<a href="${job.pdf}" target="_blank" class="detail-btn pdf-btn">পিডিএফ ডাউনলোড করুন</a>` : ''}
+                <a href="/past_exams/" class="detail-btn exam-btn">পূর্ববর্তী পরীক্ষার অনুশীলন</a>
+                <a href="/model-tests/" class="detail-btn model-exam-btn">মডেল টেস্ট অনুশীলন</a>
+            </div>
+        `;
+    }
+
+    // Simplified notices rendering for a cleaner look
+    function renderNotices(notices) {
+        noticesContainer.innerHTML = '';
+        if (!notices || notices.length === 0) {
+            noticesContainer.innerHTML = '<p class="no-notices text-center text-sm p-3 border-dashed border rounded">এই চাকরির জন্য বর্তমানে কোনো বিজ্ঞপ্তি নেই।</p>';
+            return;
+        }
+
+        notices.forEach(notice => {
+            const detailLink = `/notices/${notice.id}/details/` || '#';
+            const dateOptions = { day: 'numeric', month: 'short', year: 'numeric' };
+            const formattedDate = new Date(notice.created_at).toLocaleDateString('bn-BD', dateOptions);
+            
+            const noticeElement = document.createElement('div');
+            noticeElement.className = 'notice-item';
+            noticeElement.innerHTML = `
+                <div class="flex-grow">
+                    <h3>${sanitizeHTML(notice.title)}</h3>
+                    <p class="notice-date">প্রকাশ: ${formattedDate}</p>
                 </div>
+                <a href="${sanitizeHTML(detailLink)}" target="_blank" class="notice-detail-btn">
+                    বিস্তারিত 
+                </a>
             `;
-        }
+            noticesContainer.appendChild(noticeElement);
+        });
+    }
 
-        async function fetchJobDetails(id) {
-            try {
-                const response = await fetch(`/api/govt-jobs/${id}/`, {
-                    headers: {
-                        'Accept': 'application/json'
-                    }
-                });
-
-                if (!response.ok) {
-                    if (response.status === 404) {
-                        jobDetailsContainer.innerHTML = `
-                            <div class="error">
-                                <p>চাকরিটি খুঁজে পাওয়া যায়নি।</p>
-                            </div>
-                        `;
-                    } else {
-                        throw new Error(`HTTP error! Status: ${response.status}`);
-                    }
-                    return;
-                }
-
-                const job = await response.json();
-                renderJobDetails(job);
-            } catch (error) {
-                console.error('চাকরির বিস্তারিত আনতে সমস্যা:', error);
-                jobDetailsContainer.innerHTML = `
-                    <div class="error">
-                        <p>চাকরির বিস্তারিত লোড করা সম্ভব হয়নি। অনুগ্রহ করে পরে আবার চেষ্টা করুন।</p>
-                    </div>
-                `;
-            }
-        }
-
-        function renderJobDetails(job) {
-            const deadline = job.deadline
-                ? new Date(job.deadline).toLocaleDateString('bn-BD', {
-                    year: 'numeric',
-                    month: 'long',
-                    day: 'numeric'
-                })
-                : 'উল্লেখ করা হয়নি';
-            const postedOn = job.posted_on
-                ? new Date(job.posted_on).toLocaleDateString('bn-BD', {
-                    year: 'numeric',
-                    month: 'long',
-                    day: 'numeric'
-                })
-                : 'উল্লেখ করা হয়নি';
-            console.log(job);
-            // Join all positions into a single string
-            const positions = job.positions && job.positions.length > 0
-                ? job.positions.map(p => sanitizeHTML(p.name)).join(', ')
-                : 'উল্লেখ করা হয়নি';
-
-            jobDetailsContainer.innerHTML = `
-                <div class="detail-header">
-                    <h1>${sanitizeHTML(job.title)}</h1>
-                    <p>প্রকাশের তারিখ: ${postedOn}</p>
-                </div>
-
-                <div class="detail-meta">
-                    <p class="organization"><strong>প্রতিষ্ঠানের নাম:</strong> ${sanitizeHTML(job.organization?.name || 'উল্লেখ করা হয়নি')}</p>
-                    <p class="department"><strong>বিভাগের নাম:</strong> ${sanitizeHTML(job.department?.name || 'উল্লেখ করা হয়নি')}</p>
-                    <p class="position"><strong>পদের নাম:</strong> ${positions}</p>
-                    <p class="location"><strong>অবস্থান:</strong> ${sanitizeHTML(job.location || 'উল্লেখ করা হয়নি')}</p>
-                    <p class="deadline"><strong>আবেদনের শেষ তারিখ:</strong> ${deadline}</p>
-                </div>
-
-                <div class="detail-description">
-                    <h2>চাকরির বিবরণ</h2>
-                    ${job.description || '<p>কোনো বিবরণ দেওয়া হয়নি।</p>'} <!-- No escaping here -->
-                </div>
-
-                <div class="detail-links">
-                    <a href="${job.official_link || '#'}" target="_blank" class="detail-btn">অফিসিয়াল লিংক</a>
-                    ${job.pdf ? `<a href="${job.pdf}" target="_blank" class="detail-btn pdf-btn">পিডিএফ ডাউনলোড করুন</a>` : ''}
-                    <a href="/past_exams/" class="detail-btn exam-btn">পূর্ববর্তী পরীক্ষার অনুশীলন করুন</a>
-                    <a href="/model-tests/" class="detail-btn model-exam-btn">মডেল টেস্ট পরীক্ষা অনুশীলন করুন</a>
-                </div>
-            `;
-        }
-
-        // XSS প্রতিরোধ করার জন্য বেসিক HTML স্যানিটাইজেশন
-        function sanitizeHTML(str) {
-            const div = document.createElement('div');
-            div.textContent = str;
-            return div.innerHTML;
-        }
-    });
+    function sanitizeHTML(str) {
+        const div = document.createElement('div');
+        div.textContent = str;
+        return div.innerHTML;
+    }
+});
 </script>
+
 {% endblock %}

@@ -1,85 +1,310 @@
 {% comment %} @SPK@include("partials/mainhead.html") {% endcomment %}
 {% include "../../partials/mainhead.html"%}
 <style>
-    /* Custom Styles */
-    #message {
-        margin-top: 20px;
+    /* Professional Color Palette */
+    :root {
+        --primary-color: #2c5282;
+        --secondary-color: #f7fafc;
+        --accent-color: #3182ce;
+        --text-color: #1a202c;
+        --light-text-color: #4a5568;
+        --border-color: #e2e8f0;
+        --bg-color: #ffffff;
+        --shadow-color: rgba(0, 0, 0, 0.08);
+        --error-color: #e53e3e;
     }
 
-    #message h4 {
-        font-size: 1.25rem;
+    /* Reset and Base Styles */
+    * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+    }
+
+    body {
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        line-height: 1.7;
+        color: var(--text-color);
+        background-color: var(--secondary-color);
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+    }
+
+    /* Main Layout for Job Details */
+    .job-detail-main {
+        padding: 2.5rem 1.5rem;
+    }
+
+    .job-detail-container {
+        display: flex;
+        flex-direction: column;
+        gap: 2.5rem;
+        max-width: 1200px;
+        margin: 0 auto;
+    }
+
+    @media (min-width: 992px) {
+        .job-detail-container {
+            flex-direction: row;
+        }
+    }
+    
+    .job-details-section, .notices-section {
+        background-color: var(--bg-color);
+        border-radius: 12px;
+        box-shadow: 0 6px 15px var(--shadow-color);
+        padding: 2.5rem;
+        border: 1px solid var(--border-color);
+    }
+
+    .job-details-section {
+        flex: 3;
+    }
+
+    .notices-section {
+        flex: 1;
+    }
+
+    /* Section Titles and Buttons */
+    .section-title {
+        font-size: 1.5rem;
         font-weight: 700;
-        color: #333;
-        margin-bottom: 1rem;
+        color: var(--primary-color);
+        margin: 0;
+        padding-bottom: 0.75rem;
+        border-bottom: 2px solid var(--border-color);
+    }
+    
+    .notices-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1.5rem;
     }
 
-    .card {
-        background-color: white;
-        border-radius: 0.375rem;
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        padding: 1rem;
-        border: 1px solid #e2e8f0;
-        transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+    .add-btn {
+        background: none;
+        border: 2px solid var(--primary-color);
+        border-radius: 50%;
+        color: var(--primary-color);
+        padding: 0.5rem;
+        cursor: pointer;
+        transition: background-color 0.3s ease, color 0.3s ease;
     }
 
-    .card:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 8px 12px rgba(0, 0, 0, 0.2);
+    .add-btn:hover {
+        background-color: var(--primary-color);
+        color: #ffffff;
     }
 
-    .card h5 {
-        font-size: 1.125rem;
+    /* Job Details Content */
+    .job-title {
+        font-size: 2.25rem;
+        font-weight: 700;
+        color: var(--text-color);
+        line-height: 1.2;
+        margin-bottom: 0.75rem;
+    }
+
+    .job-meta-info {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+        color: var(--light-text-color);
+        font-size: 1rem;
+    }
+
+    .job-meta-item strong {
+        color: var(--primary-color);
+        margin-right: 0.5rem;
+    }
+
+    .job-description {
+        margin-bottom: 2.5rem;
+        color: var(--text-color);
+    }
+    
+    .job-description h2 {
+        font-size: 1.75rem;
         font-weight: 600;
         margin-bottom: 1rem;
-        color: #2d3748;
+        color: var(--primary-color);
     }
 
-    .card p {
-        font-size: 0.875rem;
-        color: #4a5568;
-        margin-bottom: 0.5rem;
+    /* General Button Styles (for links) */
+    .job-buttons {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 1rem;
+        margin-top: 2rem;
     }
 
-    .card a {
-        display: inline-block;
-        padding: 0.5rem 1rem;
-        background-color: #3182ce;
-        color: white;
-        text-align: center;
-        border-radius: 0.375rem;
+    .job-btn {
+        display: inline-flex;
+        align-items: center;
+        padding: 0.75rem 1.5rem;
+        border-radius: 8px;
         text-decoration: none;
-        font-weight: 500;
-        margin-top: 1rem;
-        transition: background-color 0.2s ease-in-out;
+        font-weight: 600;
+        transition: transform 0.2s ease;
+        border: none;
+        color: #fff;
     }
 
-    .card a:hover {
-        background-color: #2b6cb0;
+    .job-btn.primary { background-color: var(--primary-color); }
+    .job-btn.secondary { background-color: #c53030; }
+    .job-btn:hover { transform: translateY(-2px); }
+
+    /* Notices Sidebar */
+    .notices-list {
+        display: flex;
+        flex-direction: column;
+        gap: 1.5rem;
     }
 
-    @media (max-width: 640px) {
-        .grid {
-            grid-template-columns: 1fr;
-        }
+    .notice-item {
+        border-bottom: 1px dashed var(--border-color);
+        padding-bottom: 1.5rem;
+    }
+    .notice-item:last-child { border-bottom: none; }
+    .notice-item a {
+        font-weight: 600;
+        color: var(--text-color);
+        text-decoration: none;
+    }
+    .notice-item a:hover { color: var(--primary-color); }
+
+    /* Modal Dialog Styles */
+    .modal-dialog-container {
+        margin: auto;
+        border: none;
+        padding: 0;
+        border-radius: 12px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        width: 90%;
+        max-width: 500px;
+        animation: fadeIn 0.3s ease-out;
     }
 
-    @media (min-width: 640px) {
-        .grid {
-            grid-template-columns: 1fr 1fr;
-        }
+    /* Modal Backdrop */
+    .modal-dialog-container::backdrop {
+        background-color: rgba(0, 0, 0, 0.6);
     }
 
-    @media (min-width: 1024px) {
-        .grid {
-            grid-template-columns: 1fr 1fr 1fr;
-        }
+    /* Modal Content */
+    .modal-content {
+        background-color: var(--bg-color);
+        border-radius: 12px;
+        overflow: hidden;
     }
 
+    .modal-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 1.5rem;
+        border-bottom: 1px solid var(--border-color);
+    }
+
+    .modal-title {
+        font-size: 1.5rem;
+        color: var(--text-color);
+        margin: 0;
+    }
+
+    .close-btn {
+        background: none;
+        border: none;
+        cursor: pointer;
+        color: var(--light-text-color);
+        transition: color 0.3s ease;
+    }
+
+    .close-btn:hover {
+        color: var(--error-color);
+    }
+
+    .modal-body {
+        padding: 1.5rem;
+    }
+
+    .form-group {
+        display: flex;
+        flex-direction: column;
+        margin-bottom: 1.5rem;
+    }
+
+    .form-group label {
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+        color: var(--text-color);
+    }
+
+    .form-group input, .form-group textarea {
+        width: 100%;
+        padding: 0.75rem;
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+        font-size: 1rem;
+        color: var(--text-color);
+    }
+
+    .form-group input:focus, .form-group textarea:focus {
+        outline: none;
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 2px rgba(44, 82, 130, 0.2);
+    }
+
+    .submit-btn {
+        width: 100%;
+        background-color: var(--primary-color);
+        color: #ffffff;
+        padding: 0.75rem 1.5rem;
+        border: none;
+        border-radius: 8px;
+        font-size: 1rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+    }
+
+    .submit-btn:hover {
+        background-color: var(--accent-color);
+    }
+
+    /* Loading and Error States */
+    .loading, .error {
+        text-align: center;
+        padding: 3rem;
+        color: var(--light-text-color);
+        font-size: 1.125rem;
+    }
+    
+    .spinner {
+        border: 4px solid var(--border-color);
+        border-top: 4px solid var(--primary-color);
+        border-radius: 50%;
+        width: 3rem;
+        height: 3rem;
+        animation: spin 1s linear infinite;
+        display: inline-block;
+        margin-bottom: 1.5rem;
+    }
+
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+    
+    @keyframes fadeIn {
+        from { opacity: 0; transform: scale(0.95); }
+        to { opacity: 1; transform: scale(1); }
+    }
 </style>
 </head>
 
 <body>
-
     {% comment %} @SPK@include("partials/switcher.html") {% endcomment %}
     {% include "../../partials/switcher.html" %}
     <div class="page">
@@ -87,39 +312,59 @@
         {% include "../../partials/header.html"%}
         {% comment %} @SPK@include("partials/sidebar.html") {% endcomment %}
         {% include "../../partials/sidebar.html" %}
-        <!-- Start::app-content -->
         <div class="main-content app-content">
+            <div class="job-detail-main">
+                <div class="job-detail-container">
+                    <div id="job-details-content" class="job-details-section">
+                        </div>
 
-            <!-- HTML structure for displaying submitted users and their questions -->
-            
-            
-            <div class="container mt-5">
-                <div id="job-detail" class="card shadow">
-                    <div class="card-body">
-                        <h3 class="card-title" id="job-title"></h3>
-                        
-                        <p class="text-muted" id="job-organization"></p>
-                        <p class="text-muted" id="job-department"></p>
-                        <p class="text-muted" id="job-position"></p>
-                        <p id="job-location"></p>
-                        <p id="job-description"></p>
-                        <p><strong>Deadline:</strong> <span id="job-deadline"></span></p>
-                        <p><strong>Posted On:</strong> <span id="job-posted"></span></p>
-                        
-                        <p><a href="#" id="job-link" target="_blank" class="btn btn-outline-primary btn-sm">Official Link</a></p>
-                        <p><a href="#" id="job-pdf" target="_blank" class="btn btn-outline-secondary btn-sm">Download PDF</a></p>
+                    <div id="notices-sidebar" class="notices-section">
+                        <div class="notices-header">
+                            <h2 class="section-title">গুরুত্বপূর্ণ বিজ্ঞপ্তি</h2>
+                            <button id="add-notice-btn" class="add-btn" aria-label="Add a new notice">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" style="width: 24px; height: 24px;">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+                                </svg>
+                            </button>
+                        </div>
+                        <div id="notices-list" class="notices-list">
+                            </div>
                     </div>
                 </div>
             </div>
             
-            
-            <div id="message"></div>
-
-
-            
+            <dialog id="notice-modal" class="modal-dialog-container">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h3 class="modal-title">নতুন বিজ্ঞপ্তি যোগ করুন</h3>
+                        <button id="close-modal-btn" class="close-btn" aria-label="Close dialog">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" style="width: 24px; height: 24px;">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                        </button>
+                    </div>
+                    <form id="add-notice-form" class="modal-body">
+                        <div class="form-group">
+                            <label for="notice-title">শিরোনাম</label>
+                            <input type="text" id="notice-title" name="title" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="notice-description">বিবরণ</label>
+                            <textarea id="notice-description" name="description" rows="4"></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label for="notice-link">লিংক</label>
+                            <input type="url" id="notice-link" name="link">
+                        </div>
+                        <div class="form-group">
+                            <label for="notice-pdf">পিডিএফ ফাইল</label>
+                            <input type="file" id="notice-pdf" name="pdf">
+                        </div>
+                        <button type="submit" class="submit-btn">যোগ করুন</button>
+                    </form>
+                </div>
+            </dialog>
         </div>
-        <!-- End::app-content -->
-
         {% comment %} @SPK@include("partials/headersearch_modal.html") {% endcomment %}
         {% include "../../partials/headersearch_modal.html"%}
         {% comment %} @SPK@include("partials/footer.html") {% endcomment %}
@@ -131,13 +376,8 @@
 
     {% comment %} @SPK@include("partials/custom_switcherjs.html") {% endcomment %}
     {% include "../../partials/custom_switcherjs.html"%}
-    <!-- Custom JS -->
     <script src="../../../../static/assets/js/custom.js"></script>
 
-    <!-- My exam js -->
-     <script src = "../../../../static/Js/govt_jobs/govt_job_details.js"></script>
-
-
+    <script src = "../../../../static/Js/govt_jobs/govt_job_details.js"></script>
 </body>
-
 </html>

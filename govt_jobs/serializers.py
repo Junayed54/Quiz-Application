@@ -1,6 +1,24 @@
 from rest_framework import serializers
-from .models import GovernmentJob, Position, Organization, Department
+from .models import *
+from quiz.models import Position, Organization, Department
 from quiz.serializers import OrganizationSerializer, DepartmentSerializer, PositionSerializer
+
+class NoticeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Notice
+        fields = [
+            "id",
+            "government_job",
+            "title",
+            "description",
+            "pdf",
+            "link",
+            "created_at",
+            "updated_at",
+        ]
+
+
+
 
 class GovernmentJobSerializer(serializers.ModelSerializer):
     # Read-only nested serializers
@@ -17,6 +35,9 @@ class GovernmentJobSerializer(serializers.ModelSerializer):
 
     pdf = serializers.SerializerMethodField()
 
+
+    notices = NoticeSerializer(many=True, read_only=True) 
+    
     class Meta:
         model = GovernmentJob
         fields = '__all__'

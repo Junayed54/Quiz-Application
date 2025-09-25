@@ -46,6 +46,9 @@ urlpatterns += [
 urlpatterns +=[
     path('job-circular/', TemplateView.as_view(template_name="new_custom/jobs/all_jobs.html")),
     path('job-circular/<int:id>/', TemplateView.as_view(template_name="new_custom/jobs/job_details.html")),
+    
+    path('notices/', TemplateView.as_view(template_name="new_custom/jobs/notice_list.html")),
+    path('notices/<int:id>/details/', TemplateView.as_view(template_name="new_custom/jobs/notice_details.html")),
 ]
 
 # News
@@ -54,7 +57,7 @@ urlpatterns +=[
     path('news/details/<int:pk>/', TemplateView.as_view(template_name='new_custom/news/news_details.html')),
 ]
 
-
+# Notifications Templates
 urlpatterns +=[
     path('notification/send/', TemplateView.as_view(template_name="new_custom/notifications/send_notification.html")),
 ]

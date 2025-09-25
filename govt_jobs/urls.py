@@ -1,12 +1,14 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
-from .views import GovernmentJobViewSet
+from .views import *
 from django.views.generic import TemplateView
 router = DefaultRouter()
 router.register(r'govt-jobs', GovernmentJobViewSet, basename='governmentjob')
+router.register(r'notices', NoticeViewSet, basename='notice')
 
 urlpatterns = [
     path('api/', include(router.urls)),
+    
 ]
 
 

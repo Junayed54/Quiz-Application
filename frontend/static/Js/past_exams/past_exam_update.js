@@ -86,8 +86,8 @@ function renderExamDetails(exam) {
             <div class="border-t pt-4 mt-4">
                 <h5 class="text-md font-semibold mb-2">Explanation</h5>
                 
-                <textarea class="textarea textarea-bordered w-75 mb-2" id="explanation_text_${q.id}">${q.explanation || ""}</textarea>
-
+                <!-- <textarea class="textarea textarea-bordered w-75 mb-2" id="explanation_text_${q.id}">${q.explanation || ""}</textarea> -->
+                <textarea id="explanation_editor_${q.id}" class="h-48 mb-2">${q.explanation || ""}</textarea>
                 <div class="drop-area border-dashed border-2 border-gray-300 p-3 text-center rounded mb-2" id="exp_drop_${q.id}">
                     Drag & Drop or Click to Upload Explanation Image
                     <input type="file" accept="image/*" class="hidden" id="exp_input_${q.id}" />
@@ -124,7 +124,19 @@ function renderExamDetails(exam) {
             </div>
         `;
 
-        container.appendChild(qDiv);
+        container.appendChild(qDiv);  
+        
+        // Initialize TinyMCE after the element is in the DOM
+        tinymce.init({
+            selector: `#explanation_editor_${q.id}`,
+            plugins: 'advlist autolink lists link image charmap preview anchor searchreplace visualblocks code fullscreen insertdatetime media table code help wordcount',
+            toolbar: 'undo redo | blocks | ' +
+                     'bold italic forecolor | alignleft aligncenter ' +
+                     'alignright alignjustify | bullist numlist outdent indent | ' +
+                     'removeformat | help',
+            content_style: 'body { font-family:Helvetica,Arial,sans-serif; font-size:14px }'
+        });
+
 
         bindDragDropAndSelect(`q_drop_${q.id}`, `q_input_${q.id}`, `q_preview_${q.id}`);
         q.options.forEach(opt => {
@@ -218,12 +230,14 @@ function submitNewQuestion() {
 
 
 function updateExplanation(pastExamQuestionId) {
-    const text = document.getElementById(`explanation_text_${pastExamQuestionId}`).value;
+    // const text = document.getElementById(`explanation_text_${pastExamQuestionId}`).value;
+
+    const explanationText = tinymce.get(`explanation_editor_${pastExamQuestionId}`).getContent();
     const input = document.getElementById(`exp_input_${pastExamQuestionId}`);
     const image = input.files[0];
 
     const formData = new FormData();
-    formData.append("explanation", text);
+    formData.append("explanation", explanationText);
     if (image) formData.append("explanation_image", image);
 
     fetch(`/quiz/past-question/explanation/${pastExamQuestionId}/`, {

@@ -1,10 +1,12 @@
 from rest_framework import viewsets
-from rest_framework.permissions import IsAuthenticated, AllowAny
+from rest_framework.permissions import IsAuthenticated, AllowAny, IsAuthenticatedOrReadOnly
 from .models import *
 from .serializers import *
 from quiz.permissions import *
 from rest_framework.response import Response
 from rest_framework import status
+from rest_framework import generics, permissions
+
 
 class GovernmentJobViewSet(viewsets.ModelViewSet):
     queryset = GovernmentJob.objects.all().order_by('-posted_on')
@@ -36,3 +38,9 @@ class GovernmentJobViewSet(viewsets.ModelViewSet):
         self.perform_create(serializer)
         headers = self.get_success_headers(serializer.data)
         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+    
+class NoticeViewSet(viewsets.ModelViewSet):
+    queryset = Notice.objects.all().order_by("-created_at")  
+    serializer_class = NoticeSerializer
+    permission_classes = [IsAuthenticatedOrReadOnly]
+

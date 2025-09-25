@@ -1,5 +1,14 @@
 from django.contrib import admin
-from .models import GovernmentJob
+from .models import *
+
+
+
+class NoticeInline(admin.TabularInline):  # or admin.StackedInline for bigger form
+    model = Notice
+    extra = 1
+    fields = ("title", "description", "pdf", "link", "created_at", "updated_at")
+    readonly_fields = ("created_at", "updated_at")
+
 
 @admin.register(GovernmentJob)
 class GovernmentJobAdmin(admin.ModelAdmin):
@@ -30,7 +39,7 @@ class GovernmentJobAdmin(admin.ModelAdmin):
     )
     date_hierarchy = 'posted_on'
     ordering = ('-posted_on',)
-
+    inlines = [NoticeInline] 
     fieldsets = (
         (None, {
             'fields': ('title', 'organization', 'department', 'positions', 'location')
@@ -48,3 +57,10 @@ class GovernmentJobAdmin(admin.ModelAdmin):
     def get_positions(self, obj):
         return ", ".join([pos.title for pos in obj.positions.all()])
     get_positions.short_description = "Positions"
+
+@admin.register(Notice)
+class NoticeAdmin(admin.ModelAdmin):
+    list_display = ("title", "government_job", "created_at", "updated_at")
+    search_fields = ("title", "government_job__title")
+    list_filter = ("created_at", "updated_at", "government_job")
+    ordering = ("-created_at",)

@@ -470,11 +470,11 @@ class PastExamSerializer(serializers.ModelSerializer):
         return question_data
 
 class PastExamListSerializer(serializers.ModelSerializer):
-    organization = serializers.CharField(source='organization.name')
-    department = serializers.CharField(source='department.name', default=None)
-    position = serializers.CharField(source='position.name')
-    created_by = serializers.CharField(source='created_by.username', default=None)
-    exam_type = serializers.CharField(source='exam_type.name')
+    organization = serializers.SerializerMethodField()
+    department = serializers.SerializerMethodField()
+    position = serializers.SerializerMethodField()
+    created_by = serializers.SerializerMethodField()
+    exam_type = serializers.SerializerMethodField()
     missing_explanations_count = serializers.SerializerMethodField()
 
     class Meta:
@@ -496,6 +496,22 @@ class PastExamListSerializer(serializers.ModelSerializer):
             'created_at',
             'missing_explanations_count',  # 👈 Add this
         ]
+        
+    def get_organization(self, obj):
+        return obj.organization.name if obj.organization else None
+
+    def get_department(self, obj):
+        return obj.department.name if obj.department else None
+
+    def get_position(self, obj):
+        return obj.position.name if obj.position else None
+
+    def get_created_by(self, obj):
+        return obj.created_by.username if obj.created_by else None
+
+    def get_exam_type(self, obj):
+        return obj.exam_type.name if obj.exam_type else None
+
 
     def get_missing_explanations_count(self, obj):
         return obj.related_questions.filter(

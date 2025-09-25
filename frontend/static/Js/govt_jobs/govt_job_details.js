@@ -1,161 +1,160 @@
-// const pathParts = window.location.pathname.split('/');
-// const jobId = pathParts[pathParts.length - 2];  // Assuming the URL ends with a slash
-// const token = localStorage.getItem('access_token');
-// const apiUrl = `/api/govt-jobs/${jobId}/`;
+document.addEventListener('DOMContentLoaded', () => {
+    const jobDetailsContainer = document.getElementById('job-details-content');
+    const noticesContainer = document.getElementById('notices-list');
+    const addNoticeBtn = document.getElementById('add-notice-btn');
+    const noticeModal = document.getElementById('notice-modal');
+    const closeModalBtn = document.getElementById('close-modal-btn');
+    const addNoticeForm = document.getElementById('add-notice-form');
 
-// fetch(apiUrl, {
-//     headers: {
-//         'Authorization': `Bearer ${token}`,
-//         'Content-Type': 'application/json'
-//     }
-// })
-// .then(response => response.json())
-// .then(data => {
-//     document.getElementById("job-title").textContent = data.title;
-//     document.getElementById("job-organization").textContent = `Organization: ${data.organization?.name || 'N/A'}`;
-//     document.getElementById("job-department").textContent = `Department: ${data.department?.name || 'N/A'}`;
-//     document.getElementById("job-position").textContent = `Position: ${data.position?.title || 'N/A'}`;
-//     document.getElementById("job-location").textContent = `Location: ${data.location || 'N/A'}`;
-//     document.getElementById("job-description").textContent = data.description || 'No description provided.';
-//     document.getElementById("job-deadline").textContent = data.deadline || 'N/A';
-//     document.getElementById("job-posted").textContent = new Date(data.posted_on).toLocaleString();
+    const pathSegments = window.location.pathname.split('/');
+    const jobId = pathSegments[pathSegments.length - 2];
 
-//     const link = document.getElementById("job-link");
-//     if (data.official_link) {
-//         link.href = data.official_link;
-//         link.style.display = '';
-//     } else {
-//         link.style.display = 'none';
-//     }
-
-//     const pdf = document.getElementById("job-pdf");
-//     if (data.pdf) {
-//         pdf.href = data.pdf;
-//         pdf.style.display = '';
-//     } else {
-//         pdf.style.display = 'none';
-//     }
-// })
-// .catch(error => {
-//     console.error("Error fetching job details:", error);
-//     document.getElementById("job-detail").innerHTML = `
-//         <div class="alert alert-danger">
-//             Failed to load job details. Please try again later.
-//         </div>`;
-// });
-
-
-
-
-const pathParts = window.location.pathname.split('/');
-const jobId = pathParts[pathParts.length - 2];  // Assuming the URL ends with a slash
-const token = localStorage.getItem('access_token');
-const apiUrl = `/api/govt-jobs/${jobId}/`;
-
-fetch(apiUrl, {
-    headers: {
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json'
-    }
-})
-.then(response => response.json())
-.then(data => {
-    // Display job details
-    document.getElementById("job-title").textContent = data.title;
-    document.getElementById("job-organization").textContent = `Organization: ${data.organization?.name || 'N/A'}`;
-    document.getElementById("job-department").textContent = `Department: ${data.department?.name || 'N/A'}`;
-    document.getElementById("job-position").textContent = `Position: ${data.position?.title || 'N/A'}`;
-    document.getElementById("job-location").textContent = `Location: ${data.location || 'N/A'}`;
-    document.getElementById("job-description").textContent = data.description || 'No description provided.';
-    document.getElementById("job-deadline").textContent = data.deadline || 'N/A';
-    document.getElementById("job-posted").textContent = new Date(data.posted_on).toLocaleString();
-
-    const link = document.getElementById("job-link");
-    if (data.official_link) {
-        link.href = data.official_link;
-        link.style.display = '';
+    if (jobId && !isNaN(jobId)) {
+        fetchJobDetails(jobId);
     } else {
-        link.style.display = 'none';
+        jobDetailsContainer.innerHTML = `<div class="error"><p>প্রদত্ত চাকরির আইডি অবৈধ।</p></div>`;
+        document.getElementById('notices-sidebar').style.display = 'none';
     }
 
-    const pdf = document.getElementById("job-pdf");
-    if (data.pdf) {
-        pdf.href = data.pdf;
-        pdf.style.display = '';
-    } else {
-        pdf.style.display = 'none';
+    // Modal functionality
+    if (addNoticeBtn && noticeModal && closeModalBtn) {
+        addNoticeBtn.addEventListener('click', () => {
+            noticeModal.showModal();
+        });
+
+        closeModalBtn.addEventListener('click', () => {
+            noticeModal.close();
+            addNoticeForm.reset();
+        });
+
+        noticeModal.addEventListener('click', (event) => {
+            if (event.target === noticeModal) {
+                noticeModal.close();
+                addNoticeForm.reset();
+            }
+        });
     }
 
-    // Check for previous exams for position, department, or organization
-    checkPastExams(data.position?.id, data.department?.id, data.organization?.id);
+    // Form submission handler
+    addNoticeForm.addEventListener('submit', async (event) => {
+        event.preventDefault();
+        const accessToken = localStorage.getItem('access_token');
+        const formData = new FormData(addNoticeForm);
+        formData.append('government_job', jobId);
 
-})
-.catch(error => {
-    console.error("Error fetching job details:", error);
-    document.getElementById("job-detail").innerHTML = `
-        <div class="alert alert-danger">
-            Failed to load job details. Please try again later.
-        </div>`;
-});
-
-// Function to check past exams for position, department, or organization
-// Function to check past exams for position, department, or organization
-function checkPastExams(positionId, departmentId, organizationId) {
-    const token = localStorage.getItem('access_token');
-    
-    // Start with the base URL
-    let examApiUrl = '/quiz/past-exams-check/?';
-
-    // Dynamically add query parameters only if they are available
-    if (positionId) {
-        examApiUrl += `position_id=${positionId}&`;
-    }
-    if (departmentId) {
-        examApiUrl += `department_id=${departmentId}&`;
-    }
-    if (organizationId) {
-        examApiUrl += `organization_id=${organizationId}&`;
-    }
-
-    // Remove trailing '&' if it exists
-    examApiUrl = examApiUrl.endsWith('&') ? examApiUrl.slice(0, -1) : examApiUrl;
-
-    fetch(examApiUrl, {
-        method: 'GET',
-        headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json'
-        }
-    })
-    .then(response => response.json())
-    .then(exams => {
-        if (exams.length > 0) {
-            // Show a message with links to practice exams in card layout
-            let examLinksHtml = '<h4 class="text-xl font-bold mb-4">Recommended Practice Exams:</h4><div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">';
-    
-            exams.forEach(exam => {
-                examLinksHtml += `
-                    <div class="card bg-white shadow-lg rounded-lg p-4 border border-gray-200">
-                        <h5 class="text-lg font-semibold mb-2">${exam.title}</h5>
-                        <p class="text-sm text-gray-500 mb-3">Organization: ${exam.organization?.name || 'N/A'}</p>
-                        <p class="text-sm text-gray-500 mb-3">Position: ${exam.position?.title || 'N/A'}</p>
-                        <p class="text-sm text-gray-500 mb-3">Exam Date: ${new Date(exam.exam_date).toLocaleDateString()}</p>
-                        <a href="/quiz/past_exam_details/${exam.id}" class="btn btn-outline-primary btn-sm mt-2 text-white bg-blue-500 hover:bg-blue-700 py-2 px-4 rounded-md text-center">Practice Exam</a>
-                    </div>
-                `;
+        try {
+            const response = await fetch('/api/notices/', {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': '{{ csrf_token }}',
+                    'Authorization': `Bearer ${accessToken}` 
+                },
+                body: formData
             });
-    
-            examLinksHtml += '</div>';
-    
-            document.getElementById('message').innerHTML = examLinksHtml;
-        } else {
-            document.getElementById('message').innerHTML = '<div class="alert alert-info">No past exams found for this position, department, or organization. Try again later.</div>';
-        }
-    })
-    
-    .catch(error => {
-        console.error("Error fetching past exams:", error);
-        document.getElementById('message').innerHTML = '<div class="alert alert-danger">Failed to load past exams. Please try again later.</div>';
-    });
-}
 
+            if (!response.ok) {
+                const errorData = await response.json();
+                console.error('Failed to add notice:', errorData);
+                throw new Error('বিজ্ঞপ্তি যোগ করা সম্ভব হয়নি।');
+            }
+
+            const newNotice = await response.json();
+            console.log('New notice added:', newNotice);
+
+            fetchJobDetails(jobId);
+            
+            noticeModal.close();
+            addNoticeForm.reset();
+        } catch (error) {
+            console.error('Failed to add notice:', error);
+            alert('বিজ্ঞপ্তি যোগ করার সময় একটি ত্রুটি হয়েছে।');
+        }
+    });
+
+    // Fetches job and notice data
+    async function fetchJobDetails(id) {
+        jobDetailsContainer.innerHTML = `<div class="loading"><div class="spinner"></div><p>চাকরির বিবরণ লোড হচ্ছে...</p></div>`;
+        noticesContainer.innerHTML = `<p class="loading-text">বিজ্ঞপ্তি লোড হচ্ছে...</p>`;
+
+        try {
+            const response = await fetch(`/api/govt-jobs/${id}/`, {
+                headers: { 'Accept': 'application/json' }
+            });
+
+            if (!response.ok) {
+                const message = response.status === 404 ? 'চাকরিটি খুঁজে পাওয়া যায়নি।' : 'চাকরির বিস্তারিত লোড করা সম্ভব হয়নি।';
+                jobDetailsContainer.innerHTML = `<div class="error"><p>${message}</p></div>`;
+                noticesContainer.innerHTML = `<p class="error-text">বিজ্ঞপ্তি লোড করা যায়নি।</p>`;
+                return;
+            }
+
+            const job = await response.json();
+            renderJobDetails(job);
+            renderNotices(job.notices);
+        } catch (error) {
+            console.error('API fetch error:', error);
+            jobDetailsContainer.innerHTML = `<div class="error"><p>একটি অপ্রত্যাশিত ত্রুটি হয়েছে।</p></div>`;
+            noticesContainer.innerHTML = `<p class="error-text">বিজ্ঞপ্তি লোড করা যায়নি।</p>`;
+        }
+    }
+
+    // Renders the main job details
+    function renderJobDetails(job) {
+        const deadline = job.deadline ? new Date(job.deadline).toLocaleDateString('bn-BD') : 'উল্লেখ করা হয়নি';
+        const postedOn = job.posted_on ? new Date(job.posted_on).toLocaleDateString('bn-BD') : 'উল্লেখ করা হয়নি';
+        const positions = job.positions && job.positions.length > 0
+            ? job.positions.map(p => sanitizeHTML(p.name)).join(', ') : 'উল্লেখ করা হয়নি';
+
+        jobDetailsContainer.innerHTML = `
+            <div class="job-header">
+                <h1 class="job-title">${sanitizeHTML(job.title)}</h1>
+                <div class="job-meta-info">
+                    <span class="job-meta-item"><strong>প্রতিষ্ঠানের নাম:</strong> ${sanitizeHTML(job.organization?.name || 'উল্লেখ করা হয়নি')}</span>
+                    <span class="job-meta-item"><strong>বিভাগের নাম:</strong> ${sanitizeHTML(job.department?.name || 'উল্লেখ করা হয়নি')}</span>
+                    <span class="job-meta-item"><strong>পদের নাম:</strong> ${positions}</span>
+                    <span class="job-meta-item"><strong>অবস্থান:</strong> ${sanitizeHTML(job.location || 'উল্লেখ করা হয়নি')}</span>
+                    <span class="job-meta-item"><strong>প্রকাশের তারিখ:</strong> ${postedOn}</span>
+                    <span class="job-meta-item"><strong>আবেদনের শেষ তারিখ:</strong> ${deadline}</span>
+                </div>
+            </div>
+
+            <div class="job-description">
+                <h2 class="section-title">চাকরির বিবরণ</h2>
+                ${job.description || '<p>কোনো বিবরণ দেওয়া হয়নি।</p>'}
+            </div>
+
+            <div class="job-buttons">
+                <a href="${job.official_link || '#'}" target="_blank" class="job-btn primary">অফিসিয়াল লিংক</a>
+                ${job.pdf ? `<a href="${job.pdf}" target="_blank" class="job-btn secondary">পিডিএফ ডাউনলোড করুন</a>` : ''}
+            </div>
+        `;
+    }
+
+    // Renders the notices
+    function renderNotices(notices) {
+        noticesContainer.innerHTML = '';
+        if (!notices || notices.length === 0) {
+            noticesContainer.innerHTML = '<p class="no-notices">কোনো বিজ্ঞপ্তি নেই।</p>';
+            return;
+        }
+
+        notices.forEach(notice => {
+            const noticeElement = document.createElement('div');
+            noticeElement.className = 'notice-item';
+            const noticeLink = notice.link || notice.pdf || '#';
+            noticeElement.innerHTML = `
+                <a href="${sanitizeHTML(noticeLink)}" target="_blank">${sanitizeHTML(notice.title)}</a>
+                ${notice.description ? `<p>${sanitizeHTML(notice.description)}</p>` : ''}
+                <p>প্রকাশের তারিখ: ${new Date(notice.created_at).toLocaleDateString('bn-BD')}</p>
+            `;
+            noticesContainer.appendChild(noticeElement);
+        });
+    }
+
+    function sanitizeHTML(str) {
+        if (!str) return '';
+        const div = document.createElement('div');
+        div.textContent = str;
+        return div.innerHTML;
+    }
+});
