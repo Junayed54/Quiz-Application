@@ -1,25 +1,20 @@
-
 {% extends 'new_custom/new_templates/index2.html' %}
-
-<!-- {% block title %}চাকরির বিস্তারিত{% endblock %} -->
 
 {% block style %}
 <style>
-    /* Updated Color Palette & Variables 
-    Inspired by Tailwind CSS defaults for a modern look.
-    */
+    
     :root {
-        --primary-color: #3b82f6; /* Modern, confident Blue */
-        --secondary-color: #4b5563; /* Dark Gray for text/secondary elements */
-        --accent-color: #10b981; /* Green for success/positive CTAs */
-        --text-color: #1f2937; /* Dark text for high readability */
-        --light-text-color: #6b7280; /* Subtle text/metadata */
-        --border-color: #e5e7eb; /* Light, subtle border */
-        --bg-color: #ffffff; /* White card background */
-        --bg-light: #f9fafb; /* Very light, soft page background */
-        --shadow-color: rgba(0, 0, 0, 0.05); /* Softer shadow */
-        --error-color: #ef4444; /* Red for alerts/PDFs */
-        --warning-color: #f59e0b; /* Orange/Yellow for emphasis */
+        --primary-color: #3b82f6; 
+        --secondary-color: #4b5563; 
+        --accent-color: #10b981; 
+        --text-color: #1f2937; 
+        --light-text-color: #6b7280; 
+        --border-color: #e5e7eb; 
+        --bg-color: #ffffff; 
+        --bg-light: #f9fafb; 
+        --shadow-color: rgba(0, 0, 0, 0.05); 
+        --error-color: #ef4444; 
+        --warning-color: #f59e0b; 
     }
 
     /* Reset and Base Styles */
@@ -31,9 +26,9 @@
 
     body {
         font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-        line-height: 1.6; /* Slight reduction for density */
+        line-height: 1.6;
         color: var(--text-color);
-        background-color: var(--bg-light); /* Soft background */
+        background-color: var(--bg-light);
         -webkit-font-smoothing: antialiased;
         -moz-osx-font-smoothing: grayscale;
     }
@@ -42,52 +37,45 @@
     .main-layout {
         display: grid;
         grid-template-columns: 3fr 1fr;
-        gap: 2.5rem; /* Slightly reduced gap */
-        max-width: 1200px; /* Max width slightly smaller for better focus */
-        margin: 2.5rem auto; /* Vertical spacing top/bottom */
+        gap: 2.5rem;
+        max-width: 1200px;
+        margin: 2.5rem auto;
         padding: 0 1.5rem;
     }
 
-    /* Card Styling (Main Content & Sidebar) */
+    /* Card Styling */
     .job-detail-container, .notice-sidebar {
         background-color: var(--bg-color);
         padding: 2rem;
-        border-radius: 12px; /* Smoother corners */
-        box-shadow: 0 10px 15px -3px var(--shadow-color), 0 4px 6px -2px var(--shadow-color); /* Modern, multi-layer shadow */
-        border: 1px solid var(--border-color); /* Subtle border */
+        border-radius: 12px;
+        box-shadow: 0 10px 15px -3px var(--shadow-color), 0 4px 6px -2px var(--shadow-color);
+        border: 1px solid var(--border-color);
         transition: box-shadow 0.3s ease;
     }
     
     .job-detail-container:hover, .notice-sidebar:hover {
-         box-shadow: 0 20px 25px -5px var(--shadow-color), 0 10px 10px -5px var(--shadow-color);
+        box-shadow: 0 20px 25px -5px var(--shadow-color), 0 10px 10px -5px var(--shadow-color);
     }
     
-
-    /* Title and Header Section */
+    /* Header and Meta */
     .detail-header {
         padding-bottom: 1.25rem;
         margin-bottom: 1.5rem;
-        border-bottom: 1px solid var(--border-color); /* Lighter border */
+        border-bottom: 1px solid var(--border-color);
     }
 
     .detail-header h1 {
-        font-size: 2.25rem; /* Larger, more impactful title */
-        font-weight: 800; /* Extra bold for impact */
+        font-size: 2.25rem;
+        font-weight: 800;
         color: var(--text-color);
         line-height: 1.2;
     }
 
-    .detail-header p {
-        font-size: 1rem;
-        color: var(--light-text-color);
-        margin-top: 0.75rem;
-    }
-
-    /* Meta Information Section (Key Info Block) */
     .detail-meta {
+        /* Default: Grid layout for larger screens */
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-        gap: 1rem 1.5rem; /* More vertical space */
+        gap: 1rem 1.5rem;
         padding: 1rem 0;
         margin-bottom: 2rem;
         border-top: 1px dashed var(--border-color);
@@ -98,7 +86,6 @@
         font-size: 0.9375rem;
         color: var(--secondary-color);
         display: flex;
-         /* Align icon and text vertically */
         gap: 0.5rem;
     }
 
@@ -109,12 +96,26 @@
     }
     
     .detail-meta p::before {
-        font-size: 1.125rem; /* Slightly larger icon */
-        color: var(--primary-color); /* Icon color matching primary */
+        font-size: 1.125rem;
+        color: var(--primary-color);
         opacity: 0.8;
     }
     
-    /* Description Section */
+    /* Description Content Safety */
+    .job-detail-container img, 
+    .job-detail-container video, 
+    .job-detail-container iframe {
+        max-width: 100%; 
+        height: auto;
+        display: block; 
+    }
+    
+    .detail-description p, 
+    .detail-description li {
+        word-break: break-word; 
+        overflow-wrap: break-word;
+    }
+
     .detail-description h2 {
         font-size: 1.75rem;
         font-weight: 700;
@@ -124,36 +125,32 @@
         padding-left: 1rem;
     }
 
-    .detail-description p {
-        white-space: pre-wrap;
-        line-height: 1.8;
-        color: var(--secondary-color);
-        font-size: 1rem;
-        margin-bottom: 1rem;
-    }
-    
-    /* Table Styling for Professional Data Display */
-    table {
+    /* Table Responsiveness Styles */
+    .table-responsive {
+        /* Key 1: Enables horizontal scrolling */
         width: 100%;
-        border-collapse: separate; /* Use separate for rounded corners */
-        border-spacing: 0;
-        margin-top: 1.5rem;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch; 
+        margin: 1.5rem 0; 
         border: 1px solid var(--border-color);
-        border-radius: 8px; /* Apply rounding to the table */
-        overflow: hidden; /* Important for containing rounded corners */
+        border-radius: 8px;
     }
 
-    th, td {
+    table {
+        
+        width: 100%;
+        overflow-x: auto;
+        border-collapse: collapse;
+        /* Key 2: Forces table to be wider than the viewport, triggering the scroll */
+         
+        margin-top: 0; 
+    }
+
+    table, th, td {
         padding: 1rem;
         text-align: left;
         vertical-align: middle;
-        border-bottom: 1px solid var(--border-color); /* Only bottom border for clean look */
-        border-right: 1px solid var(--border-color); 
-    }
-
-     /* FIX: Remove the right border from the last column cells */
-    th:last-child, td:last-child {
-        border-right: none;
+        border: 1px solid var(--border-color); 
     }
 
     th {
@@ -164,11 +161,7 @@
         text-transform: uppercase;
     }
     
-    tr:last-child td {
-        border-bottom: none; /* No border on the last row */
-    }
-
-    /* Buttons and Links Section (CTAs) */
+    /* Button Styles */
     .detail-links {
         margin-top: 2.5rem;
         padding-top: 1.5rem;
@@ -177,7 +170,7 @@
         gap: 1rem;
         flex-wrap: wrap;
     }
-
+    
     .detail-btn {
         display: inline-flex;
         align-items: center;
@@ -185,17 +178,17 @@
         background-color: var(--primary-color);
         color: #ffffff;
         padding: 0.75rem 1.5rem;
-        border-radius: 8px; /* Slightly more rounded */
+        border-radius: 8px;
         text-decoration: none;
         font-weight: 600;
         font-size: 0.9375rem;
         transition: all 0.3s ease;
         border: none;
-        box-shadow: 0 4px var(--primary-color)30; /* Subtle 3D effect */
+        box-shadow: 0 4px var(--primary-color)30;
     }
 
     .detail-btn:hover {
-        background-color: #2563eb; /* Darker primary blue */
+        background-color: #2563eb; 
         transform: translateY(-2px);
         box-shadow: 0 6px var(--primary-color)40;
     }
@@ -204,101 +197,21 @@
         background-color: var(--error-color);
         box-shadow: 0 4px var(--error-color)30;
     }
-
-    .detail-btn.pdf-btn:hover {
-        background-color: #c81e1e;
-        box-shadow: 0 6px var(--error-color)40;
-    }
-
+    
     .detail-btn.exam-btn {
         background-color: var(--warning-color);
         box-shadow: 0 4px var(--warning-color)30;
     }
 
-    .detail-btn.exam-btn:hover {
-        background-color: #d97706;
-        box-shadow: 0 6px var(--warning-color)40;
-    }
-    
     .detail-btn.model-exam-btn {
         background-color: var(--accent-color);
         box-shadow: 0 4px var(--accent-color)30;
     }
 
-    .detail-btn.model-exam-btn:hover {
-        background-color: #059669;
-        box-shadow: 0 6px var(--accent-color)40;
-    }
-
-    /* Sidebar Notice Styling */
-    .notice-sidebar {
-        padding: 1.5rem;
-    }
-
-    .notice-sidebar h2 {
-        font-size: 1.25rem;
-        font-weight: 700;
-        color: var(--bg-color);
-        margin-bottom: 1.5rem;
-        text-align: center;
-        padding: 0.75rem;
-        background-color: var(--primary-color); /* Primary color for header */
-        border-radius: 8px;
-        box-shadow: 0 2px 4px var(--shadow-color);
-    }
-    
-    .notice-item {
-        margin-bottom: 1rem;
-        padding-bottom: 1rem;
-        border-bottom: 1px solid var(--border-color);
-        display: flex;
-        justify-content: space-between;
-        align-items: flex-start;
-        gap: 0.5rem;
-    }
-    
-    .notice-item:last-child {
-        border-bottom: none;
-        margin-bottom: 0;
-        padding-bottom: 0;
-    }
-
-    .notice-item h3 {
-        font-size: 1rem;
-        font-weight: 600;
-        color: var(--text-color);
-        line-height: 1.4;
-    }
-
-    .notice-date {
-        font-size: 0.8125rem;
-        color: var(--light-text-color);
-        margin-top: 0.25rem;
-    }
-    
-    .notice-detail-btn {
-        display: inline-block;
-        flex-shrink: 0;
-        padding: 0.4rem 0.75rem;
-        font-size: 0.8125rem;
-        font-weight: 500;
-        color: var(--primary-color);
-        border: 1px solid var(--primary-color);
-        border-radius: 6px;
-        text-decoration: none;
-        transition: all 0.2s ease;
-    }
-    
-    .notice-detail-btn:hover {
-        background-color: var(--primary-color);
-        color: white;
-    }
-
-
-    /* Responsive Design */
+    /* Sidebar and Responsive Design */
     @media (max-width: 1024px) {
         .main-layout {
-            grid-template-columns: 1fr; /* Single column layout on smaller screens */
+            grid-template-columns: 1fr; 
             gap: 2rem;
             margin: 2rem auto;
         }
@@ -317,6 +230,37 @@
             font-size: 1.375rem;
         }
 
+        /* 🚀 FINAL FIX: Inline-Block Layout for Meta Details to prevent overflow */
+        .detail-meta {
+            /* Switch from grid back to default block flow */
+            display: block; 
+            padding: 1rem 0;
+        }
+
+        .detail-meta p {
+            /* Make each detail wrap side-by-side */
+            display: flex; 
+            margin-right: 1rem; 
+            margin-bottom: 0.5rem; /* Space between wrapped rows */
+        }
+        
+        .detail-meta strong {
+            /* Keep label and value inline */
+            display: inline; 
+            font-weight: 600;
+            color: var(--text-color); 
+        }
+        
+        .detail-meta p span[role="img"] {
+            font-size: 0.9rem; 
+            margin-right: 0.3rem;
+        }
+        
+        .detail-meta p::before {
+            display: none; 
+        }
+        /* END FINAL FIX */
+
         .detail-links {
             flex-direction: column;
             gap: 0.75rem;
@@ -325,27 +269,14 @@
         .detail-btn {
             width: 100%;
         }
-    }
 
-    @media (max-width: 480px) {
-        .job-detail-container, .notice-sidebar {
-            padding: 1rem;
-            border-radius: 8px;
+        table, th, td {
+        padding: 2px;
         }
     }
     
-    /* Remove unused styles and cleanup old structure */
-    .job-detail-main {
-        padding: 0; /* Remove top/bottom padding as it's now on .main-layout */
-    }
-
-    /* Remove previous pseudo-elements for meta icons to use a cleaner approach if possible, 
-       but keeping them for now as they are implemented in the script for the placeholder: */
-    /* .detail-meta p::before { ... } */
-    
 </style>
 {% endblock %}
-
 {% block content %}
     <div>
         <main class="job-detail-main">
@@ -369,11 +300,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const jobDetailsContainer = document.getElementById('job-details');
     const noticesContainer = document.getElementById('notices-list');
 
-    // Get the job ID from the URL (e.g., /job-news/3/)
     const pathSegments = window.location.pathname.split('/');
-    // Filter out empty strings before getting the second-to-last segment
     const jobId = pathSegments.filter(s => s).slice(-1)[0]; 
-    <!-- console.log(jobId); -->
+
     if (jobId && !isNaN(jobId)) {
         fetchJobDetails(jobId);
     } else {
@@ -382,13 +311,13 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     async function fetchJobDetails(id) {
-        // Use the CSS-based spinner for a professional loading state
         jobDetailsContainer.innerHTML = `<div class="loading"><div class="spinner"></div><p>চাকরির বিবরণ লোড হচ্ছে...</p></div>`;
         try {
             const response = await fetch(`/api/govt-jobs/${id}/`, { headers: {'Accept': 'application/json'} });
             if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
             const job = await response.json();
-            renderJobDetails(job);   
+            
+            renderJobDetails(job); 
             renderNotices(job.notices); 
         } catch (error) {
             console.error(error);
@@ -396,6 +325,30 @@ document.addEventListener('DOMContentLoaded', () => {
             noticesContainer.innerHTML = `<p class="error">বিজ্ঞপ্তি লোড করা যায়নি।</p>`;
         }
     }
+    
+    // FUNCTION: Wraps all tables in a raw HTML string for responsiveness
+    function wrapTables(htmlString) {
+        if (!htmlString) return '';
+        
+        const tempDiv = document.createElement('div');
+        tempDiv.innerHTML = htmlString;
+        
+        const tables = tempDiv.querySelectorAll('table');
+
+        tables.forEach(table => {
+            if (!table.closest('.table-responsive')) {
+                const wrapper = document.createElement('div');
+                wrapper.classList.add('table-responsive');
+                
+                table.parentNode.insertBefore(wrapper, table);
+                
+                wrapper.appendChild(table);
+            }
+        });
+
+        return tempDiv.innerHTML;
+    }
+
 
     function renderJobDetails(job) {
         const dateOptions = { year: 'numeric', month: 'long', day: 'numeric' };
@@ -404,6 +357,9 @@ document.addEventListener('DOMContentLoaded', () => {
         const positions = job.positions && job.positions.length > 0
             ? job.positions.map(p => sanitizeHTML(p.name)).join(', ')
             : 'উল্লেখ করা হয়নি';
+
+        // Use the wrapper function on the raw description HTML
+        const responsiveDescription = wrapTables(job.description);
 
         jobDetailsContainer.innerHTML = `
             <div class="detail-header">
@@ -421,7 +377,10 @@ document.addEventListener('DOMContentLoaded', () => {
             
             <div class="detail-description">
                 <h2>চাকরির বিবরণ</h2>
-                ${job.description || '<p>কোনো বিবরণ দেওয়া হয়নি।</p>'}
+                
+                
+                ${responsiveDescription || '<p>কোনো বিবরণ দেওয়া হয়নি।</p>'}
+                
             </div>
             
             <div class="detail-links">
@@ -433,7 +392,6 @@ document.addEventListener('DOMContentLoaded', () => {
         `;
     }
 
-    // Simplified notices rendering for a cleaner look
     function renderNotices(notices) {
         noticesContainer.innerHTML = '';
         if (!notices || notices.length === 0) {

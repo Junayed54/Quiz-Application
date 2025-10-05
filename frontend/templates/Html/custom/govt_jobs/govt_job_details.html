@@ -30,6 +30,28 @@
         -moz-osx-font-smoothing: grayscale;
     }
 
+
+    table {
+        /* Ensures borders between cells merge into a single line */
+        border-collapse: collapse; 
+        /* Border for the outside of the table */
+        border: 1px solid #333; /* 1px solid dark gray border */
+        width: 100%; /* Optional: Makes the table span the full width of its container */
+    }
+
+    th, td {
+        /* Border for all four sides of every cell */
+        border: 1px solid #333;
+        /* Optional: Adds padding inside the cells for readability */
+        padding: 8px; 
+        /* Optional: Aligns text to the left */
+        text-align: left; 
+    }
+
+    /* Optional: Styles for the table header */
+    th {
+        background-color: #f2f2f2; /* Light background color for the header */
+    }
     /* Main Layout for Job Details */
     .job-detail-main {
         padding: 2.5rem 1.5rem;

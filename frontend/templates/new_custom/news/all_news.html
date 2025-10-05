@@ -86,9 +86,16 @@
   <script>
     document.addEventListener("DOMContentLoaded", async function() {
       const newsGrid = document.getElementById('news-grid');
+      const paginationContainer = document.querySelector('.pagination');
       const loadingMessage = document.getElementById('loading-message');
       const noNewsMessage = document.getElementById('no-news-message');
       const errorMessage = document.getElementById('error-message');
+
+      // --- Pagination Variables ---
+      const itemsPerPage = 9; // Display 9 items per page (3 rows of 3 on large screens)
+      let currentPage = 1;
+      let allNewsData = [];
+      // ----------------------------
 
       // Function to format the date
       function formatDate(dateString) {
@@ -97,19 +104,22 @@
         return date.toLocaleDateString('bn-BD', options);
       }
 
-      try {
-        const response = await fetch('/api/news/');
-        if (!response.ok) {
-          throw new Error('Network response was not ok');
-        }
-        const newsData = await response.json();
+      // --- Rendering Functions ---
 
-        loadingMessage.classList.add('d-none');
-        console.log(newsData);
-        if (newsData.length > 0) {
-          newsData.forEach(news => {
+      // Renders the news items for the current page
+      function renderNewsItems(page) {
+        newsGrid.innerHTML = ''; // Clear existing news
+        
+        const startIndex = (page - 1) * itemsPerPage;
+        const endIndex = startIndex + itemsPerPage;
+        
+        const newsToDisplay = allNewsData.slice(startIndex, endIndex);
+
+        if (newsToDisplay.length > 0) {
+          newsToDisplay.forEach(news => {
             const newsItemCol = document.createElement('div');
-            newsItemCol.className = 'col-md-6 col-lg-4';
+            // Using col-lg-4 for 3 columns on large screens
+            newsItemCol.className = 'col-md-6 col-lg-4'; 
 
             const imageUrl = news.images.length > 0 ? news.images[0].image_url : 'https://via.placeholder.com/400x200.png?text=No+Image';
             
@@ -124,12 +134,78 @@
                     <i class="fa-solid fa-calendar-alt"></i> ${formatDate(news.published_date)}
                   </p>
                   <p class="card-text">${news.content.substring(0, 150)}...</p>
-                  <a href="/news/details/${news.id}" class="btn btn-custom mt-auto">বিস্তারিত পড়ুন</a>
+                  <a href="/news/details/${news.id}" class="btn btn-custom mt-auto">বিস্তারিত পড়ুন</a>
                 </div>
               </div>
             `;
             newsGrid.appendChild(newsItemCol);
           });
+          noNewsMessage.classList.add('d-none');
+        } else {
+          noNewsMessage.classList.remove('d-none');
+        }
+      }
+
+      // Renders the pagination links
+      function renderPagination(totalItems) {
+        paginationContainer.innerHTML = ''; // Clear existing pagination
+        const totalPages = Math.ceil(totalItems / itemsPerPage);
+
+        if (totalPages <= 1) return; // No need for pagination
+
+        // --- Previous button ---
+        const prevItem = document.createElement('li');
+        prevItem.className = `page-item ${currentPage === 1 ? 'disabled' : ''}`;
+        prevItem.innerHTML = `<a class="page-link" href="#" aria-label="Previous" data-page="${currentPage - 1}">পূর্ববর্তী</a>`;
+        paginationContainer.appendChild(prevItem);
+
+        // --- Page number buttons ---
+        // A simple loop for all pages (can be improved for large page counts)
+        for (let i = 1; i <= totalPages; i++) {
+          const pageItem = document.createElement('li');
+          pageItem.className = `page-item ${i === currentPage ? 'active' : ''}`;
+          pageItem.innerHTML = `<a class="page-link" href="#" data-page="${i}">${i}</a>`;
+          paginationContainer.appendChild(pageItem);
+        }
+
+        // --- Next button ---
+        const nextItem = document.createElement('li');
+        nextItem.className = `page-item ${currentPage === totalPages ? 'disabled' : ''}`;
+        nextItem.innerHTML = `<a class="page-link" href="#" aria-label="Next" data-page="${currentPage + 1}">পরবর্তী</a>`;
+        paginationContainer.appendChild(nextItem);
+
+        // --- Attach click listener for page change ---
+        paginationContainer.querySelectorAll('.page-link').forEach(link => {
+          link.addEventListener('click', function(e) {
+            e.preventDefault();
+            const newPage = parseInt(this.getAttribute('data-page'));
+            
+            // Check for valid page number
+            if (newPage >= 1 && newPage <= totalPages && newPage !== currentPage) {
+              currentPage = newPage;
+              // Scroll to the top of the news grid
+              newsGrid.scrollIntoView({ behavior: 'smooth', block: 'start' }); 
+              renderNewsItems(currentPage);
+              renderPagination(totalItems); // Re-render pagination to update active state
+            }
+          });
+        });
+      }
+
+      // --- Main Fetch Logic ---
+      try {
+        const response = await fetch('/api/news/');
+        if (!response.ok) {
+          throw new Error('Network response was not ok');
+        }
+        
+        allNewsData = await response.json(); // Store all data
+        loadingMessage.classList.add('d-none');
+
+        if (allNewsData.length > 0) {
+          // Initialize display
+          renderNewsItems(currentPage);
+          renderPagination(allNewsData.length);
         } else {
           noNewsMessage.classList.remove('d-none');
         }

@@ -6,6 +6,8 @@ from .serializers import *
 from rest_framework.permissions import AllowAny
 from django.apps import apps
 from django.utils.timezone import now
+from django.db.models import Count, Q
+from django.utils.timezone import now, timedelta
 
 # Example usage
 
@@ -384,3 +386,47 @@ class TrackClickAPIView(APIView):
         return request.META.get("REMOTE_ADDR")
     
     
+
+
+class AdminDashboardView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        today = now().date()
+        last_7_days = today - timedelta(days=7)
+
+        # Device stats
+        device_counts = DeviceToken.objects.values('device_type').annotate(count=Count('id'))
+
+        # Active users/devices
+        active_devices = DeviceToken.objects.filter(is_active=True).count()
+        active_users = DeviceToken.objects.filter(user__isnull=False, is_active=True).values('user').distinct().count()
+
+        # User activity
+        recent_activity = UserActivity.objects.filter(timestamp__date__gte=last_7_days).count()
+        top_paths = UserActivity.objects.values('path').annotate(count=Count('id')).order_by('-count')[:5]
+
+        # Notifications
+        recent_notifications = NotificationLog.objects.filter(sent_at__date__gte=last_7_days).count()
+        total_clicks = NotificationClick.objects.count()
+        click_through_rate = (
+            total_clicks / NotificationLog.objects.aggregate(total=Count('id'))['total']
+            if NotificationLog.objects.exists() else 0
+        )
+
+        # Chart data (example: clicks per day)
+        clicks_per_day = NotificationClick.objects.filter(clicked_at__date__gte=last_7_days)\
+            .extra({'day': "date(clicked_at)"}).values('day')\
+            .annotate(count=Count('id')).order_by('day')
+
+        return Response({
+            "device_stats": list(device_counts),
+            "active_devices": active_devices,
+            "active_users": active_users,
+            "recent_activity_count": recent_activity,
+            "top_paths": list(top_paths),
+            "recent_notifications": recent_notifications,
+            "total_clicks": total_clicks,
+            "click_through_rate": round(click_through_rate, 2),
+            "clicks_per_day": list(clicks_per_day),
+        })

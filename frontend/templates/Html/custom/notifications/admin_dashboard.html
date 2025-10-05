@@ -1,0 +1,143 @@
+{% comment %} @SPK@include("partials/mainhead.html") {% endcomment %}
+{% include "../../partials/mainhead.html"%}
+</head>
+
+{% include "../../partials/switcher.html" %}
+<div class="page">
+    {% include "../../partials/header.html"%}
+    {% include "../../partials/sidebar.html" %}
+
+    <div class="main-content app-content">
+        <div class="container-fluid mt-4">
+            <h2 class="mb-4">Admin Dashboard</h2>
+
+            <!-- Cards -->
+            <div class="row">
+                <div class="col-md-3">
+                    <div class="card text-white bg-primary mb-3">
+                        <div class="card-body">
+                            <h5 class="card-title">Active Devices</h5>
+                            <p class="card-text" id="activeDevices">...</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card text-white bg-success mb-3">
+                        <div class="card-body">
+                            <h5 class="card-title">Active Users</h5>
+                            <p class="card-text" id="activeUsers">...</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card text-white bg-info mb-3">
+                        <div class="card-body">
+                            <h5 class="card-title">Recent Activity</h5>
+                            <p class="card-text" id="recentActivity">...</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card text-white bg-warning mb-3">
+                        <div class="card-body">
+                            <h5 class="card-title">Click-Through Rate</h5>
+                            <p class="card-text" id="ctr">...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Chart -->
+            <div class="card mb-4">
+                <div class="card-header">Notification Clicks (Last 7 Days)</div>
+                <div class="card-body">
+                    <canvas id="clicksChart" height="100"></canvas>
+                </div>
+            </div>
+
+            <!-- Table -->
+            <div class="card">
+                <div class="card-header">Top Visited Paths</div>
+                <div class="card-body">
+                    <table class="table table-bordered">
+                        <thead>
+                            <tr>
+                                <th>Path</th>
+                                <th>Visits</th>
+                            </tr>
+                        </thead>
+                        <tbody id="topPathsTable">
+                            <!-- Filled by JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% include "../../partials/headersearch_modal.html"%}
+    {% include "../../partials/footer.html" %}
+</div>
+
+{% include "../../partials/commonjs.html"%}
+{% include "../../partials/custom_switcherjs.html"%}
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="../../../../static/assets/js/custom.js"></script>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const token = localStorage.getItem("access_token");
+
+    axios.get("/api/notifications/dashboard/", {
+            headers: {
+            Authorization: `Bearer ${token}`
+        }
+    })
+        .then(response => {
+            const data = response.data;
+
+            document.getElementById("activeDevices").textContent = data.active_devices;
+            document.getElementById("activeUsers").textContent = data.active_users;
+            document.getElementById("recentActivity").textContent = data.recent_activity_count;
+            document.getElementById("ctr").textContent = data.click_through_rate + "%";
+
+            // Top paths table
+            const tableBody = document.getElementById("topPathsTable");
+            data.top_paths.forEach(item => {
+                const row = `<tr><td>${item.path}</td><td>${item.count}</td></tr>`;
+                tableBody.innerHTML += row;
+            });
+
+            // Chart
+            const ctx = document.getElementById("clicksChart").getContext("2d");
+            const labels = data.clicks_per_day.map(item => item.day);
+            const counts = data.clicks_per_day.map(item => item.count);
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Clicks',
+                        data: counts,
+                        borderColor: 'rgba(75, 192, 192, 1)',
+                        backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                        fill: true,
+                        tension: 0.3
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: { beginAtZero: true }
+                    }
+                }
+            });
+        })
+        .catch(error => {
+            console.error("Dashboard data fetch failed:", error);
+        });
+});
+</script>
+</body>
+</html>

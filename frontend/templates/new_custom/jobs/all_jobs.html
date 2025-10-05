@@ -43,6 +43,22 @@
         .job-main {
             padding: 3rem 0;
         }
+        .loading {
+            text-align: center;
+            padding: 2rem;
+            color: var(--light-text-color);
+            font-size: 1rem;
+            /* --- NEW/MODIFIED STYLES FOR CENTERING --- */
+            /* Span all columns in the grid when it is the only item */
+            grid-column: 1 / -1; 
+            /* Ensure it takes full width for centering */
+            width: 100%;
+            /* If you want the loading spinner centered horizontally on the page */
+            margin-left: auto;
+            margin-right: auto;
+            /* ------------------------------------------ */
+        }
+
 
         .job-grid {
             display: grid;
@@ -197,6 +213,63 @@
             margin-bottom: 1rem;
         }
 
+        /* --- Pagination Styles --- */
+        .pagination-wrapper {
+            margin-top: 3rem;
+            text-align: center;
+        }
+
+        .pagination-list {
+            display: inline-flex;
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            border-radius: 6px;
+            overflow: hidden; /* For clean borders */
+        }
+
+        .page-item {
+            display: block;
+        }
+
+        .page-link {
+            display: block;
+            padding: 0.6rem 1rem;
+            color: var(--primary-color);
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            text-decoration: none;
+            transition: background-color 0.2s, color 0.2s;
+            font-size: 0.95rem;
+        }
+
+        .page-link:hover {
+            background-color: var(--secondary-color);
+            color: var(--primary-color);
+        }
+
+        .page-item.active .page-link {
+            background-color: var(--primary-color);
+            color: #ffffff;
+            border-color: var(--primary-color);
+        }
+
+        .page-item.disabled .page-link {
+            color: var(--light-text-color);
+            cursor: not-allowed;
+            background-color: var(--secondary-color);
+        }
+
+        .page-item:first-child .page-link {
+            border-top-left-radius: 6px;
+            border-bottom-left-radius: 6px;
+        }
+
+        .page-item:last-child .page-link {
+            border-top-right-radius: 6px;
+            border-bottom-right-radius: 6px;
+        }
+
         @keyframes spin {
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
@@ -264,105 +337,154 @@
                         <p>চাকরির তালিকা লোড হচ্ছে...</p>
                     </div>
                 </div>
+                <div class="pagination-wrapper">
+                    <ul id="job-pagination" class="pagination-list"></ul>
+                </div>
             </div>
         </main>
     </div>
 {% endblock %}
 
 {% block body_js %}
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            const jobListingsContainer = document.getElementById('job-listings');
-            const apiUrl = '/api/govt-jobs/';
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const jobListingsContainer = document.getElementById('job-listings');
+    const paginationContainer = document.getElementById('job-pagination');
+    const apiUrl = '/api/govt-jobs/';
+    const itemsPerPage = 6;
+    let currentPage = 1;
+    let allJobsData = [];
 
-            async function fetchJobs() {
-                try {
-                    const response = await fetch(apiUrl, {
-                        headers: {
-                            'Accept': 'application/json'
-                        }
-                    });
+    // Basic HTML sanitization to prevent XSS
+    function sanitizeHTML(str) {
+        const div = document.createElement('div');
+        div.textContent = str;
+        return div.innerHTML;
+    }
 
-                    if (!response.ok) {
-                        throw new Error(`HTTP error! Status: ${response.status}`);
-                    }
+    // Format date to Bengali locale
+    function formatDeadline(dateString) {
+        return dateString
+            ? new Date(dateString).toLocaleDateString('bn-BD', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+            })
+            : 'উল্লেখ করা হয়নি';
+    }
 
-                    const jobs = await response.json();
-                    renderJobs(jobs);
-                } catch (error) {
-                    console.error('চাকরির তালিকা আনতে সমস্যা:', error);
-                    jobListingsContainer.innerHTML = `
-                        <div class="error">
-                            <p>চাকরির তালিকা লোড করা সম্ভব হয়নি। অনুগ্রহ করে পরে আবার চেষ্টা করুন।</p>
-                        </div>
-                    `;
-                }
-            }
+    // Render job cards for the current page
+    function renderJobs(jobs, page) {
+        jobListingsContainer.innerHTML = '';
 
-            function renderJobs(jobs) {
-                jobListingsContainer.innerHTML = ''; // Loading অবস্থা পরিষ্কার করা
+        if (!jobs || jobs.length === 0) {
+            jobListingsContainer.innerHTML = `
+                <div class="error loading">
+                    <p>এই মুহূর্তে কোনো চাকরির বিজ্ঞপ্তি পাওয়া যায়নি।</p>
+                </div>
+            `;
+            paginationContainer.innerHTML = '';
+            return;
+        }
 
-                if (!jobs || jobs.length === 0) {
-                    jobListingsContainer.innerHTML = `
-                        <div class="error">
-                            <p>এই মুহূর্তে কোনো চাকরির বিজ্ঞপ্তি পাওয়া যায়নি।</p>
-                        </div>
-                    `;
-                    return;
-                }
+        const startIndex = (page - 1) * itemsPerPage;
+        const endIndex = startIndex + itemsPerPage;
+        const jobsToDisplay = jobs.slice(startIndex, endIndex);
 
-                jobs.forEach(job => {
-                    const jobCard = document.createElement('div');
-                    jobCard.classList.add('job-card');
-                    jobCard.setAttribute('tabindex', '0'); // কার্ডটি ফোকাসযোগ্য করা
+        jobsToDisplay.forEach(job => {
+            const jobCard = document.createElement('div');
+            jobCard.className = 'job-card';
+            jobCard.setAttribute('tabindex', '0');
 
-                    // তারিখকে বাংলা ফরম্যাটে রূপান্তর করা
-                    const deadline = job.deadline
-                        ? new Date(job.deadline).toLocaleDateString('bn-BD', {
-                              year: 'numeric',
-                              month: 'long',
-                              day: 'numeric'
-                          })
-                        : 'উল্লেখ করা হয়নি';
-                    
-                    const location = job.location || 'উল্লেখ করা হয়নি';
-                    
-                    // বর্ণনাকে সংক্ষিপ্ত করা এবং বাংলাতে অনুবাদ করা
-                    const description = job.description
-                        ? job.description.substring(0, 120) + `...`
-                        : 'কোনো বিবরণ উপলব্ধ নেই।';
-                    
-                    const officialLink = job.official_link || '#';
-                    const detailsPageUrl = `/job-circular/${job.id}/`;
+            const deadline = formatDeadline(job.deadline);
+            const location = job.location || 'উল্লেখ করা হয়নি';
+            const detailsPageUrl = `/job-circular/${job.id}/`;
 
-                    jobCard.innerHTML = `
-                        <div class="job-card-header">
-                            <h2>${sanitizeHTML(job.title)}</h2>
-                        </div>
-                        <div class="job-card-content">
-                            <div class="job-meta">
-                                <span aria-label="অবস্থান">${location}</span>
-                                <span class="deadline" aria-label="আবেদনের শেষ তারিখ">আবেদনের শেষ তারিখ: ${deadline}</span>
-                            </div>
-                            <!-- <p class="job-description">${description}</p> -->
-                            <div class="btn-group">
-                                <!-- Hello -->
-                                <a href="${detailsPageUrl}" class="job-btn secondary">বিস্তারিত</a>
-                                </div>
-                        </div>
-                    `;
-                    jobListingsContainer.appendChild(jobCard);
-                });
-            }
-
-            // XSS প্রতিরোধ করার জন্য বেসিক HTML স্যানিটাইজেশন
-            function sanitizeHTML(str) {
-                const div = document.createElement('div');
-                div.textContent = str;
-                return div.innerHTML;
-            }
-
-            fetchJobs();
+            jobCard.innerHTML = `
+                <div class="job-card-header">
+                    <h2>${sanitizeHTML(job.title)}</h2>
+                </div>
+                <div class="job-card-content">
+                    <div class="job-meta">
+                        <span aria-label="অবস্থান">${location}</span>
+                        <span class="deadline" aria-label="আবেদনের শেষ তারিখ">আবেদনের শেষ তারিখ: ${deadline}</span>
+                    </div>
+                    <div class="btn-group">
+                        <a href="${detailsPageUrl}" class="job-btn secondary">বিস্তারিত</a>
+                    </div>
+                </div>
+            `;
+            jobListingsContainer.appendChild(jobCard);
         });
-    </script>
+
+        jobListingsContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    // Render pagination controls
+    function renderPagination(totalItems) {
+        paginationContainer.innerHTML = '';
+        const totalPages = Math.ceil(totalItems / itemsPerPage);
+        if (totalPages <= 1) return;
+
+        const createPageItem = (label, page, disabled = false, active = false) => {
+            const li = document.createElement('li');
+            li.className = `page-item${disabled ? ' disabled' : ''}${active ? ' active' : ''}`;
+            li.innerHTML = `<a class="page-link" href="#" data-page="${page}" aria-label="${label}">${label}</a>`;
+            return li;
+        };
+
+        paginationContainer.appendChild(createPageItem('« পূর্ববর্তী', currentPage - 1, currentPage === 1));
+
+        for (let i = 1; i <= totalPages; i++) {
+            paginationContainer.appendChild(createPageItem(i, i, false, i === currentPage));
+        }
+
+        paginationContainer.appendChild(createPageItem('পরবর্তী »', currentPage + 1, currentPage === totalPages));
+
+        paginationContainer.querySelectorAll('.page-link').forEach(link => {
+            link.addEventListener('click', e => {
+                e.preventDefault();
+                const newPage = parseInt(link.dataset.page);
+                if (newPage >= 1 && newPage <= totalPages && newPage !== currentPage) {
+                    currentPage = newPage;
+                    renderJobs(allJobsData, currentPage);
+                    renderPagination(totalItems);
+                }
+            });
+        });
+    }
+
+    // Fetch job data from API
+    async function fetchJobs() {
+        jobListingsContainer.innerHTML = `
+            <div class="loading">
+                <div class="spinner"></div>
+                <p>চাকরির তালিকা লোড হচ্ছে...</p>
+            </div>
+        `;
+
+        try {
+            const response = await fetch(apiUrl, {
+                headers: { 'Accept': 'application/json' }
+            });
+
+            if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
+
+            allJobsData = await response.json();
+            renderJobs(allJobsData, currentPage);
+            renderPagination(allJobsData.length);
+        } catch (error) {
+            console.error('চাকরির তালিকা আনতে সমস্যা:', error);
+            jobListingsContainer.innerHTML = `
+                <div class="error loading">
+                    <p>চাকরির তালিকা লোড করা সম্ভব হয়নি। অনুগ্রহ করে পরে আবার চেষ্টা করুন।</p>
+                </div>
+            `;
+            paginationContainer.innerHTML = '';
+        }
+    }
+
+    fetchJobs();
+});
+</script>
 {% endblock %}

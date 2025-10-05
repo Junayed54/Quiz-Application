@@ -11,6 +11,7 @@ urlpatterns = [
     path('api/log-activity/', LogActivityView.as_view(), name='log-activity'),
     path('api/send-notification/', SendNotificationView.as_view(), name='send-notification'),
     path("api/track-click/", TrackClickAPIView.as_view(), name="track_click_api"),
+    path("api/notifications/dashboard/", AdminDashboardView.as_view()), 
 ]
 
 
@@ -19,4 +20,6 @@ urlpatterns = [
 
 urlpatterns += [
     path('segment-dashboard/', TemplateView.as_view(template_name="Html/custom/notifications/send_notification.html")),
+    path('notification-dashboard/', TemplateView.as_view(template_name="Html/custom/notifications/admin_dashboard.html")),
+
 ]
