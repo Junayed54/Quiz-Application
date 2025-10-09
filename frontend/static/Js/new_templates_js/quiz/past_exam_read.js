@@ -199,10 +199,9 @@ document.addEventListener('DOMContentLoaded', function(){
 
                 if (question.explanation_image) {
                     explanationContent.innerHTML += `
-                        <div class="text-center mb-2 bg-white">
+                        <div class="text-center mb-2 bg-white" style="max-width: 100%; height: auto;">
                             <img src="${question.explanation_image}" alt="Explanation Image"
-                                class=""
-                                style="max-height: 100%; object-fit: cover; display: block;">
+                                style="max-width: 100%; height: auto; display: block; margin: 0 auto;">
                         </div>
 
 
@@ -215,6 +214,11 @@ document.addEventListener('DOMContentLoaded', function(){
                 
                 explanationDetails.appendChild(explanationContent);
                 questionWrapper.appendChild(explanationDetails);
+
+                // ✅ Render MathJax whenever explanation is added
+                if (window.MathJax) {
+                    MathJax.typesetPromise();
+                }
             }
 
 

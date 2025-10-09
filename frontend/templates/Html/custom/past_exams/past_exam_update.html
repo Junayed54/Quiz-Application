@@ -1,7 +1,43 @@
 {% comment %} @SPK@include("partials/mainhead.html") {% endcomment %}
 {% include "../../partials/mainhead.html"%}
+<!-- <link rel="stylesheet" href="https://cdn.ckeditor.com/ckeditor5/47.0.0/ckeditor5.css"> -->
 
+<link href="https://cdn.quilljs.com/1.3.7/quill.snow.css" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/mathquill/0.10.1/mathquill.min.css" />
 <style>
+    .details {
+    max-height: 600px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding-right: 10px;
+    scroll-behavior: smooth; /* smooth scrolling */
+}
+
+/* ✅ Always show scrollbar in WebKit browsers (Chrome, Edge, Safari) */
+.details::-webkit-scrollbar {
+    width: 8px; /* scrollbar width */
+}
+
+.details::-webkit-scrollbar-track {
+    background: #f1f1f1; /* track color */
+    border-radius: 10px;
+}
+
+.details::-webkit-scrollbar-thumb {
+    background: #888; /* scrollbar color */
+    border-radius: 10px;
+}
+
+.details::-webkit-scrollbar-thumb:hover {
+    background: #555; /* hover color */
+}
+
+/* ✅ Firefox support */
+.details {
+    scrollbar-width: thin;
+    scrollbar-color: #888 #f1f1f1;
+}
+
     .drop-area {
         border: 2px dashed #ccc;
         border-radius: 10px;
@@ -20,9 +56,40 @@
     .exam-container {
         margin-top: 20px;
     }
+
+    /* Existing height classes */
+.explanation-editor-height {
+    min-height: 200px; 
+}
+.explanation-editor-height .ck-editor__editable_inline {
+    min-height: 200px;
+    max-height: 400px; 
+    overflow-y: auto;
+}
+
+/* Bootstrap-like styling for CKEditor container */
+/* This targets the main wrapper created by CKEditor */
+.form-control > .ck-editor__main > .ck-editor__editable {
+    /* Add some padding and border to mimic a text field */
+    padding: .375rem .75rem; 
+    border: 1px solid #ced4da; 
+    border-radius: .25rem;
+}
+
+/* Fix the overall CKEditor wrapper styling */
+.form-control .ck-editor__main {
+    /* Remove the wrapper's internal border if necessary */
+    border: none !important;
+}
+
+/* Ensure the editor itself gets padding when it replaces the element */
+.ck-editor__editable_inline {
+    border-radius: 0 0 .25rem .25rem !important; /* Adjust corners */
+}
 </style>
 
 
+    
 </head>
 
 <body>
@@ -40,7 +107,7 @@
             <!-- HTML structure for displaying submitted users and their questions -->
             
 
-            <div class="container exam-container" id="exam-detail">
+            <div class="container exam-container details" id="exam-detail">
                 <!-- Exam details will be populated here -->
             </div>
             
@@ -59,27 +126,19 @@
     {% comment %} @SPK@include("partials/commonjs.html") {% endcomment %}
     {% include "../../partials/commonjs.html"%}
 
+
+    <!-- <script src="https://cdn.ckeditor.com/ckeditor5/47.0.0/ckeditor5.umd.js"></script> -->
+    <script src="https://cdn.quilljs.com/1.3.7/quill.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mathquill/0.10.1/mathquill.min.js"></script>
+    
     {% comment %} @SPK@include("partials/custom_switcherjs.html") {% endcomment %}
     {% include "../../partials/custom_switcherjs.html"%}
     <!-- Custom JS -->
     <script src="../../../../static/assets/js/custom.js"></script>
 
-    <!-- tinyMcE -->
-    <script src="https://cdn.tiny.cloud/1/st4fnovtgltk2a3hyidbexwpgf2nxhumf1bhz0w54uk9j4vk/tinymce/6/tinymce.min.js" referrerpolicy="origin"></script>
-    <script>
-        tinymce.init({
-            selector: 'textarea', // replace with your textarea or div ID
-            plugins: 'math',
-            toolbar: 'math',
-            math: {
-                lib: 'https://cdnjs.cloudflare.com/ajax/libs/mathjs/14.8.1/math.js'
-            }
-        });
-    </script>
-
     <!-- My exam js -->
     <script src = "../../../../static/Js/past_exams/past_exam_update.js"></script>
-
 
 </body>
 

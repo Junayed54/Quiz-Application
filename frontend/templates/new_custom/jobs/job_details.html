@@ -17,28 +17,13 @@
         --warning-color: #f59e0b; 
     }
 
-    /* Reset and Base Styles */
-    * {
-        box-sizing: border-box;
-        margin: 0;
-        padding: 0;
-    }
+    
 
-    body {
-        font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-        line-height: 1.6;
-        color: var(--text-color);
-        background-color: var(--bg-light);
-        -webkit-font-smoothing: antialiased;
-        -moz-osx-font-smoothing: grayscale;
-    }
-
-    /* Layout */
     .main-layout {
         display: grid;
         grid-template-columns: 3fr 1fr;
         gap: 2.5rem;
-        max-width: 1200px;
+        
         margin: 2.5rem auto;
         padding: 0 1.5rem;
     }
@@ -128,8 +113,8 @@
     /* Table Responsiveness Styles */
     .table-responsive {
         /* Key 1: Enables horizontal scrolling */
-        width: 100%;
-        overflow-x: auto;
+        
+        overflow-x: scroll;
         -webkit-overflow-scrolling: touch; 
         margin: 1.5rem 0; 
         border: 1px solid var(--border-color);
@@ -138,8 +123,9 @@
 
     table {
         
-        width: 100%;
-        overflow-x: auto;
+        
+        overflow-x: scroll;
+         
         border-collapse: collapse;
         /* Key 2: Forces table to be wider than the viewport, triggering the scroll */
          

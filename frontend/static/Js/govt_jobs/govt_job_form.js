@@ -43,69 +43,63 @@ document.addEventListener('DOMContentLoaded', () => {
     populateSelect('/quiz/positions/', positionSelect, 'Select a Position (optional)');
 
     // Handle form submission
-    jobForm.addEventListener('submit', async function(e) {
-        e.preventDefault();
+    // Handle form submission
+jobForm.addEventListener('submit', async function(e) {
+    e.preventDefault();
 
-        // Update the underlying textarea for TinyMCE
-        tinymce.triggerSave();
+    // ✅ Sync Quill editor content
+    const hiddenDescInput = document.querySelector('textarea[name="description"]');
+    if (window.quillInstance) {
+        hiddenDescInput.value = window.quillInstance.root.innerHTML;
+    }
 
-        // --- Start of Loader Implementation ---
-        // Show loader and disable button
-        loaderDiv.style.display = 'block';
-        messageDiv.innerHTML = ''; // Clear previous messages
-        submitButton.disabled = true;
-        // --- End of Loader Implementation ---
+    // Show loader and disable button
+    loaderDiv.style.display = 'block';
+    messageDiv.innerHTML = '';
+    submitButton.disabled = true;
 
-        const formData = new FormData(jobForm);
-        const orgVal = organizationSelect.value;
-        const deptVal = departmentSelect.value;
-        
-        // Collect multiple selected positions
-        const posOptions = Array.from(positionSelect.selectedOptions).map(opt => opt.value);
+    const formData = new FormData(jobForm);
+    const orgVal = organizationSelect.value;
+    const deptVal = departmentSelect.value;
 
-        // Append all selected IDs
-        posOptions.forEach(id => formData.append('position_ids', id));
+    const posOptions = Array.from(positionSelect.selectedOptions).map(opt => opt.value);
+    posOptions.forEach(id => formData.append('position_ids', id));
 
+    if (orgVal) formData.append('organization_id', orgVal);
+    if (deptVal) formData.append('department_id', deptVal);
 
-        if (orgVal) formData.append('organization_id', orgVal);
-        if (deptVal) formData.append('department_id', deptVal);
-        // if (posVals.length > 0) formData.append('position_ids', posVals); // Corrected: use posVals length
-        // console.log(formData);
-        try {
-            const response = await fetch('/api/govt-jobs/', {
-                method: 'POST',
-                headers: {
-                    'Authorization': `Bearer ${token}`
-                },
-                body: formData
-            });
+    try {
+        const response = await fetch('/api/govt-jobs/', {
+            method: 'POST',
+            headers: { 'Authorization': `Bearer ${token}` },
+            body: formData
+        });
 
-            const data = await response.json();
+        const data = await response.json();
 
-            if (response.ok) {
-                messageDiv.innerHTML = `<div class="alert alert-success">Job posted successfully!</div>`;
-                jobForm.reset();
-                organizationSelect.selectedIndex = 0;
-                departmentSelect.selectedIndex = 0;
-                positionSelect.selectedIndex = 0;
-            } else {
-                let errorMsg = '';
-                for (const key in data) {
-                    errorMsg += `<strong>${key}</strong>: ${data[key]}<br>`;
-                }
-                messageDiv.innerHTML = `<div class="alert alert-danger">${errorMsg}</div>`;
+        if (response.ok) {
+            messageDiv.innerHTML = `<div class="alert alert-success">Job posted successfully!</div>`;
+            jobForm.reset();
+            organizationSelect.selectedIndex = 0;
+            departmentSelect.selectedIndex = 0;
+            positionSelect.selectedIndex = 0;
+            window.quillInstance.root.innerHTML = ''; // clear editor
+        } else {
+            let errorMsg = '';
+            for (const key in data) {
+                errorMsg += `<strong>${key}</strong>: ${data[key]}<br>`;
             }
-        } catch (error) {
-            console.error(error);
-            messageDiv.innerHTML = `<div class="alert alert-danger">An error occurred. Please try again.</div>`;
-        } finally {
-            // --- Start of Loader Implementation ---
-            // Hide loader and re-enable button
-            loaderDiv.style.display = 'none';
-            submitButton.disabled = false;
-            // --- End of Loader Implementation ---
+            messageDiv.innerHTML = `<div class="alert alert-danger">${errorMsg}</div>`;
         }
-    });
+    } catch (error) {
+        console.error(error);
+        messageDiv.innerHTML = `<div class="alert alert-danger">An error occurred. Please try again.</div>`;
+    } finally {
+        loaderDiv.style.display = 'none';
+        submitButton.disabled = false;
+    }
+});
+
 
     // Create Organization
     createOrganizationBtn.addEventListener('click', async () => {
