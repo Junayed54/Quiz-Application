@@ -26,14 +26,14 @@ class GovernmentJobViewSet(viewsets.ModelViewSet):
         return [permission() for permission in permission_classes]
 
     def create(self, request, *args, **kwargs):
-        print("🔎 Raw request.data:", request.data)       # Shows raw data
-        print("🔎 Request.FILES:", request.FILES)        # Shows uploaded files
-        print("🔎 Request.user:", request.user)          # Shows user info
+        # print("🔎 Raw request.data:", request.data)       # Shows raw data
+        # print("🔎 Request.FILES:", request.FILES)        # Shows uploaded files
+        # print("🔎 Request.user:", request.user)          # Shows user info
 
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
-        print("✅ Validated data:", serializer.validated_data)  # Shows serializer-cleaned data
+        # print("✅ Validated data:", serializer.validated_data)  # Shows serializer-cleaned data
 
         self.perform_create(serializer)
         headers = self.get_success_headers(serializer.data)

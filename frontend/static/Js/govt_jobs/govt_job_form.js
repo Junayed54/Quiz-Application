@@ -43,63 +43,69 @@ document.addEventListener('DOMContentLoaded', () => {
     populateSelect('/quiz/positions/', positionSelect, 'Select a Position (optional)');
 
     // Handle form submission
-    // Handle form submission
-jobForm.addEventListener('submit', async function(e) {
-    e.preventDefault();
+    jobForm.addEventListener('submit', async function(e) {
+        e.preventDefault();
 
-    // ✅ Sync Quill editor content
-    const hiddenDescInput = document.querySelector('textarea[name="description"]');
-    if (window.quillInstance) {
-        hiddenDescInput.value = window.quillInstance.root.innerHTML;
-    }
-
-    // Show loader and disable button
-    loaderDiv.style.display = 'block';
-    messageDiv.innerHTML = '';
-    submitButton.disabled = true;
-
-    const formData = new FormData(jobForm);
-    const orgVal = organizationSelect.value;
-    const deptVal = departmentSelect.value;
-
-    const posOptions = Array.from(positionSelect.selectedOptions).map(opt => opt.value);
-    posOptions.forEach(id => formData.append('position_ids', id));
-
-    if (orgVal) formData.append('organization_id', orgVal);
-    if (deptVal) formData.append('department_id', deptVal);
-
-    try {
-        const response = await fetch('/api/govt-jobs/', {
-            method: 'POST',
-            headers: { 'Authorization': `Bearer ${token}` },
-            body: formData
-        });
-
-        const data = await response.json();
-
-        if (response.ok) {
-            messageDiv.innerHTML = `<div class="alert alert-success">Job posted successfully!</div>`;
-            jobForm.reset();
-            organizationSelect.selectedIndex = 0;
-            departmentSelect.selectedIndex = 0;
-            positionSelect.selectedIndex = 0;
-            window.quillInstance.root.innerHTML = ''; // clear editor
-        } else {
-            let errorMsg = '';
-            for (const key in data) {
-                errorMsg += `<strong>${key}</strong>: ${data[key]}<br>`;
-            }
-            messageDiv.innerHTML = `<div class="alert alert-danger">${errorMsg}</div>`;
+        // ✅ Sync Quill editor content (FIX APPLIED HERE)
+        const hiddenDescInput = document.querySelector('textarea[name="description"]');
+        if (window.quillInstance && window.quillInstance.root) { // Check for both instance and root
+            hiddenDescInput.value = window.quillInstance.root.innerHTML;
         }
-    } catch (error) {
-        console.error(error);
-        messageDiv.innerHTML = `<div class="alert alert-danger">An error occurred. Please try again.</div>`;
-    } finally {
-        loaderDiv.style.display = 'none';
-        submitButton.disabled = false;
-    }
-});
 
+        // Show loader and disable button
+        loaderDiv.style.display = 'block';
+        messageDiv.innerHTML = '';
+        submitButton.disabled = true;
+
+        const formData = new FormData(jobForm);
+        const orgVal = organizationSelect.value;
+        const deptVal = departmentSelect.value;
+
+        const posOptions = Array.from(positionSelect.selectedOptions).map(opt => opt.value);
+        posOptions.forEach(id => formData.append('position_ids', id));
+
+        if (orgVal) formData.append('organization_id', orgVal);
+        if (deptVal) formData.append('department_id', deptVal);
+
+        try {
+            const response = await fetch('/api/govt-jobs/', {
+                method: 'POST',
+                headers: { 'Authorization': `Bearer ${token}` },
+                body: formData
+            });
+
+            const data = await response.json();
+
+            if (response.ok) {
+                messageDiv.innerHTML = `<div class="alert alert-success">Job posted successfully!</div>`;
+                jobForm.reset();
+                organizationSelect.selectedIndex = 0;
+                departmentSelect.selectedIndex = 0;
+                positionSelect.selectedIndex = 0;
+                
+                // Clear editor (FIX APPLIED HERE)
+                if (window.quillInstance && window.quillInstance.root) { // Check for both instance and root
+                    window.quillInstance.root.innerHTML = ''; 
+                }
+            } else {
+                let errorMsg = '';
+                for (const key in data) {
+                    errorMsg += `<strong>${key}</strong>: ${data[key]}<br>`;
+                }
+                messageDiv.innerHTML = `<div class="alert alert-danger">${errorMsg}</div>`;
+            }
+        } catch (error) {
+            console.error(error);
+            messageDiv.innerHTML = `<div class="alert alert-danger">An error occurred. Please try again.</div>`;
+        } finally {
+            loaderDiv.style.display = 'none';
+            submitButton.disabled = false;
+        }
+    });
+
+// ----------------------------------------------------------------------
+// Code for Create Organization, Department, and Position (No changes needed)
+// ----------------------------------------------------------------------
 
     // Create Organization
     createOrganizationBtn.addEventListener('click', async () => {
