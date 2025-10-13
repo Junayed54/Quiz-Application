@@ -1,9 +1,9 @@
 {% comment %} @SPK@include("partials/mainhead.html") {% endcomment %}
 {% include "../../partials/mainhead.html"%}
 <!-- <link rel="stylesheet" href="https://cdn.ckeditor.com/ckeditor5/47.0.0/ckeditor5.css"> -->
-
-<link href="https://cdn.quilljs.com/1.3.7/quill.snow.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/quill@2.0.0/dist/quill.snow.css" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/mathquill/0.10.1/mathquill.min.css" />
+
 <style>
     .details {
     max-height: 600px;
@@ -128,7 +128,7 @@
 
 
     <!-- <script src="https://cdn.ckeditor.com/ckeditor5/47.0.0/ckeditor5.umd.js"></script> -->
-    <script src="https://cdn.quilljs.com/1.3.7/quill.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/quill@2.0.0/dist/quill.js"></script>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/mathquill/0.10.1/mathquill.min.js"></script>
     
@@ -139,6 +139,84 @@
 
     <!-- My exam js -->
     <script src = "../../../../static/Js/past_exams/past_exam_update.js"></script>
+
+
+    <script>
+    document.addEventListener("DOMContentLoaded", function () {
+        
+        // Define the standard Quill toolbar options, including 'formula' for math
+        const toolbarOptions = [
+        [{ 'font': [] }, { 'size': [] }],
+        [{ 'header': [1, 2, 3, false] }],
+        ['bold', 'italic', 'underline', 'strike'],
+        ['blockquote', 'code-block'],
+        [{ 'list': 'ordered' }, { 'list': 'bullet' }],
+        [{ 'indent': '-1' }, { 'indent': '+1' }],
+        [{ 'align': [] }],
+        [{ 'color': [] }, { 'background': [] }],
+        ['link', 'image', 'video'],
+        ['table'],   // ✅ Native Quill 2 table button
+        ['clean']
+    ];
+    
+    const quill = new Quill(`#${editorId}`, {
+        theme: 'snow',
+        modules: {
+            toolbar: { container: toolbarOptions },
+            table: true   // ✅ Enable native table support
+        }
+    });
+        // 1. Target all dynamically created elements that need a Quill editor
+        // We use the class 'quill-target' to select them.
+        const quillTargets = document.querySelectorAll('.quill-target');
+        const activeQuillEditors = []; // To hold references to the initialized Quill objects
+
+        // Find the main form (you may need to adjust this selector)
+        // This assumes there is one primary form that contains all the explanation inputs.
+        const form = document.querySelector('form'); 
+
+        quillTargets.forEach(editorElement => {
+            const editorId = editorElement.id; // e.g., "explanation_editor_123"
+            const questionId = editorId.split('_').pop(); // Extracts the ID, e.g., "123"
+            
+            // 2. Initialize Quill for the current dynamic element
+            const quillInstance = new new Quill(`#${editorId}`, {
+                theme: 'snow',
+                modules: {
+                    toolbar: toolbarOptions,
+                    formula: true // Activate the formula module for math equations
+                }
+            });
+
+            // Store the instance and its ID
+            activeQuillEditors.push({ id: questionId, editor: quillInstance });
+        });
+
+        // 3. Attach a single submit listener to the main form to save all editor contents
+        if (form) {
+            form.addEventListener('submit', function() {
+                activeQuillEditors.forEach(item => {
+                    const quillInstance = item.editor;
+                    const questionId = item.id;
+                    
+                    // Construct the ID for the associated hidden input field
+                    const hiddenInputId = `explanation_editor_${questionId}_hidden`;
+                    const hiddenInput = document.getElementById(hiddenInputId);
+                    
+                    if (hiddenInput) {
+                        // Populate the hidden input with the editor's HTML content
+                        hiddenInput.value = quillInstance.root.innerHTML;
+                        console.log(`Saved content for question ${questionId}`);
+                    }
+                });
+                // The form submission will continue after this loop
+            });
+        }
+        
+        // Optional: Make the list of editors globally accessible if needed for other scripts
+        window.activeQuillEditors = activeQuillEditors;
+    });
+    </script>
 
 </body>
 

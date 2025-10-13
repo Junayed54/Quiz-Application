@@ -153,8 +153,8 @@ function renderExamDetails(exam) {
                 <h5 class="h6 mb-2">Explanation</h5>
 
                                 <div id="explanation_editor_${q.id}" class="form-control mb-3 quill-target" style="min-height: 150px;">
-                    ${q.explanation || ""}
-                </div>
+                                    ${q.explanation || ""}
+                                </div>
                                 <input type="hidden" name="explanation_${q.id}_data" id="explanation_editor_${q.id}_hidden">
 
                 <div class="border border-dashed p-3 text-center rounded mb-2" id="exp_drop_${q.id}">
