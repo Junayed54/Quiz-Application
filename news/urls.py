@@ -16,5 +16,6 @@ urlpatterns = [
 
 urlpatterns +=[
     path('news/create/', TemplateView.as_view(template_name="Html/custom/news/news_create.html")),
-    
+    path('news/list/', TemplateView.as_view(template_name="Html/custom/news/news_list.html")),
+    path('news/<int:id>/update/', TemplateView.as_view(template_name="Html/custom/news/news_update.html")), 
 ]

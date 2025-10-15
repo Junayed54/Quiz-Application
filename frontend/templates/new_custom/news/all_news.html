@@ -48,6 +48,12 @@
       background-color: #e64242;
       color: white;
     }
+
+    .card-text {
+      height: 60px; /* Adjust this value (e.g., 60px or 75px) to fit 3-4 lines of text */
+      overflow: hidden; /* Crucial: Hides text that exceeds the fixed height */ 
+      margin-bottom: 1rem; /* Ensure consistent spacing above the button */
+    }
   </style>
 {% endblock %}
 {% block content %}
@@ -128,16 +134,20 @@
                 <img src="${imageUrl}" class="card-img-top" alt="${news.title}">
                 <div class="card-body d-flex flex-column">
                   <h5 class="card-title">
-                    <a href="/news/${news.id}" class="news-title">${news.title}</a>
+                    <a href="/news/details/${news.id}" class="news-title">${news.title}</a>
                   </h5>
                   <p class="news-meta">
                     <i class="fa-solid fa-calendar-alt"></i> ${formatDate(news.published_date)}
                   </p>
-                  <p class="card-text">${news.content.substring(0, 150)}...</p>
-                  <a href="/news/details/${news.id}" class="btn btn-custom mt-auto">বিস্তারিত পড়ুন</a>
+                  <!-- <p class="card-text">${news.content.substring(0, 150)}...</p> -->
+                </div>
+                <div class="p-3 pt-0 d-flex justify-content-end">
+                  <a href="/news/details/${news.id}" class="btn btn-custom">বিস্তারিত পড়ুন</a>
+                  
                 </div>
               </div>
             `;
+
             newsGrid.appendChild(newsItemCol);
           });
           noNewsMessage.classList.add('d-none');

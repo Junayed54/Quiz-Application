@@ -2,7 +2,6 @@
 
 {% block style %}
 <style>
-    
     :root {
         --primary-color: #3b82f6; 
         --secondary-color: #4b5563; 
@@ -15,20 +14,24 @@
         --shadow-color: rgba(0, 0, 0, 0.05); 
         --error-color: #ef4444; 
         --warning-color: #f59e0b; 
+        --base-font-size: 1.05rem;
+        --small-font-size: 0.9375rem;
     }
 
-    
+    body {
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        color: var(--text-color);
+        line-height: 1.65;
+    }
 
     .main-layout {
         display: grid;
         grid-template-columns: 3fr 1fr;
         gap: 2.5rem;
-        
         margin: 2.5rem auto;
         padding: 0 1.5rem;
     }
 
-    /* Card Styling */
     .job-detail-container, .notice-sidebar {
         background-color: var(--bg-color);
         padding: 2rem;
@@ -37,12 +40,11 @@
         border: 1px solid var(--border-color);
         transition: box-shadow 0.3s ease;
     }
-    
+
     .job-detail-container:hover, .notice-sidebar:hover {
         box-shadow: 0 20px 25px -5px var(--shadow-color), 0 10px 10px -5px var(--shadow-color);
     }
-    
-    /* Header and Meta */
+
     .detail-header {
         padding-bottom: 1.25rem;
         margin-bottom: 1.5rem;
@@ -50,14 +52,19 @@
     }
 
     .detail-header h1 {
-        font-size: 2.25rem;
+        font-size: 2.5rem;
         font-weight: 800;
         color: var(--text-color);
         line-height: 1.2;
     }
 
+    .detail-header p {
+        font-size: var(--small-font-size);
+        color: var(--light-text-color);
+        margin-top: 0.5rem;
+    }
+
     .detail-meta {
-        /* Default: Grid layout for larger screens */
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
         gap: 1rem 1.5rem;
@@ -68,10 +75,11 @@
     }
 
     .detail-meta p {
-        font-size: 0.9375rem;
+        font-size: var(--small-font-size);
         color: var(--secondary-color);
         display: flex;
         gap: 0.5rem;
+        margin: 0;
     }
 
     .detail-meta strong {
@@ -79,41 +87,42 @@
         font-weight: 700;
         flex-shrink: 0;
     }
-    
-    .detail-meta p::before {
-        font-size: 1.125rem;
-        color: var(--primary-color);
-        opacity: 0.8;
-    }
-    
-    /* Description Content Safety */
-    .job-detail-container img, 
-    .job-detail-container video, 
-    .job-detail-container iframe {
-        max-width: 100%; 
-        height: auto;
-        display: block; 
-    }
-    
-    .detail-description p, 
-    .detail-description li {
+
+    .detail-description p, .detail-description li {
+        font-size: var(--base-font-size);
+        line-height: 1.7;
+        margin-bottom: 1.25rem;
+        color: var(--text-color);
         word-break: break-word; 
-        overflow-wrap: break-word;
     }
 
     .detail-description h2 {
-        font-size: 1.75rem;
+        font-size: 1.875rem;
         font-weight: 700;
         color: var(--primary-color);
-        margin-bottom: 1rem;
+        margin-top: 2rem;
+        margin-bottom: 1.25rem;
         border-left: 4px solid var(--primary-color);
         padding-left: 1rem;
     }
 
-    /* Table Responsiveness Styles */
+    .detail-description h3 {
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: var(--secondary-color);
+        margin-top: 1.5rem;
+        margin-bottom: 1rem;
+    }
+
+    .detail-description h4 {
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: var(--secondary-color);
+        margin-top: 1rem;
+        margin-bottom: 0.75rem;
+    }
+
     .table-responsive {
-        /* Key 1: Enables horizontal scrolling */
-        
         overflow-x: scroll;
         -webkit-overflow-scrolling: touch; 
         margin: 1.5rem 0; 
@@ -122,21 +131,16 @@
     }
 
     table {
-        
-        
-        overflow-x: scroll;
-         
         border-collapse: collapse;
-        /* Key 2: Forces table to be wider than the viewport, triggering the scroll */
-         
-        margin-top: 0; 
+        min-width: 100%; 
     }
 
     table, th, td {
-        padding: 1rem;
+        padding: 0.75rem 1rem;
         text-align: left;
-        vertical-align: middle;
         border: 1px solid var(--border-color); 
+        font-size: var(--small-font-size);
+        line-height: 1.5;
     }
 
     th {
@@ -144,10 +148,8 @@
         color: white;
         font-weight: 600;
         font-size: 1rem;
-        text-transform: uppercase;
     }
-    
-    /* Button Styles */
+
     .detail-links {
         margin-top: 2.5rem;
         padding-top: 1.5rem;
@@ -156,50 +158,55 @@
         gap: 1rem;
         flex-wrap: wrap;
     }
-    
-    .detail-btn {
-        display: inline-flex;
+
+    .notice-sidebar h2 {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--text-color);
+        margin-bottom: 1.5rem;
+    }
+
+    .notice-item {
+        display: flex;
+        justify-content: space-between;
         align-items: center;
-        justify-content: center;
-        background-color: var(--primary-color);
-        color: #ffffff;
-        padding: 0.75rem 1.5rem;
-        border-radius: 8px;
-        text-decoration: none;
+        padding: 0.75rem 0;
+        border-bottom: 1px dashed var(--border-color);
+    }
+
+    .notice-item h3 {
+        font-size: 1rem;
         font-weight: 600;
-        font-size: 0.9375rem;
-        transition: all 0.3s ease;
-        border: none;
-        box-shadow: 0 4px var(--primary-color)30;
+        color: var(--primary-color);
+        margin: 0;
     }
 
-    .detail-btn:hover {
-        background-color: #2563eb; 
-        transform: translateY(-2px);
-        box-shadow: 0 6px var(--primary-color)40;
+    .notice-item p.notice-date {
+        font-size: 0.8rem;
+        color: var(--light-text-color);
+        margin: 0.25rem 0 0;
     }
 
-    .detail-btn.pdf-btn {
-        background-color: var(--error-color);
-        box-shadow: 0 4px var(--error-color)30;
-    }
-    
-    .detail-btn.exam-btn {
-        background-color: var(--warning-color);
-        box-shadow: 0 4px var(--warning-color)30;
-    }
-
-    .detail-btn.model-exam-btn {
+    .notice-detail-btn {
+        display: inline-block;
         background-color: var(--accent-color);
-        box-shadow: 0 4px var(--accent-color)30;
+        color: #fff;
+        padding: 0.35rem 0.75rem;
+        border-radius: 6px;
+        text-decoration: none;
+        font-size: 0.85rem;
+        font-weight: 600;
+        transition: background-color 0.2s ease;
     }
 
-    /* Sidebar and Responsive Design */
+    .notice-detail-btn:hover {
+        background-color: #059669;
+    }
+
     @media (max-width: 1024px) {
         .main-layout {
-            grid-template-columns: 1fr; 
+            grid-template-columns: 1fr;
             gap: 2rem;
-            margin: 2rem auto;
         }
     }
 
@@ -216,68 +223,34 @@
             font-size: 1.375rem;
         }
 
-        /* 🚀 FINAL FIX: Inline-Block Layout for Meta Details to prevent overflow */
-        .detail-meta {
-            /* Switch from grid back to default block flow */
-            display: block; 
-            padding: 1rem 0;
+        .detail-description p, .detail-description li {
+            font-size: 1rem;
         }
 
-        .detail-meta p {
-            /* Make each detail wrap side-by-side */
-            display: flex; 
-            margin-right: 1rem; 
-            margin-bottom: 0.5rem; /* Space between wrapped rows */
-        }
-        
-        .detail-meta strong {
-            /* Keep label and value inline */
-            display: inline; 
-            font-weight: 600;
-            color: var(--text-color); 
-        }
-        
-        .detail-meta p span[role="img"] {
-            font-size: 0.9rem; 
-            margin-right: 0.3rem;
-        }
-        
-        .detail-meta p::before {
-            display: none; 
-        }
-        /* END FINAL FIX */
-
-        .detail-links {
-            flex-direction: column;
-            gap: 0.75rem;
-        }
-
-        .detail-btn {
-            width: 100%;
+        .detail-description h3 {
+            font-size: 1.25rem;
         }
 
         table, th, td {
-        padding: 2px;
+            padding: 0.5rem;
+            font-size: 0.875rem;
         }
     }
-    
 </style>
 {% endblock %}
-{% block content %}
-    <div>
-        <main class="job-detail-main">
-            <div class="main-layout">
-                <div id="job-details" class="job-detail-container">
-                    </div>
 
-                <div id="notices-sidebar" class="notice-sidebar">
-                    <h2>গুরুত্বপূর্ণ বিজ্ঞপ্তি</h2>
-                    <div id="notices-list">
-                        </div>
-                </div>
-            </div>
-        </main>
+{% block content %}
+<div>
+  <main class="job-detail-main">
+    <div class="main-layout">
+      <div id="job-details" class="job-detail-container"></div>
+      <div id="notices-sidebar" class="notice-sidebar">
+        <h2>গুরুত্বপূর্ণ বিজ্ঞপ্তি</h2>
+        <div id="notices-list"></div>
+      </div>
     </div>
+  </main>
+</div>
 {% endblock %}
 
 {% block body_js %}
@@ -302,7 +275,6 @@ document.addEventListener('DOMContentLoaded', () => {
             const response = await fetch(`/api/govt-jobs/${id}/`, { headers: {'Accept': 'application/json'} });
             if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
             const job = await response.json();
-            
             renderJobDetails(job); 
             renderNotices(job.notices); 
         } catch (error) {
@@ -311,40 +283,30 @@ document.addEventListener('DOMContentLoaded', () => {
             noticesContainer.innerHTML = `<p class="error">বিজ্ঞপ্তি লোড করা যায়নি।</p>`;
         }
     }
-    
-    // FUNCTION: Wraps all tables in a raw HTML string for responsiveness
+
     function wrapTables(htmlString) {
         if (!htmlString) return '';
-        
         const tempDiv = document.createElement('div');
         tempDiv.innerHTML = htmlString;
-        
         const tables = tempDiv.querySelectorAll('table');
-
         tables.forEach(table => {
             if (!table.closest('.table-responsive')) {
                 const wrapper = document.createElement('div');
                 wrapper.classList.add('table-responsive');
-                
                 table.parentNode.insertBefore(wrapper, table);
-                
                 wrapper.appendChild(table);
             }
         });
-
         return tempDiv.innerHTML;
     }
-
 
     function renderJobDetails(job) {
         const dateOptions = { year: 'numeric', month: 'long', day: 'numeric' };
         const deadline = job.deadline ? new Date(job.deadline).toLocaleDateString('bn-BD', dateOptions) : 'উল্লেখ করা হয়নি';
         const postedOn = job.posted_on ? new Date(job.posted_on).toLocaleDateString('bn-BD', dateOptions) : 'উল্লেখ করা হয়নি';
-        const positions = job.positions && job.positions.length > 0
+        const positions = job.positions?.length > 0
             ? job.positions.map(p => sanitizeHTML(p.name)).join(', ')
             : 'উল্লেখ করা হয়নি';
-
-        // Use the wrapper function on the raw description HTML
         const responsiveDescription = wrapTables(job.description);
 
         jobDetailsContainer.innerHTML = `
@@ -352,23 +314,17 @@ document.addEventListener('DOMContentLoaded', () => {
                 <h1>${sanitizeHTML(job.title)}</h1>
                 <p>প্রকাশের তারিখ: ${postedOn}</p>
             </div>
-            
             <div class="detail-meta">
-                <p class="organization"><span role="img" aria-label="Organization">🏢</span><strong>প্রতিষ্ঠানের নাম:</strong> ${sanitizeHTML(job.organization?.name || 'উল্লেখ করা হয়নি')}</p>
-                <p class="department"><span role="img" aria-label="Department">📋</span><strong>বিভাগের নাম:</strong> ${sanitizeHTML(job.department?.name || 'উল্লেখ করা হয়নি')}</p>
-                <p class="position"><span role="img" aria-label="Position">💼</span><strong>পদের নাম:</strong> ${positions}</p>
-                <p class="location"><span role="img" aria-label="Location">📍</span><strong>অবস্থান:</strong> ${sanitizeHTML(job.location || 'উল্লেখ করা হয়নি')}</p>
-                <p class="deadline"><span role="img" aria-label="Deadline">📅</span><strong>আবেদনের শেষ তারিখ:</strong> ${deadline}</p>
+                <p><span role="img" aria-label="Organization">🏢</span><strong>প্রতিষ্ঠান:</strong> ${sanitizeHTML(job.organization?.name || 'উল্লেখ করা হয়নি')}</p>
+                <p><span role="img" aria-label="Department">📋</span><strong>বিভাগ:</strong> ${sanitizeHTML(job.department?.name || 'উল্লেখ করা হয়নি')}</p>
+                <p><span role="img" aria-label="Position">💼</span><strong>পদ:</strong> ${positions}</p>
+                <p><span role="img" aria-label="Location">📍</span><strong>অবস্থান:</strong> ${sanitizeHTML(job.location || 'উল্লেখ করা হয়নি')}</p>
+                <p><span role="img" aria-label="Deadline">📅</span><strong>শেষ তারিখ:</strong> ${deadline}</p>
             </div>
-            
             <div class="detail-description">
                 <h2>চাকরির বিবরণ</h2>
-                
-                
                 ${responsiveDescription || '<p>কোনো বিবরণ দেওয়া হয়নি।</p>'}
-                
             </div>
-            
             <div class="detail-links">
                 <a href="${job.official_link || '#'}" target="_blank" class="detail-btn">অফিসিয়াল লিংক</a>
                 ${job.pdf ? `<a href="${job.pdf}" target="_blank" class="detail-btn pdf-btn">পিডিএফ ডাউনলোড করুন</a>` : ''}
@@ -380,16 +336,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function renderNotices(notices) {
         noticesContainer.innerHTML = '';
-        if (!notices || notices.length === 0) {
+        if (!notices?.length) {
             noticesContainer.innerHTML = '<p class="no-notices text-center text-sm p-3 border-dashed border rounded">এই চাকরির জন্য বর্তমানে কোনো বিজ্ঞপ্তি নেই।</p>';
             return;
         }
 
         notices.forEach(notice => {
-            const detailLink = `/notices/${notice.id}/details/` || '#';
-            const dateOptions = { day: 'numeric', month: 'short', year: 'numeric' };
-            const formattedDate = new Date(notice.created_at).toLocaleDateString('bn-BD', dateOptions);
-            
+            const detailLink = `/notices/${notice.id}/details/`;
+            const formattedDate = new Date(notice.created_at).toLocaleDateString('bn-BD', { day: 'numeric', month: 'short', year: 'numeric' });
             const noticeElement = document.createElement('div');
             noticeElement.className = 'notice-item';
             noticeElement.innerHTML = `
@@ -397,9 +351,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     <h3>${sanitizeHTML(notice.title)}</h3>
                     <p class="notice-date">প্রকাশ: ${formattedDate}</p>
                 </div>
-                <a href="${sanitizeHTML(detailLink)}" target="_blank" class="notice-detail-btn">
-                    বিস্তারিত 
-                </a>
+                <a href="${sanitizeHTML(detailLink)}" target="_blank" class="notice-detail-btn">বিস্তারিত</a>
             `;
             noticesContainer.appendChild(noticeElement);
         });
@@ -412,5 +364,4 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 </script>
-
 {% endblock %}

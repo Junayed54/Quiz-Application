@@ -1,0 +1,254 @@
+{% include "../../partials/mainhead.html" %}
+
+<!-- ✅ Quill v2 CSS -->
+<link href="https://cdn.jsdelivr.net/npm/quill@2.0.0/dist/quill.snow.css" rel="stylesheet">
+
+<style>
+    .form-container {
+        max-width: 700px;
+        margin: 50px auto;
+        background: #f8f9fa;
+        padding: 30px;
+        border-radius: 12px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+    .quill-editor-container {
+        height: 300px;
+        border: 1px solid #ced4da;
+        border-radius: 6px;
+        background-color: white;
+    }
+    .quill-editor-container .ql-editor {
+        min-height: 250px;
+        max-height: 250px;
+        overflow-y: auto;
+    }
+    .ql-toolbar {
+        border-radius: 6px 6px 0 0;
+    }
+</style>
+</head>
+
+<body>
+{% include "../../partials/switcher.html" %}
+<div class="page">
+    {% include "../../partials/header.html" %}
+    {% include "../../partials/sidebar.html" %}
+
+    <div class="main-content app-content">
+        <div class="container">
+            <div class="form-container">
+                <h2 class="text-center mb-4">Update Government Job</h2>
+
+                <form id="updateJobForm">
+                    <div class="mb-3">
+                        <label class="form-label">Job Title</label>
+                        <input type="text" name="title" id="title" class="form-control" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Organization</label>
+                        <select name="organization" id="organizationSelect" class="form-control"></select>
+                        <button type="button" id="createOrganizationBtn" class="btn btn-link">Create Organization</button>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Department</label>
+                        <select name="department" id="departmentSelect" class="form-control"></select>
+                        <button type="button" id="createDepartmentBtn" class="btn btn-link">Create Department</button>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Position</label>
+                        <select name="position" id="positionSelect" class="form-control" multiple></select>
+                        <small class="text-muted">Hold Ctrl (Windows) or Cmd (Mac) to select multiple positions.</small>
+                        <button type="button" id="createPositionBtn" class="btn btn-link">Create Position</button>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Location</label>
+                        <input type="text" name="location" id="location" class="form-control">
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Deadline</label>
+                        <input type="date" name="deadline" id="deadline" class="form-control">
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Official Link</label>
+                        <input type="url" name="official_link" id="official_link" class="form-control">
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">PDF (optional)</label>
+                        <input type="file" name="pdf" id="pdf" class="form-control">
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Job Description</label>
+                        <div id="quill-editor" class="quill-editor-container"></div>
+                        <textarea name="description" id="descriptionInput" style="display:none;"></textarea>
+                    </div>
+
+                    <button type="submit" class="btn btn-success w-100">Update</button>
+                </form>
+
+                <div id="loader" class="text-center mt-4" style="display: none;">
+                    <div class="spinner-border text-success" role="status">
+                        <span class="visually-hidden">Updating...</span>
+                    </div>
+                    <p class="mt-2">Updating job...</p>
+                </div>
+
+                <div class="mt-4" id="message"></div>
+            </div>
+        </div>
+    </div>
+
+    {% include "../../partials/headersearch_modal.html" %}
+    {% include "../../partials/footer.html" %}
+</div>
+
+{% include "../../partials/commonjs.html" %}
+{% include "../../partials/custom_switcherjs.html" %}
+
+<script src="https://cdn.jsdelivr.net/npm/quill@2.0.0/dist/quill.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<script>
+document.addEventListener("DOMContentLoaded", async function () {
+    const token = localStorage.getItem("access_token");
+
+    // ✅ Extract job ID dynamically from URL
+    const pathParts = window.location.pathname.split("/");
+    const jobId = pathParts[pathParts.indexOf("govt-jobs") + 1];
+    const apiUrl = `/api/govt-jobs/${jobId}/`;
+
+    /** ---------- Initialize Quill ---------- **/
+  const toolbarOptions = [
+      [{ 'font': [] }, { 'size': [] }],
+      [{ 'header': [1, 2, 3, false] }],
+      ['bold', 'italic', 'underline', 'strike'],
+      ['blockquote', 'code-block'],
+      [{ 'list': 'ordered' }, { 'list': 'bullet' }],
+      [{ 'align': [] }],
+      ['link', 'image', 'video'],
+      ['clean'],
+      ['table']
+  ];
+    const quill = new Quill('#quill-editor', {
+      theme: 'snow',
+      modules: { toolbar: { container: toolbarOptions },
+        table: true
+      }
+  });
+
+    
+
+    let job = null;
+
+    // ✅ Fetch job data
+    try {
+        const res = await fetch(apiUrl, { headers: { 'Authorization': `Bearer ${token}` } });
+        if (!res.ok) throw new Error("Failed to fetch job data");
+        job = await res.json();
+
+        console.log("Loaded job:", job);
+
+        // Fill simple fields
+        document.getElementById("title").value = job.title || "";
+        document.getElementById("location").value = job.location || "";
+        document.getElementById("deadline").value = job.deadline || "";
+        document.getElementById("official_link").value = job.official_link || "";
+        quill.root.innerHTML = job.description || "";
+
+        // Populate selects
+        await populateSelects(job);
+
+    } catch (err) {
+        Swal.fire("Error", "Failed to load job details.", "error");
+        console.error(err);
+    }
+
+    // ✅ Populate dropdowns with preselection
+    async function populateSelects(job) {
+        const endpoints = {
+            organization: "/quiz/organizations/",
+            department: "/quiz/departments/",
+            position: "/quiz/positions/"
+        };
+
+        for (const [field, url] of Object.entries(endpoints)) {
+            try {
+                const res = await fetch(url, { headers: { 'Authorization': `Bearer ${token}` } });
+                if (res.ok) {
+                    const data = await res.json();
+                    const select = document.getElementById(`${field}Select`);
+                    select.innerHTML = `<option value="">Select ${field}</option>`;
+
+                    // Handle both nested object and ID-only responses
+                    let selectedIds = [];
+                    if (field === "organization" && job.organization)
+                        selectedIds = [job.organization.id || job.organization];
+                    else if (field === "department" && job.department)
+                        selectedIds = [job.department.id || job.department];
+                    else if (field === "position" && job.positions)
+                        selectedIds = job.positions.map(p => p.id || p);
+
+                    console.log(`Preselecting ${field}:`, selectedIds);
+
+                    // Build options
+                    data.forEach(item => {
+                        const opt = document.createElement("option");
+                        opt.value = item.id;
+                        opt.textContent = item.name || item.title;
+
+                        if (selectedIds.includes(item.id)) {
+                            opt.selected = true;
+                        }
+
+                        select.appendChild(opt);
+                    });
+                }
+            } catch (err) {
+                console.error(`Failed to load ${field} options:`, err);
+            }
+        }
+    }
+
+    // ✅ Handle form submit
+    const form = document.getElementById("updateJobForm");
+    const hiddenDescInput = document.getElementById("descriptionInput");
+
+    form.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        hiddenDescInput.value = quill.root.innerHTML;
+
+        const formData = new FormData(form);
+        document.getElementById("loader").style.display = "block";
+
+        try {
+            const res = await fetch(apiUrl, {
+                method: "PUT",
+                headers: { "Authorization": `Bearer ${token}` },
+                body: formData
+            });
+
+            document.getElementById("loader").style.display = "none";
+
+            if (res.ok) {
+                Swal.fire("Updated!", "Job updated successfully!", "success");
+            } else {
+                Swal.fire("Error", "Failed to update job.", "error");
+            }
+        } catch (err) {
+            document.getElementById("loader").style.display = "none";
+            Swal.fire("Error", "Something went wrong.", "error");
+            console.error(err);
+        }
+    });
+});
+</script>
+</body>
+</html>

@@ -96,6 +96,22 @@
       background-color: transparent;
     }
 
+
+    .dropdown .text-start {
+        /* Ensure the username container only takes up available space, but not more than a set max */
+        max-width: 150px; /* Adjust this value (e.g., 100px-180px) as needed */
+        overflow: hidden; /* Hide anything that goes beyond max-width */
+        white-space: nowrap; /* Keep the text on a single line */
+    }
+
+
+    #username {
+        /* Use 'display: block' or 'display: inline-block' for the text-overflow property to work */
+        display: inline-block; 
+        overflow: hidden;
+        text-overflow: ellipsis; /* Add the '...' to indicate truncated text */
+    }
+
     .authentication{
       text-align: center;
     }
@@ -196,7 +212,7 @@
 
       margin: 10px 0;
       text-align: center;
-      width: 100%;/*fit-content;*/
+      width: 50%;/*fit-content;*/
       margin-inline: auto;
     }
   }
@@ -204,9 +220,10 @@
 @media (min-width: 768px) and (max-width: 991.98px) {
   .navbar-nav .nav-item .nav-link {
     padding: 6px 10px; /* Reduced padding */
-    margin: 0 3px;    /* Reduced margin */
+    margin: 7px 0;    /* Reduced margin */
     font-size: 0.9rem; /* Slightly smaller text */
     white-space: nowrap; /* Keep words from breaking */
+    margin-inline: auto;
   }
 }
 @media (min-width: 992px) and (max-width: 1200px) {

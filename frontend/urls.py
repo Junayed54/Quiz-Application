@@ -5,6 +5,8 @@ from django.views.generic import TemplateView
 
 urlpatterns = [
     path('', TemplateView.as_view(template_name="new_custom/new_templates/index2.html")),
+    # just for test template
+    path('test/', TemplateView.as_view(template_name="new_custom/new_templates/test.html")),
     path('home/', home, name='home'),
     path('about-us/', TemplateView.as_view(template_name="new_custom/new_templates/about.html"), name='about'),
     path('contact-us/', TemplateView.as_view(template_name="new_custom/new_templates/contact_us.html"), name='contact_us'),

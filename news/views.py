@@ -12,11 +12,6 @@ class NewsViewSet(viewsets.ModelViewSet):
     queryset = News.objects.all().order_by("-created_at")
     serializer_class = NewsSerializer
 
-    # def get_permissions(self):
-    #     if self.action in ["create", "update", "partial_update", "destroy"]:
-    #         # return [IsAdminUserRole()]
-    #     return [permissions.AllowAny()]
-
     def get_permissions(self):
         if self.action in ["create", "update", "partial_update", "destroy"]:
             # Require authentication for creating, updating, and deleting.
@@ -26,3 +21,7 @@ class NewsViewSet(viewsets.ModelViewSet):
     
     def perform_create(self, serializer):
         serializer.save(author=self.request.user, published_date=timezone.now())
+
+
+
+

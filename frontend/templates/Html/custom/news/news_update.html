@@ -1,0 +1,249 @@
+{% comment %} @SPK@include("partials/mainhead.html") {% endcomment %}
+{% include "../../partials/mainhead.html" %}
+
+<!-- ✅ Quill v2 -->
+<link href="https://cdn.jsdelivr.net/npm/quill@2.0.0/dist/quill.snow.css" rel="stylesheet" />
+
+<style>
+  .drop-zone {
+      border: 2px dashed #ccc;
+      border-radius: 8px;
+      padding: 20px;
+      text-align: center;
+      cursor: pointer;
+      transition: border-color 0.3s;
+  }
+  .drop-zone.dragover {
+      border-color: #007bff;
+      background-color: #f8f9fa;
+  }
+  .image-preview-container {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+      gap: 10px;
+      margin-top: 10px;
+  }
+  .image-preview {
+      position: relative;
+      display: block;
+      border: 1px solid #ddd;
+      padding: 5px;
+      background-color: #fff;
+      border-radius: 6px;
+  }
+  .image-preview img {
+      width: 100%;
+      height: auto;
+      display: block;
+  }
+  .remove-btn {
+      position: absolute;
+      top: 5px;
+      right: 5px;
+      background: rgba(0, 0, 0, 0.6);
+      color: white;
+      border: none;
+      border-radius: 50%;
+      width: 25px;
+      height: 25px;
+      cursor: pointer;
+  }
+  .quill-editor-container {
+      height: 300px;
+      border: 1px solid #ced4da;
+      border-radius: 6px;
+      background-color: white;
+  }
+  .ql-toolbar {
+      border-radius: 6px 6px 0 0;
+  }
+</style>
+</head>
+
+{% include "../../partials/switcher.html" %}
+<div class="page">
+  {% include "../../partials/header.html" %}
+  {% include "../../partials/sidebar.html" %}
+
+  <div class="main-content app-content">
+    <div class="container mt-5">
+      <div class="card shadow-lg">
+        <div class="card-header bg-primary text-white">
+          <h4>Update News</h4>
+        </div>
+        <div class="card-body">
+          <form id="updateNewsForm">
+            <div class="mb-3">
+              <label for="title" class="form-label">Title</label>
+              <input type="text" class="form-control" id="title" placeholder="Enter news title" required>
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label">Content</label>
+              <div id="toolbar-container"></div>
+              <div id="quill-editor" class="quill-editor-container"></div>
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label">Add New Images</label>
+              <div id="dropZone" class="drop-zone">
+                <p>Drag & drop or click to browse.</p>
+                <input type="file" id="images" multiple accept="image/*" class="d-none">
+              </div>
+              <div id="image-preview-container" class="image-preview-container"></div>
+            </div>
+
+            <!-- Existing Images -->
+            <div class="mb-3">
+              <label class="form-label">Existing Images</label>
+              <div id="existingImages" class="image-preview-container"></div>
+            </div>
+
+            <button type="submit" class="btn btn-success">Update News</button>
+          </form>
+        </div>
+      </div>
+      <div id="responseMessage" class="mt-3"></div>
+    </div>
+  </div>
+
+  {% include "../../partials/footer.html" %}
+</div>
+
+{% include "../../partials/commonjs.html" %}
+{% include "../../partials/custom_switcherjs.html" %}
+
+<!-- ✅ JS Dependencies -->
+<script src="https://cdn.jsdelivr.net/npm/quill@2.0.0/dist/quill.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+
+<script>
+document.addEventListener("DOMContentLoaded", async function () {
+  const pathParts = window.location.pathname.split("/").filter(Boolean);
+  const newsId = pathParts[pathParts.length - 2]; 
+  const token = localStorage.getItem('access_token');
+  const form = document.getElementById("updateNewsForm");
+  const responseMessage = document.getElementById("responseMessage");
+  const existingImagesContainer = document.getElementById("existingImages");
+
+  /** ---------- Initialize Quill ---------- **/
+  const toolbarOptions = [
+      [{ 'font': [] }, { 'size': [] }],
+      [{ 'header': [1, 2, 3, false] }],
+      ['bold', 'italic', 'underline', 'strike'],
+      ['blockquote', 'code-block'],
+      [{ 'list': 'ordered' }, { 'list': 'bullet' }],
+      [{ 'align': [] }],
+      ['link', 'image', 'video'],
+      ['clean'],
+      ['table']
+  ];
+
+  const quill = new Quill('#quill-editor', {
+      theme: 'snow',
+      modules: { toolbar: { container: toolbarOptions },
+        table: true
+      }
+  });
+
+  /** ---------- Load Existing News ---------- **/
+  try {
+    const res = await axios.get(`/api/news/${newsId}/`, {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+    const data = res.data;
+
+    document.getElementById("title").value = data.title;
+    quill.root.innerHTML = data.content;
+
+    if (data.images && data.images.length) {
+      data.images.forEach(img => {
+        const div = document.createElement("div");
+        div.classList.add("image-preview");
+        div.innerHTML = `
+          <img src="${img.image_url}" alt="">
+          <button type="button" class="remove-btn" data-id="${img.id}">&times;</button>
+        `;
+        existingImagesContainer.appendChild(div);
+      });
+    }
+  } catch (error) {
+    console.error("Failed to load news:", error);
+    responseMessage.innerHTML = `<div class="alert alert-danger">❌ Failed to load news data</div>`;
+  }
+
+  /** ---------- Image Upload Preview (New Images) ---------- **/
+  const dropZone = document.getElementById('dropZone');
+  const imageInput = document.getElementById('images');
+  const previewContainer = document.getElementById('image-preview-container');
+  let uploadedFiles = [];
+
+  dropZone.addEventListener('click', () => imageInput.click());
+  dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('dragover'); });
+  dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
+  dropZone.addEventListener('drop', e => {
+      e.preventDefault();
+      dropZone.classList.remove('dragover');
+      handleFiles(e.dataTransfer.files);
+  });
+  imageInput.addEventListener('change', e => handleFiles(e.target.files));
+
+  function handleFiles(files) {
+    for (const file of files) {
+      if (file.type.startsWith("image/")) {
+        uploadedFiles.push(file);
+        const reader = new FileReader();
+        reader.onload = e => {
+          const imgDiv = document.createElement("div");
+          imgDiv.classList.add("image-preview");
+          imgDiv.innerHTML = `<img src="${e.target.result}" alt="">`;
+          previewContainer.appendChild(imgDiv);
+        };
+        reader.readAsDataURL(file);
+      }
+    }
+  }
+
+  /** ---------- Delete Existing Image ---------- **/
+  existingImagesContainer.addEventListener("click", async (e) => {
+    if (e.target.classList.contains("remove-btn")) {
+      const imgId = e.target.dataset.id;
+      try {
+        await axios.delete(`/api/news-images/${imgId}/`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        e.target.parentElement.remove();
+      } catch (err) {
+        console.error(err);
+        alert("Failed to delete image.");
+      }
+    }
+  });
+
+  /** ---------- Submit Update ---------- **/
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const formData = new FormData();
+    formData.append("title", document.getElementById("title").value);
+    formData.append("content", quill.root.innerHTML);
+
+    uploadedFiles.forEach(file => formData.append("uploaded_images", file));
+
+    try {
+      await axios.put(`/api/news/${newsId}/`, formData, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+
+      responseMessage.innerHTML = `<div class="alert alert-success">✅ News updated successfully!</div>`;
+      uploadedFiles = [];
+      previewContainer.innerHTML = '';
+    } catch (error) {
+      console.error(error);
+      responseMessage.innerHTML = `<div class="alert alert-danger">❌ Failed to update news</div>`;
+    }
+  });
+});
+</script>
+
+</body>
+</html>
