@@ -14,7 +14,7 @@
     --shadow-color: rgba(0, 0, 0, 0.05); 
     --error-color: #ef4444; 
     --warning-color: #f59e0b; 
-    --base-font-size: 0.95rem; /* slightly smaller for BD news portal feel */
+    --base-font-size: 0.95rem;
     --small-font-size: 0.85rem;
 }
 
@@ -81,7 +81,7 @@ body {
 
 /* Headings */
 .detail-description h2 {
-    font-size: 1.5rem;
+    font-size: 1.4rem; /* slightly smaller */
     font-weight: 700;
     color: var(--primary-color);
     margin: 1.5rem 0 0.75rem;
@@ -90,14 +90,14 @@ body {
 }
 
 .detail-description h3 {
-    font-size: 1.25rem;
+    font-size: 1.15rem; /* smaller for better proportion */
     font-weight: 600;
     color: var(--secondary-color);
     margin: 1rem 0 0.5rem;
 }
 
 .detail-description h4 {
-    font-size: 1.1rem;
+    font-size: 1rem; /* slightly smaller */
     font-weight: 600;
     color: var(--secondary-color);
     margin: 0.75rem 0 0.25rem;
@@ -177,11 +177,13 @@ tr:hover {
     .job-detail-container, .notice-sidebar { padding: 1rem 1.5rem; }
     .detail-header h1 { font-size: 1.5rem; }
     .detail-description h2 { font-size: 1.25rem; }
+    .detail-description h3 { font-size: 1rem; } /* smaller on mobile */
     .detail-description p, .detail-description li { font-size: 0.95rem; }
     th, td { font-size: 0.8rem; padding: 0.5rem 0.75rem; }
 }
 </style>
 {% endblock %}
+
 
 
 {% block content %}
