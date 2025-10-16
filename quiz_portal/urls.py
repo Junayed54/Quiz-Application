@@ -7,6 +7,9 @@ from django.conf.urls.static import static
 from django.urls import re_path
 from django.views.static import serve
 from quiz.routing import websocket_urlpatterns
+from django.views.generic import TemplateView
+
+
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('nested_admin/', include('nested_admin.urls')),
@@ -29,6 +32,9 @@ urlpatterns = [
         'path': 'firebase-messaging-sw.js',
         'document_root': settings.BASE_DIR,
     }),
+    
+    path("robots.txt", TemplateView.as_view(template_name="robots.txt", content_type="text/plain")),
+    path("sitemap.xml", TemplateView.as_view(template_name="sitemap.xml", content_type="text/plain")),
 ]
 
 
