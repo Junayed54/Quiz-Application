@@ -35,6 +35,7 @@ class PracticeSession(models.Model):
     phone_number = models.CharField(max_length=15, blank=True, null=True)  # For unauthenticated users
     duration = models.DurationField(null=True, blank=True)
     score = models.IntegerField(default=0)
+    created_at = models.DateTimeField(auto_now_add=True, null=True, blank=True)
 
     def update_score(self, score):
         """Update the user's score at the end of the session."""

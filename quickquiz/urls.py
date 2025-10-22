@@ -15,6 +15,8 @@ urlpatterns = [
     path('api/practice/leaderboard/', PracticeLeaderboardAPIView.as_view(), name='leaderboard'),
     
     path('api/questions/upload/', PracticeQuestionUploadView.as_view()),
+    path("api/top-scorers/", DailyTopScorerAPIView.as_view(), name="daily-top-scorers"),
+    path("api/admin/analytics/", AdminAnalyticsAPIView.as_view(), name="admin-analytics"),
 ]
 
 

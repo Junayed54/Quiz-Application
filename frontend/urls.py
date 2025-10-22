@@ -64,6 +64,10 @@ urlpatterns +=[
     path('notification/send/', TemplateView.as_view(template_name="new_custom/notifications/send_notification.html")),
 ]
 
+urlpatterns +=[
+    path('admin-dashboard', TemplateView.as_view(template_name="Html/custom/admin/admin_dashboard.html")),
+]
+
 
 from django.views.static import serve
 from django.conf import settings

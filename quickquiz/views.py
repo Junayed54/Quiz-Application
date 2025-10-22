@@ -11,6 +11,7 @@ from django.db import transaction
 from openpyxl.utils import get_column_letter
 from rest_framework.permissions import IsAuthenticated
 import random
+from django.db.models import Sum
 from datetime import datetime, timedelta
 from rest_framework import status
 from rest_framework.views import APIView
@@ -19,7 +20,7 @@ from .serializers import *
 from django.contrib.auth import get_user_model
 User = get_user_model()
 
-from django.db.models import Count
+from django.db.models import Count, Avg, Sum
 
 
 
@@ -383,3 +384,126 @@ class PracticeQuestionUploadView(APIView):
 
     # def save_image_to_field(self, image_data, filename):
     #     return ContentFile(image_data, name=filename)
+    
+from django.db.models import OuterRef, Subquery
+from datetime import datetime, date
+class DailyTopScorerAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        selected_date = request.GET.get("date")
+        if not selected_date:
+            selected_date = date.today()
+        else:
+            try:
+                selected_date = datetime.strptime(selected_date, "%Y-%m-%d").date()
+            except ValueError:
+                return Response({"error": "Invalid date format. Use YYYY-MM-DD"}, status=400)
+
+        # Get all sessions for the date, latest first
+        all_sessions = PracticeSession.objects.filter(
+            created_at__date=selected_date
+        ).order_by('user_id', '-created_at')
+
+        if not all_sessions.exists():
+            return Response({
+                "date": selected_date,
+                "total_scorers": 0,
+                "top_scorers": [],
+                "message": "No data found for this date."
+            })
+
+        # Pick latest session per user
+        latest_sessions_dict = {}
+        for s in all_sessions:
+            if s.user_id not in latest_sessions_dict:
+                latest_sessions_dict[s.user_id] = s
+
+        data = [
+            {
+                "user_id": s.user_id,
+                "username": s.user.username if s.user else s.username or "Guest",
+                "total_score": s.score
+            }
+            for s in latest_sessions_dict.values()
+        ]
+
+        # Optional: sort by score descending
+        data.sort(key=lambda x: x['total_score'], reverse=True)
+
+        return Response({
+            "date": selected_date,
+            "total_scorers": len(data),
+            "top_scorers": data
+        })
+        
+        
+class AdminAnalyticsAPIView(APIView):
+    """
+    GET /api/admin/analytics/
+    Returns summarized analytics data for admin dashboard.
+    """
+    permission_classes = [IsAuthenticated]  # optionally add custom IsAdminUser
+
+    def get(self, request):
+        today = timezone.now().date()
+        last_7_days = today - timedelta(days=7)
+
+        # ✅ General stats
+        total_users = User.objects.count()
+        total_sessions = PracticeSession.objects.count()
+        total_questions = PracticeQuestion.objects.count()
+        total_subjects = Subject.objects.count()
+        total_points = UserPoints.objects.aggregate(total=Sum("points"))["total"] or 0
+
+        # ✅ Top 5 users by total score
+        top_users = (
+            PracticeSession.objects.values("user__username")
+            .annotate(total_score=Sum("score"))
+            .order_by("-total_score")[:5]
+        )
+
+        # ✅ Top subjects by number of questions
+        top_subjects = (
+            PracticeQuestion.objects.values("subject__name")
+            .annotate(question_count=Count("id"))
+            .order_by("-question_count")[:5]
+        )
+
+        # ✅ Daily stats for last 7 days
+        daily_activity = (
+            PracticeSession.objects.filter(created_at__date__gte=last_7_days)
+            .values("created_at__date")
+            .annotate(
+                session_count=Count("id"),
+                avg_score=Avg("score"),
+                avg_duration=Avg("duration")
+            )
+            .order_by("created_at__date")
+        )
+
+        # ✅ Latest 10 sessions
+        recent_sessions = (
+            PracticeSession.objects.select_related("user")
+            .order_by("-created_at")[:10]
+            .values("user__username", "score", "duration", "created_at")
+        )
+
+        # ✅ Build response data
+        data = {
+            "summary": {
+                "total_users": total_users,
+                "total_sessions": total_sessions,
+                "total_questions": total_questions,
+                "total_subjects": total_subjects,
+                "total_points": total_points,
+            },
+            "top_users": list(top_users),
+            "top_subjects": list(top_subjects),
+            "daily_activity": list(daily_activity),
+            "recent_sessions": list(recent_sessions),
+        }
+
+        return Response(data)
+    
+    

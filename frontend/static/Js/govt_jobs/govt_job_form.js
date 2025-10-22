@@ -58,6 +58,8 @@ document.addEventListener('DOMContentLoaded', () => {
         submitButton.disabled = true;
 
         const formData = new FormData(jobForm);
+        formData.append('send_notification', document.querySelector('#sendNotification').checked);
+
         const orgVal = organizationSelect.value;
         const deptVal = departmentSelect.value;
 

@@ -1,0 +1,252 @@
+{% include "../../partials/mainhead.html" %}
+
+<style>
+body {
+    background-color: #f8f9fa;
+}
+.card {
+    border: none;
+    border-radius: 15px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+.table th {
+    background-color: #0d6efd;
+    color: #fff;
+}
+.chart-container {
+    position: relative;
+    height: 300px;
+}
+</style>
+</head>
+
+{% include "../../partials/switcher.html" %}
+<div class="page">
+  {% include "../../partials/header.html" %}
+  {% include "../../partials/sidebar.html" %}
+
+  <div class="main-content app-content">
+    <div class="container my-5">
+      <h2 class="fw-bold mb-4 text-center">📊 Admin Analytics Dashboard</h2>
+
+      <!-- Summary Cards -->
+      <div class="row g-4" id="summary-cards"></div>
+
+      <!-- Charts Section -->
+      <div class="row mt-4">
+        <div class="col-md-6 mb-4">
+          <div class="card p-3">
+            <h5 class="fw-semibold mb-3">📅 Last 7 Days Sessions</h5>
+            <div class="chart-container">
+              <canvas id="sessionsChart"></canvas>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6 mb-4">
+          <div class="card p-3">
+            <h5 class="fw-semibold mb-3">🏆 Top Users</h5>
+            <div class="chart-container">
+              <canvas id="topUsersChart"></canvas>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Top Scorers Table -->
+      <div class="card p-3 mt-4">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <h5 class="fw-semibold mb-0">🏅 Daily Top Scorers</h5>
+          <div class="d-flex align-items-center gap-2">
+            <input type="date" id="datePicker" class="form-control form-control-sm">
+            <button class="btn btn-primary btn-sm" id="fetchTopScorers">View</button>
+          </div>
+        </div>
+
+        <table class="table table-striped align-middle">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Username</th>
+              <th>Total Score</th>
+            </tr>
+          </thead>
+          <tbody id="top-scorers-body">
+            <tr><td colspan="3" class="text-center text-muted">Select a date to view scorers.</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Recent Sessions Table -->
+      <div class="card p-3 mt-4">
+        <h5 class="fw-semibold mb-3">🕓 Recent Sessions</h5>
+        <table class="table table-striped align-middle">
+          <thead>
+            <tr>
+              <th>User</th>
+              <th>Score</th>
+              <th>Duration</th>
+              <th>Date</th>
+            </tr>
+          </thead>
+          <tbody id="recent-sessions-body"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  {% include "../../partials/headersearch_modal.html" %}
+  {% include "../../partials/footer.html" %}
+</div>
+
+{% include "../../partials/commonjs.html" %}
+{% include "../../partials/custom_switcherjs.html" %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+  const datePicker = document.getElementById("datePicker");
+  const fetchBtn = document.getElementById("fetchTopScorers");
+  const today = new Date().toISOString().split("T")[0];
+  datePicker.value = today;
+
+  loadAnalytics();
+  loadTopScorers(today);
+
+  fetchBtn.addEventListener("click", () => {
+    const selectedDate = datePicker.value || today;
+    loadTopScorers(selectedDate);
+  });
+});
+
+function getAuthHeaders() {
+  const token = localStorage.getItem("access_token");
+  if (!token) {
+    console.warn("⚠️ No access token found in localStorage");
+    return {};
+  }
+  return {
+    "Authorization": `Bearer ${token}`,
+    "Content-Type": "application/json",
+  };
+}
+
+async function loadAnalytics() {
+  const headers = getAuthHeaders();
+  try {
+    const res = await fetch("/api/admin/analytics/", { headers });
+    if (!res.ok) throw new Error("Failed to fetch analytics");
+    const data = await res.json();
+
+    // ---- Summary Cards ----
+    const summary = data.summary || {};
+    const summaryHTML = `
+      <div class="col-md-3">
+        <div class="card text-center p-3 bg-primary text-white">
+          <h5>Total Users</h5><h3>${summary.total_users || 0}</h3>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="card text-center p-3 bg-success text-white">
+          <h5>Total Sessions</h5><h3>${summary.total_sessions || 0}</h3>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="card text-center p-3 bg-warning text-dark">
+          <h5>Total Questions</h5><h3>${summary.total_questions || 0}</h3>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="card text-center p-3 bg-info text-white">
+          <h5>Total Points</h5><h3>${summary.total_points || 0}</h3>
+        </div>
+      </div>`;
+    document.getElementById("summary-cards").innerHTML = summaryHTML;
+
+    // ---- Daily Sessions Chart ----
+    const labels = data.daily_activity?.map(d => d.created_at__date) || [];
+    const sessions = data.daily_activity?.map(d => d.session_count) || [];
+    const scores = data.daily_activity?.map(d => d.avg_score) || [];
+
+    new Chart(document.getElementById("sessionsChart"), {
+      type: "line",
+      data: {
+        labels,
+        datasets: [
+          { label: "Sessions", data: sessions, borderColor: "#0d6efd", tension: 0.4, fill: false },
+          { label: "Avg Score", data: scores, borderColor: "#198754", tension: 0.4, fill: false }
+        ]
+      },
+      options: {
+        plugins: { legend: { position: "bottom" } },
+        scales: { y: { beginAtZero: true } }
+      }
+    });
+
+    // ---- Top Users Chart ----
+    const topUserNames = data.top_users?.map(u => u.user__username || "N/A") || [];
+    const topUserScores = data.top_users?.map(u => u.total_score) || [];
+
+    new Chart(document.getElementById("topUsersChart"), {
+      type: "bar",
+      data: {
+        labels: topUserNames,
+        datasets: [{
+          label: "Total Score",
+          data: topUserScores,
+          backgroundColor: "#ffc107"
+        }]
+      },
+      options: {
+        plugins: { legend: { display: false } },
+        scales: { y: { beginAtZero: true } }
+      }
+    });
+
+    // ---- Recent Sessions Table ----
+    const sessionsHTML = (data.recent_sessions || []).map(r => `
+      <tr>
+        <td>${r.user__username || "N/A"}</td>
+        <td>${r.score}</td>
+        <td>${r.duration || "—"}</td>
+        <td>${new Date(r.created_at).toLocaleString()}</td>
+      </tr>`).join("");
+    document.getElementById("recent-sessions-body").innerHTML = sessionsHTML;
+
+  } catch (err) {
+    console.error("Error loading analytics:", err);
+    alert("⚠️ Failed to load analytics. Please check your token or server status.");
+  }
+}
+
+async function loadTopScorers(date) {
+  const tbody = document.getElementById("top-scorers-body");
+  const headers = getAuthHeaders();
+  tbody.innerHTML = `<tr><td colspan="3" class="text-center text-muted">Loading...</td></tr>`;
+
+  try {
+    const res = await fetch(`/api/top-scorers/?date=${date}`, { headers });
+    if (!res.ok) throw new Error("Failed to fetch top scorers");
+    const data = await res.json();
+    const scorers = data.top_scorers || [];
+
+    if (scorers.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="3" class="text-center text-muted">No scorers found for ${data.date}.</td></tr>`;
+      return;
+    }
+
+    const scorersHTML = scorers.map((s, i) => `
+      <tr>
+        <td>${i + 1}</td>
+        <td>${s.username || "N/A"}</td>
+        <td><strong>${s.total_score}</strong></td>
+      </tr>`).join("");
+    tbody.innerHTML = scorersHTML;
+
+  } catch (err) {
+    console.error("Error loading top scorers:", err);
+    tbody.innerHTML = `<tr><td colspan="3" class="text-danger text-center">Failed to load data.</td></tr>`;
+  }
+}
+</script>
+</body>
+</html>

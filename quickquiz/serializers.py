@@ -92,3 +92,10 @@ class PracticeLeaderboardSerializer(serializers.ModelSerializer):
 
     def get_attempts(self, obj):
         return PracticeSession.objects.filter(user=obj).count()
+
+
+
+class DailyTopScorerSerializer(serializers.Serializer):
+    user_id = serializers.IntegerField()
+    username = serializers.CharField()
+    total_score = serializers.IntegerField()

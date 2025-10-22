@@ -14,6 +14,11 @@
         box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
     }
 
+    .form-check-input:checked {
+        background-color: greenyellow; /* Desired background color */
+        border-color: greenyellow;    /* Desired border color */
+    }
+
     .quill-editor-container {
         height: 300px;
         border: 1px solid #ced4da;
@@ -106,6 +111,15 @@
                         <div id="quill-editor" class="quill-editor-container"></div>
                         <textarea name="description" id="descriptionInput" style="display:none;"></textarea>
                     </div>
+
+
+                    <div class="mb-3 form-check">
+                        <input type="checkbox" class="form-check-input" id="sendNotification" name="send_notification">
+                        <label class="form-check-label text-warning h5" for="sendNotification">
+                            Send notification to all users
+                        </label>
+                    </div>
+
 
                     <button type="submit" class="btn btn-primary w-100">Submit</button>
                 </form>
