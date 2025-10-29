@@ -65,7 +65,7 @@ urlpatterns +=[
 ]
 
 urlpatterns +=[
-    path('admin-dashboard', TemplateView.as_view(template_name="Html/custom/admin/admin_dashboard.html")),
+    path('admin-dashboard/', TemplateView.as_view(template_name="Html/custom/admin/admin_dashboard.html")),
 ]
 
 

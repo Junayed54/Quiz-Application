@@ -18,6 +18,8 @@ body {
     height: 300px;
 }
 </style>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+
 </head>
 
 {% include "../../partials/switcher.html" %}
@@ -91,8 +93,50 @@ body {
           <tbody id="recent-sessions-body"></tbody>
         </table>
       </div>
+
+      <!-- 📘 Subject-wise Question Count Table -->
+      <div class="card p-3 mt-4">
+        <h5 class="fw-semibold mb-3">📚 Subject-wise Question Count</h5>
+        <table class="table table-striped align-middle">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Subject</th>
+              <th>Question Count</th>
+            </tr>
+          </thead>
+          <tbody id="subject-question-body">
+            <tr><td colspan="3" class="text-center text-muted">Loading...</td></tr>
+          </tbody>
+        </table>
+      </div>
+        <h5 class="fw-semibold mb-0">
+          🏅 Daily Top Scorers of Past Exams (<span id="selected-date"></span>)
+        </h5>
+        <h2 id="selectedDate" class="mb-3 text-primary fw-bold"></h2>
+
+        <div class="mb-3">
+            <input type="date" id="dateInput" class="form-control w-25 d-inline">
+            <button id="viewButton" class="btn btn-primary">View</button>
+        </div>
+
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Username</th>
+                    <th>Total Score</th>
+                </tr>
+            </thead>
+            <tbody id="performanceTableBody">
+                <!-- Data will be inserted here -->
+            </tbody>
+        </table>
+
+
+
+      </div>
     </div>
-  </div>
 
   {% include "../../partials/headersearch_modal.html" %}
   {% include "../../partials/footer.html" %}
@@ -212,6 +256,18 @@ async function loadAnalytics() {
       </tr>`).join("");
     document.getElementById("recent-sessions-body").innerHTML = sessionsHTML;
 
+    // ---- Subject-wise Question Table ----
+    const subjectData = data.subject_question_table || [];
+    const subjectHTML = subjectData.length > 0
+      ? subjectData.map((s, i) => `
+        <tr>
+          <td>${i + 1}</td>
+          <td>${s.name || "N/A"}</td>
+          <td><strong>${s.question_count || 0}</strong></td>
+        </tr>`).join("")
+      : `<tr><td colspan="3" class="text-center text-muted">No subjects found.</td></tr>`;
+    document.getElementById("subject-question-body").innerHTML = subjectHTML;
+
   } catch (err) {
     console.error("Error loading analytics:", err);
     alert("⚠️ Failed to load analytics. Please check your token or server status.");
@@ -247,6 +303,96 @@ async function loadTopScorers(date) {
     tbody.innerHTML = `<tr><td colspan="3" class="text-danger text-center">Failed to load data.</td></tr>`;
   }
 }
+</script>
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const dateInput = document.getElementById("dateInput");
+    const viewButton = document.getElementById("viewButton");
+    const tableBody = document.getElementById("performanceTableBody");
+
+    // Get JWT token from localStorage
+    const token = localStorage.getItem("access_token");
+
+    // API Base URL — update if needed
+    const apiURL = "/quiz/daily-performance/";
+
+    // Function to fetch data
+    async function fetchPerformance(date = null) {
+        try {
+            let url = apiURL;
+            if (date) {
+                url += `?date=${date}`;
+            }
+
+            const response = await fetch(url, {
+                method: "GET",
+                headers: {
+                    "Authorization": `Bearer ${token}`,
+                    "Content-Type": "application/json"
+                }
+            });
+
+            if (!response.ok) {
+                throw new Error(`HTTP error! Status: ${response.status}`);
+            }
+
+            const data = await response.json();
+           
+            console.log("Fetched Data:", data);
+            renderTable(data.top_scorers, data.date);
+        } catch (error) {
+            console.error("Error fetching performance data:", error);
+            tableBody.innerHTML = `
+                <tr>
+                    <td colspan="3" class="text-center text-danger">
+                        Failed to load data. Please try again.
+                    </td>
+                </tr>
+            `;
+        }
+    }
+
+    // Function to render table data
+    function renderTable(data, date) {
+        const formattedDate = new Date(date).toLocaleDateString();
+        document.getElementById("selectedDate").innerText = `Showing data for: ${formattedDate}`;
+
+        if (!data || data.length === 0) {
+            tableBody.innerHTML = `
+                <tr>
+                    <td colspan="3" class="text-center text-muted">
+                        No data found for this date.
+                    </td>
+                </tr>
+            `;
+            return;
+        }
+
+        tableBody.innerHTML = data
+            .map((user, index) => `
+                <tr>
+                    <td>${index + 1}</td>
+                    <td>${user.user__username}</td>
+                    <td>${user.total_score}</td>
+                </tr>
+            `)
+            .join("");
+    }
+
+    // Event listener for date selection
+    viewButton.addEventListener("click", function () {
+        const selectedDate = dateInput.value;
+        if (!selectedDate) {
+            alert("Please select a date first.");
+            return;
+        }
+        fetchPerformance(selectedDate);
+    });
+
+    // Load today's performance by default
+    fetchPerformance();
+});
+
 </script>
 </body>
 </html>

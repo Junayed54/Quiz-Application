@@ -43,8 +43,18 @@ class PracticeSessionAdmin(admin.ModelAdmin):
     list_display = ['id', 'user', 'duration', 'score']
     search_fields = ['user__username']  # Allow searching by username of the user
 
-# UserPoints Admin
 @admin.register(UserPoints)
 class UserPointsAdmin(admin.ModelAdmin):
-    list_display = ['id', 'user', 'points']
-    search_fields = ['user__username']  # Make it searchable by username of the user
+    list_display = ['id', 'get_user_name', 'get_user_phone', 'username', 'points']
+    search_fields = ['user__username', 'username', 'user__phone_number', 'phone_number']
+
+    def get_user_name(self, obj):
+        """Show username from related User or fallback username field"""
+        return obj.user.username if obj.user else obj.username
+    get_user_name.short_description = 'User'
+
+    def get_user_phone(self, obj):
+        """Show phone number from related User or fallback phone_number field"""
+        return obj.user.phone_number if obj.user else obj.phone_number
+    get_user_phone.short_description = 'Phone Number'
+

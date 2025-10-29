@@ -443,7 +443,7 @@ class AdminAnalyticsAPIView(APIView):
     GET /api/admin/analytics/
     Returns summarized analytics data for admin dashboard.
     """
-    permission_classes = [IsAuthenticated]  # optionally add custom IsAdminUser
+    permission_classes = [IsAuthenticated]
 
     def get(self, request):
         today = timezone.now().date()
@@ -463,14 +463,21 @@ class AdminAnalyticsAPIView(APIView):
             .order_by("-total_score")[:5]
         )
 
-        # ✅ Top subjects by number of questions
+        # ✅ Top 5 subjects by number of questions
         top_subjects = (
             PracticeQuestion.objects.values("subject__name")
             .annotate(question_count=Count("id"))
             .order_by("-question_count")[:5]
         )
 
-        # ✅ Daily stats for last 7 days
+        # ✅ Full table: each subject and how many questions it has
+        subject_question_table = (
+            Subject.objects.annotate(question_count=Count("practicequestion"))
+            .values("name", "question_count")
+            .order_by("name")
+        )
+
+        # ✅ Daily activity for last 7 days
         daily_activity = (
             PracticeSession.objects.filter(created_at__date__gte=last_7_days)
             .values("created_at__date")
@@ -500,10 +507,12 @@ class AdminAnalyticsAPIView(APIView):
             },
             "top_users": list(top_users),
             "top_subjects": list(top_subjects),
+            "subject_question_table": list(subject_question_table),  # 👈 Added this
             "daily_activity": list(daily_activity),
             "recent_sessions": list(recent_sessions),
         }
 
         return Response(data)
+
     
     

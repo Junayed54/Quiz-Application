@@ -89,8 +89,7 @@
         border-radius: 16px; /* More rounded corners */
         backdrop-filter: blur(10px); /* Add frosted glass effect */
         -webkit-backdrop-filter: blur(10px);
-        =
-        {% comment %} position: relative; /* For positioning question/options */ {% endcomment %}
+        
         margin-left: auto; /* Center the card */
         margin-right: auto;
     }
@@ -519,7 +518,6 @@
             margin-right: 15px;
         }
         .quiz-button {
-            {% comment %} padding: 10px 25px; {% endcomment %}
             font-size: 0.9rem;
         }
         .submit-button {
@@ -660,7 +658,7 @@
             margin-right: 8px;
         }
         .quiz-button {
-            {% comment %} padding: 8px 15px; {% endcomment %}
+
             font-size: 0.85rem;
         }
         .submit-button {
@@ -722,13 +720,14 @@
         }
     }
 </style>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 {% endblock %}
 
 {% block content %}
 <div class="text-light pt-4 min-vh-100">
     <div class="container-fluid py-2 d-flex flex-column rounded mt-5">
-        <div class="py-1 rounded rounded-left text-center"
+        <div class="py-1 rounded rounded-left text-center d-none"
             style="width: 95px; position: sticky; top: 0; float: right;  border: 1px solid #4A6B80; background: #1C3A4F; color: #D4AF37; z-index: 10;">
             <span id="quiz-timer" class="small">00:00</span>
         </div>
@@ -738,7 +737,7 @@
                 
                 <div class="" style="margin-top: 1rem;">
                     <div class="pb-4">
-                        <div class="rounded" style="background: ##284D63; border: 1px solid #4A6B80;">
+                        <div class="rounded" style="background: #284D63; border: 1px solid #4A6B80;">
                             <ul class="nav nav-tabs" id="subjectTabs" role="tablist">
                             </ul>
                         </div>
@@ -824,8 +823,10 @@
 {% endblock %}
 
 {% block body_js %}
-<script>
-   
-</script>
+
 <script src="../../../static/Js/quickquiz/start_practice.js"></script>
+ <script>
+
+
+ </script>
 {% endblock %}

@@ -177,3 +177,10 @@ urlpatterns += [
 
     
 ]
+
+from .admin_analytics import *
+
+urlpatterns +=[
+    path('daily-performance/', DailyTopScorersAPIView.as_view(), name='daily_performance_api'),
+
+]
