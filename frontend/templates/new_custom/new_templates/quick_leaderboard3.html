@@ -86,11 +86,20 @@
         border-bottom-left-radius: 0.75rem;
     }
 
-    #leaderboard-table-body tr td:last-child {
+    #scorerTable tr td:last-child {
         border-top-right-radius: 0.75rem;
         border-bottom-right-radius: 0.75rem;
     }
     
+    #scorerTable tr td:first-child {
+        border-top-left-radius: 0.75rem;
+        border-bottom-left-radius: 0.75rem;
+    }
+
+    #scorerTable tr td:last-child {
+        border-top-right-radius: 0.75rem;
+        border-bottom-right-radius: 0.75rem;
+    }
 
     .form-control::placeholder {
         color: white;
@@ -385,10 +394,92 @@
             </nav>
         </div>
 
+        <div class="container mt-5">
+        <div class="card shadow-lg border-0">
+            <div class="table-responsive-wrapper">
+                <h2 class="h4 fw-bold px-4 pt-3 mb-sm-0" style="color: #66FFF0">Today's Performers</h2>
+
+                <!-- <div class="d-flex justify-content-center mb-3">
+                    <input type="date" id="dateInput" class="form-control w-25 me-2">
+                    <button id="loadDataBtn" class="btn btn-primary">Load Data</button>
+                </div> -->
+
+                <!-- <div id="message" class="text-center text-muted mb-3"></div> -->
+
+                <table class="table-dark-bg mb-0 p-4 rounded">
+                    <thead class="table-primary text-center">
+                        <tr style="color: #8DE7DD;">
+                            <th>Rank</th>
+                            <th>Username</th>
+                            <th>Score</th>
+                        </tr>
+                    </thead>
+                    <tbody id="scorerTable" class="text-center"></tbody>
+                </table>
+            </div>
+        </div>
     </div>
+
+    </div>
+
+    
 </div>
 {% endblock %}
 
 {% block body_js %}
 <script src="../../../static/Js/quickquiz/leaderboard.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const apiURL = "/api/top-scorers/";  // change if your URL is different
+    const tableBody = document.getElementById("scorerTable");
+    const message = document.getElementById("message");
+    const dateInput = document.getElementById("dateInput");
+    const loadBtn = document.getElementById("loadDataBtn");
+
+    async function loadTopScorers(selectedDate = null) {
+        tableBody.innerHTML = "";
+        // message.textContent = "Loading data... ⏳";
+
+        try {
+            const url = selectedDate ? `${apiURL}?date=${selectedDate}` : apiURL;
+            const token = localStorage.getItem("access"); // JWT token
+
+            const res = await fetch(url, {
+                headers: {
+                    
+                    "Content-Type": "application/json"
+                }
+            });
+
+            const data = await res.json();
+            console.log("performars", data);
+
+            if (data.top_scorers.length === 0) {
+                tableBody.innerHTML = `<tr><td colspan="3" class="text-muted">No data available</td></tr>`;
+                return;
+            }
+
+            data.top_scorers.forEach((item, index) => {
+                const row = `
+                    <tr class="${index === 0 ? 'table-success' : ''}">
+                        <td class="px-4 py-3 text-sm fw-bold text-white"><strong>#${index + 1}</strong></td>
+                        <td class="px-4 py-3 text-sm fw-bold text-white">${item.username}</td>
+                        <td class="px-4 py-3 text-sm fw-bold text-white"><span class="badge bg-primary fs-6">${item.total_score}</span></td>
+                    </tr>
+                `;
+                tableBody.insertAdjacentHTML('beforeend', row);
+            });
+
+        } catch (error) {
+            console.error(error);
+            message.textContent = "An error occurred while fetching data.";
+        }
+    }
+
+    // Load today's data by default
+    loadTopScorers();
+
+    
+});
+</script>
 {% endblock %}

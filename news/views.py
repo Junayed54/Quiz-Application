@@ -11,11 +11,20 @@ class IsAdminUserRole(permissions.BasePermission):
     def has_permission(self, request, view):
         return request.user.is_authenticated and getattr(request.user, "role", None) == "Admin"
 
+# news/pagination.py
+from rest_framework.pagination import PageNumberPagination
 
+class NewsPagination(PageNumberPagination):
+    page_size = 10  # items per page
+    page_size_query_param = "page_size"  # optional, allow client to override
+    max_page_size = 9
+    
 class NewsViewSet(viewsets.ModelViewSet):
     queryset = News.objects.all().order_by("-created_at")
     serializer_class = NewsSerializer
-
+    pagination_class = NewsPagination  # 👈 Add this line
+    
+    
     def get_permissions(self):
         if self.action in ["create", "update", "partial_update", "destroy"]:
             # Require authentication for creating, updating, and deleting.

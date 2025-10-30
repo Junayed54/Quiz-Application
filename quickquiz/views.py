@@ -388,7 +388,7 @@ class PracticeQuestionUploadView(APIView):
 from django.db.models import OuterRef, Subquery
 from datetime import datetime, date
 class DailyTopScorerAPIView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [AllowAny]
 
     def get(self, request):
         selected_date = request.GET.get("date")

@@ -140,9 +140,8 @@ document.addEventListener("DOMContentLoaded", async function() {
     const noNewsMessage = document.getElementById('no-news-message');
     const errorMessage = document.getElementById('error-message');
 
-    const itemsPerPage = 9;
     let currentPage = 1;
-    let allNewsData = [];
+    const itemsPerPage = 9;
 
     function formatDate(dateString) {
         const options = { year: 'numeric', month: 'long', day: 'numeric' };
@@ -150,18 +149,15 @@ document.addEventListener("DOMContentLoaded", async function() {
         return date.toLocaleDateString('bn-BD', options);
     }
 
-    function renderNewsItems(page) {
+    function renderNewsItems(newsListData) {
         newsList.innerHTML = '';
-        const startIndex = (page - 1) * itemsPerPage;
-        const endIndex = startIndex + itemsPerPage;
-        const newsToDisplay = allNewsData.slice(startIndex, endIndex);
-
-        if (newsToDisplay.length > 0) {
-            newsToDisplay.forEach(news => {
-                const imageUrl = news.images.length > 0 ? news.images[0].image_url : 'https://via.placeholder.com/120x80.png?text=No+Image';
+        if (newsListData.length > 0) {
+            newsListData.forEach(news => {
+                const imageUrl = news.images?.length > 0
+                    ? news.images[0].image_url
+                    : 'https://via.placeholder.com/120x80.png?text=No+Image';
                 const newsItem = document.createElement('li');
                 newsItem.className = 'news-item';
-
                 newsItem.innerHTML = `
                     <img src="${imageUrl}" alt="${news.title}" class="news-thumb">
                     <div class="news-content">
@@ -170,7 +166,6 @@ document.addEventListener("DOMContentLoaded", async function() {
                         <a href="/news/details/${news.id}" class="btn-custom">বিস্তারিত পড়ুন</a>
                     </div>
                 `;
-
                 newsList.appendChild(newsItem);
             });
             noNewsMessage.classList.add('d-none');
@@ -179,16 +174,19 @@ document.addEventListener("DOMContentLoaded", async function() {
         }
     }
 
-    function renderPagination(totalItems) {
+    function renderPagination(count, next, previous) {
         paginationContainer.innerHTML = '';
-        const totalPages = Math.ceil(totalItems / itemsPerPage);
+
+        const totalPages = Math.ceil(count / itemsPerPage);
         if (totalPages <= 1) return;
 
+        // Previous button
         const prevItem = document.createElement('li');
-        prevItem.className = `page-item ${currentPage === 1 ? 'disabled' : ''}`;
+        prevItem.className = `page-item ${!previous ? 'disabled' : ''}`;
         prevItem.innerHTML = `<a class="page-link" href="#" data-page="${currentPage - 1}">পূর্ববর্তী</a>`;
         paginationContainer.appendChild(prevItem);
 
+        // Page numbers
         for (let i = 1; i <= totalPages; i++) {
             const pageItem = document.createElement('li');
             pageItem.className = `page-item ${i === currentPage ? 'active' : ''}`;
@@ -196,43 +194,50 @@ document.addEventListener("DOMContentLoaded", async function() {
             paginationContainer.appendChild(pageItem);
         }
 
+        // Next button
         const nextItem = document.createElement('li');
-        nextItem.className = `page-item ${currentPage === totalPages ? 'disabled' : ''}`;
+        nextItem.className = `page-item ${!next ? 'disabled' : ''}`;
         nextItem.innerHTML = `<a class="page-link" href="#" data-page="${currentPage + 1}">পরবর্তী</a>`;
         paginationContainer.appendChild(nextItem);
 
+        // Add click handlers
         paginationContainer.querySelectorAll('.page-link').forEach(link => {
             link.addEventListener('click', function(e) {
                 e.preventDefault();
                 const newPage = parseInt(this.getAttribute('data-page'));
                 if (newPage >= 1 && newPage <= totalPages && newPage !== currentPage) {
                     currentPage = newPage;
-                    newsList.scrollIntoView({ behavior: 'smooth', block: 'start' }); 
-                    renderNewsItems(currentPage);
-                    renderPagination(totalItems);
+                    fetchAndRenderNews(currentPage);
+                    newsList.scrollIntoView({ behavior: 'smooth', block: 'start' });
                 }
             });
         });
     }
 
-    try {
-        const response = await fetch('/api/news/');
-        if (!response.ok) throw new Error('Network response was not ok');
+    async function fetchAndRenderNews(page = 1) {
+        loadingMessage.classList.remove('d-none');
+        noNewsMessage.classList.add('d-none');
+        errorMessage.classList.add('d-none');
 
-        allNewsData = await response.json();
-        loadingMessage.classList.add('d-none');
+        try {
+            const response = await fetch(`/api/news/?page=${page}`);
+            if (!response.ok) throw new Error('Network response was not ok');
 
-        if (allNewsData.length > 0) {
-            renderNewsItems(currentPage);
-            renderPagination(allNewsData.length);
-        } else {
-            noNewsMessage.classList.remove('d-none');
+            const data = await response.json();
+            loadingMessage.classList.add('d-none');
+
+            renderNewsItems(data.results);
+            renderPagination(data.count, data.next, data.previous);
+        } catch (error) {
+            console.error('Error fetching news:', error);
+            loadingMessage.classList.add('d-none');
+            errorMessage.classList.remove('d-none');
         }
-    } catch (error) {
-        console.error('Error fetching news:', error);
-        loadingMessage.classList.add('d-none');
-        errorMessage.classList.remove('d-none');
     }
+
+    // Initial load
+    fetchAndRenderNews(currentPage);
 });
 </script>
+
 {% endblock %}
