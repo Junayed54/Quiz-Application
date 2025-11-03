@@ -69,6 +69,7 @@ body {
             <tr>
               <th>#</th>
               <th>Username</th>
+              <th>Phone number</th>
               <th>Total Score</th>
             </tr>
           </thead>
@@ -225,7 +226,7 @@ async function loadAnalytics() {
         scales: { y: { beginAtZero: true } }
       }
     });
-
+    console.log(data);
     // ---- Top Users Chart ----
     const topUserNames = data.top_users?.map(u => u.user__username || "N/A") || [];
     const topUserScores = data.top_users?.map(u => u.total_score) || [];
@@ -284,7 +285,7 @@ async function loadTopScorers(date) {
     if (!res.ok) throw new Error("Failed to fetch top scorers");
     const data = await res.json();
     const scorers = data.top_scorers || [];
-
+    console.log(scorers);
     if (scorers.length === 0) {
       tbody.innerHTML = `<tr><td colspan="3" class="text-center text-muted">No scorers found for ${data.date}.</td></tr>`;
       return;
@@ -294,7 +295,8 @@ async function loadTopScorers(date) {
       <tr>
         <td>${i + 1}</td>
         <td>${s.username || "N/A"}</td>
-        <td><strong>${s.total_score}</strong></td>
+        <td>${s.phone_number || "N/A"}</td>
+        <td><strong>${s.score}</strong></td>
       </tr>`).join("");
     tbody.innerHTML = scorersHTML;
 

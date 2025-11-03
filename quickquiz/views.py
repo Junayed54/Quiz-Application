@@ -295,6 +295,18 @@ class PracticeQuestionUploadView(APIView):
                     else:
                         subject = last_subject  # use previous subject if blank
 
+                    
+                    # ✅ DUPLICATE CHECK
+                    duplicate_exists = PracticeQuestion.objects.filter(
+                        text__iexact=question_text.strip(),
+                        subject=subject
+                    ).exists()
+
+                    if duplicate_exists:
+                        skipped_count += 1
+                        continue
+                    
+                    
                     # Create question
                     question = PracticeQuestion.objects.create(
                         text=question_text,
@@ -392,6 +404,8 @@ class DailyTopScorerAPIView(APIView):
 
     def get(self, request):
         selected_date = request.GET.get("date")
+
+        # Handle date input
         if not selected_date:
             selected_date = date.today()
         else:
@@ -400,43 +414,49 @@ class DailyTopScorerAPIView(APIView):
             except ValueError:
                 return Response({"error": "Invalid date format. Use YYYY-MM-DD"}, status=400)
 
-        # Get all sessions for the date, latest first
+        # Get all sessions from that date
         all_sessions = PracticeSession.objects.filter(
             created_at__date=selected_date
-        ).order_by('user_id', '-created_at')
+        ).order_by('-score')
 
-        if not all_sessions.exists():
+        total_attempts = all_sessions.count()  # ✅ total number of attempts
+
+        if not total_attempts:
             return Response({
                 "date": selected_date,
-                "total_scorers": 0,
+                "total_attempts": 0,
+                "unique_users": 0,
                 "top_scorers": [],
                 "message": "No data found for this date."
             })
 
-        # Pick latest session per user
+        # Get unique users (optional, if you want per-user leaderboard)
         latest_sessions_dict = {}
         for s in all_sessions:
             if s.user_id not in latest_sessions_dict:
-                latest_sessions_dict[s.user_id] = s
+                latest_sessions_dict[s.user_id] = s  # latest per user
 
-        data = [
+        leaderboard = [
             {
                 "user_id": s.user_id,
                 "username": s.user.username if s.user else s.username or "Guest",
-                "total_score": s.score
+                "phone_number": (
+                    s.user.phone_number if s.user else s.phone_number
+                ),
+                "score": s.score
             }
             for s in latest_sessions_dict.values()
         ]
 
-        # Optional: sort by score descending
-        data.sort(key=lambda x: x['total_score'], reverse=True)
+        # Sort leaderboard
+        leaderboard.sort(key=lambda x: x['score'], reverse=True)
 
         return Response({
             "date": selected_date,
-            "total_scorers": len(data),
-            "top_scorers": data
+            "total_attempts": total_attempts,  # ✅ total number of attempts that day
+            "unique_users": len(latest_sessions_dict),  # ✅ number of distinct users
+            "top_scorers": leaderboard
         })
-        
         
 class AdminAnalyticsAPIView(APIView):
     """

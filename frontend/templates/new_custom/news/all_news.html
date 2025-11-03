@@ -1,15 +1,44 @@
+
 {% extends 'new_custom/new_templates/index2.html' %}
 {% block title %}চাকরি নিউজ{% endblock %}
 
 {% block style %}
 <style>
-/* Center the news container */
+/* 1. Main Content Layout for Desktop */
+.page-layout {
+    display: flex;
+    justify-content: center;
+    gap: 20px; /* Space between main content and ads */
+    padding: 20px 0;
+}
+
+/* 2. Ad Containers Styling (Hidden by default on small screens) */
+.side-ad {
+    width: 160px; /* Standard wide skyscraper width */
+    flex-shrink: 0; /* Prevents the ad from shrinking */
+    display: none; /* Hide on mobile by default */
+}
+
+/* 3. Media Query to Show Ads on Large Screens (e.g., above 992px) */
+@media (min-width: 992px) {
+    .side-ad {
+        display: block; /* Show ads on large screens */
+    }
+
+    /* Adjust the main content width for better balance */
+    .main-content {
+        max-width: 750px;
+        width: 100%;
+    }
+}
+
+/* Center the news container within the main content */
 .news-container {
     display: flex;
     flex-direction: column;
-    align-items: center; /* horizontal center */
-    justify-content: center; /* vertical center */
-    min-height: 70vh; /* take most of the viewport height */
+    align-items: center;
+    justify-content: center;
+    min-height: 70vh;
 }
 
 /* List container */
@@ -18,7 +47,7 @@
     padding: 0;
     margin: 0;
     width: 100%;
-    max-width: 700px; /* limit width for better readability */
+    max-width: 700px;
 }
 
 /* List items */
@@ -105,31 +134,64 @@
         <p class="lead text-muted">চাকরি, শিক্ষা, এবং অন্যান্য গুরুত্বপূর্ণ খবর</p>
     </div>
 
-    <div class="news-container">
-        <div id="loading-message" class="text-center my-5">
-            <div class="spinner-border text-primary" role="status">
-                <span class="visually-hidden">Loading...</span>
+    <div class="page-layout">
+        
+        <!-- Left Ad -->
+        <div class="side-ad left-ad">
+            <script type="text/javascript">
+                atOptions = {
+                    'key' : '62f3c2c01aed45a32e7429e307ce9abd',
+                    'format' : 'iframe',
+                    'height' : 600,
+                    'width' : 160,
+                    'params' : {}
+                };
+            </script>
+            <script type="text/javascript" src="//www.highperformanceformat.com/62f3c2c01aed45a32e7429e307ce9abd/invoke.js"></script>
+        </div>
+
+        <!-- Main News Section -->
+        <div class="main-content">
+            <div class="news-container">
+                <div id="loading-message" class="text-center my-5">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                    <p class="mt-2">সংবাদ লোড হচ্ছে...</p>
+                </div>
+
+                <ul id="news-list" class="news-list"></ul>
+
+                <div id="no-news-message" class="text-center d-none my-5">
+                    <p class="lead text-muted">কোনো সংবাদ পাওয়া যায়নি।</p>
+                </div>
+
+                <div id="error-message" class="text-center d-none my-5">
+                    <p class="lead text-danger">সংবাদ লোড করতে সমস্যা হয়েছে। অনুগ্রহ করে আবার চেষ্টা করুন।</p>
+                </div>
             </div>
-            <p class="mt-2">সংবাদ লোড হচ্ছে...</p>
+
+            <nav aria-label="Page navigation" class="mt-5 d-flex justify-content-center">
+                <ul class="pagination"></ul>
+            </nav>
         </div>
 
-        <ul id="news-list" class="news-list"></ul>
-
-        <div id="no-news-message" class="text-center d-none my-5">
-            <p class="lead text-muted">কোনো সংবাদ পাওয়া যায়নি।</p>
-        </div>
-
-        <div id="error-message" class="text-center d-none my-5">
-            <p class="lead text-danger">সংবাদ লোড করতে সমস্যা হয়েছে। অনুগ্রহ করে আবার চেষ্টা করুন।</p>
+        <!-- Right Ad -->
+        <div class="side-ad right-ad">
+            <script type="text/javascript">
+                atOptions = {
+                    'key' : '62f3c2c01aed45a32e7429e307ce9abd',
+                    'format' : 'iframe',
+                    'height' : 600,
+                    'width' : 160,
+                    'params' : {}
+                };
+            </script>
+            <script type="text/javascript" src="//www.highperformanceformat.com/62f3c2c01aed45a32e7429e307ce9abd/invoke.js"></script>
         </div>
     </div>
-
-    <nav aria-label="Page navigation" class="mt-5 d-flex justify-content-center">
-        <ul class="pagination"></ul>
-    </nav>
 </main>
 {% endblock %}
-
 
 {% block body_js %}
 <script>

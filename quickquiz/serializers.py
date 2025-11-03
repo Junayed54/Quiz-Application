@@ -99,3 +99,59 @@ class DailyTopScorerSerializer(serializers.Serializer):
     user_id = serializers.IntegerField()
     username = serializers.CharField()
     total_score = serializers.IntegerField()
+    
+    
+    
+    
+# class UserRewardSerializer(serializers.ModelSerializer):
+#     """
+#     Serializer for individual user reward entries.
+#     Shows username, phone number, total score, reward amount, and distribution details.
+#     """
+#     distribution_type = serializers.CharField(source='distribution.distribution_type', read_only=True)
+#     period = serializers.SerializerMethodField()
+
+#     class Meta:
+#         model = UserReward
+#         fields = [
+#             'id',
+#             'username',
+#             'phone_number',
+#             'total_score',
+#             'reward_amount',
+#             'distribution_type',
+#             'period',
+#         ]
+
+#     def get_period(self, obj):
+#         """Returns readable date range like '2025-11-01 → 2025-11-07'."""
+#         return f"{obj.distribution.start_date} → {obj.distribution.end_date}"
+
+
+# class RewardDistributionSerializer(serializers.ModelSerializer):
+#     """
+#     Serializer for the reward distribution record.
+#     Includes all metadata and nested user rewards.
+#     """
+#     user_rewards = UserRewardSerializer(many=True, read_only=True)
+#     total_user_rewards = serializers.SerializerMethodField()
+
+#     class Meta:
+#         model = RewardDistribution
+#         fields = [
+#             'id',
+#             'distribution_type',
+#             'start_date',
+#             'end_date',
+#             'distributed_at',
+#             'total_users',
+#             'total_amount',
+#             'note',
+#             'user_rewards',
+#             'total_user_rewards',
+#         ]
+#         read_only_fields = ['distributed_at', 'total_users', 'total_amount']
+
+#     def get_total_user_rewards(self, obj):
+#         """Show total number of user rewards for this distribution."""
+#         return obj.user_rewards.count()

@@ -2,7 +2,8 @@ from rest_framework import viewsets, permissions
 from django.utils import timezone
 from .models import News
 from .serializers import NewsSerializer
-
+from rest_framework.decorators import action
+from rest_framework.response import Response
 from firebase_admin import messaging
 import logging
 from notifications.models import DeviceToken, NotificationLog
@@ -31,6 +32,14 @@ class NewsViewSet(viewsets.ModelViewSet):
             return [permissions.IsAuthenticated()]
         # Allow any user (authenticated or not) to view news details or list.
         return [permissions.AllowAny()]
+    
+    
+    @action(detail=True, methods=['get'])
+    def recommended(self, request, pk=None):
+        # Exclude current news and return latest 5
+        queryset = News.objects.exclude(id=pk).order_by('-created_at')[:5]
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)
     
     def perform_create(self, serializer):
         """Create a News object and send notification if requested."""

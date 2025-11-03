@@ -234,7 +234,19 @@ h6 {
 
 
 {% block content %}
+  <div style="display: flex; justify-content: center; margin-top: 2px">
+    <script type="text/javascript">
+	atOptions = {
+		'key' : '41821e016b8dd1782271f3a3f4f501a8',
+		'format' : 'iframe',
+		'height' : 90,
+		'width' : 728,
+		'params' : {}
+	};
+</script>
+<script type="text/javascript" src="//www.highperformanceformat.com/41821e016b8dd1782271f3a3f4f501a8/invoke.js"></script>
 
+  </div>
   <main class="container my-5">
     <div class="row g-4">
       <div class="col-lg-8">
@@ -260,6 +272,19 @@ h6 {
           <h2 class="recommended-title">অন্যান্য খবর</h2>
           <div id="recommended-news-list">
             </div>
+        </div>
+        <div class="sidebar mt-2 border-0" style="background: none; box-shadow: none;">
+          <script type="text/javascript">
+          atOptions = {
+            'key' : 'c085b18f3e2aa532c8fe528b6f8af161',
+            'format' : 'iframe',
+            'height' : 250,
+            'width' : 300,
+            'params' : {}
+          };
+        </script>
+        <script type="text/javascript" src="//www.highperformanceformat.com/c085b18f3e2aa532c8fe528b6f8af161/invoke.js"></script>
+
         </div>
       </div>
     </div>
@@ -322,7 +347,8 @@ h6 {
       // Function to fetch and display recommended news
       async function fetchRecommendedNews() {
         try {
-          const response = await fetch(`${apiBaseUrl}?limit=5`); // Assuming a limit parameter is supported
+          const response = await fetch(`${apiBaseUrl}${newsId}/recommended/`);
+          //const response = await fetch(`${apiBaseUrl}?limit=5`); // Assuming a limit parameter is supported
           if (!response.ok) {
             throw new Error('Could not fetch recommended news');
           }
