@@ -40,7 +40,7 @@ admin.site.register(PracticeQuestion, PracticeQuestionAdmin)
 # PracticeSession Admin
 @admin.register(PracticeSession)
 class PracticeSessionAdmin(admin.ModelAdmin):
-    list_display = ['id', 'user', 'duration', 'score']
+    list_display = ['id', 'user', 'duration', 'score', 'created_at']
     search_fields = ['user__username']  # Allow searching by username of the user
 
 @admin.register(UserPoints)
@@ -58,3 +58,63 @@ class UserPointsAdmin(admin.ModelAdmin):
         return obj.user.phone_number if obj.user else obj.phone_number
     get_user_phone.short_description = 'Phone Number'
 
+
+
+class UserRewardInline(admin.TabularInline):
+    model = UserReward
+    extra = 0
+    readonly_fields = ('username', 'phone_number', 'total_score', 'reward_amount')
+    can_delete = False
+    ordering = ('-total_score',)
+    show_change_link = False
+
+
+@admin.register(RewardDistribution)
+class RewardDistributionAdmin(admin.ModelAdmin):
+    list_display = (
+        'distribution_type',
+        'start_date',
+        'end_date',
+        'per_point_value',
+        'total_users',
+        'total_amount',
+        'distributed_at',
+    )
+    list_filter = ('distribution_type', 'distributed_at')
+    search_fields = ('distribution_type', 'note')
+    readonly_fields = ('distributed_at', 'total_users', 'total_amount')
+    inlines = [UserRewardInline]
+    ordering = ('-distributed_at',)
+    fieldsets = (
+        ('Distribution Details', {
+            'fields': (
+                'distribution_type',
+                'start_date',
+                'end_date',
+                'per_point_value',
+                'note',
+            )
+        }),
+        ('Statistics', {
+            'fields': (
+                'total_users',
+                'total_amount',
+                'distributed_at',
+            )
+        }),
+    )
+
+
+@admin.register(UserReward)
+class UserRewardAdmin(admin.ModelAdmin):
+    list_display = (
+        'username',
+        'phone_number',
+        'distribution',
+        'total_score',
+        'reward_amount',
+    )
+    list_filter = ('distribution__distribution_type',)
+    search_fields = ('username', 'phone_number')
+    readonly_fields = ('reward_amount',)
+    ordering = ('-total_score',)

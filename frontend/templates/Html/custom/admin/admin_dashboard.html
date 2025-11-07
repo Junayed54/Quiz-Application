@@ -17,384 +17,372 @@ body {
     position: relative;
     height: 300px;
 }
+.w-auto-inline {
+    width: auto !important;
+    display: inline-flex !important;
+}
 </style>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
 
 </head>
 
+<body>
 {% include "../../partials/switcher.html" %}
 <div class="page">
-  {% include "../../partials/header.html" %}
-  {% include "../../partials/sidebar.html" %}
+    {% include "../../partials/header.html" %}
+    {% include "../../partials/sidebar.html" %}
 
-  <div class="main-content app-content">
-    <div class="container my-5">
-      <h2 class="fw-bold mb-4 text-center">📊 Admin Analytics Dashboard</h2>
+    <div class="main-content app-content">
+        <div class="container my-5">
+            <h2 class="fw-bold mb-4 text-center">📊 Admin Analytics Dashboard</h2>
 
-      <!-- Summary Cards -->
-      <div class="row g-4" id="summary-cards"></div>
+            <div class="row g-4" id="summary-cards"></div>
 
-      <!-- Charts Section -->
-      <div class="row mt-4">
-        <div class="col-md-6 mb-4">
-          <div class="card p-3">
-            <h5 class="fw-semibold mb-3">📅 Last 7 Days Sessions</h5>
-            <div class="chart-container">
-              <canvas id="sessionsChart"></canvas>
+            <div class="row mt-4">
+                <div class="col-md-6 mb-4">
+                    <div class="card p-3">
+                        <h5 class="fw-semibold mb-3">📅 Last 7 Days Sessions</h5>
+                        <div class="chart-container">
+                            <canvas id="sessionsChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6 mb-4">
+                    <div class="card p-3">
+                        <h5 class="fw-semibold mb-3">🏆 Top Users</h5>
+                        <div class="chart-container">
+                            <canvas id="topUsersChart"></canvas>
+                        </div>
+                    </div>
+                </div>
             </div>
-          </div>
-        </div>
-        <div class="col-md-6 mb-4">
-          <div class="card p-3">
-            <h5 class="fw-semibold mb-3">🏆 Top Users</h5>
-            <div class="chart-container">
-              <canvas id="topUsersChart"></canvas>
+            <!--
+            <div class="card p-3 mt-4">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="fw-semibold mb-0">🏅 Daily Top Scorers</h5>
+                    <div class="d-flex align-items-center gap-2">
+                        <input type="date" id="datePicker" class="form-control form-control-sm">
+                        <button class="btn btn-primary btn-sm" id="fetchTopScorers">View</button>
+                    </div>
+                </div>
+
+                <table class="table table-striped align-middle">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Username</th>
+                            <th>Phone number</th>
+                            <th>Total Score</th>
+                        </tr>
+                    </thead>
+                    <tbody id="top-scorers-body">
+                        <tr><td colspan="4" class="text-center text-muted">Select a date to view scorers.</td></tr>
+                    </tbody>
+                </table>
             </div>
-          </div>
-        </div>
-      </div>
+            -->
+            
+            <div class="card p-3 mt-4">
+                <h5 class="fw-semibold mb-0">
+                    📈 Quiz Scorers(<span id="selected-range">Select Range</span>)
+                </h5>
 
-      <!-- Top Scorers Table -->
-      <div class="card p-3 mt-4">
-        <div class="d-flex justify-content-between align-items-center mb-3">
-          <h5 class="fw-semibold mb-0">🏅 Daily Top Scorers</h5>
-          <div class="d-flex align-items-center gap-2">
-            <input type="date" id="datePicker" class="form-control form-control-sm">
-            <button class="btn btn-primary btn-sm" id="fetchTopScorers">View</button>
-          </div>
-        </div>
+                <div class="mb-3 mt-3 d-flex align-items-center gap-2">
+                    <input type="date" id="startDateInput" class="form-control w-auto-inline">
+                    <span class="mx-1">to</span>
+                    <input type="date" id="endDateInput" class="form-control w-auto-inline">
+                    <button id="viewRangeButton" class="btn btn-primary">View</button>
+                </div>
 
-        <table class="table table-striped align-middle">
-          <thead>
-            <tr>
-              <th>#</th>
-              <th>Username</th>
-              <th>Phone number</th>
-              <th>Total Score</th>
-            </tr>
-          </thead>
-          <tbody id="top-scorers-body">
-            <tr><td colspan="3" class="text-center text-muted">Select a date to view scorers.</td></tr>
-          </tbody>
-        </table>
-      </div>
+                <table class="table table-bordered">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Username</th>
+                            <th>Total Score</th>
+                        </tr>
+                    </thead>
+                    <tbody id="performanceTableBody">
+                        <tr><td colspan="3" class="text-center text-muted">Select a date range and click View.</td></tr>
+                    </tbody>
+                </table>
+            </div>
+            
+            <div class="card p-3 mt-4">
+                <h5 class="fw-semibold mb-3">🕓 Recent Sessions</h5>
+                <table class="table table-striped align-middle">
+                    <thead>
+                        <tr>
+                            <th>User</th>
+                            <th>Score</th>
+                            <th>Duration</th>
+                            <th>Date</th>
+                        </tr>
+                    </thead>
+                    <tbody id="recent-sessions-body"></tbody>
+                </table>
+            </div>
 
-      <!-- Recent Sessions Table -->
-      <div class="card p-3 mt-4">
-        <h5 class="fw-semibold mb-3">🕓 Recent Sessions</h5>
-        <table class="table table-striped align-middle">
-          <thead>
-            <tr>
-              <th>User</th>
-              <th>Score</th>
-              <th>Duration</th>
-              <th>Date</th>
-            </tr>
-          </thead>
-          <tbody id="recent-sessions-body"></tbody>
-        </table>
-      </div>
+            <div class="card p-3 mt-4">
+                <h5 class="fw-semibold mb-3">📚 Subject-wise Question Count</h5>
+                <table class="table table-striped align-middle">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Subject</th>
+                            <th>Question Count</th>
+                        </tr>
+                    </thead>
+                    <tbody id="subject-question-body">
+                        <tr><td colspan="3" class="text-center text-muted">Loading...</td></tr>
+                    </tbody>
+                </table>
+            </div>
 
-      <!-- 📘 Subject-wise Question Count Table -->
-      <div class="card p-3 mt-4">
-        <h5 class="fw-semibold mb-3">📚 Subject-wise Question Count</h5>
-        <table class="table table-striped align-middle">
-          <thead>
-            <tr>
-              <th>#</th>
-              <th>Subject</th>
-              <th>Question Count</th>
-            </tr>
-          </thead>
-          <tbody id="subject-question-body">
-            <tr><td colspan="3" class="text-center text-muted">Loading...</td></tr>
-          </tbody>
-        </table>
-      </div>
-        <h5 class="fw-semibold mb-0">
-          🏅 Daily Top Scorers of Past Exams (<span id="selected-date"></span>)
-        </h5>
-        <h2 id="selectedDate" class="mb-3 text-primary fw-bold"></h2>
-
-        <div class="mb-3">
-            <input type="date" id="dateInput" class="form-control w-25 d-inline">
-            <button id="viewButton" class="btn btn-primary">View</button>
-        </div>
-
-        <table class="table table-bordered">
-            <thead>
-                <tr>
-                    <th>#</th>
-                    <th>Username</th>
-                    <th>Total Score</th>
-                </tr>
-            </thead>
-            <tbody id="performanceTableBody">
-                <!-- Data will be inserted here -->
-            </tbody>
-        </table>
-
-
-
-      </div>
-    </div>
-
-  {% include "../../partials/headersearch_modal.html" %}
-  {% include "../../partials/footer.html" %}
-</div>
-
-{% include "../../partials/commonjs.html" %}
+        </div> </div> {% include "../../partials/headersearch_modal.html" %}
+    {% include "../../partials/footer.html" %}
+</div> {% include "../../partials/commonjs.html" %}
 {% include "../../partials/custom_switcherjs.html" %}
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <script>
 document.addEventListener("DOMContentLoaded", function() {
-  const datePicker = document.getElementById("datePicker");
-  const fetchBtn = document.getElementById("fetchTopScorers");
-  const today = new Date().toISOString().split("T")[0];
-  datePicker.value = today;
+    // const datePicker = document.getElementById("datePicker");
+    //const fetchBtn = document.getElementById("fetchTopScorers");
+    const today = new Date().toISOString().split("T")[0];
+    //datePicker.value = today;
 
-  loadAnalytics();
-  loadTopScorers(today);
+    loadAnalytics();
+    loadTopScorers(today);
 
-  fetchBtn.addEventListener("click", () => {
-    const selectedDate = datePicker.value || today;
-    loadTopScorers(selectedDate);
-  });
+    //fetchBtn.addEventListener("click", () => {
+    //    const selectedDate = datePicker.value || today;
+    //    loadTopScorers(selectedDate);
+    //});
+    
+    // --- DATE RANGE FUNCTIONALITY START ---
+    const startDateInput = document.getElementById("startDateInput");
+    const endDateInput = document.getElementById("endDateInput");
+    const viewRangeButton = document.getElementById("viewRangeButton");
+    const tableBody = document.getElementById("performanceTableBody");
+    const rangeDisplay = document.getElementById("selected-range");
+    const apiURL = "/quiz/daily-performance/"; // Adjust if your date range endpoint is different
+
+    // Event listener for date range selection
+    viewRangeButton.addEventListener("click", function () {
+        const startDate = startDateInput.value;
+        const endDate = endDateInput.value;
+
+        if (!startDate || !endDate) {
+            alert("Please select both a start date and an end date.");
+            return;
+        }
+        if (new Date(startDate) > new Date(endDate)) {
+            alert("Start date cannot be after the end date.");
+            return;
+        }
+        
+        fetchPerformanceRange(startDate, endDate);
+    });
+
+    // --- DATE RANGE FUNCTIONALITY END ---
+
 });
 
 function getAuthHeaders() {
-  const token = localStorage.getItem("access_token");
-  if (!token) {
-    console.warn("⚠️ No access token found in localStorage");
-    return {};
-  }
-  return {
-    "Authorization": `Bearer ${token}`,
-    "Content-Type": "application/json",
-  };
+    const token = localStorage.getItem("access_token");
+    if (!token) {
+        console.warn("⚠️ No access token found in localStorage");
+        return {};
+    }
+    return {
+        "Authorization": `Bearer ${token}`,
+        "Content-Type": "application/json",
+    };
 }
 
 async function loadAnalytics() {
-  const headers = getAuthHeaders();
-  try {
-    const res = await fetch("/api/admin/analytics/", { headers });
-    if (!res.ok) throw new Error("Failed to fetch analytics");
-    const data = await res.json();
+    const headers = getAuthHeaders();
+    try {
+        const res = await fetch("/api/admin/analytics/", { headers });
+        if (!res.ok) throw new Error("Failed to fetch analytics");
+        const data = await res.json();
 
-    // ---- Summary Cards ----
-    const summary = data.summary || {};
-    const summaryHTML = `
-      <div class="col-md-3">
-        <div class="card text-center p-3 bg-primary text-white">
-          <h5>Total Users</h5><h3>${summary.total_users || 0}</h3>
-        </div>
-      </div>
-      <div class="col-md-3">
-        <div class="card text-center p-3 bg-success text-white">
-          <h5>Total Sessions</h5><h3>${summary.total_sessions || 0}</h3>
-        </div>
-      </div>
-      <div class="col-md-3">
-        <div class="card text-center p-3 bg-warning text-dark">
-          <h5>Total Questions</h5><h3>${summary.total_questions || 0}</h3>
-        </div>
-      </div>
-      <div class="col-md-3">
-        <div class="card text-center p-3 bg-info text-white">
-          <h5>Total Points</h5><h3>${summary.total_points || 0}</h3>
-        </div>
-      </div>`;
-    document.getElementById("summary-cards").innerHTML = summaryHTML;
+        // ---- Summary Cards ----
+        const summary = data.summary || {};
+        const summaryHTML = `
+            <div class="col-md-3">
+                <div class="card text-center p-3 bg-primary text-white">
+                    <h5>Total Users</h5><h3>${summary.total_users || 0}</h3>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card text-center p-3 bg-success text-white">
+                    <h5>Total Sessions</h5><h3>${summary.total_sessions || 0}</h3>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card text-center p-3 bg-warning text-dark">
+                    <h5>Total Questions</h5><h3>${summary.total_questions || 0}</h3>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card text-center p-3 bg-info text-white">
+                    <h5>Total Points</h5><h3>${summary.total_points || 0}</h3>
+                </div>
+            </div>`;
+        document.getElementById("summary-cards").innerHTML = summaryHTML;
 
-    // ---- Daily Sessions Chart ----
-    const labels = data.daily_activity?.map(d => d.created_at__date) || [];
-    const sessions = data.daily_activity?.map(d => d.session_count) || [];
-    const scores = data.daily_activity?.map(d => d.avg_score) || [];
+        // ---- Daily Sessions Chart ----
+        const labels = data.daily_activity?.map(d => d.created_at__date) || [];
+        const sessions = data.daily_activity?.map(d => d.session_count) || [];
+        const scores = data.daily_activity?.map(d => d.avg_score) || [];
 
-    new Chart(document.getElementById("sessionsChart"), {
-      type: "line",
-      data: {
-        labels,
-        datasets: [
-          { label: "Sessions", data: sessions, borderColor: "#0d6efd", tension: 0.4, fill: false },
-          { label: "Avg Score", data: scores, borderColor: "#198754", tension: 0.4, fill: false }
-        ]
-      },
-      options: {
-        plugins: { legend: { position: "bottom" } },
-        scales: { y: { beginAtZero: true } }
-      }
-    });
-    console.log(data);
-    // ---- Top Users Chart ----
-    const topUserNames = data.top_users?.map(u => u.user__username || "N/A") || [];
-    const topUserScores = data.top_users?.map(u => u.total_score) || [];
+        new Chart(document.getElementById("sessionsChart"), {
+            type: "line",
+            data: {
+                labels,
+                datasets: [
+                    { label: "Sessions", data: sessions, borderColor: "#0d6efd", tension: 0.4, fill: false },
+                    { label: "Avg Score", data: scores, borderColor: "#198754", tension: 0.4, fill: false }
+                ]
+            },
+            options: {
+                plugins: { legend: { position: "bottom" } },
+                scales: { y: { beginAtZero: true } }
+            }
+        });
 
-    new Chart(document.getElementById("topUsersChart"), {
-      type: "bar",
-      data: {
-        labels: topUserNames,
-        datasets: [{
-          label: "Total Score",
-          data: topUserScores,
-          backgroundColor: "#ffc107"
-        }]
-      },
-      options: {
-        plugins: { legend: { display: false } },
-        scales: { y: { beginAtZero: true } }
-      }
-    });
+        // ---- Top Users Chart ----
+        const topUserNames = data.top_users?.map(u => u.user__username || "N/A") || [];
+        const topUserScores = data.top_users?.map(u => u.total_score) || [];
 
-    // ---- Recent Sessions Table ----
-    const sessionsHTML = (data.recent_sessions || []).map(r => `
-      <tr>
-        <td>${r.user__username || "N/A"}</td>
-        <td>${r.score}</td>
-        <td>${r.duration || "—"}</td>
-        <td>${new Date(r.created_at).toLocaleString()}</td>
-      </tr>`).join("");
-    document.getElementById("recent-sessions-body").innerHTML = sessionsHTML;
+        new Chart(document.getElementById("topUsersChart"), {
+            type: "bar",
+            data: {
+                labels: topUserNames,
+                datasets: [{
+                    label: "Total Score",
+                    data: topUserScores,
+                    backgroundColor: "#ffc107"
+                }]
+            },
+            options: {
+                plugins: { legend: { display: false } },
+                scales: { y: { beginAtZero: true } }
+            }
+        });
 
-    // ---- Subject-wise Question Table ----
-    const subjectData = data.subject_question_table || [];
-    const subjectHTML = subjectData.length > 0
-      ? subjectData.map((s, i) => `
-        <tr>
-          <td>${i + 1}</td>
-          <td>${s.name || "N/A"}</td>
-          <td><strong>${s.question_count || 0}</strong></td>
-        </tr>`).join("")
-      : `<tr><td colspan="3" class="text-center text-muted">No subjects found.</td></tr>`;
-    document.getElementById("subject-question-body").innerHTML = subjectHTML;
+        // ---- Recent Sessions Table ----
+        const sessionsHTML = (data.recent_sessions || []).map(r => `
+            <tr>
+                <td>${r.user__username || "N/A"}</td>
+                <td>${r.score}</td>
+                <td>${r.duration || "—"}</td>
+                <td>${new Date(r.created_at).toLocaleString()}</td>
+            </tr>`).join("");
+        document.getElementById("recent-sessions-body").innerHTML = sessionsHTML;
 
-  } catch (err) {
-    console.error("Error loading analytics:", err);
-    alert("⚠️ Failed to load analytics. Please check your token or server status.");
-  }
+        // ---- Subject-wise Question Table ----
+        const subjectData = data.subject_question_table || [];
+        const subjectHTML = subjectData.length > 0
+            ? subjectData.map((s, i) => `
+                <tr>
+                    <td>${i + 1}</td>
+                    <td>${s.name || "N/A"}</td>
+                    <td><strong>${s.question_count || 0}</strong></td>
+                </tr>`).join("")
+            : `<tr><td colspan="3" class="text-center text-muted">No subjects found.</td></tr>`;
+        document.getElementById("subject-question-body").innerHTML = subjectHTML;
+
+    } catch (err) {
+        console.error("Error loading analytics:", err);
+        alert("⚠️ Failed to load analytics. Please check your token or server status.");
+    }
 }
 
+// Function to load daily top scorers (Original, single-date function)
 async function loadTopScorers(date) {
-  const tbody = document.getElementById("top-scorers-body");
-  const headers = getAuthHeaders();
-  tbody.innerHTML = `<tr><td colspan="3" class="text-center text-muted">Loading...</td></tr>`;
+    // const tbody = document.getElementById("top-scorers-body");
+    const headers = getAuthHeaders();
+    // Adjusted colspan to 4 to match the HTML table structure
+    // tbody.innerHTML = `<tr><td colspan="4" class="text-center text-muted">Loading...</td></tr>`; 
 
-  try {
-    const res = await fetch(`/api/top-scorers/?date=${date}`, { headers });
-    if (!res.ok) throw new Error("Failed to fetch top scorers");
-    const data = await res.json();
-    const scorers = data.top_scorers || [];
-    console.log(scorers);
-    if (scorers.length === 0) {
-      tbody.innerHTML = `<tr><td colspan="3" class="text-center text-muted">No scorers found for ${data.date}.</td></tr>`;
-      return;
-    }
+    try {
+        const res = await fetch(`/api/top-scorers/?date=${date}`, { headers });
+        if (!res.ok) throw new Error("Failed to fetch daily top scorers");
+        const data = await res.json();
+        const scorers = data.leaderboard || [];
 
-    const scorersHTML = scorers.map((s, i) => `
-      <tr>
-        <td>${i + 1}</td>
-        <td>${s.username || "N/A"}</td>
-        <td>${s.phone_number || "N/A"}</td>
-        <td><strong>${s.score}</strong></td>
-      </tr>`).join("");
-    tbody.innerHTML = scorersHTML;
-
-  } catch (err) {
-    console.error("Error loading top scorers:", err);
-    tbody.innerHTML = `<tr><td colspan="3" class="text-danger text-center">Failed to load data.</td></tr>`;
-  }
-}
-</script>
-<script>
-  document.addEventListener("DOMContentLoaded", function () {
-    const dateInput = document.getElementById("dateInput");
-    const viewButton = document.getElementById("viewButton");
-    const tableBody = document.getElementById("performanceTableBody");
-
-    // Get JWT token from localStorage
-    const token = localStorage.getItem("access_token");
-
-    // API Base URL — update if needed
-    const apiURL = "/quiz/daily-performance/";
-
-    // Function to fetch data
-    async function fetchPerformance(date = null) {
-        try {
-            let url = apiURL;
-            if (date) {
-                url += `?date=${date}`;
-            }
-
-            const response = await fetch(url, {
-                method: "GET",
-                headers: {
-                    "Authorization": `Bearer ${token}`,
-                    "Content-Type": "application/json"
-                }
-            });
-
-            if (!response.ok) {
-                throw new Error(`HTTP error! Status: ${response.status}`);
-            }
-
-            const data = await response.json();
-           
-            console.log("Fetched Data:", data);
-            renderTable(data.top_scorers, data.date);
-        } catch (error) {
-            console.error("Error fetching performance data:", error);
-            tableBody.innerHTML = `
-                <tr>
-                    <td colspan="3" class="text-center text-danger">
-                        Failed to load data. Please try again.
-                    </td>
-                </tr>
-            `;
-        }
-    }
-
-    // Function to render table data
-    function renderTable(data, date) {
-        const formattedDate = new Date(date).toLocaleDateString();
-        document.getElementById("selectedDate").innerText = `Showing data for: ${formattedDate}`;
-
-        if (!data || data.length === 0) {
-            tableBody.innerHTML = `
-                <tr>
-                    <td colspan="3" class="text-center text-muted">
-                        No data found for this date.
-                    </td>
-                </tr>
-            `;
+        if (scorers.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="4" class="text-center text-muted">No scorers found for ${date}.</td></tr>`;
             return;
         }
 
-        tableBody.innerHTML = data
+        const scorersHTML = scorers.map((s, i) => `
+            <tr>
+                <td>${i + 1}</td>
+                <td>${s.username || "N/A"}</td>
+                <td>${s.phone_number || "N/A"}</td>
+                <td><strong>${s.score}</strong></td>
+            </tr>`).join("");
+        tbody.innerHTML = scorersHTML;
+
+    } catch (err) {
+        console.error("Error loading daily top scorers:", err);
+        tbody.innerHTML = `<tr><td colspan="4" class="text-danger text-center">Failed to load data.</td></tr>`;
+    }
+}
+
+
+// --- FIXED DATE RANGE FUNCTION (Replaces the broken second script) ---
+async function fetchPerformanceRange(startDate, endDate) {
+    const tableBody = document.getElementById("performanceTableBody");
+    const rangeDisplay = document.getElementById("selected-range");
+    const apiURL = "/api/top-scorers/"; // Target API path
+
+    tableBody.innerHTML = `<tr><td colspan="3" class="text-center text-muted">Loading data for ${startDate} to ${endDate}...</td></tr>`;
+
+    try {
+        // Construct the URL with both date parameters
+        const url = `${apiURL}?start_date=${startDate}&end_date=${endDate}`;
+        
+        const response = await fetch(url, {
+            method: "GET",
+            headers: getAuthHeaders()
+        });
+
+        if (!response.ok) {
+            throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+
+        const data = await response.json();
+        
+        // Update the display span
+        rangeDisplay.innerText = `${startDate} to ${endDate}`; 
+
+        if (!data.leaderboard || data.leaderboard.length === 0) {
+            tableBody.innerHTML = `
+                <tr><td colspan="3" class="text-center text-muted">No data found for this date range.</td></tr>`;
+            return;
+        }
+
+        tableBody.innerHTML = data.leaderboard
             .map((user, index) => `
                 <tr>
                     <td>${index + 1}</td>
-                    <td>${user.user__username}</td>
-                    <td>${user.total_score}</td>
+                    <td>${user.user__username || user.username || 'N/A'}</td>
+                    <td><strong>${user.total_score || user.score || 0}</strong></td>
                 </tr>
-            `)
-            .join("");
+            `).join("");
+
+    } catch (error) {
+        console.error("Error fetching date range performance data:", error);
+        rangeDisplay.innerText = "Error Loading Data";
+        tableBody.innerHTML = `
+            <tr><td colspan="3" class="text-center text-danger">Failed to load data. Check API path and server.</td></tr>`;
     }
-
-    // Event listener for date selection
-    viewButton.addEventListener("click", function () {
-        const selectedDate = dateInput.value;
-        if (!selectedDate) {
-            alert("Please select a date first.");
-            return;
-        }
-        fetchPerformance(selectedDate);
-    });
-
-    // Load today's performance by default
-    fetchPerformance();
-});
-
+}
 </script>
 </body>
 </html>

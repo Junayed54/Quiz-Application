@@ -404,7 +404,7 @@
                     <button id="loadDataBtn" class="btn btn-primary">Load Data</button>
                 </div> -->
 
-                <!-- <div id="message" class="text-center text-muted mb-3"></div> -->
+                <div id="message" class="text-center text-muted mb-3"></div>
 
                 <table class="table-dark-bg mb-0 p-4 rounded">
                     <thead class="table-primary text-center">
@@ -430,56 +430,71 @@
 <script src="../../../static/Js/quickquiz/leaderboard.js"></script>
 <script>
 document.addEventListener('DOMContentLoaded', () => {
-    const apiURL = "/api/top-scorers/";  // change if your URL is different
+    const apiURL = "/api/top-scorers/";  // Update if your API URL differs
     const tableBody = document.getElementById("scorerTable");
     const message = document.getElementById("message");
     const dateInput = document.getElementById("dateInput");
     const loadBtn = document.getElementById("loadDataBtn");
 
+    // ✅ Fetch and render leaderboard
     async function loadTopScorers(selectedDate = null) {
         tableBody.innerHTML = "";
-        // message.textContent = "Loading data... ⏳";
+        //message.textContent = "Loading data... ⏳";
 
         try {
             const url = selectedDate ? `${apiURL}?date=${selectedDate}` : apiURL;
-            const token = localStorage.getItem("access"); // JWT token
-
             const res = await fetch(url, {
-                headers: {
-                    
-                    "Content-Type": "application/json"
-                }
+                headers: { "Content-Type": "application/json" },
             });
 
-            const data = await res.json();
-            console.log("performars", data);
+            if (!res.ok) throw new Error(`HTTP error! Status: ${res.status}`);
 
-            if (data.top_scorers.length === 0) {
-                tableBody.innerHTML = `<tr><td colspan="3" class="text-muted">No data available</td></tr>`;
+            const data = await res.json();
+            console.log("Daily leaderboard:", data);
+
+            if (!data.leaderboard || data.leaderboard.length === 0) {
+                message.textContent = "No data available for this date.";
+                tableBody.innerHTML = `<tr><td colspan="3" class="text-muted text-center">No results found</td></tr>`;
                 return;
             }
 
-            data.top_scorers.forEach((item, index) => {
+           // message.textContent = `Date: ${data.date} | Total Attempts: ${data.total_attempts} | Unique Users: ${data.unique_users}`;
+
+            // ✅ Populate leaderboard table
+            data.leaderboard.forEach((item, index) => {
                 const row = `
                     <tr class="${index === 0 ? 'table-success' : ''}">
                         <td class="px-4 py-3 text-sm fw-bold text-white"><strong>#${index + 1}</strong></td>
                         <td class="px-4 py-3 text-sm fw-bold text-white">${item.username}</td>
-                        <td class="px-4 py-3 text-sm fw-bold text-white"><span class="badge bg-primary fs-6">${item.total_score}</span></td>
+                        <td class="px-4 py-3 text-sm fw-bold text-white">
+                            <span class="badge bg-primary fs-6">${item.total_score}</span>
+                        </td>
                     </tr>
                 `;
                 tableBody.insertAdjacentHTML('beforeend', row);
             });
 
         } catch (error) {
-            console.error(error);
-            message.textContent = "An error occurred while fetching data.";
+            console.error("Error loading data:", error);
+            message.textContent = "⚠️ Failed to fetch leaderboard data.";
         }
     }
 
-    // Load today's data by default
+    // ✅ Load today’s data by default
     loadTopScorers();
 
-    
+    // ✅ Optional: add manual date picker support (if you have input and button)
+    if (loadBtn && dateInput) {
+        loadBtn.addEventListener("click", () => {
+            const selectedDate = dateInput.value;
+            if (selectedDate) {
+                loadTopScorers(selectedDate);
+            } else {
+                message.textContent = "Please select a date first.";
+            }
+        });
+    }
 });
 </script>
+
 {% endblock %}

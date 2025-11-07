@@ -2,6 +2,7 @@ from django.db import models
 from django.contrib.auth import get_user_model
 User = get_user_model()
 from django.utils import timezone
+from datetime import date, datetime
 # Create your models here.
 class Subject(models.Model):
     name = models.CharField(max_length=100)
@@ -77,72 +78,74 @@ class UserPoints(models.Model):
 # -------------------------------
 #  REWARD SYSTEM MODELS
 # -------------------------------
-# class RewardDistribution(models.Model):
-#     DISTRIBUTION_CHOICES = [
-#         ('daily', 'Daily'),
-#         ('weekly', 'Weekly'),
-#         ('half_monthly', 'Half-Monthly'),
-#         ('monthly', 'Monthly'),
-#     ]
+class RewardDistribution(models.Model):
+    DISTRIBUTION_CHOICES = [
+        ('daily', 'Daily'),
+        ('weekly', 'Weekly'),
+        ('half_monthly', 'Half-Monthly'),
+        ('monthly', 'Monthly'),
+    ]
 
-#     distribution_type = models.CharField(max_length=20, choices=DISTRIBUTION_CHOICES)
-#     start_date = models.DateField()
-#     end_date = models.DateField()
-#     distributed_at = models.DateTimeField(auto_now_add=True)
-#     total_users = models.IntegerField(default=0)
-#     total_amount = models.DecimalField(max_digits=12, decimal_places=2, default=0.00)
-#     note = models.TextField(blank=True, null=True)
+    distribution_type = models.CharField(max_length=20, choices=DISTRIBUTION_CHOICES)
+    start_date = models.DateField(null=True, blank=True)
+    end_date = models.DateField(null=True, blank=True)
+    distributed_at = models.DateTimeField(auto_now_add=True)
+    total_users = models.IntegerField(default=0)
+    total_amount = models.DecimalField(max_digits=12, decimal_places=2, default=0.00)
+    note = models.TextField(blank=True, null=True)
+    # 👇 Add this
+    per_point_value = models.DecimalField(max_digits=10, decimal_places=4, default=0.01, help_text="Value of 1 point in Taka")
+    
+    def __str__(self):
+        return f"{self.get_distribution_type_display()} Reward ({self.start_date} → {self.end_date})"
 
-#     def __str__(self):
-#         return f"{self.get_distribution_type_display()} Reward ({self.start_date} → {self.end_date})"
+    def calculate_period(self):
+        """Automatically determine start and end date based on the chosen type."""
+        today = date.today()
+        if self.distribution_type == 'daily':
+            self.start_date = today
+            self.end_date = today
 
-#     def calculate_period(self):
-#         """Automatically determine start and end date based on the chosen type."""
-#         today = date.today()
-#         if self.distribution_type == 'daily':
-#             self.start_date = today
-#             self.end_date = today
+        elif self.distribution_type == 'weekly':
+            self.start_date = today - timedelta(days=7)
+            self.end_date = today
 
-#         elif self.distribution_type == 'weekly':
-#             self.start_date = today - timedelta(days=7)
-#             self.end_date = today
+        elif self.distribution_type == 'half_monthly':
+            if today.day <= 15:
+                self.start_date = today.replace(day=1)
+                self.end_date = today.replace(day=15)
+            else:
+                self.start_date = today.replace(day=16)
+                next_month = (today.replace(day=28) + timedelta(days=4)).replace(day=1)
+                self.end_date = next_month - timedelta(days=1)
 
-#         elif self.distribution_type == 'half_monthly':
-#             if today.day <= 15:
-#                 self.start_date = today.replace(day=1)
-#                 self.end_date = today.replace(day=15)
-#             else:
-#                 self.start_date = today.replace(day=16)
-#                 next_month = (today.replace(day=28) + timedelta(days=4)).replace(day=1)
-#                 self.end_date = next_month - timedelta(days=1)
+        elif self.distribution_type == 'monthly':
+            self.start_date = today.replace(day=1)
+            next_month = (today.replace(day=28) + timedelta(days=4)).replace(day=1)
+            self.end_date = next_month - timedelta(days=1)
 
-#         elif self.distribution_type == 'monthly':
-#             self.start_date = today.replace(day=1)
-#             next_month = (today.replace(day=28) + timedelta(days=4)).replace(day=1)
-#             self.end_date = next_month - timedelta(days=1)
-
-#         self.save()
+        self.save()
 
 
-# class UserReward(models.Model):
-#     distribution = models.ForeignKey(
-#         RewardDistribution,
-#         on_delete=models.CASCADE,
-#         related_name='user_rewards'
-#     )
-#     username = models.CharField(max_length=150, blank=True, null=True)
-#     phone_number = models.CharField(max_length=15)
-#     total_score = models.IntegerField(default=0)
-#     reward_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
+class UserReward(models.Model):
+    distribution = models.ForeignKey(
+        RewardDistribution,
+        on_delete=models.CASCADE,
+        related_name='user_rewards'
+    )
+    username = models.CharField(max_length=150, blank=True, null=True)
+    phone_number = models.CharField(max_length=15)
+    total_score = models.IntegerField(default=0)
+    reward_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
 
-#     class Meta:
-#         unique_together = ('distribution', 'phone_number')
-#         ordering = ['-total_score']
+    class Meta:
+        unique_together = ('distribution', 'phone_number')
+        ordering = ['-total_score']
 
-#     def __str__(self):
-#         return f"{self.username or 'Guest'} ({self.phone_number}) - {self.reward_amount}৳"
+    def __str__(self):
+        return f"{self.username or 'Guest'} ({self.phone_number}) - {self.reward_amount}৳"
 
-#     def calculate_reward(self):
-#         """Default rule: 100 score = 1.00 Taka"""
-#         self.reward_amount = round(self.total_score / 100, 2)
-#         self.save()
+    def calculate_reward(self):
+        """Default rule: 100 score = 1.00 Taka"""
+        self.reward_amount = round(self.total_score / 100, 2)
+        self.save()

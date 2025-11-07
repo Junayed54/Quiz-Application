@@ -20,7 +20,21 @@ urlpatterns = [
 ]
 
 
+urlpatterns += [
+    path('api/rewards/distribute/', RewardDistributionCreateAPIView.as_view(), name='create_distribution'),
+    path('api/rewards/', RewardDistributionListAPIView.as_view(), name='reward_list'),
+    path('api/rewards/<int:distribution_id>/', UserRewardListAPIView.as_view(), name='user_rewards'),
+    path('api/rewards/user/', UserRewardByPhoneAPIView.as_view(), name='user_reward_by_phone'),
+    
+    
+    path('api/rewards-stats/', UserRewardEfficiencyView.as_view()),
+] 
+
 # templates
 urlpatterns +=[
     path("upload-questions/", TemplateView.as_view(template_name="Html/custom/quick_quiz/upload_questions.html")),
+    path("rewards-stats/", TemplateView.as_view(template_name="Html/custom/quick_quiz/reward-stats.html")),
+    
+    
+    path("send-rewards/", TemplateView.as_view(template_name="Html/custom/quick_quiz/send_rewards_form.html")),
 ]

@@ -5,7 +5,7 @@ from openpyxl import load_workbook
 from rest_framework.permissions import AllowAny
 from rest_framework.parsers import MultiPartParser
 from rest_framework.response import Response
-from rest_framework import status, viewsets
+from rest_framework import status, viewsets, generics
 from django.core.files.base import ContentFile
 from django.db import transaction
 from openpyxl.utils import get_column_letter
@@ -21,8 +21,9 @@ from django.contrib.auth import get_user_model
 User = get_user_model()
 
 from django.db.models import Count, Avg, Sum
-
-
+from rest_framework.permissions import IsAdminUser, AllowAny
+from quiz.permissions import *
+from rest_framework.pagination import PageNumberPagination
 
 class SubjectViewSet(viewsets.ModelViewSet):
     # queryset = Subject.objects.all()
@@ -397,65 +398,158 @@ class PracticeQuestionUploadView(APIView):
     # def save_image_to_field(self, image_data, filename):
     #     return ContentFile(image_data, name=filename)
     
+from django.utils.timezone import localtime
 from django.db.models import OuterRef, Subquery
 from datetime import datetime, date
+# class DailyTopScorerAPIView(APIView):
+#     permission_classes = [AllowAny]
+
+#     def get(self, request):
+#         selected_date = request.GET.get("date")
+
+#         # ✅ Validate date input
+#         if not selected_date:
+#             selected_date = localtime().date()
+#         else:
+#             try:
+#                 selected_date = datetime.strptime(selected_date, "%Y-%m-%d").date()
+#             except ValueError:
+#                 return Response({"error": "Invalid date format. Use YYYY-MM-DD"}, status=400)
+
+#         # ✅ Get all practice sessions of the day
+#         sessions = PracticeSession.objects.filter(
+#             created_at__date=selected_date
+#         ).select_related("user")
+
+#         if not sessions.exists():
+#             return Response({
+#                 "date": selected_date,
+#                 "total_attempts": 0,
+#                 "unique_users": 0,
+#                 "leaderboard": [],
+#                 "message": "No attempts found for this date."
+#             })
+
+#         # ✅ Aggregate total score per user/guest
+#         leaderboard_data = {}
+#         for s in sessions:
+#             if s.user:  # authenticated user
+#                 key = f"user_{s.user_id}"
+#                 username = s.user.username
+#                 phone_number = s.user.phone_number
+#             else:  # guest user (unauthorized)
+#                 key = f"guest_{s.username}_{s.phone_number}"
+#                 username = s.username or "Guest"
+#                 phone_number = s.phone_number or "N/A"
+
+#             if key not in leaderboard_data:
+#                 leaderboard_data[key] = {
+#                     "user_id": s.user_id,
+#                     "username": username,
+#                     "phone_number": phone_number,
+#                     "total_score": 0,
+#                     "attempts": 0
+#                 }
+
+#             leaderboard_data[key]["total_score"] += s.score
+#             leaderboard_data[key]["attempts"] += 1
+
+#         # ✅ Convert to sorted list
+#         leaderboard = sorted(
+#             leaderboard_data.values(),
+#             key=lambda x: x["total_score"],
+#             reverse=True
+#         )
+
+#         return Response({
+#             "date": selected_date,
+#             "total_attempts": sessions.count(),
+#             "unique_users": len(leaderboard_data),
+#             "leaderboard": leaderboard,
+#         })
+
+
+
 class DailyTopScorerAPIView(APIView):
     permission_classes = [AllowAny]
 
     def get(self, request):
-        selected_date = request.GET.get("date")
+        date = request.GET.get("date")
+        start_date = request.GET.get("start_date")
+        end_date = request.GET.get("end_date")
+        print("date is here", date, start_date, end_date)
+        
+        # ✅ Handle date parsing and default values
+        try:
+            if start_date and end_date:
+                start_date = datetime.strptime(start_date, "%Y-%m-%d").date()
+                end_date = datetime.strptime(end_date, "%Y-%m-%d").date()
+            elif date:
+                start_date = end_date = date
+            else:
+                # Default: today's date range
+                start_date = end_date = localtime().date()
+        except ValueError:
+            return Response(
+                {"error": "Invalid date format. Use YYYY-MM-DD"},
+                status=400
+            )
 
-        # Handle date input
-        if not selected_date:
-            selected_date = date.today()
-        else:
-            try:
-                selected_date = datetime.strptime(selected_date, "%Y-%m-%d").date()
-            except ValueError:
-                return Response({"error": "Invalid date format. Use YYYY-MM-DD"}, status=400)
+        # ✅ Query all sessions within the date range
+        sessions = PracticeSession.objects.filter(
+            created_at__date__gte=start_date,
+            created_at__date__lte=end_date
+        ).select_related("user")
+        
 
-        # Get all sessions from that date
-        all_sessions = PracticeSession.objects.filter(
-            created_at__date=selected_date
-        ).order_by('-score')
-
-        total_attempts = all_sessions.count()  # ✅ total number of attempts
-
-        if not total_attempts:
+        if not sessions.exists():
             return Response({
-                "date": selected_date,
+                "date_range": f"{start_date} to {end_date}",
                 "total_attempts": 0,
                 "unique_users": 0,
-                "top_scorers": [],
-                "message": "No data found for this date."
+                "leaderboard": [],
+                "message": "No attempts found in this date range."
             })
 
-        # Get unique users (optional, if you want per-user leaderboard)
-        latest_sessions_dict = {}
-        for s in all_sessions:
-            if s.user_id not in latest_sessions_dict:
-                latest_sessions_dict[s.user_id] = s  # latest per user
+        # ✅ Aggregate total score per user (including guests)
+        leaderboard_data = {}
+        
+        for s in sessions:
+            if s.user:  # Authenticated user
+                key = f"{s.user_id}"
+                username = s.user.username
+                phone_number = s.user.phone_number
+            else:  # Guest user
+                key = f"{s.username}_{s.phone_number}"
+                
+                username = s.username or "Guest"
+                phone_number = s.phone_number or "N/A"
 
-        leaderboard = [
-            {
-                "user_id": s.user_id,
-                "username": s.user.username if s.user else s.username or "Guest",
-                "phone_number": (
-                    s.user.phone_number if s.user else s.phone_number
-                ),
-                "score": s.score
-            }
-            for s in latest_sessions_dict.values()
-        ]
+            if key not in leaderboard_data:
+                leaderboard_data[key] = {
+                    "user_id": s.user_id,
+                    "username": username,
+                    "phone_number": phone_number,
+                    "total_score": 0,
+                    "attempts": 0
+                }
 
-        # Sort leaderboard
-        leaderboard.sort(key=lambda x: x['score'], reverse=True)
+            leaderboard_data[key]["total_score"] += s.score
+            leaderboard_data[key]["attempts"] += 1
 
+        # ✅ Sort leaderboard by total_score descending
+        leaderboard = sorted(
+            leaderboard_data.values(),
+            key=lambda x: x["total_score"],
+            reverse=True
+        )
+        # print(leaderboard)
+        # ✅ Response
         return Response({
-            "date": selected_date,
-            "total_attempts": total_attempts,  # ✅ total number of attempts that day
-            "unique_users": len(latest_sessions_dict),  # ✅ number of distinct users
-            "top_scorers": leaderboard
+            "date_range": f"{start_date} to {end_date}",
+            "total_attempts": sessions.count(),
+            "unique_users": len(leaderboard_data),
+            "leaderboard": leaderboard,
         })
         
 class AdminAnalyticsAPIView(APIView):
@@ -535,4 +629,131 @@ class AdminAnalyticsAPIView(APIView):
         return Response(data)
 
     
-    
+
+
+# Reward views section
+
+
+class RewardDistributionCreateAPIView(APIView):
+    permission_classes = [IsAdmin]
+
+    def post(self, request):
+        distribution_type = request.data.get("distribution_type")
+
+        if not distribution_type:
+            return Response({"error": "distribution_type is required"}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Create distribution object
+        distribution = RewardDistribution.objects.create(distribution_type=distribution_type)
+        distribution.calculate_period()
+
+        # Example: Fetch top users or all users with scores
+        # Replace this section with your leaderboard or score model logic
+        from quiz.models import Exam  # Example import if your scores come from Exam
+        user_scores = (
+            Exam.objects.values("user__username", "user__phone_number")
+            .annotate(total_score=Sum("correct_answers"))
+            .filter(created_at__date__range=[distribution.start_date, distribution.end_date])
+            .order_by("-total_score")
+        )
+
+        total_amount = 0
+        total_users = 0
+
+        for user_data in user_scores:
+            username = user_data["user__username"]
+            phone = user_data["user__phone_number"]
+            score = user_data["total_score"]
+
+            user_reward = UserReward.objects.create(
+                distribution=distribution,
+                username=username,
+                phone_number=phone,
+                total_score=score
+            )
+            user_reward.calculate_reward()
+
+            total_users += 1
+            total_amount += user_reward.reward_amount
+
+        distribution.total_users = total_users
+        distribution.total_amount = total_amount
+        distribution.save()
+
+        return Response({
+            "message": f"{distribution.get_distribution_type_display()} reward distributed successfully.",
+            "total_users": total_users,
+            "total_amount": total_amount,
+            "distribution": RewardDistributionSerializer(distribution).data
+        }, status=status.HTTP_201_CREATED)
+
+
+class RewardDistributionListAPIView(generics.ListAPIView):
+    queryset = RewardDistribution.objects.all().order_by("-distributed_at")
+    serializer_class = RewardDistributionSerializer
+    permission_classes = [AllowAny]
+
+
+class UserRewardListAPIView(generics.ListAPIView):
+    serializer_class = UserRewardSerializer
+    permission_classes = [AllowAny]
+
+    def get_queryset(self):
+        distribution_id = self.kwargs.get("distribution_id")
+        return UserReward.objects.filter(distribution_id=distribution_id).order_by("-total_score")
+
+
+class UserRewardByPhoneAPIView(generics.ListAPIView):
+    serializer_class = UserRewardSerializer
+    permission_classes = [AllowAny]
+
+    def get_queryset(self):
+        phone_number = self.request.query_params.get("phone_number")
+        if not phone_number:
+            return UserReward.objects.none()
+        return UserReward.objects.filter(phone_number=phone_number).order_by("-distribution__distributed_at")
+
+
+
+class UserRewardEfficiencyPagination(PageNumberPagination):
+    page_size = 10  # default users per page
+    page_size_query_param = 'page_size'
+    # max_page_size = 50
+
+
+class UserRewardEfficiencyView(APIView):
+    permission_classes = [IsAdminUser]
+
+    def get(self, request):
+        distribution = RewardDistribution.objects.order_by('-distributed_at').first()
+        if not distribution:
+            return Response({"error": "No reward distribution found."}, status=404)
+
+        per_point_value = distribution.per_point_value
+        user_points = UserPoints.objects.all()
+
+        data = []
+        for up in user_points:
+            user_reward = UserReward.objects.filter(phone_number=up.phone_number, distribution=distribution).first()
+            rewarded_money = float(user_reward.reward_amount) if user_reward else 0.0
+            expected_money = float(up.points) * float(per_point_value)
+            difference = expected_money - rewarded_money
+            percentage = (rewarded_money / expected_money * 100) if expected_money > 0 else 0
+
+            data.append({
+                "username": up.username or (up.user.username if up.user else "Guest"),
+                "phone_number": up.phone_number,
+                "points": up.points,
+                "rewarded_money": round(rewarded_money, 2),
+                "expected_money": round(expected_money, 2),
+                "difference": round(difference, 2),
+                "percentage": round(percentage, 2),
+            })
+
+        # Sort by expected_money descending
+        data.sort(key=lambda x: x["expected_money"], reverse=True)
+
+        # Paginate
+        paginator = UserRewardEfficiencyPagination()
+        result_page = paginator.paginate_queryset(data, request)
+        return paginator.get_paginated_response(result_page)

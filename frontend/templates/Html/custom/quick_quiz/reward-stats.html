@@ -1,0 +1,173 @@
+{% include "../../partials/mainhead.html"%}
+
+</head>
+<body>
+    {% include "../../partials/switcher.html" %}
+    <div class="page">
+        {% include "../../partials/header.html"%}
+        {% include "../../partials/sidebar.html" %}
+        <div class="main-content app-content">
+            <div class="container mt-5">
+                <div class="card shadow-sm rounded-3 p-4">
+                    <div class="flex justify-between items-center mb-4">
+                        <h4 class="fw-semibold text-primary">🏆 Reward Efficiency Report</h4>
+                        <button id="refreshBtn" class="btn btn-outline-primary btn-sm">🔄 Refresh</button>
+                    </div>
+
+                    <div class="table-responsive">
+                        <table class="table table-striped align-middle">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Username</th>
+                                    <th>Phone</th>
+                                    <th>Points</th>
+                                    <th>Expected (৳)</th>
+                                    <th>Rewarded (৳)</th>
+                                    <th>Difference (৳)</th>
+                                    <th>% Rewarded</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="efficiencyTableBody">
+                                <tr>
+                                    <td colspan="8" class="text-center text-muted py-4">Loading data...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="d-flex justify-content-between mt-3">
+                        <button id="prevPageBtn" class="btn btn-outline-secondary btn-sm">⬅ Previous</button>
+                        <span id="paginationInfo" class="text-muted"></span>
+                        <button id="nextPageBtn" class="btn btn-outline-secondary btn-sm">Next ➡</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% include "../../partials/footer.html" %}
+    {% include "../../partials/commonjs.html"%}
+    {% include "../../partials/custom_switcherjs.html"%}
+    <script src="../../../../static/assets/js/custom.js"></script>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const tableBody = document.getElementById("efficiencyTableBody");
+            const refreshBtn = document.getElementById("refreshBtn");
+            const prevBtn = document.getElementById("prevPageBtn");
+            const nextBtn = document.getElementById("nextPageBtn");
+            const paginationInfo = document.getElementById("paginationInfo");
+
+            let currentPage = 1;
+            let totalPages = 1;
+
+            async function fetchEfficiencyData(page = 1) {
+                const token = localStorage.getItem("access_token");
+                if (!token) {
+                    tableBody.innerHTML = `<tr><td colspan="8" class="text-center text-danger py-4">⚠️ No access token found.</td></tr>`;
+                    return;
+                }
+
+                tableBody.innerHTML = `<tr><td colspan="8" class="text-center text-muted py-4">Loading data...</td></tr>`;
+
+                try {
+                    const response = await fetch(`/api/rewards-stats/?page=${page}`, {
+                        method: "GET",
+                        headers: {
+                            "Authorization": `Bearer ${token}`,
+                            "Content-Type": "application/json"
+                        }
+                    });
+
+                    if (!response.ok) throw new Error(`Error ${response.status}`);
+                    const data = await response.json();
+
+                    renderTable(data.results);
+                    currentPage = page;
+                    totalPages = Math.ceil(data.count / 10);
+                    updatePaginationInfo();
+                } catch (error) {
+                    console.error(error);
+                    tableBody.innerHTML = `<tr><td colspan="8" class="text-center text-danger py-4">❌ Failed to load data.</td></tr>`;
+                }
+            }
+
+            function renderTable(users) {
+                if (!users.length) {
+                    tableBody.innerHTML = `<tr><td colspan="8" class="text-center text-warning py-4">No user data available.</td></tr>`;
+                    return;
+                }
+
+                tableBody.innerHTML = "";
+
+                users.forEach(user => {
+                    const rowClass = user.percentage < 50 ? "bg-danger-subtle" :
+                                     user.percentage < 80 ? "bg-warning-subtle" :
+                                     "bg-success-subtle";
+
+                    const row = document.createElement("tr");
+                    row.className = rowClass;
+                    row.innerHTML = `
+                        <td>${user.username || "Guest"}</td>
+                        <td>${user.phone_number}</td>
+                        <td>${user.points}</td>
+                        <td>${user.expected_money.toFixed(2)}</td>
+                        <td>${user.rewarded_money.toFixed(2)}</td>
+                        <td>${user.difference.toFixed(2)}</td>
+                        <td><b>${user.percentage.toFixed(2)}%</b></td>
+                        <td>
+                            <button class="btn btn-sm btn-success send-btn" data-phone="${user.phone_number}">💰 Send</button>
+                        </td>
+                    `;
+                    tableBody.appendChild(row);
+                });
+
+                // Attach click events for send buttons
+                document.querySelectorAll(".send-btn").forEach(btn => {
+                    btn.addEventListener("click", async () => {
+                        const phone = btn.dataset.phone;
+                        const token = localStorage.getItem("access_token");
+                        btn.disabled = true;
+                        btn.textContent = "⏳ Sending...";
+
+                        try {
+                            const resp = await fetch(`/api/send-rewards/?phone=${phone}`, {
+                                method: "POST",
+                                headers: { "Authorization": `Bearer ${token}` }
+                            });
+                            if (!resp.ok) throw new Error(`Error ${resp.status}`);
+                            alert(`✅ Reward sent to ${phone}`);
+                            fetchEfficiencyData(currentPage); // refresh table
+                        } catch (error) {
+                            console.error(error);
+                            alert(`❌ Failed to send reward to ${phone}`);
+                        } finally {
+                            btn.disabled = false;
+                            btn.textContent = "💰 Send";
+                        }
+                    });
+                });
+            }
+
+            function updatePaginationInfo() {
+                paginationInfo.textContent = `Page ${currentPage} of ${totalPages}`;
+                prevBtn.disabled = currentPage <= 1;
+                nextBtn.disabled = currentPage >= totalPages;
+            }
+
+            prevBtn.addEventListener("click", () => {
+                if (currentPage > 1) fetchEfficiencyData(currentPage - 1);
+            });
+
+            nextBtn.addEventListener("click", () => {
+                if (currentPage < totalPages) fetchEfficiencyData(currentPage + 1);
+            });
+
+            refreshBtn.addEventListener("click", () => fetchEfficiencyData(currentPage));
+
+            fetchEfficiencyData();
+        });
+    </script>
+</body>
+</html>
