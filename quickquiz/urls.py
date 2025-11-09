@@ -22,7 +22,7 @@ urlpatterns = [
 
 urlpatterns += [
     path('api/rewards/distribute/', RewardDistributionCreateAPIView.as_view(), name='create_distribution'),
-    path('api/rewards/', RewardDistributionListAPIView.as_view(), name='reward_list'),
+    path('api/reward-distributions/', RewardDistributionListAPIView.as_view(), name='reward_list'),
     path('api/rewards/<int:distribution_id>/', UserRewardListAPIView.as_view(), name='user_rewards'),
     path('api/rewards/user/', UserRewardByPhoneAPIView.as_view(), name='user_reward_by_phone'),
     

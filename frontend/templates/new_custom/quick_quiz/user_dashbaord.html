@@ -1,0 +1,279 @@
+
+{% extends 'new_custom/new_templates/index2.html' %}
+{% block title %}চাকরি নিউজ{% endblock %}
+
+{% block style %}
+<style>
+/* 1. Main Content Layout for Desktop */
+.page-layout {
+    display: flex;
+    justify-content: center;
+    gap: 20px; /* Space between main content and ads */
+    padding: 20px 0;
+}
+
+/* 2. Ad Containers Styling (Hidden by default on small screens) */
+.side-ad {
+    width: 160px; /* Standard wide skyscraper width */
+    flex-shrink: 0; /* Prevents the ad from shrinking */
+    display: none; /* Hide on mobile by default */
+}
+
+/* 3. Media Query to Show Ads on Large Screens (e.g., above 992px) */
+@media (min-width: 992px) {
+    .side-ad {
+        display: block; /* Show ads on large screens */
+    }
+
+    /* Adjust the main content width for better balance */
+    .main-content {
+        max-width: 750px;
+        width: 100%;
+    }
+}
+
+/* Center the news container within the main content */
+.news-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 70vh;
+}
+
+/* List container */
+.news-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    width: 100%;
+    max-width: 700px;
+}
+
+/* List items */
+.news-item {
+    border-bottom: 1px solid #e5e7eb;
+    padding: 1rem 0;
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+}
+
+.news-item:last-child {
+    border-bottom: none;
+}
+
+/* Thumbnail image */
+.news-thumb {
+    width: 120px;
+    height: 80px;
+    object-fit: cover;
+    border-radius: 8px;
+    flex-shrink: 0;
+}
+
+/* Title and meta container */
+.news-content {
+    flex: 1;
+}
+
+.news-title {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #231651;
+    text-decoration: none;
+    margin-bottom: 0.25rem;
+    display: block;
+}
+
+.news-title:hover {
+    color: #ff4b4b;
+}
+
+.news-meta {
+    font-size: 0.8rem;
+    color: #6b7280;
+    margin-bottom: 0.25rem;
+}
+
+/* Read more link */
+.btn-custom {
+    display: inline-block;
+    background-color: #ff4b4b;
+    color: #fff;
+    border: none;
+    padding: 4px 12px;
+    border-radius: 25px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-decoration: none;
+    transition: background-color 0.3s ease;
+}
+
+.btn-custom:hover {
+    background-color: #e64242;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .news-item {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    .news-thumb {
+        width: 100%;
+        height: 180px;
+    }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+                <h2 class="fw-bold mb-4 text-center text-secondary">💰 Reward Overview Dashboard</h2>
+                
+                <div class="card shadow-lg rounded-3 p-4 mb-4" id="phoneInputCard">
+                    <h5 class="fw-semibold text-primary mb-3">View Your Rewards</h5>
+                    <form id="phoneForm">
+                        <div class="mb-3">
+                            <label for="phoneNumberInput" class="form-label">Enter Your Phone Number</label>
+                            <input type="text" class="form-control" id="phoneNumberInput" placeholder="e.g., 01XXXXXXXXX" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary" id="viewStatsBtn">View My Stats</button>
+                    </form>
+                </div>
+
+                <div id="rewardDashboardContent" style="display: none;">
+                    
+                    <div class="card shadow-lg rounded-3 p-4 mb-4">
+                        <h5 class="fw-semibold text-primary mb-3">User Information & Current Period</h5>
+                        <div class="row">
+                            <div class="col-md-6 mb-2">
+                                <strong>👤 Username:</strong> <span id="dash-username" class="text-dark">--</span>
+                            </div>
+                            <div class="col-md-6 mb-2">
+                                <strong>📞 Phone:</strong> <span id="dash-phone" class="text-dark">--</span>
+                            </div>
+                            <div class="col-md-12">
+                                <strong>📅 Current Period:</strong> <span id="dash-period" class="text-success fw-semibold">--</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-4 mb-4">
+                            <div class="card card-body bg-primary text-white shadow-sm h-100">
+                                <p class="h6 text-uppercase">Total Points Earned</p>
+                                <h3 class="display-6 fw-bold mb-0" id="dash-total-points">--</h3>
+                                <p class="mt-2 mb-0">Across the current period.</p>
+                            </div>
+                        </div>
+
+                        <div class="col-md-4 mb-4">
+                            <div class="card card-body bg-success text-white shadow-sm h-100">
+                                <p class="h6 text-uppercase">Expected Reward (৳)</p>
+                                <h3 class="display-6 fw-bold mb-0" id="dash-expected-reward">--</h3>
+                                <p class="mt-2 mb-0">Your reward if paid now.</p>
+                            </div>
+                        </div>
+
+                        <div class="col-md-4 mb-4">
+                            <div class="card card-body bg-warning text-dark shadow-sm h-100">
+                                <p class="h6 text-uppercase">Points to Next Payout</p>
+                                <h3 class="display-6 fw-bold mb-0" id="dash-points-remain">--</h3>
+                                <p class="mt-2 mb-0">Points needed to hit the next 100-point milestone.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-12 mb-4">
+                            <div class="card card-body bg-info text-white shadow-sm h-100">
+                                <p class="h6 text-uppercase">Total Rewarded (Already Paid) ৳</p>
+                                <h3 class="display-5 fw-bold mb-0" id="dash-total-rewarded">--</h3>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+{% endblock %}
+
+{% block body_js %}
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+    
+    const phoneForm = document.getElementById('phoneForm');
+    const phoneNumberInput = document.getElementById('phoneNumberInput');
+    const viewStatsBtn = document.getElementById('viewStatsBtn');
+    const dashboardContent = document.getElementById('rewardDashboardContent');
+
+    // Function to fetch and display the reward stats
+    async function fetchRewardStats(phoneNumber) {
+        
+        viewStatsBtn.disabled = true;
+        viewStatsBtn.textContent = 'Loading...';
+        
+        try {
+            // Note: Since we are not requiring authentication, we skip checking the token
+            
+            const response = await fetch(`/api/user-reward-summary/`, {
+                method: "POST", // Now using POST
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    phone_number: phoneNumber
+                })
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.detail || `Error ${response.status}`);
+            }
+
+            const data = await response.json();
+
+            // Populate User Info
+            document.getElementById('dash-username').textContent = data.username || 'N/A';
+            document.getElementById('dash-phone').textContent = data.phone_number || 'N/A';
+            document.getElementById('dash-period').textContent = data.current_distribution_period;
+
+            // Populate Reward Cards
+            document.getElementById('dash-total-points').textContent = parseFloat(data.total_points).toFixed(2);
+            document.getElementById('dash-expected-reward').textContent = '৳' + parseFloat(data.expected_reward_taka).toFixed(2);
+            document.getElementById('dash-total-rewarded').textContent = '৳' + parseFloat(data.total_rewarded_taka).toFixed(2);
+            document.getElementById('dash-points-remain').textContent = parseFloat(data.points_to_next_threshold).toFixed(2) + ' Points';
+            
+            // Show the dashboard and hide the form
+            dashboardContent.style.display = 'block';
+            document.getElementById('phoneInputCard').style.display = 'none';
+
+        } catch (error) {
+            console.error("Failed to load user reward summary:", error);
+            alert(`❌ Error loading data for ${phoneNumber}: ${error.message}. Please check the number.`);
+        } finally {
+            viewStatsBtn.disabled = false;
+            viewStatsBtn.textContent = 'View My Stats';
+        }
+    }
+
+    // Handle Form Submission
+    phoneForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const phoneNumber = phoneNumberInput.value.trim();
+        if (phoneNumber) {
+            fetchRewardStats(phoneNumber);
+        } else {
+            alert("Please enter a phone number.");
+        }
+    });
+
+    // Initial check (If the user is logged in, you could still try to fetch the phone number from the token 
+    // and skip the form, but this logic assumes unauthenticated access is the primary method here.)
+
+});
+</script>
+
+{% endblock %}

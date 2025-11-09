@@ -14,6 +14,16 @@
                         <button id="refreshBtn" class="btn btn-outline-primary btn-sm">🔄 Refresh</button>
                     </div>
 
+                    <div class="row mb-3 align-items-center">
+                        <div class="col-md-4">
+                            <label for="distributionSelector" class="form-label fw-semibold">Select Distribution Period:</label>
+                        </div>
+                        <div class="col-md-8">
+                            <select id="distributionSelector" class="form-select">
+                                <option value="">Loading periods...</option>
+                            </select>
+                        </div>
+                    </div>
                     <div class="table-responsive">
                         <table class="table table-striped align-middle">
                             <thead class="table-light">
@@ -46,128 +56,281 @@
         </div>
     </div>
 
+    <div class="modal fade" id="sendRewardModal" tabindex="-1" aria-labelledby="sendRewardModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="sendRewardModalLabel">💰 Send Custom Reward</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form id="sendRewardForm">
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label for="modalPhone" class="form-label">Phone Number</label>
+                            <input type="text" class="form-control" id="modalPhone" name="phone_number" readonly>
+                        </div>
+                        <div class="mb-3">
+                            <label for="modalExpectedAmount" class="form-label">Expected Reward Amount (৳)</label>
+                            <input type="text" class="form-control" id="modalExpectedAmount" readonly>
+                        </div>
+                        <div class="mb-3">
+                            <label for="modalSendAmount" class="form-label fw-bold">Amount to Send (৳)</label>
+                            <input type="number" step="0.01" class="form-control" id="modalSendAmount" name="amount" required min="0.01">
+                        </div>
+                        <div class="mb-3">
+                            <label for="modalNote" class="form-label">Note (Optional)</label>
+                            <textarea class="form-control" id="modalNote" name="note" rows="2"></textarea>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-success" id="confirmSendBtn">Send Reward</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
     {% include "../../partials/footer.html" %}
     {% include "../../partials/commonjs.html"%}
     {% include "../../partials/custom_switcherjs.html"%}
     <script src="../../../../static/assets/js/custom.js"></script>
-
+    
     <script>
         document.addEventListener("DOMContentLoaded", () => {
-            const tableBody = document.getElementById("efficiencyTableBody");
-            const refreshBtn = document.getElementById("refreshBtn");
-            const prevBtn = document.getElementById("prevPageBtn");
-            const nextBtn = document.getElementById("nextPageBtn");
-            const paginationInfo = document.getElementById("paginationInfo");
+    // --- Element Selectors ---
+    const tableBody = document.getElementById("efficiencyTableBody");
+    const refreshBtn = document.getElementById("refreshBtn");
+    const prevBtn = document.getElementById("prevPageBtn");
+    const nextBtn = document.getElementById("nextPageBtn");
+    const paginationInfo = document.getElementById("paginationInfo");
+    const distributionSelector = document.getElementById("distributionSelector");
 
-            let currentPage = 1;
-            let totalPages = 1;
+    // --- Modal Elements ---
+    // Ensure 'bootstrap' is globally available
+    const sendRewardModal = new bootstrap.Modal(document.getElementById('sendRewardModal'));
+    const sendRewardForm = document.getElementById('sendRewardForm');
+    const modalPhone = document.getElementById('modalPhone');
+    const modalExpectedAmount = document.getElementById('modalExpectedAmount');
+    const modalSendAmount = document.getElementById('modalSendAmount');
+    const modalNote = document.getElementById('modalNote');
+    const confirmSendBtn = document.getElementById('confirmSendBtn');
 
-            async function fetchEfficiencyData(page = 1) {
-                const token = localStorage.getItem("access_token");
-                if (!token) {
-                    tableBody.innerHTML = `<tr><td colspan="8" class="text-center text-danger py-4">⚠️ No access token found.</td></tr>`;
-                    return;
-                }
+    // --- State Variables ---
+    let currentPage = 1;
+    let totalPages = 1;
+    let currentDistributionId = null; 
 
-                tableBody.innerHTML = `<tr><td colspan="8" class="text-center text-muted py-4">Loading data...</td></tr>`;
+    const getToken = () => localStorage.getItem("access_token");
 
-                try {
-                    const response = await fetch(`/api/rewards-stats/?page=${page}`, {
-                        method: "GET",
-                        headers: {
-                            "Authorization": `Bearer ${token}`,
-                            "Content-Type": "application/json"
-                        }
-                    });
+    // --- 1. Fetch and Populate Distribution Selector ---
+    async function fetchDistributions() {
+        const token = getToken();
+        if (!token) {
+            console.warn("No access token found. Cannot fetch distributions.");
+            return;
+        }
 
-                    if (!response.ok) throw new Error(`Error ${response.status}`);
-                    const data = await response.json();
-
-                    renderTable(data.results);
-                    currentPage = page;
-                    totalPages = Math.ceil(data.count / 10);
-                    updatePaginationInfo();
-                } catch (error) {
-                    console.error(error);
-                    tableBody.innerHTML = `<tr><td colspan="8" class="text-center text-danger py-4">❌ Failed to load data.</td></tr>`;
-                }
+        try {
+            const response = await fetch(`/api/reward-distributions/`, {
+                method: "GET",
+                headers: { "Authorization": `Bearer ${token}` }
+            });
+            
+            if (!response.ok) throw new Error('Failed to fetch distributions');
+            const distributions = await response.json();
+            
+            if (distributions.length === 0) {
+                distributionSelector.innerHTML = '<option value="">No distributions found</option>';
+                tableBody.innerHTML = `<tr><td colspan="8" class="text-center text-warning py-4">No completed distributions available.</td></tr>`;
+                return;
             }
 
-            function renderTable(users) {
-                if (!users.length) {
-                    tableBody.innerHTML = `<tr><td colspan="8" class="text-center text-warning py-4">No user data available.</td></tr>`;
-                    return;
-                }
-
-                tableBody.innerHTML = "";
-
-                users.forEach(user => {
-                    const rowClass = user.percentage < 50 ? "bg-danger-subtle" :
-                                     user.percentage < 80 ? "bg-warning-subtle" :
-                                     "bg-success-subtle";
-
-                    const row = document.createElement("tr");
-                    row.className = rowClass;
-                    row.innerHTML = `
-                        <td>${user.username || "Guest"}</td>
-                        <td>${user.phone_number}</td>
-                        <td>${user.points}</td>
-                        <td>${user.expected_money.toFixed(2)}</td>
-                        <td>${user.rewarded_money.toFixed(2)}</td>
-                        <td>${user.difference.toFixed(2)}</td>
-                        <td><b>${user.percentage.toFixed(2)}%</b></td>
-                        <td>
-                            <button class="btn btn-sm btn-success send-btn" data-phone="${user.phone_number}">💰 Send</button>
-                        </td>
-                    `;
-                    tableBody.appendChild(row);
-                });
-
-                // Attach click events for send buttons
-                document.querySelectorAll(".send-btn").forEach(btn => {
-                    btn.addEventListener("click", async () => {
-                        const phone = btn.dataset.phone;
-                        const token = localStorage.getItem("access_token");
-                        btn.disabled = true;
-                        btn.textContent = "⏳ Sending...";
-
-                        try {
-                            const resp = await fetch(`/api/send-rewards/?phone=${phone}`, {
-                                method: "POST",
-                                headers: { "Authorization": `Bearer ${token}` }
-                            });
-                            if (!resp.ok) throw new Error(`Error ${resp.status}`);
-                            alert(`✅ Reward sent to ${phone}`);
-                            fetchEfficiencyData(currentPage); // refresh table
-                        } catch (error) {
-                            console.error(error);
-                            alert(`❌ Failed to send reward to ${phone}`);
-                        } finally {
-                            btn.disabled = false;
-                            btn.textContent = "💰 Send";
-                        }
-                    });
-                });
-            }
-
-            function updatePaginationInfo() {
-                paginationInfo.textContent = `Page ${currentPage} of ${totalPages}`;
-                prevBtn.disabled = currentPage <= 1;
-                nextBtn.disabled = currentPage >= totalPages;
-            }
-
-            prevBtn.addEventListener("click", () => {
-                if (currentPage > 1) fetchEfficiencyData(currentPage - 1);
+            distributionSelector.innerHTML = '';
+            distributions.forEach(dist => {
+                const option = document.createElement('option');
+                option.value = dist.id;
+                // Display format: TYPE (Start Date to End Date) - Total Amount
+                option.textContent = `${dist.distribution_type.toUpperCase()} (${dist.start_date} → ${dist.end_date}) - ৳${parseFloat(dist.total_amount).toFixed(2)}`;
+                distributionSelector.appendChild(option);
             });
 
-            nextBtn.addEventListener("click", () => {
-                if (currentPage < totalPages) fetchEfficiencyData(currentPage + 1);
+            // Select the latest distribution and load data
+            currentDistributionId = distributions[0].id;
+            distributionSelector.value = currentDistributionId;
+            fetchEfficiencyData(currentPage);
+            
+        } catch (error) {
+            console.error("Distribution fetch error:", error);
+            distributionSelector.innerHTML = '<option value="">Error loading periods</option>';
+            tableBody.innerHTML = `<tr><td colspan="8" class="text-center text-danger py-4">❌ Error loading distribution periods.</td></tr>`;
+        }
+    }
+
+    // --- 2. Fetch Reward Efficiency Data ---
+    async function fetchEfficiencyData(page = 1) {
+        const token = getToken();
+        if (!token || !currentDistributionId) {
+            tableBody.innerHTML = `<tr><td colspan="8" class="text-center text-danger py-4">⚠️ Select a distribution period or login.</td></tr>`;
+            return;
+        }
+
+        tableBody.innerHTML = `<tr><td colspan="8" class="text-center text-muted py-4">Loading data...</td></tr>`;
+
+        try {
+            // Include the selected distribution ID in the query params
+            const response = await fetch(`/api/rewards-stats/?page=${page}&distribution_id=${currentDistributionId}`, {
+                method: "GET",
+                headers: {
+                    "Authorization": `Bearer ${token}`,
+                    "Content-Type": "application/json"
+                }
             });
 
-            refreshBtn.addEventListener("click", () => fetchEfficiencyData(currentPage));
+            if (!response.ok) throw new Error(`Error ${response.status}`);
+            const data = await response.json();
 
-            fetchEfficiencyData();
+            renderTable(data.results);
+            currentPage = page;
+            totalPages = data.count > 0 ? Math.ceil(data.count / 10) : 1; 
+            updatePaginationInfo();
+        } catch (error) {
+            console.error(error);
+            tableBody.innerHTML = `<tr><td colspan="8" class="text-center text-danger py-4">❌ Failed to load reward stats.</td></tr>`;
+        }
+    }
+
+    // --- 3. Render Table Data ---
+    function renderTable(users) {
+        if (!users.length) {
+            tableBody.innerHTML = `<tr><td colspan="8" class="text-center text-warning py-4">No user data available for this period.</td></tr>`;
+            return;
+        }
+
+        tableBody.innerHTML = "";
+
+        users.forEach(user => {
+            // Determine row color based on percentage rewarded
+            const percentage = user.percentage || 0;
+            const rowClass = percentage < 50 ? "bg-danger-subtle" :
+                             percentage < 80 ? "bg-warning-subtle" :
+                             "bg-success-subtle";
+
+            const row = document.createElement("tr");
+            row.className = rowClass;
+            row.innerHTML = `
+                <td>${user.username || "Guest"}</td>
+                <td>${user.phone_number}</td>
+                <td>${user.points}</td>
+                <td>${parseFloat(user.expected_money).toFixed(2)}</td>
+                <td>${parseFloat(user.rewarded_money).toFixed(2)}</td>
+                <td>${parseFloat(user.difference).toFixed(2)}</td>
+                <td><b>${percentage.toFixed(2)}%</b></td>
+                <td>
+                    <button class="btn btn-sm btn-success send-btn" 
+                            data-bs-toggle="modal" 
+                            data-bs-target="#sendRewardModal"
+                            data-phone="${user.phone_number}" 
+                            data-expected-amount="${parseFloat(user.expected_money).toFixed(2)}">
+                        💰 Send Reward
+                    </button>
+                </td>
+            `;
+            tableBody.appendChild(row);
         });
+
+        // Attach click events to pre-fill the modal
+        document.querySelectorAll(".send-btn").forEach(btn => {
+            btn.addEventListener("click", () => {
+                const phone = btn.dataset.phone;
+                const expectedAmount = btn.dataset.expectedAmount;
+                
+                // Pre-fill modal fields
+                modalPhone.value = phone;
+                modalExpectedAmount.value = expectedAmount;
+                modalSendAmount.value = expectedAmount; // Default to expected amount
+                modalNote.value = ''; // Clear previous note
+                modalSendAmount.focus();
+            });
+        });
+    }
+
+    // --- 4. Handle Modal Form Submission (Custom Reward Send) ---
+    sendRewardForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        const phone = modalPhone.value;
+        const amount = modalSendAmount.value;
+        const note = modalNote.value; 
+
+        const token = getToken();
+        if (!token || !currentDistributionId) {
+            alert("Authentication required or no distribution period selected.");
+            return;
+        }
+
+        confirmSendBtn.disabled = true;
+        confirmSendBtn.textContent = "⏳ Sending...";
+
+        try {
+            // Ensure this endpoint matches your Django/API implementation
+            const resp = await fetch(`/api/rewards/distribute/`, { 
+                method: "POST",
+                headers: { 
+                    "Authorization": `Bearer ${token}`,
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({ 
+                    phone_number: phone, 
+                    amount: amount,
+                    note: note,
+                    // 👇 CRITICAL: Send the ID of the currently selected distribution
+                    distribution_id: currentDistributionId 
+                })
+            });
+
+            if (!resp.ok) {
+                const errorData = await resp.json();
+                throw new Error(errorData.detail || `Error ${resp.status}`);
+            }
+            
+            sendRewardModal.hide(); 
+            alert(`✅ Reward of ৳${parseFloat(amount).toFixed(2)} sent to ${phone}`);
+            fetchEfficiencyData(currentPage); // refresh table
+        } catch (error) {
+            console.error("Reward Send Error:", error);
+            alert(`❌ Failed to send reward to ${phone}: ${error.message}`);
+        } finally {
+            confirmSendBtn.disabled = false;
+            confirmSendBtn.textContent = "Send Reward";
+        }
+    });
+
+    // --- 5. Pagination & Event Listeners ---
+    function updatePaginationInfo() {
+        paginationInfo.textContent = `Page ${currentPage} of ${totalPages}`;
+        prevBtn.disabled = currentPage <= 1;
+        nextBtn.disabled = currentPage >= totalPages;
+    }
+
+    distributionSelector.addEventListener('change', () => {
+        currentDistributionId = distributionSelector.value;
+        currentPage = 1; 
+        fetchEfficiencyData(currentPage);
+    });
+
+    prevBtn.addEventListener("click", () => {
+        if (currentPage > 1) fetchEfficiencyData(currentPage - 1);
+    });
+
+    nextBtn.addEventListener("click", () => {
+        if (currentPage < totalPages) fetchEfficiencyData(currentPage + 1);
+    });
+
+    refreshBtn.addEventListener("click", () => fetchEfficiencyData(currentPage));
+
+    // --- Initialization ---
+    fetchDistributions();
+});
     </script>
 </body>
 </html>

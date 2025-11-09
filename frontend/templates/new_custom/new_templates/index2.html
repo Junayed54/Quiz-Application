@@ -1005,24 +1005,9 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   
   if ('serviceWorker' in navigator) {
     navigator.serviceWorker.register('/firebase-messaging-sw.js')
-    // navigator.serviceWorker.register('/static/Js/new_templates_js/sw.js', { scope: '/ads/' })
       .then((reg) => {
         console.log('Service Worker registered');
 
-        /*if (Notification.permission === 'granted') {
-          requestAndSendToken(reg);
-        } else if (Notification.permission !== 'denied') {
-          //btn.style.display = 'inline-block';
-          btn.addEventListener('click', () => {
-            Notification.requestPermission().then(permission => {
-              if (permission === 'granted') requestAndSendToken(reg);
-              else console.warn("Permission denied by user.");
-            });
-          });
-        } else {
-          console.warn("Notifications denied earlier.");
-        }
-          */
 
         Notification.requestPermission().then(permission => {
           if (permission === 'granted') {

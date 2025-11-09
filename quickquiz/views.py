@@ -17,6 +17,9 @@ from rest_framework import status
 from rest_framework.views import APIView
 from .models import *
 from .serializers import *
+from django.shortcuts import get_object_or_404
+from django.db import IntegrityError
+from decimal import Decimal
 from django.contrib.auth import get_user_model
 User = get_user_model()
 
@@ -635,57 +638,95 @@ class AdminAnalyticsAPIView(APIView):
 
 
 class RewardDistributionCreateAPIView(APIView):
-    permission_classes = [IsAdmin]
+    permission_classes = [IsAdminUser]
 
     def post(self, request):
-        distribution_type = request.data.get("distribution_type")
-
-        if not distribution_type:
-            return Response({"error": "distribution_type is required"}, status=status.HTTP_400_BAD_REQUEST)
-
-        # Create distribution object
-        distribution = RewardDistribution.objects.create(distribution_type=distribution_type)
-        distribution.calculate_period()
-
-        # Example: Fetch top users or all users with scores
-        # Replace this section with your leaderboard or score model logic
-        from quiz.models import Exam  # Example import if your scores come from Exam
-        user_scores = (
-            Exam.objects.values("user__username", "user__phone_number")
-            .annotate(total_score=Sum("correct_answers"))
-            .filter(created_at__date__range=[distribution.start_date, distribution.end_date])
-            .order_by("-total_score")
-        )
-
-        total_amount = 0
-        total_users = 0
-
-        for user_data in user_scores:
-            username = user_data["user__username"]
-            phone = user_data["user__phone_number"]
-            score = user_data["total_score"]
-
-            user_reward = UserReward.objects.create(
-                distribution=distribution,
-                username=username,
-                phone_number=phone,
-                total_score=score
+        phone_number = request.data.get("phone_number")
+        amount_str = request.data.get("amount")
+        note = request.data.get("note", "Manual Admin Reward")
+        # 👇 NEW: Capture the distribution ID from the frontend
+        distribution_id = request.data.get("distribution_id") 
+        
+        # 1. Validation and Type Conversion
+        if not phone_number or not amount_str or not distribution_id:
+            return Response(
+                {"detail": "Phone number, amount, and distribution ID are required."},
+                status=status.HTTP_400_BAD_REQUEST
             )
-            user_reward.calculate_reward()
+        
+        try:
+            reward_amount = Decimal(amount_str).quantize(Decimal('0.01'))
+            if reward_amount <= 0:
+                 return Response(
+                    {"detail": "Amount must be greater than zero."},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+        except Exception:
+            return Response(
+                {"detail": "Invalid amount format."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
 
-            total_users += 1
-            total_amount += user_reward.reward_amount
+        # 2. Get Specified Distribution
+        try:
+            # 👇 Fetch the SPECIFIC distribution requested by the admin
+            distribution = RewardDistribution.objects.get(id=distribution_id)
+        except RewardDistribution.DoesNotExist:
+            return Response(
+                {"detail": f"Reward distribution with ID {distribution_id} not found."},
+                status=status.HTTP_404_NOT_FOUND
+            )
 
-        distribution.total_users = total_users
-        distribution.total_amount = total_amount
-        distribution.save()
+        # 3. Create or Update UserReward
+        try:
+            # Check for an existing UserReward for this distribution and phone number
+            user_reward, created = UserReward.objects.get_or_create(
+                distribution=distribution,
+                phone_number=phone_number,
+                defaults={
+                    'username': 'Admin-Sent', 
+                    'total_score': 0,
+                    'reward_amount': reward_amount,
+                }
+            )
 
-        return Response({
-            "message": f"{distribution.get_distribution_type_display()} reward distributed successfully.",
-            "total_users": total_users,
-            "total_amount": total_amount,
-            "distribution": RewardDistributionSerializer(distribution).data
-        }, status=status.HTTP_201_CREATED)
+            if not created:
+                # If the record exists, update the reward amount and note
+                original_amount = user_reward.reward_amount
+                user_reward.reward_amount = reward_amount
+                
+                # Update note logic
+                current_note = getattr(user_reward, 'note', '') 
+                if note != "Manual Admin Reward":
+                     # Use 'Manual Adjustment' to distinguish from initial calculated reward
+                     user_reward.note = (current_note + f" | Manual Adjustment: ৳{reward_amount} ({note})" ) if current_note else f"Manual Adjustment: ৳{reward_amount} ({note})"
+                
+                user_reward.save()
+            
+            # 4. Update Distribution Totals
+            if created:
+                distribution.total_amount += reward_amount
+                distribution.total_users += 1
+            else:
+                distribution.total_amount += (reward_amount - original_amount)
+                
+            distribution.save()
+            
+            return Response({
+                "detail": f"Reward of ৳{reward_amount} successfully sent/updated for {phone_number} in distribution ID {distribution_id}.",
+                "status": "updated" if not created else "created"
+            }, status=status.HTTP_200_OK)
+
+        except IntegrityError:
+            return Response(
+                {"detail": "A reward record already exists for this user/period and could not be updated."}, 
+                status=status.HTTP_409_CONFLICT
+            )
+        except Exception as e:
+            return Response(
+                {"detail": f"An error occurred during reward processing: {e}"},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
 
 
 class RewardDistributionListAPIView(generics.ListAPIView):
@@ -730,19 +771,38 @@ class UserRewardEfficiencyView(APIView):
             return Response({"error": "No reward distribution found."}, status=404)
 
         per_point_value = distribution.per_point_value
-        user_points = UserPoints.objects.all()
+        # Assuming UserPoints is the model containing the user's score/points
+        user_points = UserPoints.objects.all().select_related('user') # Use select_related for performance
 
         data = []
         for up in user_points:
-            user_reward = UserReward.objects.filter(phone_number=up.phone_number, distribution=distribution).first()
+            
+            # --- START OF REQUIRED LOGIC UPDATE ---
+            if up.user:
+                # If registered (up.user exists), use phone number from the linked User
+                current_phone_number = up.user.phone_number # Assuming the Django User model has a phone_number field
+                current_username = up.user.username
+            else:
+                # If not registered, use phone number directly from UserPoints
+                current_phone_number = up.phone_number
+                current_username = up.username or "Guest"
+            # --- END OF REQUIRED LOGIC UPDATE ---
+
+            # Find the existing reward for this user in this distribution
+            user_reward = UserReward.objects.filter(
+                phone_number=current_phone_number, 
+                distribution=distribution
+            ).first()
+            
+            # Calculate metrics
             rewarded_money = float(user_reward.reward_amount) if user_reward else 0.0
             expected_money = float(up.points) * float(per_point_value)
             difference = expected_money - rewarded_money
             percentage = (rewarded_money / expected_money * 100) if expected_money > 0 else 0
 
             data.append({
-                "username": up.username or (up.user.username if up.user else "Guest"),
-                "phone_number": up.phone_number,
+                "username": current_username,
+                "phone_number": current_phone_number,
                 "points": up.points,
                 "rewarded_money": round(rewarded_money, 2),
                 "expected_money": round(expected_money, 2),
@@ -751,9 +811,77 @@ class UserRewardEfficiencyView(APIView):
             })
 
         # Sort by expected_money descending
-        data.sort(key=lambda x: x["expected_money"], reverse=True)
+        data.sort(key=lambda x: x["difference"], reverse=True)
 
         # Paginate
         paginator = UserRewardEfficiencyPagination()
         result_page = paginator.paginate_queryset(data, request)
         return paginator.get_paginated_response(result_page)
+    
+    
+class UserRewardStatsAPIView(APIView):
+    """
+    Provides a personalized reward summary using a phone number.
+    """
+    permission_classes = [AllowAny] # Removed IsAuthenticated
+
+    def post(self, request): # Changed to POST request
+        # 1. Get Phone Number from Request Body
+        phone_number = request.data.get("phone_number")
+        if not phone_number:
+            return Response(
+                {"detail": "Phone number is required."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        # NOTE: You'll need logic to fetch the username/user details based on the phone number
+        # Assuming a UserProfile or similar model stores this.
+        try:
+            # Example: Fetch a related user object just for the username (if needed)
+            # You might need to adjust this based on your user model structure.
+            user_profile = get_object_or_404(User, phone_number=phone_number)
+            username = user_profile.username # Or whatever field holds the name
+        except Exception:
+            # If the phone number isn't registered, we can still proceed with zeros
+            username = "Guest User" 
+
+        # 2. Fetch Latest Distribution Data
+        latest_distribution = RewardDistribution.objects.order_by('-distributed_at').first()
+        
+        # Default values
+        total_points = Decimal('0.00')
+        expected_reward = Decimal('0.00')
+        total_rewarded = Decimal('0.00')
+        points_to_next_100 = Decimal('0.00') 
+        
+        if latest_distribution:
+            try:
+                # Check UserReward using the provided phone_number
+                user_reward_record = UserReward.objects.get(
+                    distribution=latest_distribution, 
+                    phone_number=phone_number
+                )
+                total_points = user_reward_record.total_score
+                expected_reward = user_reward_record.expected_money
+                total_rewarded = user_reward_record.rewarded_money
+                
+                # Recalculate remaining points (same logic as before)
+                if total_points > 0:
+                    points_modulo_100 = total_points % Decimal('100.00')
+                    if points_modulo_100 != 0:
+                        points_to_next_100 = Decimal('100.00') - points_modulo_100
+                
+            except UserReward.DoesNotExist:
+                # Phone number is valid but has no reward record in the latest period.
+                pass
+        
+        # 3. Final Output
+        return Response({
+            "username": username,
+            "phone_number": phone_number,
+            "total_points": total_points.quantize(Decimal('0.01')),
+            "expected_reward_taka": expected_reward.quantize(Decimal('0.01')),
+            "total_rewarded_taka": total_rewarded.quantize(Decimal('0.01')),
+            "points_to_next_threshold": points_to_next_100.quantize(Decimal('0.01')),
+            "current_distribution_period": latest_distribution.start_date.strftime("%b %d") + " - " + latest_distribution.end_date.strftime("%b %d") if latest_distribution else "N/A"
+        })
