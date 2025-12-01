@@ -212,7 +212,7 @@ class SendNotificationView(APIView):
         failed_count = 0
 
         # 🚀 Batch send if many tokens
-        if len(tokens) > 10:  # You can adjust this threshold
+        if len(tokens) > 10:  # Adjust threshold if needed
             message = messaging.MulticastMessage(
                 notification=messaging.Notification(
                     title=title,
@@ -222,14 +222,17 @@ class SendNotificationView(APIView):
                 data={"url": click_action_url} if click_action_url else {},
                 tokens=tokens,
             )
-            response = messaging.send_multicast(message)
-            sent_count = response.success_count
-            failed_count = response.failure_count
+
+            # Use send_each_for_multicast in your current firebase-admin version
+            responses = messaging.send_each_for_multicast(message)
+
+            sent_count = sum(1 for r in responses if r.success)
+            failed_count = sum(1 for r in responses if not r.success)
+
         else:
             # Fallback: send individually
             for token in tokens:
                 try:
-                    # Assuming a function send_data_message exists
                     messaging.send(
                         messaging.Message(
                             notification=messaging.Notification(title, body, image_url),
@@ -241,7 +244,7 @@ class SendNotificationView(APIView):
                 except Exception as e:
                     logger.error(f"Notification failed for token={token}, error={e}")
                     failed_count += 1
-        
+
         # 📝 Log the notification attempt
         NotificationLog.objects.create(
             title=title,
