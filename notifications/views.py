@@ -44,7 +44,7 @@ class SendNotificationView(APIView):
             return Response({"error": "Device token is required"}, status=400)
 
         result = send_fcm_message(device_token, title, body)
-        return Response(result)
+        return Response(result) 
 
 
 
