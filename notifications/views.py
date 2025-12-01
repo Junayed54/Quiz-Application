@@ -226,8 +226,9 @@ class SendNotificationView(APIView):
             # Use send_each_for_multicast in your current firebase-admin version
             responses = messaging.send_each_for_multicast(message)
 
-            sent_count = sum(1 for r in responses if r.success)
-            failed_count = sum(1 for r in responses if not r.success)
+            sent_count = sum(1 for r in responses.responses if r.success)
+            failed_count = sum(1 for r in responses.responses if not r.success)
+
 
         else:
             # Fallback: send individually
