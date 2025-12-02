@@ -194,6 +194,86 @@ class SegmentUsersRawView(APIView):
             return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
         
         
+# class SendNotificationView(APIView):
+#     permission_classes = [IsAuthenticated]
+
+#     def post(self, request):
+#         serializer = SendNotificationInputSerializer(data=request.data)
+#         serializer.is_valid(raise_exception=True)
+#         data = serializer.validated_data
+
+#         tokens = data['tokens']
+#         title = data['title']
+#         body = data['body']
+#         image_url = data.get('image')
+#         click_action_url = data.get('url')
+
+#         sent_count = 0
+#         failed_count = 0
+
+#         # 🚀 Batch send if many tokens
+#         if len(tokens) > 10:  # Adjust threshold if needed
+#             message = messaging.MulticastMessage(
+#                 notification=messaging.Notification(
+#                     title=title,
+#                     body=body,
+#                     image=image_url,
+#                 ),
+#                 data={"url": click_action_url} if click_action_url else {},
+#                 tokens=tokens,
+#             )
+
+#             # Use send_each_for_multicast in your current firebase-admin version
+#             responses = messaging.send_each_for_multicast(message)
+
+#             sent_count = sum(1 for r in responses.responses if r.success)
+#             failed_count = sum(1 for r in responses.responses if not r.success)
+
+
+#         else:
+#             # Fallback: send individually
+#             for token in tokens:
+#                 try:
+#                     messaging.send(
+#                         messaging.Message(
+#                             notification=messaging.Notification(title, body, image_url),
+#                             data={"url": click_action_url} if click_action_url else {},
+#                             token=token
+#                         )
+#                     )
+#                     sent_count += 1
+#                 except Exception as e:
+#                     logger.error(f"Notification failed for token={token}, error={e}")
+#                     failed_count += 1
+
+#         # 📝 Log the notification attempt
+#         NotificationLog.objects.create(
+#             title=title,
+#             body=body,
+#             tokens=tokens,
+#             success_count=sent_count,
+#             failure_count=failed_count
+#         )
+
+#         return Response({
+#             'message': f'Notification send attempt complete for {len(tokens)} tokens.',
+#             'sent_count': sent_count,
+#             'failed_count': failed_count
+#         }, status=status.HTTP_200_OK)
+
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import status
+from rest_framework.permissions import IsAuthenticated
+from firebase_admin import messaging
+import logging
+
+from .serializers import SendNotificationInputSerializer
+from .models import NotificationLog
+
+logger = logging.getLogger(__name__)
+
+
 class SendNotificationView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -205,30 +285,27 @@ class SendNotificationView(APIView):
         tokens = data['tokens']
         title = data['title']
         body = data['body']
-        image_url = data.get('image')
-        click_action_url = data.get('url')
+        image_url = data.get('image') or ""   # avoid None → undefined
+        click_action_url = data.get('url') or ""  # avoid None → undefined
 
         sent_count = 0
         failed_count = 0
 
         # 🚀 Batch send if many tokens
-        if len(tokens) > 10:  # Adjust threshold if needed
+        if len(tokens) > 10:
             message = messaging.MulticastMessage(
-                notification=messaging.Notification(
-                    title=title,
-                    body=body,
-                    image=image_url,
-                ),
-                data={"url": click_action_url} if click_action_url else {},
+                data={
+                    "title": title,
+                    "body": body,
+                    "image": image_url,
+                    "url": click_action_url,
+                },
                 tokens=tokens,
             )
 
-            # Use send_each_for_multicast in your current firebase-admin version
             responses = messaging.send_each_for_multicast(message)
-
             sent_count = sum(1 for r in responses.responses if r.success)
             failed_count = sum(1 for r in responses.responses if not r.success)
-
 
         else:
             # Fallback: send individually
@@ -236,8 +313,12 @@ class SendNotificationView(APIView):
                 try:
                     messaging.send(
                         messaging.Message(
-                            notification=messaging.Notification(title, body, image_url),
-                            data={"url": click_action_url} if click_action_url else {},
+                            data={
+                                "title": title,
+                                "body": body,
+                                "image": image_url,
+                                "url": click_action_url,
+                            },
                             token=token
                         )
                     )
@@ -260,8 +341,6 @@ class SendNotificationView(APIView):
             'sent_count': sent_count,
             'failed_count': failed_count
         }, status=status.HTTP_200_OK)
-
-
         
 
 class LogActivityView(APIView):
