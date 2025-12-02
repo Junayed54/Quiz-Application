@@ -226,6 +226,7 @@ async function fetchQuestions(subjectId) {
 
         const data = await response.json();
         currentState.questions = data.questions;
+        cosole.log(data.questions);
         currentState.total_questions = data.questions.length;
         saveState(); // Save the initial state and set flags
 
