@@ -394,15 +394,42 @@
             </nav>
         </div>
 
-        <div class="container mt-5">
-        <div class="card shadow-lg border-0">
+       
+        <!-- <div class="card shadow-lg border-0">
             <div class="table-responsive-wrapper">
                 <h2 class="h4 fw-bold px-4 pt-3 mb-sm-0" style="color: #66FFF0">Today's Performers</h2>
 
-                <!-- <div class="d-flex justify-content-center mb-3">
+                 <div class="d-flex justify-content-center mb-3">
                     <input type="date" id="dateInput" class="form-control w-25 me-2">
                     <button id="loadDataBtn" class="btn btn-primary">Load Data</button>
-                </div> -->
+                </div> 
+
+                <div id="message" class="text-center text-muted mb-3"></div>
+
+                <table class="table-dark-bg mb-0 p-4 rounded">
+                    <thead class="table-primary text-center">
+                        <tr style="color: #8DE7DD;">
+                            <th>Rank</th>
+                            <th>Username</th>
+                            <th>Score</th>
+                        </tr>
+                    </thead>
+                    <tbody id="scorerTable" class="text-center"></tbody>
+                </table>
+            </div>
+        </div> -->
+
+        <div class="card shadow-lg border-0">
+            <div class="table-responsive-wrapper">
+
+                <h2 class="h4 fw-bold px-4 pt-3 mb-sm-0" style="color: #66FFF0">Today's Performers</h2>
+
+                <!-- Range Filter -->
+                <div class="d-flex justify-content-center my-3 gap-2">
+                    <input type="date" id="startDate" class="form-control w-25">
+                    <input type="date" id="endDate" class="form-control w-25">
+                    <button id="filterBtn" class="btn btn-info text-dark fw-bold">Filter</button>
+                </div>
 
                 <div id="message" class="text-center text-muted mb-3"></div>
 
@@ -418,6 +445,7 @@
                 </table>
             </div>
         </div>
+
     </div>
 
     </div>
@@ -429,38 +457,34 @@
 {% block body_js %}
 <script src="../../../static/Js/quickquiz/leaderboard.js"></script>
 <script>
-document.addEventListener('DOMContentLoaded', () => {
-    const apiURL = "/api/top-scorers/";  // Update if your API URL differs
+document.addEventListener("DOMContentLoaded", () => {
+    const apiURL = "/api/top-scorers/";
     const tableBody = document.getElementById("scorerTable");
     const message = document.getElementById("message");
-    const dateInput = document.getElementById("dateInput");
-    const loadBtn = document.getElementById("loadDataBtn");
 
-    // ✅ Fetch and render leaderboard
-    async function loadTopScorers(selectedDate = null) {
+    // ---------- FUNCTION: LOAD LEADERBOARD (Daily or Range) ----------
+    async function loadTopScorers(params = "") {
         tableBody.innerHTML = "";
-        //message.textContent = "Loading data... ⏳";
+        message.textContent = "Loading...";
 
         try {
-            const url = selectedDate ? `${apiURL}?date=${selectedDate}` : apiURL;
-            const res = await fetch(url, {
+            const res = await fetch(`${apiURL}${params}`, {
                 headers: { "Content-Type": "application/json" },
             });
 
-            if (!res.ok) throw new Error(`HTTP error! Status: ${res.status}`);
+            if (!res.ok) throw new Error(`HTTP Error: ${res.status}`);
 
             const data = await res.json();
-            console.log("Daily leaderboard:", data);
+            console.log("Leaderboard:", data);
 
             if (!data.leaderboard || data.leaderboard.length === 0) {
-                message.textContent = "No data available for this date.";
-                tableBody.innerHTML = `<tr><td colspan="3" class="text-muted text-center">No results found</td></tr>`;
+                message.textContent = "No results found.";
                 return;
             }
 
-           // message.textContent = `Date: ${data.date} | Total Attempts: ${data.total_attempts} | Unique Users: ${data.unique_users}`;
+            message.textContent = "";
 
-            // ✅ Populate leaderboard table
+            // Render leaderboard
             data.leaderboard.forEach((item, index) => {
                 const row = `
                     <tr class="${index === 0 ? 'table-success' : ''}">
@@ -471,27 +495,32 @@ document.addEventListener('DOMContentLoaded', () => {
                         </td>
                     </tr>
                 `;
-                tableBody.insertAdjacentHTML('beforeend', row);
+                tableBody.insertAdjacentHTML("beforeend", row);
             });
 
-        } catch (error) {
-            console.error("Error loading data:", error);
-            message.textContent = "⚠️ Failed to fetch leaderboard data.";
+        } catch (err) {
+            console.error(err);
+            message.textContent = "⚠️ Unable to load leaderboard.";
         }
     }
 
-    // ✅ Load today’s data by default
+    // ---------- LOAD TODAY'S DATA BY DEFAULT ----------
     loadTopScorers();
 
-    // ✅ Optional: add manual date picker support (if you have input and button)
-    if (loadBtn && dateInput) {
-        loadBtn.addEventListener("click", () => {
-            const selectedDate = dateInput.value;
-            if (selectedDate) {
-                loadTopScorers(selectedDate);
-            } else {
-                message.textContent = "Please select a date first.";
+    // ---------- RANGE FILTER ----------
+    const filterBtn = document.getElementById("filterBtn");
+
+    if (filterBtn) {
+        filterBtn.addEventListener("click", () => {
+            const start = document.getElementById("startDate").value;
+            const end = document.getElementById("endDate").value;
+
+            if (!start || !end) {
+                message.textContent = "Please select both start & end date.";
+                return;
             }
+
+            loadTopScorers(`?start_date=${start}&end_date=${end}`);
         });
     }
 });
