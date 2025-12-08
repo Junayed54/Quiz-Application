@@ -173,10 +173,18 @@ class NewsViewSet(viewsets.ModelViewSet):
                         for batch_tokens in chunk_list(all_tokens, 500):
                             
                             message = messaging.MulticastMessage(
-                                # *** ONLY SENDING DATA PAYLOAD ***
+                                # # *** ONLY SENDING DATA PAYLOAD ***
+                                # data=notification_data,
+                                # tokens=batch_tokens,
+                                # # Notification key is REMOVED to prevent double notifications
+                                
+                                
+                                notification=messaging.Notification(
+                                    title=title,
+                                    body=body,
+                                ),
                                 data=notification_data,
                                 tokens=batch_tokens,
-                                # Notification key is REMOVED to prevent double notifications
                             )
                             
                             response = messaging.send_each_for_multicast(message)
