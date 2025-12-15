@@ -66,7 +66,7 @@
     </div>
 
     <!-- Game Over Screen -->
-    <div id="gameOverScreen" class="game-over-screen hidden">
+    <!-- <div id="gameOverScreen" class="game-over-screen hidden">
       <div class="game-over-content">
         <div class="trophy-icon">
           <svg width="80" height="80" viewBox="0 0 24 24" fill="none">
@@ -86,7 +86,31 @@
           <button class="btn-secondary" onclick="goHome()">Back to Home</button>
         </div>
       </div>
+    </div> -->
+    <div id="gameOverScreen" class="game-over-screen hidden">
+    <div class="game-over-content">
+        <div class="trophy-icon">
+            <svg width="80" height="80" viewBox="0 0 24 24" fill="none">
+                <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"
+                    fill="#FFD700" stroke="#FFD700" stroke-width="1" />
+            </svg>
+        </div>
+        <h2 class="game-over-title">Game Over!</h2>
+
+        <div class="final-score">
+            <div class="final-score-value" id="finalScore">0</div>
+            <div class="final-score-label">Words Solved</div>
+        </div>
+
+        <div class="game-over-buttons">
+            <button class="btn-primary" onclick="playAgain()">Play Again</button>
+            
+            <button class="btn-secondary" onclick="goToLeaderboard()">Leaderboard</button> 
+            
+            <button class="btn-secondary" onclick="goHome()">Back to Home</button>
+        </div>
     </div>
+</div>
   </div>
 {% endblock %}
 {% block body_js %}

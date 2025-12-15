@@ -665,5 +665,11 @@ function goHome() {
     window.location.href = "/word-games/";
 }
 
+// NEW FUNCTION FOR LEADERBOARD
+function goToLeaderboard() {
+    // New link for the leaderboard
+    window.location.href = "/word-games/leaderboard/";
+}
+
 // ================= START GAME =================
 document.addEventListener('DOMContentLoaded', startGame);
