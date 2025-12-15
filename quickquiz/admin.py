@@ -118,3 +118,32 @@ class UserRewardAdmin(admin.ModelAdmin):
     search_fields = ('username', 'phone_number')
     readonly_fields = ('reward_amount',)
     ordering = ('-total_score',)
+    
+    
+    
+class WordGameScoreInline(admin.StackedInline):
+    model = WordGameScore
+    extra = 0
+    max_num = 1
+    can_delete = False
+    verbose_name = "Word Game Score"
+    verbose_name_plural = "Word Game Score"
+
+
+@admin.register(Player)
+class PlayerAdmin(admin.ModelAdmin):
+    list_display = ("id", "username_display", "phone_number", "user")
+    search_fields = ("username", "phone_number", "user__username")
+    list_filter = ("user",)
+    inlines = [WordGameScoreInline]
+
+    def username_display(self, obj):
+        return obj.user.username if obj.user else obj.username
+
+    username_display.short_description = "Player Name"
+
+
+@admin.register(WordGameScore)
+class WordGameScoreAdmin(admin.ModelAdmin):
+    list_display = ("player", "score")
+    search_fields = ("player__username", "player__phone_number", "player__user__username")

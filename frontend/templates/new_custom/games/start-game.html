@@ -1,0 +1,101 @@
+{% extends 'new_custom/new_templates/index2.html' %}
+{% load static %}
+
+{% block title %}Mixup - Word Scramble Game{% endblock %}
+
+{% block head_link %} 
+    <link rel="stylesheet" href="{% static 'assets/css/games/games.css' %}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&display=swap" rel="stylesheet">
+{% endblock%}
+
+{% block content %}
+    <div class="container">
+    <!-- Game Screen -->
+    <div id="gameScreen" class="game-screen">
+      <!-- Header -->
+      <div class="game-header">
+        <button class="back-button" onclick="goHome()">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M19 12H5M5 12L12 19M5 12L12 5" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+              stroke-linejoin="round" />
+          </svg>
+          Back
+        </button>
+        <h1 class="game-title">Mixup Game</h1>
+        <p class="game-subtitle">Unscramble the letters to find the word!</p>
+      </div>
+
+      <!-- Stats Bar -->
+      <div class="stats-bar">
+        <div class="stat-item">
+          <svg class="stat-icon" width="24" height="24" viewBox="0 0 24 24" fill="none">
+            <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"
+              fill="#FFD700" stroke="#FFD700" stroke-width="2" />
+          </svg>
+          <div class="stat-content">
+            <div class="stat-value" id="scoreDisplay">0</div>
+            <div class="stat-label">Score</div>
+          </div>
+        </div>
+        <div class="stat-item">
+          <svg class="stat-icon" width="24" height="24" viewBox="0 0 24 24" fill="none">
+            <circle cx="12" cy="12" r="10" stroke="#4ECDC4" stroke-width="2" />
+            <path d="M12 6V12L16 14" stroke="#4ECDC4" stroke-width="2" stroke-linecap="round" />
+          </svg>
+          <div class="stat-content">
+            <div class="stat-value" id="timerDisplay">3:00</div>
+            <div class="stat-label">Time Left</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Game Board -->
+      <div class="game-board">
+        <div class="board-container">
+          <div id="slotsContainer" class="slots-container"></div>
+          <div id="tilesContainer" class="tiles-container"></div>
+        </div>
+      </div>
+
+      <!-- Skip Button -->
+      <div class="action-buttons">
+        <button class="skip-button" onclick="skipWord()">Skip Word</button>
+      </div>
+    </div>
+
+    <!-- Game Over Screen -->
+    <div id="gameOverScreen" class="game-over-screen hidden">
+      <div class="game-over-content">
+        <div class="trophy-icon">
+          <svg width="80" height="80" viewBox="0 0 24 24" fill="none">
+            <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"
+              fill="#FFD700" stroke="#FFD700" stroke-width="1" />
+          </svg>
+        </div>
+        <h2 class="game-over-title">Game Over!</h2>
+
+        <div class="final-score">
+          <div class="final-score-value" id="finalScore">0</div>
+          <div class="final-score-label">Words Solved</div>
+        </div>
+
+        <div class="game-over-buttons">
+          <button class="btn-primary" onclick="playAgain()">Play Again</button>
+          <button class="btn-secondary" onclick="goHome()">Back to Home</button>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock %}
+{% block body_js %}
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/Draggable.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <script src="{% static 'Js/games/words.js' %}"></script>
+
+    <script src="{% static 'Js/games/start-game.js' %}"></script>
+{% endblock %}

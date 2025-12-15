@@ -1,0 +1,109 @@
+{% extends 'new_custom/new_templates/index2.html' %}
+{% load static %}
+
+{% block title %}Mixup - Word Scramble Game{% endblock %}
+{% block style %}
+<style>
+.rank-number {
+    width: 30px;
+    text-align: center;
+}
+
+.list-group-item {
+    transition: background 0.2s;
+}
+
+.list-group-item:hover {
+    background-color: #f8f9fa;
+}
+</style>
+{% endblock %}
+<!-- {% block head_link %} 
+    <link rel="stylesheet" href="{% static 'assets/css/games/games.css' %}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&display=swap" rel="stylesheet">
+{% endblock%} -->
+
+{% block content %}
+    <div class="container py-5">
+
+        <!-- Header -->
+        <div class="text-center mb-4">
+            <h2 class="fw-bold">🏆 Word Game Leaderboard</h2>
+            <p class="text-muted">Top players of the week</p>
+        </div>
+
+        <!-- Leaderboard Card -->
+        <div class="card shadow-sm">
+            <div class="card-body p-0">
+
+                <!-- Loader -->
+                <div id="loader" class="text-center p-4">
+                    <div class="spinner-border text-primary"></div>
+                    <p class="mt-2">Loading leaderboard...</p>
+                </div>
+
+                <ul id="leaderboardList" class="list-group list-group-flush d-none">
+                    <!-- Data will be inserted here -->
+                </ul>
+
+            </div>
+        </div>
+    </div>
+
+{% endblock %}
+{% block body_js %}
+    <!-- JS for fetching leaderboard -->
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+    fetchLeaderboard();
+});
+
+function fetchLeaderboard() {
+    fetch("/api/word-game/leaderboard/")
+        .then(res => res.json())
+        .then(data => {
+            const list = document.getElementById("leaderboardList");
+            const loader = document.getElementById("loader");
+
+            loader.classList.add("d-none");
+            list.classList.remove("d-none");
+
+            if (!data.leaderboard || data.leaderboard.length === 0) {
+                list.innerHTML = `
+                    <li class='list-group-item text-center py-4'>
+                        <strong>No players yet.</strong>
+                    </li>`;
+                return;
+            }
+
+            list.innerHTML = ""; 
+
+            data.leaderboard.forEach((player, index) => {
+                const rank = index + 1;
+
+                const username = player.username ?? "Guest User";
+                const phone = player.phone ?? "N/A";
+                const score = player.score;
+
+                list.innerHTML += `
+                    <li class="list-group-item d-flex justify-content-between align-items-center py-3">
+                        <div class="d-flex align-items-center">
+                            <span class="rank-number me-3 fw-bold fs-5">${rank}</span>
+                            <div>
+                                <div class="fw-bold">${username}</div>
+                                <!-- <small class="text-muted">${phone}</small> -->
+                            </div>
+                        </div>
+                        <span class="badge bg-primary rounded-pill fs-6 px-3">${score}</span>
+                    </li>
+                `;
+            });
+        })
+        .catch(error => {
+            console.error("Error fetching leaderboard:", error);
+        });
+}
+</script>
+{% endblock %}

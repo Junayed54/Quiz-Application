@@ -38,3 +38,9 @@ urlpatterns +=[
     
     path("send-rewards/", TemplateView.as_view(template_name="Html/custom/quick_quiz/send_rewards_form.html")),
 ]
+
+urlpatterns +=[
+    path("api/word-game/submit/", SubmitWordGame.as_view(), name="submit_word_game_attempt"),
+    path("api/word-game/leaderboard/", WordGameLeaderboard.as_view(), name="wordgame_leaderboard"),
+
+]

@@ -2,7 +2,7 @@ from django.db import models
 from django.contrib.auth import get_user_model
 User = get_user_model()
 from django.utils import timezone
-from datetime import date, datetime
+from datetime import date, timedelta
 # Create your models here.
 class Subject(models.Model):
     name = models.CharField(max_length=100)
@@ -149,3 +149,22 @@ class UserReward(models.Model):
         """Default rule: 100 score = 1.00 Taka"""
         self.reward_amount = round(self.total_score / 100, 2)
         self.save()
+
+class Player(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE,
+                                null=True, blank=True)
+    username = models.CharField(max_length=150, null=True, blank=True)
+    phone_number = models.CharField(max_length=20, null=True, blank=True)
+
+    def __str__(self):
+        if self.user:
+            return self.user.username
+        return f"{self.username} ({self.phone_number})"
+  
+        
+class WordGameScore(models.Model):
+    player = models.OneToOneField(Player, on_delete=models.CASCADE)
+    score = models.IntegerField(default=0)
+
+    def __str__(self):
+        return f"{self.player} - {self.score}"

@@ -1,0 +1,83 @@
+{% extends 'new_custom/new_templates/index2.html' %}
+{% load static %}
+
+{% block title %}Mixup - Word Scramble Game{% endblock %}
+
+{% block head_link %} 
+    <link rel="stylesheet" href="{% static 'assets/css/games/games.css' %}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&display=swap" rel="stylesheet">
+{% endblock%}
+
+{% block content %}
+    <div class="container">
+        <div class="home-content">
+            <!-- Logo -->
+            <div class="logo-container">
+                <div class="logo">
+                    <svg viewBox="0 0 200 80" xmlns="http://www.w3.org/2000/svg">
+                        <defs>
+                            <linearGradient id="logoGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" style="stop-color:#FF6B6B;stop-opacity:1" />
+                                <stop offset="50%" style="stop-color:#4ECDC4;stop-opacity:1" />
+                                <stop offset="100%" style="stop-color:#45B7D1;stop-opacity:1" />
+                            </linearGradient>
+                        </defs>
+                        <text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" 
+                              fill="url(#logoGradient)" font-size="48" font-weight="800" 
+                              font-family="Poppins, sans-serif">
+                            MIXUP
+                        </text>
+                    </svg>
+                </div>
+                <p class="tagline">Unscramble. Win. Repeat.</p>
+            </div>
+
+            <!-- Play Button -->
+            <div class="button-container">
+                <button class="play-button" onclick="startGame()">
+                    <svg class="play-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M8 5v14l11-7L8 5z" fill="currentColor"/>
+                    </svg>
+                    <span>PLAY NOW</span>
+                </button>
+            </div>
+
+            <!-- Game Info -->
+            <div class="game-info">
+                <div class="info-card">
+                    <div class="info-icon">⏱️</div>
+                    <div class="info-text">3 Minutes</div>
+                </div>
+                <div class="info-card">
+                    <div class="info-icon">🎯</div>
+                    <div class="info-text">150 Words</div>
+                </div>
+                <div class="info-card">
+                    <div class="info-icon">🏆</div>
+                    <div class="info-text">Beat Your Score</div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+{% block body_js %}
+    <script>
+        function startGame() {
+            window.location.href = '/word-games/start/';
+        }
+
+        // Add floating animation to logo
+        document.addEventListener('DOMContentLoaded', () => {
+            const logo = document.querySelector('.logo-container');
+            let offset = 0;
+            
+            setInterval(() => {
+                offset += 0.02;
+                const y = Math.sin(offset) * 10;
+                logo.style.transform = `translateY(${y}px)`;
+            }, 30);
+        });
+    </script>
+{% endblock %}

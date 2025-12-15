@@ -26,6 +26,12 @@ urlpatterns = [
     path('model-test/leaderboard/<uuid:exam_id>/', TemplateView.as_view(template_name="new_custom/quiz/model_test_leaderboard.html")),
     path('past-exam/leaderboard/<int:id>/', TemplateView.as_view(template_name="new_custom/quiz/past_exam_leaderboard.html")),
     path('quizzes/', TemplateView.as_view(template_name="new_custom/new_templates/questions.html")),
+    path('quiz-games/', TemplateView.as_view(template_name="new_custom/new_templates/quiz_&_games.html")),
+    path('word-games/', TemplateView.as_view(template_name="new_custom/games/word-games.html")),
+    
+    path('word-games/start/', TemplateView.as_view(template_name="new_custom/games/start-game.html")),
+    path('word-games/leaderboard/', TemplateView.as_view(template_name="new_custom/games/word-game-leaderboard.html")),
+    
     path('prev_result/<int:pk>/', TemplateView.as_view(template_name="new_custom/new_templates/prev_exam_result.html")),
     
     path('model-tests/<uuid:id>/', TemplateView.as_view(template_name="new_custom/quiz/model_test_details.html")),

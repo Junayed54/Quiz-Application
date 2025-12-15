@@ -546,7 +546,7 @@ class DailyTopScorerAPIView(APIView):
             key=lambda x: x["total_score"],
             reverse=True
         )
-        # print(leaderboard)
+        print(leaderboard)
         # ✅ Response
         return Response({
             "date_range": f"{start_date} to {end_date}",
@@ -885,3 +885,81 @@ class UserRewardStatsAPIView(APIView):
             "points_to_next_threshold": points_to_next_100.quantize(Decimal('0.01')),
             "current_distribution_period": latest_distribution.start_date.strftime("%b %d") + " - " + latest_distribution.end_date.strftime("%b %d") if latest_distribution else "N/A"
         })
+        
+        
+class SubmitWordGame(APIView):
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        score = request.data.get("score")
+        username = request.data.get("username")
+        phone = request.data.get("phone_number")
+
+        if score is None:
+            return Response({"error": "Score is required"}, status=400)
+
+        score = int(score)
+
+        # ------------------------------------
+        # 1. Authenticated User
+        # ------------------------------------
+        if request.user.is_authenticated:
+            player, created = Player.objects.get_or_create(
+                user=request.user
+            )
+
+        else:
+            # ------------------------------------
+            # 2. Guest User
+            # ------------------------------------
+            if not username or not phone:
+                return Response(
+                    {"error": "username and phone_number are required"},
+                    status=400
+                )
+
+            # Check if guest player exists
+            player, created = Player.objects.get_or_create(
+                phone_number=phone,
+                defaults={"username": username}
+            )
+
+            # If player exists but username changed → update
+            if not created and player.username != username:
+                player.username = username
+                player.save()
+
+        # ------------------------------------
+        # 3. CREATE OR UPDATE SCORE
+        # ------------------------------------
+        game_score, created = WordGameScore.objects.get_or_create(
+            player=player
+        )
+
+        
+        game_score.score += score
+        game_score.save()
+
+        return Response({
+            "message": "Score submitted successfully",
+            "player_id": player.id,
+            "score": game_score.score
+        })
+
+
+class WordGameLeaderboard(APIView):
+    permission_classes = [AllowAny]
+
+    def get(self, request):
+        top_players = WordGameScore.objects.select_related("player").order_by("-score")[:20]
+
+        data = [
+            {
+                "username": p.player.username if p.player.username else (p.player.user.username if p.player.user else None),
+                "phone": p.player.phone_number,
+                "score": p.score
+            }
+            for p in top_players
+        ]
+
+        return Response({"leaderboard": data})
