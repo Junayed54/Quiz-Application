@@ -28,6 +28,11 @@ urlpatterns += [
     
     
     path('api/rewards-stats/', UserRewardEfficiencyView.as_view()),
+    
+    path("api/puzzles/", PuzzleListView.as_view(), name="puzzle-list"),
+
+    path('api/puzzles/<int:puzzle_id>/word/', PuzzleWordView.as_view(), name='puzzle-word'),
+
 ] 
 
 # templates

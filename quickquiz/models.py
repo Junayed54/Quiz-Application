@@ -161,7 +161,42 @@ class Player(models.Model):
             return self.user.username
         return f"{self.username} ({self.phone_number})"
   
-        
+class WordPuzzle(models.Model):
+    title = models.CharField(max_length=200)
+    banner = models.ImageField(upload_to="puzzle_banners/", null=True, blank=True)
+
+    start_date = models.DateTimeField(null=True, blank=True)
+    end_date = models.DateTimeField(null=True, blank=True)
+
+    status = models.CharField(
+        max_length=20,
+        choices=[("active", "Active"), ("upcoming", "Upcoming"), ("ended", "Ended")],
+        default="active"
+    )
+
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.title
+
+
+class Word(models.Model):
+    puzzle = models.ForeignKey(WordPuzzle, on_delete=models.CASCADE, related_name="words")
+
+    text = models.CharField(max_length=100)       # original word
+    hint = models.CharField(max_length=200, blank=True, null=True)
+
+    difficulty = models.CharField(
+        max_length=20,
+        choices=[("easy", "Easy"), ("medium", "Medium"), ("hard", "Hard")],
+        default="easy"
+    )
+
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.text} ({self.difficulty})"
+  
 class WordGameScore(models.Model):
     player = models.OneToOneField(Player, on_delete=models.CASCADE)
     score = models.IntegerField(default=0)

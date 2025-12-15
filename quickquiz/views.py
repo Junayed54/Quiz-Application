@@ -886,7 +886,49 @@ class UserRewardStatsAPIView(APIView):
             "current_distribution_period": latest_distribution.start_date.strftime("%b %d") + " - " + latest_distribution.end_date.strftime("%b %d") if latest_distribution else "N/A"
         })
         
+# --------------------------------------------------------
+# 1. GET PUZZLE LIST
+# --------------------------------------------------------
+class PuzzleListView(APIView):
+    def get(self, request):
+        puzzles = WordPuzzle.objects.filter(status="active")
+        return Response({
+            "type": "success",
+            "message": "Puzzle list loaded successfully",
+            "data": PuzzleSerializer(puzzles, many=True).data
+        })
+
+
+# --------------------------------------------------------
+# 2. GET NEXT PUZZLE WORD (One by One)
+# --------------------------------------------------------
+class PuzzleWordView(APIView):
+
+    def get(self, request, puzzle_id):
+        # user, guest = get_request_user(request)
+        puzzle = get_object_or_404(WordPuzzle, id=puzzle_id)
+
+        # Get all words
+        words = list(Word.objects.filter(puzzle=puzzle))
+
+        if not words:
+            return Response({"type": "error", "message": "No words found", "data": []}, status=404)
+
+        # Option 1: Random word every time (unlimited)
+        word = random.choice(words)
+
+        return Response({
+            "type": "success",
+            "message": "Next puzzle word loaded",
+            "data": {
+                "word_id": word.id,
+                "text": word.text,
+                "hint": word.hint,
+                "difficulty": word.difficulty
+            }
+        })
         
+                
 class SubmitWordGame(APIView):
     permission_classes = [AllowAny]
 

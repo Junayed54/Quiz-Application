@@ -120,7 +120,27 @@ class UserRewardAdmin(admin.ModelAdmin):
     ordering = ('-total_score',)
     
     
-    
+
+# ---------------------------------
+# Word Inline (inside Puzzle)
+# ---------------------------------
+class WordInline(admin.TabularInline):
+    model = Word
+    extra = 1
+    fields = ("text", "hint", "difficulty", "created_at")
+    readonly_fields = ("created_at",)
+
+
+# ---------------------------------
+# WordPuzzle Admin
+# ---------------------------------
+class WordPuzzleAdmin(admin.ModelAdmin):
+    list_display = ("title", "status", "start_date", "end_date", "created_at")
+    list_filter = ("status",)
+    search_fields = ("title",)
+    inlines = [WordInline]
+
+admin.site.register(WordPuzzle, WordPuzzleAdmin)
 class WordGameScoreInline(admin.StackedInline):
     model = WordGameScore
     extra = 0

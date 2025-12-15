@@ -298,7 +298,7 @@ const cellGap = 6;
 const cellDistance = cellSize + cellGap; // 56
 
 // ================= API ENDPOINTS =================
-const API_WORD_URL = "http://161.97.141.58:8005/api/puzzles/1/word/"; 
+const API_WORD_URL = "/api/puzzles/1/word/"; 
 const API_SUBMIT_URL = "/api/word-game/submit/"; 
 
 // ================= DOM ELEMENTS =================
@@ -643,7 +643,7 @@ async function endGame() {
 // ================= GAME FLOW =================
 function startGame() {
     score = 0;
-    timeLeft = 20; 
+    timeLeft = 180; 
     gameOver = false;
 
     scoreDisplay.textContent = score;
