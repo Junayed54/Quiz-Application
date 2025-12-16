@@ -133,7 +133,7 @@
 <main class="container py-5">
 
     <div class="text-center mb-5">
-        <h1 id="category-header" class="fw-bold text-primary">সংবাদ</h1>
+        <h1 id="category-header" class="d-none fw-bold text-primary">সংবাদ</h1>
         <p class="lead text-muted">চাকরি, শিক্ষা, এবং অন্যান্য গুরুত্বপূর্ণ খবর</p>
     </div>
 
@@ -202,7 +202,7 @@ document.addEventListener("DOMContentLoaded", async function() {
             document.title = category.name + ' | চাকরি নিউজ';
         } catch (error) {
             console.warn('Could not fetch category name:', error);
-            categoryHeader.textContent = 'ক্যাটাগরি খবর'; // Fallback
+            categoryHeader.textContent = 'চাকরি খবর'; // Fallback
         }
     }
 
