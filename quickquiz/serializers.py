@@ -120,3 +120,6 @@ class UserRewardSerializer(serializers.ModelSerializer):
             'id', 'username', 'phone_number', 'total_score', 'reward_amount',
             'distribution', 'distribution_type', 'start_date', 'end_date'
         ]
+
+
+

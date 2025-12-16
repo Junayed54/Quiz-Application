@@ -1,5 +1,11 @@
 from django.contrib import admin
-from .models import News, NewsImage
+from .models import *
+
+@admin.register(NewsCategory)
+class NewsCategoryAdmin(admin.ModelAdmin):
+    list_display = ("id", "name")
+    search_fields = ("name",)
+   
 
 class NewsImageInline(admin.TabularInline):
     """
@@ -15,13 +21,13 @@ class NewsAdmin(admin.ModelAdmin):
     """
     list_display = ('title', 'author', 'published_date', 'created_at')
     list_filter = ('published_date', 'author')
-    search_fields = ('title', 'content')
+    search_fields = ('title', 'content', "category__name")
     date_hierarchy = 'published_date'
     inlines = [NewsImageInline]
     readonly_fields = ('created_at', 'updated_at')
     fieldsets = (
         (None, {
-            'fields': ('title', 'content', 'published_date', 'author')
+            'fields': ('category', 'title', 'content', 'published_date', 'author')
         }),
         ('Timestamps', {
             'fields': ('created_at', 'updated_at'),

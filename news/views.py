@@ -1,7 +1,10 @@
 from rest_framework import viewsets, permissions
 from django.utils import timezone
-from .models import News
-from .serializers import NewsSerializer
+from .models import *
+from .serializers import *
+from rest_framework.viewsets import ModelViewSet
+from rest_framework.permissions import IsAuthenticatedOrReadOnly
+from rest_framework.exceptions import ValidationError
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from firebase_admin import messaging
@@ -117,10 +120,48 @@ class NewsPagination(PageNumberPagination):
 #                 failure_count=failed_count,
 #             )
 
+class NewsCategoryViewSet(ModelViewSet):
+    queryset = NewsCategory.objects.all().order_by("name")
+    serializer_class = NewsCategorySerializer
+    permission_classes = [IsAuthenticatedOrReadOnly]
+
+
+
 class NewsViewSet(viewsets.ModelViewSet):
     queryset = News.objects.all().order_by("-created_at")
     serializer_class = NewsSerializer
     pagination_class = NewsPagination
+    
+    def get_queryset(self):
+        # 1. Start with the base queryset, ordered by creation date
+        queryset = News.objects.all().order_by("-created_at")
+
+        user = self.request.user
+        
+        # --- Standard User Role Filtering ---
+        if user.is_authenticated:
+            if user.role in ["teacher", "admin"]:
+                # If the user is a teacher/admin, show only their news (or the admin's view)
+                queryset = queryset.filter(author=user)
+        # -----------------------------------
+        
+        # 2. Check for the 'category_id' query parameter
+        category_id = self.request.query_params.get('category_id')
+
+        if category_id:
+            try:
+                # Filter the queryset if category_id is provided
+                # Assuming your News model has a ForeignKey called 'category' to a Category model
+                queryset = queryset.filter(category_id=category_id)
+            except ValueError:
+                # Handle cases where category_id is not a valid integer if needed
+                pass
+
+        # 3. Return the final filtered queryset
+        return queryset
+
+# The URL for filtering would be: /api/news/?category_id=5
+    
     
     def get_permissions(self):
         if self.action in ["create", "update", "partial_update", "destroy"]:
@@ -135,7 +176,21 @@ class NewsViewSet(viewsets.ModelViewSet):
     
     def perform_create(self, serializer):
         """Create a News object and send a Data-Only notification."""
-        news_instance = serializer.save(author=self.request.user, published_date=timezone.now())
+        category_id = self.request.data.get("category_id")
+        category = None
+
+        if category_id:
+            try:
+                category = NewsCategory.objects.get(id=category_id)
+            except NewsCategory.DoesNotExist:
+                raise ValidationError({"category_id": "Invalid category ID"})
+
+        # 🔹 Save News with category
+        news_instance = serializer.save(
+            author=self.request.user,
+            category=category,
+            published_date=timezone.now()
+        )
 
         send_notification = self.request.data.get("send_notification", False)
 
@@ -243,4 +298,3 @@ class NewsViewSet(viewsets.ModelViewSet):
                 success_count=total_success_count,
                 failure_count=total_failure_count,
             )
-

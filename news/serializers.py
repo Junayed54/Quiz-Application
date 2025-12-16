@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import News, NewsImage
+from .models import *
 from rest_framework import serializers
 
 class NewsImageSerializer(serializers.ModelSerializer):
@@ -15,6 +15,12 @@ class NewsImageSerializer(serializers.ModelSerializer):
             return request.build_absolute_uri(obj.image.url)
         return None
 
+class NewsCategorySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = NewsCategory
+        fields = ["id", "name"]
+
+
 
 class NewsSerializer(serializers.ModelSerializer):
     images = NewsImageSerializer(many=True, read_only=True)
@@ -27,7 +33,7 @@ class NewsSerializer(serializers.ModelSerializer):
     class Meta:
         model = News
         fields = [
-            "id", "title", "content", "author",
+            "id", "category", "title", "content", "author",
             "created_at", "updated_at", "published_date",
             "images", "uploaded_images"
         ]

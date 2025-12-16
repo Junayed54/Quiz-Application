@@ -90,8 +90,8 @@ document.addEventListener("DOMContentLoaded", async () => {
     const res = await axios.get("/api/news/", {
       headers: { Authorization: `Bearer ${token}` },
     });
-    const newsItems = res.data;
-
+    const newsItems = res.data.results;
+    console.log("news", newsItems);
     if (!newsItems.length) {
       newsList.innerHTML = `<p class="text-center text-muted">No news found.</p>`;
       return;

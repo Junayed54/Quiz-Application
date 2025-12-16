@@ -61,7 +61,8 @@ urlpatterns +=[
 
 # News
 urlpatterns +=[
-    path('news/', TemplateView.as_view(template_name='new_custom/news/all_news.html')),
+    path('news/', TemplateView.as_view(template_name='new_custom/news/news_category.html')),
+    path('news/<int:pk>/', TemplateView.as_view(template_name='new_custom/news/all_news.html')),
     path('news/details/<int:pk>/', TemplateView.as_view(template_name='new_custom/news/news_details.html')),
 ]
 

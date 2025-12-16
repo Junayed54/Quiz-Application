@@ -1,0 +1,171 @@
+{% extends 'new_custom/new_templates/index2.html' %}
+{% load static %}
+
+{% block title %}চাকরি নিউজ | Job Categories{% endblock %}
+
+{% block style %}
+<style>
+/* --- Global & Typography (Dark Theme) --- */
+body {
+    /* Dark, rich background gradient */
+    background: linear-gradient(135deg, #1f1c2c 0%, #0e0d16 100%);
+    color: #f0f0f0; /* Light text for contrast */
+    font-family: 'Poppins', sans-serif; 
+}
+
+/* --- Page Header Styling --- */
+.page-header {
+    background: linear-gradient(to right, #2c3e50, #1f1c2c);
+    border-bottom: 3px solid #66bb6a; /* Vibrant accent color */
+    padding: 30px 0;
+    margin-bottom: 40px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+}
+
+.page-header h2 {
+    color: #ffffff;
+    font-weight: 700;
+}
+
+.page-header p {
+    color: #cccccc;
+}
+
+/* --- Category Card Styling --- */
+.category-card-link {
+    text-decoration: none;
+    color: inherit;
+    display: block;
+    height: 100%;
+}
+
+.category-card {
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.1); 
+    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5); 
+    background: #252331; 
+    padding: 25px;
+    
+    /* === FIX: ENFORCE FIXED HEIGHT AND CENTER CONTENT === */
+    height: 180px; /* Fixed height for all cards */
+    display: flex;
+    align-items: center; /* Center content vertically */
+    justify-content: center; /* Center content horizontally */
+    flex-direction: column; /* Stack icon and title vertically */
+}
+
+.category-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.7);
+    background: #3a384f;
+}
+
+.category-icon {
+    font-size: 2.5rem;
+    background: linear-gradient(45deg, #66bb6a, #a5d6a7); 
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-bottom: 15px;
+    display: inline-block;
+    filter: drop-shadow(0 0 5px rgba(102, 187, 106, 0.8));
+}
+
+.card-title {
+    font-weight: 600;
+    color: #ffffff;
+    margin-bottom: 0; /* Remove default margin */
+}
+
+/* --- Centering the Cards in the Row --- */
+#categoryCards {
+    justify-content: center; 
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div class="container">
+        <h2 class="text-center">📰 Job News Categories</h2>
+        <p class="text-center text-muted mb-0">Select the employment sector you are interested in.</p>
+    </div>
+</div>
+
+<div class="container pb-5">
+
+    <div class="row" id="categoryCards">
+        
+        <div class="col-12 text-center py-5 mb-4" id="categoryLoader">
+            <div class="spinner-border text-success" role="status"></div>
+            <p class="mt-2 text-muted">Loading categories...</p>
+        </div>
+        
+        </div>
+
+</div>
+{% endblock %}
+
+{% block body_js %}
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+
+<script>
+document.addEventListener("DOMContentLoaded", async () => {
+
+    const categoryCards = document.getElementById("categoryCards");
+    const categoryLoader = document.getElementById("categoryLoader");
+
+    function getCategoryIcon(name) {
+        const lowerName = name.toLowerCase();
+        if (lowerName.includes('govt') || lowerName.includes('government')) return 'fas fa-landmark';
+        if (lowerName.includes('private')) return 'fas fa-briefcase';
+        if (lowerName.includes('bank')) return 'fas fa-piggy-bank';
+        if (lowerName.includes('education') || lowerName.includes('school')) return 'fas fa-graduation-cap';
+        if (lowerName.includes('it') || lowerName.includes('software')) return 'fas fa-laptop-code';
+        if (lowerName.includes('medical') || lowerName.includes('health')) return 'fas fa-kit-medical';
+        if (lowerName.includes('defence') || lowerName.includes('army') || lowerName.includes('police')) return 'fas fa-shield-halved';
+        return 'fas fa-scroll'; 
+    }
+
+    async function loadCategories() {
+        categoryLoader.style.display = 'block'; 
+
+        try {
+            const res = await axios.get("/api/news-categories/");
+            categoryCards.innerHTML = '';
+            categoryLoader.style.display = 'none'; 
+
+            if (res.data.length === 0) {
+                 categoryCards.innerHTML = `<div class="col-12"><div class="alert alert-warning text-center">No job categories found.</div></div>`;
+                 return;
+            }
+
+            res.data.forEach(cat => {
+                const col = document.createElement('div');
+                col.className = "col-lg-3 col-md-4 col-sm-6 mb-4 d-flex"; 
+
+                const icon = getCategoryIcon(cat.name); 
+
+                col.innerHTML = `
+                    <a href="/news/${cat.id}/" class="category-card-link">
+                        <div class="card category-card text-center">
+                            <i class="${icon} category-icon"></i>
+                            <h5 class="card-title">${cat.name}</h5>
+                        </div>
+                    </a>
+                `;
+                
+                categoryCards.appendChild(col);
+            });
+
+        } catch (err) {
+            categoryLoader.style.display = 'none';
+            categoryCards.innerHTML = `<div class="col-12"><div class="alert alert-danger text-center">Error loading categories. Please check your API.</div></div>`;
+            console.error("Failed to load categories", err);
+        }
+    }
+
+    loadCategories();
+});
+</script>
+{% endblock %}

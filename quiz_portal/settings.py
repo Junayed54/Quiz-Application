@@ -25,7 +25,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'wkf6c#&j%k%-jae(!p_*dq&9x*j_cvsa_l4ump#5f-^p1b(-8b'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 # FRONTEND_URL = 'http://localhost:8000'
 
 # ALLOWED_HOSTS = []
@@ -262,7 +262,7 @@ AUTH_PASSWORD_VALIDATORS = []
 
 # Internationalization settings
 LANGUAGE_CODE = 'en-us'
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'Asia/Dhaka'
 USE_I18N = True
 USE_TZ = True
 

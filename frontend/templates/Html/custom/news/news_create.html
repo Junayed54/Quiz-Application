@@ -84,6 +84,23 @@
                 <div class="card-body">
                     <form id="newsForm">
                         <div class="mb-3">
+                            <label class="form-label">Category</label>
+
+                            <div class="input-group">
+                                <select id="categorySelect" class="form-select" required>
+                                    <option value="">Select category</option>
+                                </select>
+
+                                <button type="button"
+                                        class="btn btn-outline-primary"
+                                        data-bs-toggle="modal"
+                                        data-bs-target="#addCategoryModal">
+                                    +
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
                             <label for="title" class="form-label">Title</label>
                             <input type="text" class="form-control" id="title" placeholder="Enter news title" required>
                         </div>
@@ -123,6 +140,30 @@
             <div id="responseMessage" class="mt-3"></div>
         </div>
     </div>
+    <div class="modal fade" id="addCategoryModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Create Category</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Category Name</label>
+                        <input type="text" id="newCategoryName" class="form-control">
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button class="btn btn-primary" id="createCategoryBtn">
+                        Create
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
 
     {% include "../../partials/headersearch_modal.html" %}
     {% include "../../partials/footer.html" %}
@@ -138,6 +179,64 @@
 <script>
 document.addEventListener("DOMContentLoaded", function () {
     /** ---------- Initialize Quill ---------- **/
+
+
+    const categorySelect = document.getElementById("categorySelect");
+
+    async function loadCategories(selectedId = null) {
+        try {
+            const res = await axios.get("/api/news-categories/");
+            categorySelect.innerHTML = '<option value="">Select category</option>';
+
+            res.data.forEach(cat => {
+                const option = document.createElement("option");
+                option.value = cat.id;
+                option.textContent = cat.name;
+                if (selectedId && selectedId == cat.id) {
+                    option.selected = true;
+                }
+                categorySelect.appendChild(option);
+            });
+        } catch (err) {
+            console.error("Failed to load categories", err);
+        }
+    }
+
+    // Load categories on page load
+    loadCategories();
+
+
+    const createCategoryBtn = document.getElementById("createCategoryBtn");
+
+    createCategoryBtn.addEventListener("click", async () => {
+        const name = document.getElementById("newCategoryName").value.trim();
+        if (!name) return alert("Category name required");
+
+        try {
+            const token = localStorage.getItem("access_token");
+            const headers = token ? { Authorization: `Bearer ${token}` } : {};
+
+            const res = await axios.post(
+                "/api/news-categories/",
+                { name },
+                { headers }
+            );
+
+            // Reload categories and auto-select new one
+            await loadCategories(res.data.id);
+
+            document.getElementById("newCategoryName").value = "";
+
+            bootstrap.Modal.getInstance(
+                document.getElementById("addCategoryModal")
+            ).hide();
+        } catch (err) {
+            console.error("Category create failed", err);
+            alert("Failed to create category");
+        }
+    });
+
+
     const toolbarOptions = [
         [{ 'font': [] }, { 'size': [] }],
         [{ 'header': [1, 2, 3, false] }],
@@ -279,7 +378,10 @@ document.addEventListener("DOMContentLoaded", function () {
         for (const file of uploadedFiles) {
             formData.append('uploaded_images', file);
         }
-
+        const categoryId = categorySelect.value;
+        if (categoryId) {
+            formData.append("category_id", categoryId);
+        }
         // Append checkbox value explicitly
         const sendNotification = !!sendNotificationCheckbox.checked;
         formData.append('send_notification', sendNotification ? 'true' : 'false');

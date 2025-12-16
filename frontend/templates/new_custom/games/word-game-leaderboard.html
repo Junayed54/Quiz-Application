@@ -1,60 +1,169 @@
 {% extends 'new_custom/new_templates/index2.html' %}
 {% load static %}
 
-{% block title %}Mixup - Word Scramble Game{% endblock %}
+{% block title %}Mixup - Word Scramble Game Leaderboard{% endblock %}
+
 {% block style %}
 <style>
+
+    body {
+        /* Gradient from Red/Orange on the left to Deep Purple/Blue on the right */
+        background: linear-gradient(to right, #7e1e3b, #b53856, #2d0b54, #120336);
+        background-attachment: fixed; /* Ensures the gradient covers the entire height even with scrolling */
+    }
+/* |--------------------------------------------------------------------------
+| CUSTOM LEADERBOARD STYLES (Matching Image Design)
+|--------------------------------------------------------------------------
+*/
+
+/* Base Styles for the design */
+.leaderboard-card {
+    background-color: transparent; 
+    font-family: 'Poppins', sans-serif; /* Recommended font */
+}
+
+/* --- LEADERBOARD TITLE (Top Bar) --- */
+.leaderboard-title {
+    /* Mimic the dark purple/black gradient */
+    background: linear-gradient(90deg, #1f0842 0%, #3a0d58 50%, #1f0842 100%);
+    border-radius: 10px 10px 0 0;
+    letter-spacing: 2px;
+    font-size: 1.5rem;
+    margin-bottom: 0 !important;
+}
+
+/* --- LEADERBOARD HEADER (Column Names) --- */
+.leaderboard-header {
+    background-color: #210a42; /* Dark solid color for the header row */
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    color: #b0a1d4; /* Light purple for header text */
+    padding: 0.75rem 1rem !important;
+}
+
+/* Column Distribution for 3 columns */
+.rank-col, .name-col-simple, .score-col-simple {
+    padding: 0 5px; 
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+}
+.rank-col { 
+    width: 15%; 
+    text-align: center; 
+    justify-content: center; 
+}
+.name-col-simple { 
+    width: 60%; 
+    padding-left: 15px; /* Add some space after the rank icon */
+}
+.score-col-simple { 
+    width: 25%; 
+    text-align: right; 
+    justify-content: flex-end; 
+}
+
+/* --- LEADERBOARD ROWS (Data) --- */
+.leaderboard-row {
+    margin-bottom: 8px; 
+    border-radius: 8px;
+    overflow: hidden; 
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    cursor: pointer;
+    border: none;
+    padding: 0;
+    font-size: 0.95rem;
+    /* Main row gradient: Pink/Red/Orange */
+    background: linear-gradient(90deg, #7c223a 0%, #9e1c45 10%, #c4323e 50%, #e05e4b 100%);
+    color: white;
+    position: relative;
+    padding: 0.6rem 1rem;
+}
+
+.leaderboard-row:hover {
+    background: linear-gradient(90deg, #9e1c45 0%, #c4323e 10%, #e05e4b 50%, #ff8c6d 100%);
+    transform: translateY(-2px);
+    transition: all 0.2s ease-in-out;
+}
+
+/* --- RANK STYLING (The diamond-shaped badges) --- */
+.rank-icon-container {
+    width: 35px;
+    height: 35px;
+    /* Create a diamond/rhombus shape using rotation */
+    transform: rotate(45deg); 
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 20px;
+    position: relative;
+    flex-shrink: 0;
+}
+
 .rank-number {
+    position: absolute;
+    transform: rotate(-45deg); /* Counter-rotate the number */
+    font-weight: 800;
+    font-size: 1.1rem;
+    color: #1f0842; /* Dark text for contrast */
+}
+
+/* Specific colors for Top 3 */
+.rank-1 .rank-icon-container { background-color: gold; }
+.rank-2 .rank-icon-container { background-color: silver; }
+.rank-3 .rank-icon-container { background-color: #cd7f32; /* Bronze */ }
+.leaderboard-row:not(.rank-1):not(.rank-2):not(.rank-3) .rank-icon-container {
+    background-color: #f7a39d;
+}
+
+.player-avatar {
     width: 30px;
-    text-align: center;
+    height: 30px;
+    background-color: #210a42;
+    border-radius: 50%;
+    margin-right: 10px;
+    /* Placeholder for the user avatar */
+    border: 2px solid white; 
+    flex-shrink: 0; /* Prevent it from shrinking */
 }
 
-.list-group-item {
-    transition: background 0.2s;
-}
-
-.list-group-item:hover {
-    background-color: #f8f9fa;
+/* Ensures rows that aren't loaded still look like they belong */
+.leaderboard-container {
+    padding-top: 10px;
 }
 </style>
 {% endblock %}
-<!-- {% block head_link %} 
-    <link rel="stylesheet" href="{% static 'assets/css/games/games.css' %}">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&display=swap" rel="stylesheet">
-{% endblock%} -->
 
 {% block content %}
     <div class="container py-5">
-
-        <!-- Header -->
-        <div class="text-center mb-4">
-            <h2 class="fw-bold">🏆 Word Game Leaderboard</h2>
-            <p class="text-muted">Top players of the week</p>
-        </div>
-
-        <!-- Leaderboard Card -->
-        <div class="card shadow-sm">
-            <div class="card-body p-0">
-
-                <!-- Loader -->
-                <div id="loader" class="text-center p-4">
-                    <div class="spinner-border text-primary"></div>
-                    <p class="mt-2">Loading leaderboard...</p>
-                </div>
-
-                <ul id="leaderboardList" class="list-group list-group-flush d-none">
-                    <!-- Data will be inserted here -->
-                </ul>
-
+        <div class="leaderboard-card shadow-lg mx-auto" style="max-width: 600px;"> 
+            
+            <div class="leaderboard-title text-center py-3 px-4 mb-3">
+                <h1 class="text-white fw-bolder mb-0 d-flex justify-content-center align-items-center">
+                    <i class="fas fa-trophy me-3" style="font-size: 35px; color: gold;"></i>
+                    LEADERBOARD
+                    <i class="fas fa-trophy ms-3" style="font-size: 35px; color: gold;"></i>
+                </h1>
             </div>
+
+            <div class="leaderboard-header d-flex text-white fw-bold py-2 px-3">
+                <div class="rank-col">RANK</div>
+                <div class="name-col-simple">USERNAME</div>
+                <div class="score-col-simple text-end">SCORE</div>
+            </div>
+
+            <div id="loader" class="text-center p-5 bg-white">
+                <div class="spinner-border text-primary"></div>
+                <p class="mt-2 text-muted">Loading leaderboard...</p>
+            </div>
+
+            <div id="leaderboardList" class="leaderboard-container d-none">
+                </div>
         </div>
     </div>
-
 {% endblock %}
+
 {% block body_js %}
-    <!-- JS for fetching leaderboard -->
 <script>
 document.addEventListener("DOMContentLoaded", () => {
     fetchLeaderboard();
@@ -72,9 +181,9 @@ function fetchLeaderboard() {
 
             if (!data.leaderboard || data.leaderboard.length === 0) {
                 list.innerHTML = `
-                    <li class='list-group-item text-center py-4'>
-                        <strong>No players yet.</strong>
-                    </li>`;
+                    <div class='text-center py-5 bg-light rounded-bottom'>
+                        <strong>No players have recorded scores yet.</strong>
+                    </div>`;
                 return;
             }
 
@@ -82,27 +191,34 @@ function fetchLeaderboard() {
 
             data.leaderboard.forEach((player, index) => {
                 const rank = index + 1;
-
                 const username = player.username ?? "Guest User";
-                const phone = player.phone ?? "N/A";
-                const score = player.score;
+                // Format the score for better readability (e.g., 960883 -> 960,883)
+                const score = player.score.toLocaleString(); 
 
                 list.innerHTML += `
-                    <li class="list-group-item d-flex justify-content-between align-items-center py-3">
-                        <div class="d-flex align-items-center">
-                            <span class="rank-number me-3 fw-bold fs-5">${rank}</span>
-                            <div>
-                                <div class="fw-bold">${username}</div>
-                                <!-- <small class="text-muted">${phone}</small> -->
+                    <div class="leaderboard-row d-flex align-items-center rank-${rank}">
+                        
+                        <div class="rank-col">
+                            <div class="rank-icon-container">
+                                <span class="rank-number">${rank}</span>
                             </div>
                         </div>
-                        <span class="badge bg-primary rounded-pill fs-6 px-3">${score}</span>
-                    </li>
+
+                        <div class="name-col-simple d-flex align-items-center">
+                            <div class="player-avatar"></div> <div class="fw-bold text-truncate">${username}</div>
+                        </div>
+
+                        <div class="score-col-simple fw-bolder">${score}</div> 
+
+                    </div>
                 `;
             });
         })
         .catch(error => {
             console.error("Error fetching leaderboard:", error);
+            document.getElementById("loader").classList.add("d-none");
+            document.getElementById("leaderboardList").classList.remove("d-none");
+            document.getElementById("leaderboardList").innerHTML = `<div class='text-center py-5 text-danger bg-light rounded-bottom'>Error loading data.</div>`;
         });
 }
 </script>

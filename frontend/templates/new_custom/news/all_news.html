@@ -1,9 +1,10 @@
-
 {% extends 'new_custom/new_templates/index2.html' %}
 {% block title %}চাকরি নিউজ{% endblock %}
 
 {% block style %}
 <style>
+/* (Your existing CSS remains here, ensuring the list layout is consistent) */
+
 /* 1. Main Content Layout for Desktop */
 .page-layout {
     display: flex;
@@ -130,27 +131,14 @@
 
 {% block content %}
 <main class="container py-5">
+
     <div class="text-center mb-5">
+        <h1 id="category-header" class="fw-bold text-primary">সংবাদ</h1>
         <p class="lead text-muted">চাকরি, শিক্ষা, এবং অন্যান্য গুরুত্বপূর্ণ খবর</p>
     </div>
 
     <div class="page-layout">
         
-        <!-- Left Ad -->
-        <!-- <div class="side-ad left-ad">
-            <script type="text/javascript">
-                atOptions = {
-                    'key' : '62f3c2c01aed45a32e7429e307ce9abd',
-                    'format' : 'iframe',
-                    'height' : 600,
-                    'width' : 160,
-                    'params' : {}
-                };
-            </script>
-            <script type="text/javascript" src="//www.highperformanceformat.com/62f3c2c01aed45a32e7429e307ce9abd/invoke.js"></script>
-        </div> -->
-
-        <!-- Main News Section -->
         <div class="main-content">
             <div class="news-container">
                 <div id="loading-message" class="text-center my-5">
@@ -163,7 +151,7 @@
                 <ul id="news-list" class="news-list"></ul>
 
                 <div id="no-news-message" class="text-center d-none my-5">
-                    <p class="lead text-muted">কোনো সংবাদ পাওয়া যায়নি।</p>
+                    <p class="lead text-muted">এই ক্যাটাগরিতে কোনো সংবাদ পাওয়া যায়নি।</p>
                 </div>
 
                 <div id="error-message" class="text-center d-none my-5">
@@ -176,22 +164,10 @@
             </nav>
         </div>
 
-        <!-- Right Ad -->
-        <!-- <div class="side-ad right-ad">
-            <script type="text/javascript">
-                atOptions = {
-                    'key' : '62f3c2c01aed45a32e7429e307ce9abd',
-                    'format' : 'iframe',
-                    'height' : 600,
-                    'width' : 160,
-                    'params' : {}
-                };
-            </script>
-            <script type="text/javascript" src="//www.highperformanceformat.com/62f3c2c01aed45a32e7429e307ce9abd/invoke.js"></script>
-        </div> -->
-    </div>
+        </div>
 </main>
 {% endblock %}
+
 
 {% block body_js %}
 <script>
@@ -201,9 +177,34 @@ document.addEventListener("DOMContentLoaded", async function() {
     const loadingMessage = document.getElementById('loading-message');
     const noNewsMessage = document.getElementById('no-news-message');
     const errorMessage = document.getElementById('error-message');
-
+    const categoryHeader = document.getElementById('category-header');
+    
     let currentPage = 1;
-    const itemsPerPage = 9;
+    const itemsPerPage = 9; // Should match DRF pagination setting
+    let categoryId = null; 
+
+    // 1. Function to extract category ID from URL (e.g., /news/5/)
+    function getCategoryIdFromUrl() {
+        // Regex to find the ID after '/news/' and before the next '/' or end of string
+        const match = window.location.pathname.match(/\/news\/(\d+)\/?/);
+        return match ? match[1] : null;
+    }
+
+    // 2. Function to fetch and update the category header name
+    async function updateCategoryHeader(id) {
+        if (!id) return;
+        try {
+            const response = await fetch(`/api/news-categories/${id}/`); // Assuming a retrieve endpoint exists
+            if (!response.ok) throw new Error('Category fetch failed');
+            
+            const category = await response.json();
+            categoryHeader.textContent = category.name + ' - চাকরির খবর';
+            document.title = category.name + ' | চাকরি নিউজ';
+        } catch (error) {
+            console.warn('Could not fetch category name:', error);
+            categoryHeader.textContent = 'ক্যাটাগরি খবর'; // Fallback
+        }
+    }
 
     function formatDate(dateString) {
         const options = { year: 'numeric', month: 'long', day: 'numeric' };
@@ -242,6 +243,8 @@ document.addEventListener("DOMContentLoaded", async function() {
         const totalPages = Math.ceil(count / itemsPerPage);
         if (totalPages <= 1) return;
 
+        // ... (Pagination logic is unchanged, remains correct) ...
+        
         // Previous button
         const prevItem = document.createElement('li');
         prevItem.className = `page-item ${!previous ? 'disabled' : ''}`;
@@ -249,7 +252,15 @@ document.addEventListener("DOMContentLoaded", async function() {
         paginationContainer.appendChild(prevItem);
 
         // Page numbers
-        for (let i = 1; i <= totalPages; i++) {
+        let startPage = Math.max(1, currentPage - 2);
+        let endPage = Math.min(totalPages, currentPage + 2);
+
+        // Adjust visible range if near edges
+        if (currentPage <= 3) endPage = Math.min(totalPages, 5);
+        if (currentPage > totalPages - 2) startPage = Math.max(1, totalPages - 4);
+
+
+        for (let i = startPage; i <= endPage; i++) {
             const pageItem = document.createElement('li');
             pageItem.className = `page-item ${i === currentPage ? 'active' : ''}`;
             pageItem.innerHTML = `<a class="page-link" href="#" data-page="${i}">${i}</a>`;
@@ -270,7 +281,7 @@ document.addEventListener("DOMContentLoaded", async function() {
                 if (newPage >= 1 && newPage <= totalPages && newPage !== currentPage) {
                     currentPage = newPage;
                     fetchAndRenderNews(currentPage);
-                    newsList.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    window.scrollTo({ top: 0, behavior: 'smooth' }); // Scroll to top on page change
                 }
             });
         });
@@ -281,13 +292,23 @@ document.addEventListener("DOMContentLoaded", async function() {
         noNewsMessage.classList.add('d-none');
         errorMessage.classList.add('d-none');
 
+        // Construct the API URL with category filter
+        let apiUrl = `/api/news/?page=${page}`;
+        if (categoryId) {
+            // This assumes your backend has implemented the category_id filtering
+            apiUrl += `&category_id=${categoryId}`;
+        }
+
         try {
-            const response = await fetch(`/api/news/?page=${page}`);
+            const response = await fetch(apiUrl);
             if (!response.ok) throw new Error('Network response was not ok');
 
             const data = await response.json();
             loadingMessage.classList.add('d-none');
 
+            // Set itemsPerPage dynamically based on backend pagination size if necessary
+            // For now, keep it hardcoded to 9 (as per your current JS)
+            
             renderNewsItems(data.results);
             renderPagination(data.count, data.next, data.previous);
         } catch (error) {
@@ -297,9 +318,17 @@ document.addEventListener("DOMContentLoaded", async function() {
         }
     }
 
+    // --- Initial setup ---
+    categoryId = getCategoryIdFromUrl();
+    
+    if (categoryId) {
+        updateCategoryHeader(categoryId);
+    } else {
+        categoryHeader.textContent = 'সকল খবর'; // Fallback if no ID is found in URL
+    }
+    
     // Initial load
     fetchAndRenderNews(currentPage);
 });
 </script>
-
 {% endblock %}
