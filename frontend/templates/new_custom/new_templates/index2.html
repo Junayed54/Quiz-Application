@@ -86,7 +86,10 @@
 
     .question-dropdown {
       display: none; /* Initially hidden */
-      flex: 1;
+      flex-direction: row;
+      flex-wrap: wrap;
+      max-width: 100%;       /* Prevents the div from exceeding the screen width */
+      word-wrap: break-word;
       gap: 2rem;
       padding: 1.5rem;
       background-color: rgba(255, 255, 255, 0.7);
@@ -94,6 +97,10 @@
       -webkit-backdrop-filter: blur(10px);
       border: 1px solid rgba(200, 200, 200, 0.3);
       border-radius: 10px;
+
+      /* ADD THESE LINES */
+      max-width: 95vw;    /* Prevent it from being wider than the viewport */
+      overflow-x: hidden; /* Prevent horizontal scroll */
     }
 
     .dropdown-column {
@@ -109,6 +116,8 @@
     }
 
     .dropdown-item {
+      white-space: normal;   /* Allows text to wrap to the next line */
+      word-break: break-word;
       display: flex;
       align-items: center;
       gap: 0.5rem;
@@ -234,6 +243,19 @@
   }
 
   @media (max-width: 991.98px) {
+    .question-dropdown {
+        flex-direction: column; /* Stack items vertically */
+        gap: 0.5rem;            /* Reduce space between items */
+        padding: 1rem;
+        position: static;       /* Let it flow within the navbar collapse */
+        width: 100%;
+        background-color: white; /* Better readability on mobile */
+    }
+    
+    .dropdown-column {
+        width: 100%;
+    }
+
     .navbar-nav .nav-item .nav-link {
       padding: 8px 15px;
 

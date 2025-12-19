@@ -1,0 +1,159 @@
+{% include "../../partials/mainhead.html"%}
+
+
+<style>
+    .form-container {
+        max-width: 700px;
+        margin: 50px auto;
+        background: #f8f9fa;
+        padding: 30px;
+        border-radius: 12px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+
+    .form-check-input:checked {
+        background-color: greenyellow; 
+        border-color: greenyellow;   
+    }
+
+    .quill-editor-container {
+        height: 300px;
+        border: 1px solid #ced4da;
+        border-radius: 6px;
+        background-color: white;
+    }
+
+    .quill-editor-container .ql-editor {
+        min-height: 250px;
+        max-height: 250px;
+        overflow-y: auto;
+    }
+
+    .ql-toolbar {
+        border-radius: 6px 6px 0 0;
+    }
+
+    .ql-font-arial { font-family: Arial, sans-serif; }
+    .ql-font-times-new-roman { font-family: "Times New Roman", serif; }
+    .ql-font-sans-serif { font-family: sans-serif; }
+    .ql-font-serif { font-family: serif; }
+    .ql-font-monospace { font-family: monospace; }
+
+    /* Result box styling */
+    #response {
+        margin-top: 15px;
+    }
+</style>
+</head>
+
+<body>
+{% include "../../partials/switcher.html" %}
+<div class="page">
+    {% include "../../partials/header.html"%}
+    {% include "../../partials/sidebar.html" %}
+
+    <div class="main-content app-content">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col-md-6">
+
+                    <div class="card shadow-sm">
+                        <div class="card-header bg-primary text-white">
+                            <h5 class="mb-0">Upload Word Excel File</h5>
+                        </div>
+
+                        <div class="card-body">
+                            <form id="excelUploadForm" enctype="multipart/form-data">
+                                <!-- Puzzle ID -->
+                                <div class="mb-3">
+                                    <label class="form-label">Puzzle ID</label>
+                                    <input type="number" class="form-control" name="puzzle_id" required>
+                                </div>
+
+                                <!-- Excel File -->
+                                <div class="mb-3">
+                                    <label class="form-label">Excel File (.xlsx)</label>
+                                    <input type="file" class="form-control" name="file" accept=".xlsx" required>
+                                </div>
+
+                                <button type="submit" class="btn btn-success w-100">
+                                    Upload Excel
+                                </button>
+                            </form>
+
+                            <!-- Loader -->
+                            <div id="loader" class="text-center my-3" style="display: none;">
+                                <div class="spinner-border text-primary" role="status">
+                                    <span class="visually-hidden">Loading...</span>
+                                </div>
+                                <p>Uploading, please wait...</p>
+                            </div>
+
+                            <!-- Result -->
+                            <div id="response"></div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% include "../../partials/headersearch_modal.html"%}
+    {% include "../../partials/footer.html" %}
+</div>
+
+{% include "../../partials/commonjs.html"%}
+{% include "../../partials/custom_switcherjs.html"%}
+
+<script src="../../../../static/assets/js/custom.js"></script>
+<script>
+document.getElementById("excelUploadForm").addEventListener("submit", function (e) {
+    e.preventDefault();
+
+    const token = localStorage.getItem("access_token");
+    if (!token) {
+        alert("You are not logged in");
+        return;
+    }
+
+    const formData = new FormData(this);
+
+    // Show loader
+    document.getElementById("loader").style.display = "block";
+    document.getElementById("response").innerHTML = "";
+
+    fetch("/api/word/upload-excel/", {
+        method: "POST",
+        headers: {
+            "Authorization": "Bearer " + token
+        },
+        body: formData
+    })
+    .then(res => res.json())
+    .then(data => {
+        // Hide loader
+        document.getElementById("loader").style.display = "none";
+
+        document.getElementById("response").innerHTML = `
+            <div class="alert alert-success rounded-3">
+                <b>${data.message}</b><br>
+                Created: ${data.created}<br>
+                Skipped: ${data.skipped}
+                ${data.skipped_words && data.skipped_words.length ? `<br>Skipped Words: ${data.skipped_words.join(", ")}` : ""}
+            </div>
+        `;
+    })
+    .catch(() => {
+        document.getElementById("loader").style.display = "none";
+        document.getElementById("response").innerHTML = `
+            <div class="alert alert-danger rounded-3">
+                Upload failed. Check authorization or file.
+            </div>
+        `;
+    });
+});
+</script>
+
+</body>
+</html>

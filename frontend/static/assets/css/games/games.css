@@ -12,7 +12,7 @@ body {
     overflow-x: hidden;
 }
 
-.container {
+.word-container {
     max-width: 1200px;
     margin: 0 auto;
     padding: 20px;
@@ -143,6 +143,7 @@ body {
 
 .game-screen {
     animation: fadeIn 0.5s ease-out;
+    margin-bottom: 10px;
 }
 
 .game-header {
@@ -286,6 +287,7 @@ body {
     border-radius: 50px;
     cursor: pointer;
     transition: all 0.3s ease;
+    margin-bottom: 5px;
 }
 
 .skip-button:hover {
@@ -451,7 +453,7 @@ body {
 
 /* Responsive Design */
 @media (max-width: 768px) {
-    .container {
+    .word-container {
         padding: 15px;
     }
 

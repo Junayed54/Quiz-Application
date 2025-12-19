@@ -32,6 +32,8 @@ urlpatterns += [
     path("api/puzzles/", PuzzleListView.as_view(), name="puzzle-list"),
 
     path('api/puzzles/<int:puzzle_id>/word/', PuzzleWordView.as_view(), name='puzzle-word'),
+    path('api/word/upload-excel/', WordExcelUploadAPIView.as_view()),
+
 
 ] 
 
@@ -48,4 +50,8 @@ urlpatterns +=[
     path("api/word-game/submit/", SubmitWordGame.as_view(), name="submit_word_game_attempt"),
     path("api/word-game/leaderboard/", WordGameLeaderboard.as_view(), name="wordgame_leaderboard"),
 
+]
+
+urlpatterns += [
+    path("games/word/upload-excel/", TemplateView.as_view(template_name="Html/custom/games/word-excel-upload.html"))
 ]

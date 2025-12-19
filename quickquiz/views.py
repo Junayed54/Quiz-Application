@@ -1005,3 +1005,88 @@ class WordGameLeaderboard(APIView):
         ]
 
         return Response({"leaderboard": data})
+
+
+
+class WordExcelUploadAPIView(APIView):
+    # authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    REQUIRED_COLUMNS = {"word"}
+
+    def post(self, request):
+        serializer = WordExcelUploadSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        puzzle = get_object_or_404(
+            WordPuzzle,
+            id=serializer.validated_data["puzzle_id"]
+        )
+
+        wb = load_workbook(serializer.validated_data["file"])
+        sheet = wb.active
+
+        # 🔹 Read header row
+        headers = [
+            (cell or "").strip().lower()
+            for cell in next(sheet.iter_rows(min_row=1, max_row=1, values_only=True))
+        ]
+
+        # 🔹 Validate required columns
+        if "word" not in headers:
+            return Response(
+                {"error": "Excel must contain 'word' column"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        col_index = {name: idx for idx, name in enumerate(headers)}
+
+        created, skipped = 0, 0
+        skipped_words = []
+        seen_words = set()
+
+        for row_num, row in enumerate(sheet.iter_rows(min_row=2, values_only=True), start=2):
+            word = row[col_index["word"]]
+
+            if not word:
+                continue
+
+            word = str(word).strip()
+
+            # Optional columns
+            meaning_bn = row[col_index["meaning_bn"]] if "meaning_bn" in col_index else ""
+            hint = row[col_index["hint"]] if "hint" in col_index else ""
+            difficulty = row[col_index["difficulty"]] if "difficulty" in col_index else "easy"
+
+            # Excel duplicate
+            if word.lower() in seen_words:
+                skipped += 1
+                skipped_words.append(f"{word} (row {row_num})")
+                continue
+            seen_words.add(word.lower())
+
+            # DB duplicate
+            if Word.objects.filter(puzzle=puzzle, text__iexact=word).exists():
+                skipped += 1
+                skipped_words.append(f"{word} (already exists)")
+                continue
+
+            difficulty = (difficulty or "easy").strip().lower()
+            if difficulty not in ["easy", "medium", "hard"]:
+                difficulty = "easy"
+
+            Word.objects.create(
+                puzzle=puzzle,
+                text=word,
+                meaning_bn=str(meaning_bn).strip() if meaning_bn else "",
+                hint=str(hint).strip() if hint else "",
+                difficulty=difficulty
+            )
+            created += 1
+
+        return Response({
+            "message": "Excel processed successfully",
+            "created": created,
+            "skipped": skipped,
+            "skipped_words": skipped_words
+        }, status=status.HTTP_201_CREATED)

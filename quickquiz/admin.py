@@ -127,7 +127,7 @@ class UserRewardAdmin(admin.ModelAdmin):
 class WordInline(admin.TabularInline):
     model = Word
     extra = 1
-    fields = ("text", "hint", "difficulty", "created_at")
+    fields = ("text", "meaning_bn","hint", "difficulty", "created_at")
     readonly_fields = ("created_at",)
 
 

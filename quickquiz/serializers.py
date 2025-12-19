@@ -122,4 +122,11 @@ class UserRewardSerializer(serializers.ModelSerializer):
         ]
 
 
+class WordExcelUploadSerializer(serializers.Serializer):
+    puzzle_id = serializers.IntegerField()
+    file = serializers.FileField()
 
+    def validate_file(self, file):
+        if not file.name.endswith(".xlsx"):
+            raise serializers.ValidationError("Only .xlsx Excel files are allowed.")
+        return file

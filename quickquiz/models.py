@@ -184,6 +184,11 @@ class Word(models.Model):
     puzzle = models.ForeignKey(WordPuzzle, on_delete=models.CASCADE, related_name="words")
 
     text = models.CharField(max_length=100)       # original word
+    meaning_bn = models.CharField(                   # Bangla meaning
+        max_length=255,
+        null=True,
+        blank=True
+    )
     hint = models.CharField(max_length=200, blank=True, null=True)
 
     difficulty = models.CharField(

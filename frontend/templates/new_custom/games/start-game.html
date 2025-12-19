@@ -1,6 +1,91 @@
 {% extends 'new_custom/new_templates/index2.html' %}
 {% load static %}
+{% block style %}
+<style>
+/* --- Logic Fix --- */
+.hidden {
+    display: none !important;
+}
 
+/* --- Custom Modal Styling --- */
+.custom-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.9);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 3000; /* Higher than Game Over screen */
+}
+
+.modal-content {
+    background: #231651;
+    padding: 40px;
+    border-radius: 25px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    width: 90%;
+    max-width: 400px;
+    text-align: center;
+    box-shadow: 0 15px 50px rgba(0,0,0,0.6);
+}
+
+.modal-title {
+    font-size: 1.8rem;
+    margin-bottom: 10px;
+    color: #FF6B6B;
+}
+
+.modal-subtitle {
+    font-size: 0.9rem;
+    color: rgba(255, 255, 255, 0.7);
+    margin-bottom: 25px;
+}
+
+.input-group {
+    margin-bottom: 15px;
+}
+
+.input-group input {
+    width: 100%;
+    padding: 12px 20px;
+    border-radius: 10px;
+    border: 2px solid #4ECDC4;
+    background: white;
+    color: #333;
+    font-size: 1rem;
+    font-family: 'Poppins', sans-serif;
+}
+
+.modal-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 20px;
+}
+
+.btn-submit {
+    background: linear-gradient(135deg, #FF6B6B, #FF8E53);
+    color: white;
+    border: none;
+    padding: 15px;
+    border-radius: 50px;
+    font-weight: 700;
+    cursor: pointer;
+    text-transform: uppercase;
+}
+
+.btn-skip {
+    background: transparent;
+    color: rgba(255, 255, 255, 0.6);
+    border: none;
+    cursor: pointer;
+    font-size: 0.8rem;
+}
+</style>
+{% endblock %}
 {% block title %}Mixup - Word Scramble Game{% endblock %}
 
 {% block head_link %} 
@@ -88,38 +173,57 @@
       </div>
     </div> -->
     <div id="gameOverScreen" class="game-over-screen hidden">
-    <div class="game-over-content">
-        <div class="trophy-icon">
-            <svg width="80" height="80" viewBox="0 0 24 24" fill="none">
-                <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"
-                    fill="#FFD700" stroke="#FFD700" stroke-width="1" />
-            </svg>
-        </div>
-        <h2 class="game-over-title">Game Over!</h2>
+      <div class="game-over-content">
+          <div class="trophy-icon">
+              <svg width="80" height="80" viewBox="0 0 24 24" fill="none">
+                  <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"
+                      fill="#FFD700" stroke="#FFD700" stroke-width="1" />
+              </svg>
+          </div>
+          <h2 class="game-over-title">Game Over!</h2>
 
-        <div class="final-score">
-            <div class="final-score-value" id="finalScore">0</div>
-            <div class="final-score-label">Words Solved</div>
-        </div>
+          <div class="final-score">
+              <div class="final-score-value" id="finalScore">0</div>
+              <div class="final-score-label">Words Solved</div>
+          </div>
 
-        <div class="game-over-buttons">
-            <button class="btn-primary" onclick="playAgain()">Play Again</button>
-            
-            <button class="btn-secondary" onclick="goToLeaderboard()">Leaderboard</button> 
-            
-            <button class="btn-secondary" onclick="goHome()">Back to Home</button>
+          <div class="game-over-buttons">
+              <button class="btn-primary" onclick="playAgain()">Play Again</button>
+              
+              <button class="btn-secondary" onclick="goToLeaderboard()">Leaderboard</button> 
+              
+              <button class="btn-secondary" onclick="goHome()">Back to Home</button>
+          </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="userModal" class="custom-modal hidden">
+    <div class="modal-content">
+        <h2 class="modal-title">Save Your Score</h2>
+        <p class="modal-subtitle">Enter your details to join the leaderboard!</p>
+        
+        <div class="input-group">
+            <input type="text" id="guestName" placeholder="Your Name" required>
+        </div>
+        <div class="input-group">
+            <input type="tel" id="guestPhone" placeholder="Phone Number" required>
+        </div>
+        
+        <div class="modal-buttons">
+            <button class="btn-submit" onclick="handleCustomFormSubmit()">Submit Score</button>
+            <button class="btn-skip" onclick="closeUserModal()">Maybe Later</button>
         </div>
     </div>
-</div>
   </div>
 {% endblock %}
 {% block body_js %}
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/Draggable.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/Draggable.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
-    <script src="{% static 'Js/games/words.js' %}"></script>
+  <script src="{% static 'Js/games/words.js' %}"></script>
 
-    <script src="{% static 'Js/games/start-game.js' %}"></script>
+  <script src="{% static 'Js/games/start-game.js' %}"></script>
 {% endblock %}
