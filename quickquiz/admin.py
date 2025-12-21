@@ -130,7 +130,43 @@ class WordInline(admin.TabularInline):
     fields = ("text", "meaning_bn","hint", "difficulty", "created_at")
     readonly_fields = ("created_at",)
 
+@admin.register(Word)
+class WordAdmin(admin.ModelAdmin):
+    list_display = (
+        "text",
+        "puzzle",
+        "difficulty",
+        "meaning_bn",
+        "created_at",
+    )
 
+    list_filter = (
+        "difficulty",
+        "puzzle",
+        "created_at",
+    )
+
+    search_fields = (
+        "text",
+        "meaning_bn",
+        "hint",
+    )
+
+    ordering = ("-created_at",)
+
+    readonly_fields = ("created_at",)
+
+    fieldsets = (
+        ("Puzzle Info", {
+            "fields": ("puzzle", "difficulty"),
+        }),
+        ("Word Details", {
+            "fields": ("text", "meaning_bn", "hint"),
+        }),
+        ("Meta", {
+            "fields": ("created_at",),
+        }),
+    )
 # ---------------------------------
 # WordPuzzle Admin
 # ---------------------------------

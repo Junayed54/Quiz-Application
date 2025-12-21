@@ -201,7 +201,33 @@ class Word(models.Model):
 
     def __str__(self):
         return f"{self.text} ({self.difficulty})"
-  
+
+
+
+
+# class WordGameAttempt(models.Model):
+#     player = models.ForeignKey(
+#         Player,
+#         on_delete=models.CASCADE,
+#         related_name="attempts"
+#     )
+#     puzzle = models.ForeignKey(
+#         WordPuzzle,
+#         on_delete=models.CASCADE,
+#         related_name="attempts"
+#     )
+
+#     score = models.IntegerField(default=0)
+
+#     started_at = models.DateTimeField(auto_now_add=True)
+#     finished_at = models.DateTimeField(null=True, blank=True)
+
+#     def __str__(self):
+#         return f"{self.player} | {self.puzzle} | {self.score} | {self.started_at}"
+
+
+
+
 class WordGameScore(models.Model):
     player = models.OneToOneField(Player, on_delete=models.CASCADE)
     score = models.IntegerField(default=0)
