@@ -148,7 +148,7 @@ async function fetchGames() {
                         </div>
                         <div class="card-body d-flex flex-column text-center px-4 pb-4">
                             <h3 class="h5 fw-bold mb-1 text-dark">${game.title}</h3>
-                            <p class="small text-muted mb-4">Ends: ${new Date(game.end_date).toLocaleDateString()}</p>
+                            <!-- <p class="small text-muted mb-4">Ends: ${new Date(game.end_date).toLocaleDateString()}</p> -->
                             
                             <div class="mt-auto">
                                 <a href="${game.status === 'active' ? gameUrl : '#'}" 
