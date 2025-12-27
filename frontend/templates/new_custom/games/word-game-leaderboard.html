@@ -4,222 +4,179 @@
 {% block title %}Mixup - Word Scramble Game Leaderboard{% endblock %}
 
 {% block style %}
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 <style>
-
-    body {
-        /* Gradient from Red/Orange on the left to Deep Purple/Blue on the right */
-        background: linear-gradient(to right, #7e1e3b, #b53856, #2d0b54, #120336);
-        background-attachment: fixed; /* Ensures the gradient covers the entire height even with scrolling */
-    }
-/* |--------------------------------------------------------------------------
-| CUSTOM LEADERBOARD STYLES (Matching Image Design)
-|--------------------------------------------------------------------------
-*/
-
-/* Base Styles for the design */
-.leaderboard-card {
-    background-color: transparent; 
-    font-family: 'Poppins', sans-serif; /* Recommended font */
-}
-
-/* --- LEADERBOARD TITLE (Top Bar) --- */
-.leaderboard-title {
-    /* Mimic the dark purple/black gradient */
-    background: linear-gradient(90deg, #1f0842 0%, #3a0d58 50%, #1f0842 100%);
-    border-radius: 10px 10px 0 0;
-    letter-spacing: 2px;
-    font-size: 1.5rem;
-    margin-bottom: 0 !important;
-}
-
-/* --- LEADERBOARD HEADER (Column Names) --- */
-.leaderboard-header {
-    background-color: #210a42; /* Dark solid color for the header row */
-    font-size: 0.8rem;
-    text-transform: uppercase;
-    color: #b0a1d4; /* Light purple for header text */
-    padding: 0.75rem 1rem !important;
-}
-
-/* Column Distribution for 3 columns */
-.rank-col, .name-col-simple, .score-col-simple {
-    padding: 0 5px; 
-    display: flex;
-    align-items: center;
-    justify-content: flex-start;
-}
-.rank-col { 
-    width: 15%; 
-    text-align: center; 
-    justify-content: center; 
-}
-.name-col-simple { 
-    width: 60%; 
-    padding-left: 15px; /* Add some space after the rank icon */
-}
-.score-col-simple { 
-    width: 25%; 
-    text-align: right; 
-    justify-content: flex-end; 
-}
-
-/* --- LEADERBOARD ROWS (Data) --- */
-.leaderboard-row {
-    margin-bottom: 8px; 
-    border-radius: 8px;
-    overflow: hidden; 
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
-    cursor: pointer;
-    border: none;
-    padding: 0;
-    font-size: 0.95rem;
-    /* Main row gradient: Pink/Red/Orange */
-    background: linear-gradient(90deg, #7c223a 0%, #9e1c45 10%, #c4323e 50%, #e05e4b 100%);
+body {
+    background: linear-gradient(to right, #7e1e3b, #b53856, #2d0b54, #120336);
+    min-height: 100vh;
     color: white;
-    position: relative;
-    padding: 0.6rem 1rem;
 }
-
-.leaderboard-row:hover {
-    background: linear-gradient(90deg, #9e1c45 0%, #c4323e 10%, #e05e4b 50%, #ff8c6d 100%);
-    transform: translateY(-2px);
-    transition: all 0.2s ease-in-out;
+.table-container {
+    background: #210a42;
+    padding: 20px;
+    border-radius: 10px;
+    margin-top: 30px;
 }
-
-/* --- RANK STYLING (The diamond-shaped badges) --- */
-.rank-icon-container {
-    width: 35px;
-    height: 35px;
-    /* Create a diamond/rhombus shape using rotation */
-    transform: rotate(45deg); 
+.table thead th {
+    background-color: #3a0d58;
+    color: white;
+    text-align: center;
+}
+.table tbody td {
+    text-align: center;
+    vertical-align: middle;
+}
+.date-range {
     display: flex;
-    align-items: center;
     justify-content: center;
-    margin-right: 20px;
-    position: relative;
-    flex-shrink: 0;
+    gap: 10px;
+    margin-bottom: 15px;
 }
-
-.rank-number {
-    position: absolute;
-    transform: rotate(-45deg); /* Counter-rotate the number */
-    font-weight: 800;
-    font-size: 1.1rem;
-    color: #1f0842; /* Dark text for contrast */
+.date-range input,
+.date-range button {
+    border-radius: 5px;
+    border: none;
+    padding: 5px 10px;
 }
-
-/* Specific colors for Top 3 */
-.rank-1 .rank-icon-container { background-color: gold; }
-.rank-2 .rank-icon-container { background-color: silver; }
-.rank-3 .rank-icon-container { background-color: #cd7f32; /* Bronze */ }
-.leaderboard-row:not(.rank-1):not(.rank-2):not(.rank-3) .rank-icon-container {
-    background-color: #f7a39d;
+.date-range button {
+    background-color: #3a0d58;
+    color: white;
+    cursor: pointer;
 }
-
-.player-avatar {
-    width: 30px;
-    height: 30px;
-    background-color: #210a42;
-    border-radius: 50%;
-    margin-right: 10px;
-    /* Placeholder for the user avatar */
-    border: 2px solid white; 
-    flex-shrink: 0; /* Prevent it from shrinking */
+.date-range button:hover {
+    background-color: #1f0842;
 }
-
-/* Ensures rows that aren't loaded still look like they belong */
-.leaderboard-container {
-    padding-top: 10px;
+.pagination-container {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin-top: 15px;
+}
+.pagination-container button {
+    padding: 5px 10px;
+    border-radius: 5px;
+    background-color: #3a0d58;
+    color: white;
+    border: none;
+    cursor: pointer;
+}
+.pagination-container button:disabled {
+    background-color: #777;
+    cursor: not-allowed;
 }
 </style>
 {% endblock %}
 
 {% block content %}
-    <div class="container py-5">
-        <div class="leaderboard-card shadow-lg mx-auto" style="max-width: 600px;"> 
-            
-            <div class="leaderboard-title text-center py-3 px-4 mb-3">
-                <h1 class="text-white fw-bolder mb-0 d-flex justify-content-center align-items-center">
-                    <i class="fas fa-trophy me-3" style="font-size: 35px; color: gold;"></i>
-                    LEADERBOARD
-                    <i class="fas fa-trophy ms-3" style="font-size: 35px; color: gold;"></i>
-                </h1>
-            </div>
+<div class="container">
+    <div class="table-container shadow-lg mb-3">
+        <h2 class="text-center mb-4">Word Game Leaderboard</h2>
 
-            <div class="leaderboard-header d-flex text-white fw-bold py-2 px-3">
-                <div class="rank-col">RANK</div>
-                <div class="name-col-simple">USERNAME</div>
-                <div class="score-col-simple text-end">SCORE</div>
-            </div>
+        <div class="date-range">
+            <input type="date" id="fromDate" class="form-control">
+            <input type="date" id="toDate" class="form-control">
+            <button id="filterBtn" class="btn btn-primary">Filter</button>
+        </div>
 
-            <div id="loader" class="text-center p-5 bg-white">
-                <div class="spinner-border text-primary"></div>
-                <p class="mt-2 text-muted">Loading leaderboard...</p>
-            </div>
+        <div class="table-responsive">
+            <table class="table table-bordered table-striped" id="leaderboardTable">
+                <thead id="tableHead">
+                    <tr>
+                        <th>Rank</th>
+                        <th>Username</th>
+                        <!-- Dynamic Game Titles -->
+                    </tr>
+                </thead>
+                <tbody id="tableBody">
+                    <tr>
+                        <td colspan="10" class="text-center">Loading leaderboard...</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
 
-            <div id="leaderboardList" class="leaderboard-container d-none">
-                </div>
+        <div class="pagination-container">
+            <button id="prevPage" disabled>Previous</button>
+            <button id="nextPage" disabled>Next</button>
         </div>
     </div>
+</div>
 {% endblock %}
 
 {% block body_js %}
 <script>
 document.addEventListener("DOMContentLoaded", () => {
     fetchLeaderboard();
+
+    document.getElementById("filterBtn").addEventListener("click", () => {
+        currentPage = 1;
+        fetchLeaderboard();
+    });
 });
 
-function fetchLeaderboard() {
-    fetch("/api/word-game/leaderboard/")
-        .then(res => res.json())
-        .then(data => {
-            const list = document.getElementById("leaderboardList");
-            const loader = document.getElementById("loader");
+let currentPage = 1;
 
-            loader.classList.add("d-none");
-            list.classList.remove("d-none");
+function fetchLeaderboard(page = 1) {
+    const fromDate = document.getElementById("fromDate").value;
+    const toDate = document.getElementById("toDate").value;
 
-            if (!data.leaderboard || data.leaderboard.length === 0) {
-                list.innerHTML = `
-                    <div class='text-center py-5 bg-light rounded-bottom'>
-                        <strong>No players have recorded scores yet.</strong>
-                    </div>`;
-                return;
-            }
+    let query = `?page=${page}`;
+    if (fromDate) query += `&from_date=${fromDate}`;
+    if (toDate) query += `&to_date=${toDate}`;
 
-            list.innerHTML = ""; 
+    fetch(`/api/word-game/leaderboard/${query}`, {
+        method: "GET",
+        headers: { "Content-Type": "application/json" }
+    })
+    .then(res => res.json())
+    .then(data => {
+        const tableHead = document.getElementById("tableHead");
+        const tableBody = document.getElementById("tableBody");
+        const prevBtn = document.getElementById("prevPage");
+        const nextBtn = document.getElementById("nextPage");
 
-            data.leaderboard.forEach((player, index) => {
-                const rank = index + 1;
-                const username = player.username ?? "Guest User";
-                // Format the score for better readability (e.g., 960883 -> 960,883)
-                const score = player.score.toLocaleString(); 
+        if (!data.results || Object.keys(data.results).length === 0) {
+            tableBody.innerHTML = `<tr><td colspan="10" class="text-center">No data found.</td></tr>`;
+            tableHead.innerHTML = `<tr><th>Rank</th><th>Username</th></tr>`;
+            prevBtn.disabled = true;
+            nextBtn.disabled = true;
+            return;
+        }
 
-                list.innerHTML += `
-                    <div class="leaderboard-row d-flex align-items-center rank-${rank}">
-                        
-                        <div class="rank-col">
-                            <div class="rank-icon-container">
-                                <span class="rank-number">${rank}</span>
-                            </div>
-                        </div>
+        // DRF pagination wraps your object inside data.results
+        const payload = data.results;
+        const puzzleTitles = payload.puzzle_titles || [];
+        const players = payload.results || [];
 
-                        <div class="name-col-simple d-flex align-items-center">
-                            <div class="player-avatar"></div> <div class="fw-bold text-truncate">${username}</div>
-                        </div>
+        // Build table header
+        let headHtml = "<tr><th>Rank</th><th>Username</th>";
+        puzzleTitles.forEach(title => headHtml += `<th>${title}</th>`);
+        headHtml += "<th>Total Score</th></tr>";
+        tableHead.innerHTML = headHtml;
 
-                        <div class="score-col-simple fw-bolder">${score}</div> 
-
-                    </div>
-                `;
+        // Build table body
+        tableBody.innerHTML = "";
+        players.forEach(player => {
+            let rowHtml = `<tr><td>${player.rank}</td><td>${player.username}</td>`;
+            puzzleTitles.forEach(title => {
+                rowHtml += `<td>${player[title] || 0}</td>`;
             });
-        })
-        .catch(error => {
-            console.error("Error fetching leaderboard:", error);
-            document.getElementById("loader").classList.add("d-none");
-            document.getElementById("leaderboardList").classList.remove("d-none");
-            document.getElementById("leaderboardList").innerHTML = `<div class='text-center py-5 text-danger bg-light rounded-bottom'>Error loading data.</div>`;
+            rowHtml += `<td>${player.total_score}</td></tr>`;
+            tableBody.innerHTML += rowHtml;
         });
+
+        // Pagination buttons
+        prevBtn.disabled = !data.previous;
+        nextBtn.disabled = !data.next;
+
+        prevBtn.onclick = () => { currentPage--; fetchLeaderboard(currentPage); }
+        nextBtn.onclick = () => { currentPage++; fetchLeaderboard(currentPage); }
+
+    })
+    .catch(err => {
+        console.error("Error fetching leaderboard:", err);
+        tableBody.innerHTML = `<tr><td colspan="10" class="text-center text-danger">Error loading data.</td></tr>`;
+    });
 }
 </script>
 {% endblock %}

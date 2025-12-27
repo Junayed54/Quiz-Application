@@ -255,8 +255,8 @@ async function submitScoreToAPI() {
     const token = localStorage.getItem("access_token");
     const username = localStorage.getItem("username");
     const phone = localStorage.getItem("phone_number");
-    
-    let payload = { score: score };
+    const PUZZLE_ID = 1; // 👈 STATIC ID HERE
+    let payload = {puzzle_id: PUZZLE_ID,  score: score };
     let headers = { "Content-Type": "application/json" };
 
     if (token) {

@@ -28,7 +28,7 @@ urlpatterns += [
     
     
     path('api/rewards-stats/', UserRewardEfficiencyView.as_view()),
-    
+    path('api/word-puzzles/', GameListView.as_view(), name='game-list'),
     path("api/puzzles/", PuzzleListView.as_view(), name="puzzle-list"),
 
     path('api/puzzles/<int:puzzle_id>/word/', PuzzleWordView.as_view(), name='puzzle-word'),
@@ -47,8 +47,8 @@ urlpatterns +=[
 ]
 
 urlpatterns +=[
-    path("api/word-game/submit/", SubmitWordGame.as_view(), name="submit_word_game_attempt"),
-    path("api/word-game/leaderboard/", WordGameLeaderboard.as_view(), name="wordgame_leaderboard"),
+    path("api/word-game/submit/", SubmitWordGameAPIView.as_view(), name="submit_word_game_attempt"),
+    path("api/word-game/leaderboard/", PivotWordGameLeaderboardAPIView.as_view(), name="wordgame_leaderboard"),
 
 ]
 

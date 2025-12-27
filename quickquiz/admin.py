@@ -174,7 +174,7 @@ class WordPuzzleAdmin(admin.ModelAdmin):
     list_display = ("title", "status", "start_date", "end_date", "created_at")
     list_filter = ("status",)
     search_fields = ("title",)
-    inlines = [WordInline]
+    # inlines = [WordInline]
 
 admin.site.register(WordPuzzle, WordPuzzleAdmin)
 class WordGameScoreInline(admin.StackedInline):
@@ -203,3 +203,14 @@ class PlayerAdmin(admin.ModelAdmin):
 class WordGameScoreAdmin(admin.ModelAdmin):
     list_display = ("player", "score")
     search_fields = ("player__username", "player__phone_number", "player__user__username")
+
+
+
+@admin.register(WordGameAttempt)
+class WordGameAttemptAdmin(admin.ModelAdmin):
+    list_display = ("id", "player", "puzzle", "score", "started_at", "finished_at")
+    list_filter = ("puzzle", "started_at", "finished_at")
+    search_fields = ("player__username", "player__phone_number", "puzzle__title")
+    ordering = ("-finished_at", "-score")
+    readonly_fields = ("started_at", "finished_at")
+    list_per_page = 25

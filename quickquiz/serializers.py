@@ -130,3 +130,12 @@ class WordExcelUploadSerializer(serializers.Serializer):
         if not file.name.endswith(".xlsx"):
             raise serializers.ValidationError("Only .xlsx Excel files are allowed.")
         return file
+
+
+class WordPuzzleSerializer(serializers.ModelSerializer):
+    # This provides the human-readable label (e.g., "Active" instead of "active")
+    status_label = serializers.CharField(source='get_status_display', read_only=True)
+
+    class Meta:
+        model = WordPuzzle
+        fields = ['id', 'title', 'banner', 'start_date', 'end_date', 'status', 'status_label', 'created_at']

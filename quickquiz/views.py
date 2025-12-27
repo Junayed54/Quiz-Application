@@ -22,11 +22,13 @@ from django.db import IntegrityError
 from decimal import Decimal
 from django.contrib.auth import get_user_model
 User = get_user_model()
-
+from rest_framework.generics import ListAPIView
 from django.db.models import Count, Avg, Sum
 from rest_framework.permissions import IsAdminUser, AllowAny
 from quiz.permissions import *
 from rest_framework.pagination import PageNumberPagination
+from django.utils.dateparse import parse_date
+from datetime import datetime, time
 
 class SubjectViewSet(viewsets.ModelViewSet):
     # queryset = Subject.objects.all()
@@ -928,66 +930,85 @@ class PuzzleWordView(APIView):
             }
         })
         
-                
+        
+class GameListView(ListAPIView):
+    # Query only the games you want to show (ordered by newest first)
+    queryset = WordPuzzle.objects.all()
+    serializer_class = WordPuzzleSerializer
+    permission_classes = [AllowAny]        
+        
+             
 class SubmitWordGame(APIView):
     permission_classes = [AllowAny]
 
     def post(self, request):
         score = request.data.get("score")
+        puzzle_id = request.data.get("puzzle_id")
         username = request.data.get("username")
         phone = request.data.get("phone_number")
 
-        if score is None:
-            return Response({"error": "Score is required"}, status=400)
-
-        score = int(score)
-
-        # ------------------------------------
-        # 1. Authenticated User
-        # ------------------------------------
-        if request.user.is_authenticated:
-            player, created = Player.objects.get_or_create(
-                user=request.user
+        if score is None or puzzle_id is None:
+            return Response(
+                {"error": "score and puzzle_id are required"},
+                status=400
             )
 
+        try:
+            score = int(score)
+        except ValueError:
+            return Response({"error": "Invalid score"}, status=400)
+
+        puzzle = get_object_or_404(WordPuzzle, id=puzzle_id)
+
+        # ------------------------------------
+        # 1. PLAYER (Authenticated / Guest)
+        # ------------------------------------
+        if request.user.is_authenticated:
+            player, _ = Player.objects.get_or_create(
+                user=request.user,
+                defaults={"username": request.user.username}
+            )
         else:
-            # ------------------------------------
-            # 2. Guest User
-            # ------------------------------------
             if not username or not phone:
                 return Response(
                     {"error": "username and phone_number are required"},
                     status=400
                 )
 
-            # Check if guest player exists
             player, created = Player.objects.get_or_create(
                 phone_number=phone,
                 defaults={"username": username}
             )
 
-            # If player exists but username changed → update
             if not created and player.username != username:
                 player.username = username
                 player.save()
 
         # ------------------------------------
-        # 3. CREATE OR UPDATE SCORE
+        # 2. CREATE ATTEMPT (IMPORTANT)
         # ------------------------------------
-        game_score, created = WordGameScore.objects.get_or_create(
-            player=player
+        attempt = WordGameAttempt.objects.create(
+            player=player,
+            puzzle=puzzle,
+            score=score,
+            finished_at=timezone.now()
         )
 
-        
+        # ------------------------------------
+        # 3. UPDATE SUMMARY SCORE (OPTIONAL)
+        # ------------------------------------
+        game_score, _ = WordGameScore.objects.get_or_create(player=player)
         game_score.score += score
         game_score.save()
 
         return Response({
-            "message": "Score submitted successfully",
+            "message": "Game submitted successfully",
+            "attempt_id": attempt.id,
             "player_id": player.id,
-            "score": game_score.score
+            "score": score,
+            "total_score": game_score.score,
+            "attempt_time": attempt.finished_at
         })
-
 
 class WordGameLeaderboard(APIView):
     permission_classes = [AllowAny]
@@ -1090,3 +1111,148 @@ class WordExcelUploadAPIView(APIView):
             "skipped": skipped,
             "skipped_words": skipped_words
         }, status=status.HTTP_201_CREATED)
+        
+        
+
+class SubmitWordGameAPIView(APIView):
+    """
+    Submit a word game attempt.
+    - Auth user: uses request.user
+    - Guest user: uses username + phone_number
+    - Player is UNIQUE
+    - Every submit creates a NEW attempt
+    """
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        puzzle_id = request.data.get("puzzle_id")
+        score = request.data.get("score")
+
+        if puzzle_id is None or score is None:
+            return Response(
+                {"error": "puzzle_id and score are required"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        puzzle = get_object_or_404(WordPuzzle, id=puzzle_id)
+
+        # ==============================
+        # GET OR CREATE PLAYER (SAFE)
+        # ==============================
+        with transaction.atomic():
+
+            # -------- AUTHENTICATED USER --------
+            if request.user and request.user.is_authenticated:
+                player = Player.objects.filter(user=request.user).first()
+
+                if not player:
+                    player = Player.objects.create(
+                        user=request.user,
+                        username=request.user.get_username()
+                    )
+
+            # -------- GUEST USER --------
+            else:
+                username = request.data.get("username")
+                phone_number = request.data.get("phone_number")
+
+                if not username or not phone_number:
+                    return Response(
+                        {"error": "username and phone_number are required for guest users"},
+                        status=status.HTTP_400_BAD_REQUEST
+                    )
+
+                # Reuse player by phone number
+                player = Player.objects.filter(phone_number=phone_number).first()
+
+                if not player:
+                    player = Player.objects.create(
+                        phone_number=phone_number,
+                        username=username
+                    )
+
+        # ==============================
+        # ALWAYS CREATE NEW ATTEMPT
+        # ==============================
+        attempt = WordGameAttempt.objects.create(
+            player=player,
+            puzzle=puzzle,
+            score=score,
+            finished_at=timezone.now()
+        )
+
+        return Response(
+            {
+                "message": "Attempt submitted successfully",
+                "attempt_id": attempt.id,
+                "player_id": player.id,
+                "score": attempt.score
+            },
+            status=status.HTTP_201_CREATED
+        )
+
+
+class PivotWordGameLeaderboardAPIView(APIView):
+    """
+    Pivot-style leaderboard: Rank | Username | Game1 | Game2 | ... | Total Score
+    """
+    permission_classes = [AllowAny]
+
+    class StandardResultsSetPagination(PageNumberPagination):
+        page_size = 20
+        page_size_query_param = "page_size"
+        max_page_size = 100
+
+    def get(self, request):
+        from_date = request.query_params.get("from_date")
+        to_date = request.query_params.get("to_date")
+
+        today = timezone.localdate()
+        from_date_parsed = parse_date(from_date) if from_date else today
+        to_date_parsed = parse_date(to_date) if to_date else today
+
+        start_datetime = timezone.make_aware(datetime.combine(from_date_parsed, time.min))
+        end_datetime = timezone.make_aware(datetime.combine(to_date_parsed, time.max))
+
+        # All puzzles in the date range
+        puzzles = WordPuzzle.objects.filter(
+            attempts__finished_at__range=(start_datetime, end_datetime)
+        ).distinct()
+        puzzle_titles = [p.title for p in puzzles]
+    
+        # Aggregate player scores for all puzzles
+        players = Player.objects.filter(
+            attempts__finished_at__range=(start_datetime, end_datetime)
+        ).distinct()
+
+        leaderboard = []
+        for player in players:
+            row = {"username": player.username}
+            total_score = 0
+            for puzzle in puzzles:
+                attempt = WordGameAttempt.objects.filter(
+                    player=player,
+                    puzzle=puzzle,
+                    finished_at__range=(start_datetime, end_datetime)
+                ).order_by("-score").first()
+                score = attempt.score if attempt else 0
+                row[puzzle.title] = score
+                total_score += score
+            row["total_score"] = total_score
+            leaderboard.append(row)
+
+        # Sort by total_score descending
+        leaderboard.sort(key=lambda x: x["total_score"], reverse=True)
+
+        # Add rank
+        for idx, row in enumerate(leaderboard, start=1):
+            row["rank"] = idx
+
+        # Pagination
+        paginator = self.StandardResultsSetPagination()
+        page = paginator.paginate_queryset(leaderboard, request)
+        print(puzzle_titles)
+        return paginator.get_paginated_response({
+            "puzzle_titles": puzzle_titles,
+            "results": page
+        })

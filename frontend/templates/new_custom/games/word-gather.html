@@ -1,0 +1,146 @@
+{% extends 'new_custom/new_templates/index2.html' %}
+{% load static %}
+
+
+{% block title %}Puzzle Gallery | Word Scramble{% endblock %}
+{% block head_link %}
+<!-- Fonts -->
+    
+    <!-- GSAP -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <link rel="stylesheet" href="{% static 'assets/css/games/word-gather.css' %}">
+{% endblock %}
+
+
+{% block content %}
+<div id="body">
+    <div id="game-container" class="game-container">
+        <!-- Background Animation Layer -->
+        <div class="bg-blobs">
+            <div class="blob"></div>
+            <div class="blob"></div>
+            <div class="blob"></div>
+        </div>
+
+        <!-- Header: Life & Next Letters -->
+        <header class="game-header">
+            <div class="stats-left">
+                <div class="stat-item life">
+                    <span class="label">LIFE</span>
+                    <span id="life-count" class="value">200</span>
+                </div>
+            </div>
+
+            <div class="next-letters-container">
+                <span class="next-label">NEXT</span>
+                <div id="next-queue" class="next-queue">
+                    <!-- Next letters will be injected here -->
+                </div>
+            </div>
+
+            <div class="stats-right">
+                <div class="stat-item score">
+                    <span class="label">WORDS</span>
+                    <span id="word-count" class="value">0</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- Game Area -->
+        <main class="game-area">
+            <div id="grid-wrapper" class="grid-wrapper">
+                <div id="canvas-wrapper">
+                    <canvas id="arrow-canvas"></canvas>
+                </div>
+                <!-- Word Feedback Pop -->
+                <div id="last-word" class="last-word">
+                    <div id="last-word-content" class="last-word-content">--</div>
+                    <div id="last-word-label" class="last-word-label">FOUND!</div>
+                </div>
+                <table id="game-grid" class="game-grid">
+                    <!-- Grid cells will be injected here -->
+                </table>
+            </div>
+        </main>
+
+        <footer class="game-footer">
+            <!-- Stats or empty -->
+        </footer>
+
+        <!-- Overlays -->
+        <div id="overlay" class="overlay">
+            <!-- Start Modal -->
+            <div id="start-modal" class="modal show">
+                <h1 class="logo">Word<span>Gather</span></h1>
+                <p class="description">
+                    Place characters on the board to form words horizontally or vertically.
+                    <br><br>
+                    Each turn costs <strong>1 life</strong>. Finding a word gives <strong>+1 life</strong>.
+                    Fill the board to win!
+                </p>
+                <button id="start-btn" class="btn-primary">START GAME</button>
+            </div>
+
+            <!-- Game Over Modal -->
+            <div id="game-over-modal" class="modal">
+                <h1 class="title danger">Game Over</h1>
+                <div class="stats-summary">
+                    <div class="summary-item">
+                        <span>Words Found</span>
+                        <span id="final-words">-</span>
+                    </div>
+                    <div class="summary-item">
+                        <span>Longest Word</span>
+                        <span id="final-longest">-</span>
+                    </div>
+                </div>
+                <button id="restart-btn" class="btn-primary">TRY AGAIN</button>
+            </div>
+
+            <!-- Win Modal -->
+            <div id="win-modal" class="modal">
+                <h1 class="title success">Victory!</h1>
+                <p class="description">You've successfully filled the entire board!</p>
+                <div class="stats-summary">
+                    <div class="summary-item">
+                        <span>Words Found</span>
+                        <span id="win-words">-</span>
+                    </div>
+                    <div class="summary-item">
+                        <span>Longest Word</span>
+                        <span id="win-longest">-</span>
+                    </div>
+                </div>
+                <button id="next-game-btn" class="btn-primary">PLAY AGAIN</button>
+            </div>
+
+
+            <!-- User Modal -->
+            <div id="user-modal" class="modal hidden">
+                <h1 class="title">Enter Your Info</h1>
+                <p class="description">Please provide your name and phone number to save your score.</p>
+                
+                <form id="user-form" onsubmit="event.preventDefault(); handleCustomFormSubmit();">
+                    <div style="margin-bottom: 15px;">
+                        <input type="text" id="user-username" placeholder="Your Name" required
+                            class="modal-input">
+                    </div>
+                    <div style="margin-bottom: 20px;">
+                        <input type="text" id="user-phone" placeholder="Phone Number" required
+                            class="modal-input">
+                    </div>
+                    <button id="submit" type="submit" class="btn-primary" style="width: 100%;" onclick="submitUserInfo()">Submit</button>
+                </form>
+            </div>
+
+
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block body_js %}
+<script src="{% static 'Js/games/word-gather.js' %}"></script>
+<script src="{% static 'Js/games/word-gather-words.js' %}"></script>
+
+{% endblock %}
