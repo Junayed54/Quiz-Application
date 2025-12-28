@@ -160,6 +160,16 @@ class RegisterDeviceTokenView(APIView):
 #       AND timestamp >= datetime('now', '-30 days')
 #   )
 
+
+
+# SELECT
+#     user_id,
+#     device_id,
+#     token
+# FROM notifications_devicetoken
+# WHERE device_type = 'android';
+
+
 ALLOWED_MODELS = ['UserActivity', 'DeviceToken']
 
 class SegmentUsersRawView(APIView):
