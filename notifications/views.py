@@ -292,66 +292,166 @@ class SendNotificationView(APIView):
         serializer.is_valid(raise_exception=True)
         data = serializer.validated_data
 
-        tokens = data['tokens']
-        title = data['title']
-        body = data['body']
-        image_url = data.get('image') or ""   # avoid None → undefined
-        click_action_url = data.get('url') or ""  # avoid None → undefined
+        title = data["title"]
+        body = data["body"]
+        image_url = data.get("image") or ""
+        click_action_url = data.get("url") or ""
+
+        # 🔹 Split tokens by device type
+        web_tokens = list(
+            DeviceToken.objects.filter(device_type="web")
+            .values_list("token", flat=True)
+        )
+        android_tokens = list(
+            DeviceToken.objects.filter(device_type="android")
+            .values_list("token", flat=True)
+        )
+        ios_tokens = list(
+            DeviceToken.objects.filter(device_type="ios")
+            .values_list("token", flat=True)
+        )
+
+        total_tokens = len(web_tokens) + len(android_tokens) + len(ios_tokens)
+
+        if total_tokens == 0:
+            return Response(
+                {"error": "No device tokens found"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
 
         sent_count = 0
         failed_count = 0
+        tokens_to_delete = []
 
-        # 🚀 Batch send if many tokens
-        if len(tokens) > 10:
-            message = messaging.MulticastMessage(
-                data={
-                    "title": title,
-                    "body": body,
-                    "image": image_url,
-                    "url": click_action_url,
-                },
-                tokens=tokens,
-            )
-
-            responses = messaging.send_each_for_multicast(message)
-            sent_count = sum(1 for r in responses.responses if r.success)
-            failed_count = sum(1 for r in responses.responses if not r.success)
-
-        else:
-            # Fallback: send individually
-            for token in tokens:
-                try:
-                    messaging.send(
-                        messaging.Message(
-                            data={
-                                "title": title,
-                                "body": body,
-                                "image": image_url,
-                                "url": click_action_url,
-                            },
-                            token=token
-                        )
+        # =======================
+        # 🌐 WEB (DATA ONLY)
+        # =======================
+        if web_tokens:
+            try:
+                responses = messaging.send_each_for_multicast(
+                    messaging.MulticastMessage(
+                        data={
+                            "title": title,
+                            "body": body,
+                            "url": click_action_url,
+                        },
+                        tokens=web_tokens,
                     )
-                    sent_count += 1
-                except Exception as e:
-                    logger.error(f"Notification failed for token={token}, error={e}")
-                    failed_count += 1
+                )
 
-        # 📝 Log the notification attempt
+                sent_count += responses.success_count
+                failed_count += responses.failure_count
+
+                for i, r in enumerate(responses.responses):
+                    if not r.success and r.exception:
+                        if getattr(r.exception, "code", "") in (
+                            "messaging/unregistered",
+                            "messaging/invalid-registration-token",
+                        ):
+                            tokens_to_delete.append(web_tokens[i])
+
+            except Exception:
+                logger.error("Web notification failed", exc_info=True)
+                failed_count += len(web_tokens)
+
+        # =======================
+        # 🤖 ANDROID (NOTIFICATION + DATA)
+        # =======================
+        if android_tokens:
+            try:
+                responses = messaging.send_each_for_multicast(
+                    messaging.MulticastMessage(
+                        notification=messaging.Notification(
+                            title=title,
+                            body=body,
+                            image=image_url if image_url else None,
+                        ),
+                        data={"url": click_action_url},
+                        tokens=android_tokens,
+                    )
+                )
+
+                sent_count += responses.success_count
+                failed_count += responses.failure_count
+
+                for i, r in enumerate(responses.responses):
+                    if not r.success and r.exception:
+                        if getattr(r.exception, "code", "") in (
+                            "messaging/unregistered",
+                            "messaging/invalid-registration-token",
+                        ):
+                            tokens_to_delete.append(android_tokens[i])
+
+            except Exception:
+                logger.error("Android notification failed", exc_info=True)
+                failed_count += len(android_tokens)
+
+        # =======================
+        # 🍎 iOS (NOTIFICATION + DATA)
+        # =======================
+        if ios_tokens:
+            try:
+                responses = messaging.send_each_for_multicast(
+                    messaging.MulticastMessage(
+                        notification=messaging.Notification(
+                            title=title,
+                            body=body,
+                        ),
+                        data={"url": click_action_url},
+                        apns=messaging.APNSConfig(
+                            payload=messaging.APNSPayload(
+                                aps=messaging.Aps(
+                                    sound="default",
+                                    category="OPEN_URL"
+                                )
+                            )
+                        ),
+                        tokens=ios_tokens,
+                    )
+                )
+
+                sent_count += responses.success_count
+                failed_count += responses.failure_count
+
+                for i, r in enumerate(responses.responses):
+                    if not r.success and r.exception:
+                        if getattr(r.exception, "code", "") in (
+                            "messaging/unregistered",
+                            "messaging/invalid-registration-token",
+                        ):
+                            tokens_to_delete.append(ios_tokens[i])
+
+            except Exception:
+                logger.error("iOS notification failed", exc_info=True)
+                failed_count += len(ios_tokens)
+
+        # =======================
+        # 🧹 Cleanup invalid tokens
+        # =======================
+        if tokens_to_delete:
+            DeviceToken.objects.filter(token__in=tokens_to_delete).delete()
+            logger.info(f"Deleted {len(tokens_to_delete)} invalid tokens")
+
+        # =======================
+        # 📝 Log result
+        # =======================
         NotificationLog.objects.create(
             title=title,
             body=body,
-            tokens=tokens,
+            tokens=web_tokens + android_tokens + ios_tokens,
             success_count=sent_count,
-            failure_count=failed_count
+            failure_count=failed_count,
         )
 
-        return Response({
-            'message': f'Notification send attempt complete for {len(tokens)} tokens.',
-            'sent_count': sent_count,
-            'failed_count': failed_count
-        }, status=status.HTTP_200_OK)
-        
+        return Response(
+            {
+                "message": "Notification sent successfully",
+                "total_tokens": total_tokens,
+                "sent": sent_count,
+                "failed": failed_count,
+            },
+            status=status.HTTP_200_OK,
+        )
 
 class LogActivityView(APIView):
     permission_classes = [AllowAny]
