@@ -1235,7 +1235,7 @@ class PivotWordGameLeaderboardAPIView(APIView):
         leaderboard = []
 
         for player in players:
-            row = {"username": player.username}
+            row = {"username": player.display_name}
             total_score = 0
 
             for puzzle in puzzles:

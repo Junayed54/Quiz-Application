@@ -156,6 +156,14 @@ class Player(models.Model):
     username = models.CharField(max_length=150, null=True, blank=True)
     phone_number = models.CharField(max_length=20, null=True, blank=True)
 
+    @property
+    def display_name(self):
+        if self.user and self.user.username:
+            return self.user.username
+        if self.username:
+            return self.username
+        return f"Guest-{self.phone_number}" if self.phone_number else "Guest"
+    
     def __str__(self):
         if self.user:
             return self.user.username
