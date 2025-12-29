@@ -1194,7 +1194,9 @@ class SubmitWordGameAPIView(APIView):
 
 class PivotWordGameLeaderboardAPIView(APIView):
     """
-    Pivot-style leaderboard: Rank | Username | Game1 | Game2 | ... | Total Score
+    Pivot-style leaderboard:
+    Rank | Username | Puzzle1 | Puzzle2 | ... | Total Score
+    (SUM of all attempts in date range)
     """
     permission_classes = [AllowAny]
 
@@ -1211,37 +1213,46 @@ class PivotWordGameLeaderboardAPIView(APIView):
         from_date_parsed = parse_date(from_date) if from_date else today
         to_date_parsed = parse_date(to_date) if to_date else today
 
-        start_datetime = timezone.make_aware(datetime.combine(from_date_parsed, time.min))
-        end_datetime = timezone.make_aware(datetime.combine(to_date_parsed, time.max))
+        start_datetime = timezone.make_aware(
+            datetime.combine(from_date_parsed, time.min)
+        )
+        end_datetime = timezone.make_aware(
+            datetime.combine(to_date_parsed, time.max)
+        )
 
-        # All puzzles in the date range
+        # All puzzles attempted in date range
         puzzles = WordPuzzle.objects.filter(
             attempts__finished_at__range=(start_datetime, end_datetime)
         ).distinct()
+
         puzzle_titles = [p.title for p in puzzles]
-    
-        # Aggregate player scores for all puzzles
+
+        # All players who attempted in date range
         players = Player.objects.filter(
             attempts__finished_at__range=(start_datetime, end_datetime)
         ).distinct()
 
         leaderboard = []
+
         for player in players:
             row = {"username": player.username}
             total_score = 0
+
             for puzzle in puzzles:
-                attempt = WordGameAttempt.objects.filter(
+                # ✅ SUM of ALL attempts for this player & puzzle
+                score_sum = WordGameAttempt.objects.filter(
                     player=player,
                     puzzle=puzzle,
                     finished_at__range=(start_datetime, end_datetime)
-                ).order_by("-score").first()
-                score = attempt.score if attempt else 0
-                row[puzzle.title] = score
-                total_score += score
+                ).aggregate(total=Sum("score"))["total"] or 0
+
+                row[puzzle.title] = score_sum
+                total_score += score_sum
+
             row["total_score"] = total_score
             leaderboard.append(row)
 
-        # Sort by total_score descending
+        # Sort by total_score DESC
         leaderboard.sort(key=lambda x: x["total_score"], reverse=True)
 
         # Add rank
@@ -1251,7 +1262,7 @@ class PivotWordGameLeaderboardAPIView(APIView):
         # Pagination
         paginator = self.StandardResultsSetPagination()
         page = paginator.paginate_queryset(leaderboard, request)
-        print(puzzle_titles)
+
         return paginator.get_paginated_response({
             "puzzle_titles": puzzle_titles,
             "results": page
