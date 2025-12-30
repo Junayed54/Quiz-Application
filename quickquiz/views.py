@@ -1235,6 +1235,7 @@ class PivotWordGameLeaderboardAPIView(APIView):
         leaderboard = []
 
         for player in players:
+            print(player.display_name)
             row = {"username": player.display_name}
             total_score = 0
 
