@@ -8,7 +8,7 @@ from django.apps import apps
 from django.utils.timezone import now
 from django.db.models import Count, Q
 from django.utils.timezone import now, timedelta
-
+from django.db import transaction
 # Example usage
 
 @api_view(["POST"])
@@ -283,7 +283,13 @@ from .models import NotificationLog
 
 logger = logging.getLogger(__name__)
 
-
+# Utility function to split a list into chunks (FCM limit is 500)
+def chunk_list(data, size):
+    """Yield successive n-sized chunks from data."""
+    for i in range(0, len(data), size):
+        yield data[i:i + size]
+        
+        
 class SendNotificationView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -296,23 +302,16 @@ class SendNotificationView(APIView):
         body = data["body"]
         image_url = data.get("image") or ""
         click_action_url = data.get("url") or ""
-        
-        
-        # 🔹 Split tokens by device type
-        web_tokens = list(
-            DeviceToken.objects.filter(device_type="web")
-            .values_list("token", flat=True)
-        )
-        android_tokens = list(
-            DeviceToken.objects.filter(device_type="android")
-            .values_list("token", flat=True)
-        )
-        ios_tokens = list(
-            DeviceToken.objects.filter(device_type="ios")
-            .values_list("token", flat=True)
-        )
 
-        total_tokens = len(web_tokens) + len(android_tokens) + len(ios_tokens)
+        notification_data = {
+            "title": title,
+            "body": body,
+            "image": image_url,
+            "url": click_action_url,
+        }
+
+        all_tokens = data["tokens"]
+        total_tokens = len(all_tokens)
 
         if total_tokens == 0:
             return Response(
@@ -324,135 +323,83 @@ class SendNotificationView(APIView):
         failed_count = 0
         tokens_to_delete = []
 
-        # =======================
-        # 🌐 WEB (DATA ONLY)
-        # =======================
-        if web_tokens:
-            try:
-                responses = messaging.send_each_for_multicast(
-                    messaging.MulticastMessage(
-                        data={
-                            "title": title,
-                            "body": body,
-                            "url": click_action_url,
-                        },
-                        tokens=web_tokens,
-                    )
-                )
-
-                sent_count += responses.success_count
-                failed_count += responses.failure_count
-
-                for i, r in enumerate(responses.responses):
-                    if not r.success and r.exception:
-                        if getattr(r.exception, "code", "") in (
-                            "messaging/unregistered",
-                            "messaging/invalid-registration-token",
-                        ):
-                            tokens_to_delete.append(web_tokens[i])
-
-            except Exception:
-                logger.error("Web notification failed", exc_info=True)
-                failed_count += len(web_tokens)
-
-        # =======================
-        # 🤖 ANDROID (NOTIFICATION + DATA)
-        # =======================
-        if android_tokens:
-            try:
-                responses = messaging.send_each_for_multicast(
-                    messaging.MulticastMessage(
+        try:
+            # -------- MULTICAST --------
+            if total_tokens >= 10:
+                for batch_tokens in chunk_list(all_tokens, 500):
+                    message = messaging.MulticastMessage(
                         notification=messaging.Notification(
                             title=title,
                             body=body,
                             image=image_url if image_url else None,
                         ),
-                        data={"url": click_action_url},
-                        tokens=android_tokens,
+                        data=notification_data,
+                        tokens=batch_tokens,
                     )
-                )
 
-                sent_count += responses.success_count
-                failed_count += responses.failure_count
+                    response = messaging.send_each_for_multicast(message)
 
-                for i, r in enumerate(responses.responses):
-                    if not r.success and r.exception:
-                        if getattr(r.exception, "code", "") in (
-                            "messaging/unregistered",
-                            "messaging/invalid-registration-token",
-                        ):
-                            tokens_to_delete.append(android_tokens[i])
+                    sent_count += response.success_count
+                    failed_count += response.failure_count
 
-            except Exception:
-                logger.error("Android notification failed", exc_info=True)
-                failed_count += len(android_tokens)
+                    for i, res in enumerate(response.responses):
+                        if not res.success and res.exception:
+                            code = getattr(res.exception, "code", "")
+                            token = batch_tokens[i]
 
-        # =======================
-        # 🍎 iOS (NOTIFICATION + DATA)
-        # =======================
-        if ios_tokens:
-            try:
-                responses = messaging.send_each_for_multicast(
-                    messaging.MulticastMessage(
-                        notification=messaging.Notification(
-                            title=title,
-                            body=body,
-                        ),
-                        data={"url": click_action_url},
-                        apns=messaging.APNSConfig(
-                            payload=messaging.APNSPayload(
-                                aps=messaging.Aps(
-                                    sound="default",
-                                    category="OPEN_URL"
+                            if code in (
+                                "messaging/invalid-registration-token",
+                                "messaging/registration-token-not-registered",
+                            ):
+                                tokens_to_delete.append(token)
+                            else:
+                                logger.error(
+                                    f"FCM error token={token}, code={code}, error={res.exception}"
                                 )
+
+            # -------- SINGLE SEND --------
+            else:
+                for token in all_tokens:
+                    try:
+                        messaging.send(
+                            messaging.Message(
+                                notification=messaging.Notification(
+                                    title=title,
+                                    body=body,
+                                    image=image_url if image_url else None,
+                                ),
+                                data=notification_data,
+                                token=token,
                             )
-                        ),
-                        tokens=ios_tokens,
-                    )
-                )
+                        )
+                        sent_count += 1
+                    except exceptions.UnregisteredError:
+                        tokens_to_delete.append(token)
+                        failed_count += 1
+                    except Exception as e:
+                        logger.error(f"FCM send failed token={token}, error={e}")
+                        failed_count += 1
 
-                sent_count += responses.success_count
-                failed_count += responses.failure_count
+            # -------- CLEAN INVALID TOKENS --------
+            if tokens_to_delete:
+                DeviceToken.objects.filter(token__in=tokens_to_delete).delete()
+                logger.info(f"Deleted {len(tokens_to_delete)} invalid FCM tokens")
 
-                for i, r in enumerate(responses.responses):
-                    if not r.success and r.exception:
-                        if getattr(r.exception, "code", "") in (
-                            "messaging/unregistered",
-                            "messaging/invalid-registration-token",
-                        ):
-                            tokens_to_delete.append(ios_tokens[i])
-
-            except Exception:
-                logger.error("iOS notification failed", exc_info=True)
-                failed_count += len(ios_tokens)
-
-        # =======================
-        # 🧹 Cleanup invalid tokens
-        # =======================
-        if tokens_to_delete:
-            DeviceToken.objects.filter(token__in=tokens_to_delete).delete()
-            logger.info(f"Deleted {len(tokens_to_delete)} invalid tokens")
-
-        # =======================
-        # 📝 Log result
-        # =======================
-        NotificationLog.objects.create(
-            title=title,
-            body=body,
-            tokens=web_tokens + android_tokens + ios_tokens,
-            success_count=sent_count,
-            failure_count=failed_count,
-        )
+        except Exception as e:
+            logger.error("FCM catastrophic failure", exc_info=True)
+            failed_count = total_tokens - sent_count
 
         return Response(
             {
-                "message": "Notification sent successfully",
+                "message": "Notification processing completed",
                 "total_tokens": total_tokens,
                 "sent": sent_count,
                 "failed": failed_count,
+                "invalid_tokens_removed": len(tokens_to_delete),
             },
             status=status.HTTP_200_OK,
         )
+
 
 class LogActivityView(APIView):
     permission_classes = [AllowAny]
