@@ -439,3 +439,28 @@ p {
     background: rgba(255, 255, 255, 0.1);
     border-radius: 10px;
 }
+
+
+
+/* Container to stack buttons nicely */
+.button-container {
+    margin-top: 20px;
+}
+
+/* Secondary button style for the glass effect */
+.btn-secondary {
+    padding: 12px 24px;
+    border-radius: 12px;
+    font-weight: 600;
+    color: white;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-size: 0.9rem;
+}
+
+.btn-secondary:hover {
+    background: rgba(255, 255, 255, 0.2) !important;
+    transform: translateY(-2px);
+}

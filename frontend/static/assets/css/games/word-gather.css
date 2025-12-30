@@ -488,3 +488,31 @@ canvas {
     box-shadow: 0 0 10px rgba(139, 92, 246, 0.5);
     background: rgba(71, 38, 38, 0.014);
 }
+
+
+
+.btn-secondary {
+    background: rgba(255, 255, 255, 0.1);
+    border: 2px solid #ffffff;
+    color: white;
+    padding: 12px 25px;
+    border-radius:  50px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: all 0.3s ease;
+    width: 100%; /* Makes it consistent with primary buttons */
+    max-width: 250px;
+}
+
+.btn-secondary:hover {
+    background: white;
+    color: #333;
+}
+
+.button-group {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    width: 100%;
+    align-items: center;
+}

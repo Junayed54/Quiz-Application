@@ -333,3 +333,8 @@ window.onload = () => {
     resizeCanvas();
     showOverlay('start-modal');
 };
+
+
+document.getElementById("leaderboard-btn").addEventListener("click", () => {
+    window.location.href = "/word-games/leaderboard/";
+});
