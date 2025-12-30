@@ -296,7 +296,8 @@ class SendNotificationView(APIView):
         body = data["body"]
         image_url = data.get("image") or ""
         click_action_url = data.get("url") or ""
-
+        
+        
         # 🔹 Split tokens by device type
         web_tokens = list(
             DeviceToken.objects.filter(device_type="web")
