@@ -404,6 +404,125 @@ body {
     transform: translateY(-2px);
 }
 
+
+
+
+/* 3rd */
+
+/* --- Solved Words List Styles --- */
+.solved-words-container {
+    margin-top: 25px;
+    max-height: 280px;
+    overflow-y: auto;
+    padding-right: 10px;
+    text-align: left;
+    /* Custom Scrollbar */
+}
+
+.solved-words-container::-webkit-scrollbar {
+    width: 6px;
+}
+
+.solved-words-container::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 10px;
+}
+
+.solved-word-item {
+    background: rgba(255, 255, 255, 0.07);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 15px;
+    padding: 15px;
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    transition: all 0.3s ease;
+}
+
+.solved-word-item:hover {
+    background: rgba(255, 255, 255, 0.12);
+    transform: translateX(5px);
+    border-color: #4ECDC4;
+}
+
+.word-info {
+    flex: 1;
+}
+
+.word-main {
+    margin-bottom: 5px;
+}
+
+.word-en {
+    font-weight: 800;
+    font-size: 1.2rem;
+    color: #4ECDC4;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.word-bn {
+    color: #FF6B6B;
+    margin-left: 10px;
+    font-weight: 600;
+    font-size: 1rem;
+}
+
+.word-example-container {
+    border-left: 2px solid rgba(78, 205, 196, 0.3);
+    padding-left: 10px;
+    margin-top: 8px;
+}
+
+.word-example {
+    font-style: italic;
+    font-size: 0.9rem;
+    color: rgba(255, 255, 255, 0.9);
+    margin: 0;
+    line-height: 1.4;
+}
+
+.word-example-bn {
+    font-size: 0.85rem;
+    color: rgba(255, 255, 255, 0.5);
+    margin: 4px 0 0 0;
+}
+
+/* --- Speaker Button --- */
+.speaker-btn {
+    background: linear-gradient(135deg, #4ECDC4, #45B7AF);
+    border: none;
+    color: white;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-left: 15px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    transition: all 0.2s ease;
+}
+
+.speaker-btn:hover {
+    transform: scale(1.1);
+    background: #FF6B6B;
+}
+
+.speaker-btn svg {
+    width: 20px;
+    height: 20px;
+}
+
+
+
+
+
+
+/* end */
+
 /* Animations */
 @keyframes fadeIn {
     from {

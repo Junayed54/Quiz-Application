@@ -139,10 +139,10 @@ class NewsViewSet(viewsets.ModelViewSet):
         user = self.request.user
         
         # --- Standard User Role Filtering ---
-        if user.is_authenticated:
-            if user.role in ["teacher", "admin"]:
-                # If the user is a teacher/admin, show only their news (or the admin's view)
-                queryset = queryset.filter(author=user)
+        # if user.is_authenticated:
+        #     if user.role in ["teacher", "admin"]:
+        #         # If the user is a teacher/admin, show only their news (or the admin's view)
+        #         queryset = queryset.filter(author=user)
         # -----------------------------------
         
         # 2. Check for the 'category_id' query parameter

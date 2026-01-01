@@ -4,6 +4,8 @@ User = get_user_model()
 from django.utils import timezone
 from datetime import date, timedelta
 # Create your models here.
+
+
 class Subject(models.Model):
     name = models.CharField(max_length=100)
 
@@ -189,19 +191,45 @@ class WordPuzzle(models.Model):
 
 
 class Word(models.Model):
-    puzzle = models.ForeignKey(WordPuzzle, on_delete=models.CASCADE, related_name="words")
+    puzzle = models.ForeignKey(
+        WordPuzzle,
+        on_delete=models.CASCADE,
+        related_name="words"
+    )
 
-    text = models.CharField(max_length=100)       # original word
-    meaning_bn = models.CharField(                   # Bangla meaning
+    text = models.CharField(max_length=100)  # original word
+
+    meaning_bn = models.CharField(
         max_length=255,
         null=True,
         blank=True
     )
-    hint = models.CharField(max_length=200, blank=True, null=True)
+
+    example_en = models.TextField(
+        null=True,
+        blank=True,
+        help_text="Example sentence in English"
+    )
+
+    example_bn = models.TextField(
+        null=True,
+        blank=True,
+        help_text="Example sentence in Bangla"
+    )
+
+    hint = models.CharField(
+        max_length=200,
+        blank=True,
+        null=True
+    )
 
     difficulty = models.CharField(
         max_length=20,
-        choices=[("easy", "Easy"), ("medium", "Medium"), ("hard", "Hard")],
+        choices=[
+            ("easy", "Easy"),
+            ("medium", "Medium"),
+            ("hard", "Hard")
+        ],
         default="easy"
     )
 

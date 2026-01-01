@@ -905,18 +905,23 @@ class PuzzleListView(APIView):
 # 2. GET NEXT PUZZLE WORD (One by One)
 # --------------------------------------------------------
 class PuzzleWordView(APIView):
-
+    
     def get(self, request, puzzle_id):
-        # user, guest = get_request_user(request)
         puzzle = get_object_or_404(WordPuzzle, id=puzzle_id)
 
-        # Get all words
         words = list(Word.objects.filter(puzzle=puzzle))
 
         if not words:
-            return Response({"type": "error", "message": "No words found", "data": []}, status=404)
+            return Response(
+                {
+                    "type": "error",
+                    "message": "No words found",
+                    "data": []
+                },
+                status=404
+            )
 
-        # Option 1: Random word every time (unlimited)
+        # 🔹 Random word every request
         word = random.choice(words)
 
         return Response({
@@ -925,8 +930,11 @@ class PuzzleWordView(APIView):
             "data": {
                 "word_id": word.id,
                 "text": word.text,
-                "hint": word.hint,
-                "difficulty": word.difficulty
+                "meaning_bn": word.meaning_bn or "",
+                "example_en": word.example_en or "",
+                "example_bn": word.example_bn or "",
+                "hint": word.hint or "",
+                "difficulty": word.difficulty,
             }
         })
         
@@ -1030,7 +1038,6 @@ class WordGameLeaderboard(APIView):
 
 
 class WordExcelUploadAPIView(APIView):
-    # authentication_classes = [JWTAuthentication]
     permission_classes = [IsAuthenticated]
 
     REQUIRED_COLUMNS = {"word"}
@@ -1050,13 +1057,16 @@ class WordExcelUploadAPIView(APIView):
         # 🔹 Read header row
         headers = [
             (cell or "").strip().lower()
-            for cell in next(sheet.iter_rows(min_row=1, max_row=1, values_only=True))
+            for cell in next(
+                sheet.iter_rows(min_row=1, max_row=1, values_only=True)
+            )
         ]
 
         # 🔹 Validate required columns
-        if "word" not in headers:
+        missing = self.REQUIRED_COLUMNS - set(headers)
+        if missing:
             return Response(
-                {"error": "Excel must contain 'word' column"},
+                {"error": f"Missing required columns: {', '.join(missing)}"},
                 status=status.HTTP_400_BAD_REQUEST
             )
 
@@ -1066,7 +1076,10 @@ class WordExcelUploadAPIView(APIView):
         skipped_words = []
         seen_words = set()
 
-        for row_num, row in enumerate(sheet.iter_rows(min_row=2, values_only=True), start=2):
+        for row_num, row in enumerate(
+            sheet.iter_rows(min_row=2, values_only=True),
+            start=2
+        ):
             word = row[col_index["word"]]
 
             if not word:
@@ -1074,19 +1087,21 @@ class WordExcelUploadAPIView(APIView):
 
             word = str(word).strip()
 
-            # Optional columns
+            # 🔹 Optional columns
             meaning_bn = row[col_index["meaning_bn"]] if "meaning_bn" in col_index else ""
+            example_en = row[col_index["example_en"]] if "example_en" in col_index else ""
+            example_bn = row[col_index["example_bn"]] if "example_bn" in col_index else ""
             hint = row[col_index["hint"]] if "hint" in col_index else ""
             difficulty = row[col_index["difficulty"]] if "difficulty" in col_index else "easy"
 
-            # Excel duplicate
+            # 🔹 Excel duplicate check
             if word.lower() in seen_words:
                 skipped += 1
                 skipped_words.append(f"{word} (row {row_num})")
                 continue
             seen_words.add(word.lower())
 
-            # DB duplicate
+            # 🔹 DB duplicate check
             if Word.objects.filter(puzzle=puzzle, text__iexact=word).exists():
                 skipped += 1
                 skipped_words.append(f"{word} (already exists)")
@@ -1100,18 +1115,23 @@ class WordExcelUploadAPIView(APIView):
                 puzzle=puzzle,
                 text=word,
                 meaning_bn=str(meaning_bn).strip() if meaning_bn else "",
+                example_en=str(example_en).strip() if example_en else "",
+                example_bn=str(example_bn).strip() if example_bn else "",
                 hint=str(hint).strip() if hint else "",
                 difficulty=difficulty
             )
+
             created += 1
 
-        return Response({
-            "message": "Excel processed successfully",
-            "created": created,
-            "skipped": skipped,
-            "skipped_words": skipped_words
-        }, status=status.HTTP_201_CREATED)
-        
+        return Response(
+            {
+                "message": "Excel processed successfully",
+                "created": created,
+                "skipped": skipped,
+                "skipped_words": skipped_words,
+            },
+            status=status.HTTP_201_CREATED
+        )
         
 
 class SubmitWordGameAPIView(APIView):

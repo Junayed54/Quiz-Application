@@ -137,6 +137,7 @@ class WordAdmin(admin.ModelAdmin):
         "puzzle",
         "difficulty",
         "meaning_bn",
+        "short_example_en",
         "created_at",
     )
 
@@ -149,6 +150,8 @@ class WordAdmin(admin.ModelAdmin):
     search_fields = (
         "text",
         "meaning_bn",
+        "example_en",
+        "example_bn",
         "hint",
     )
 
@@ -161,12 +164,27 @@ class WordAdmin(admin.ModelAdmin):
             "fields": ("puzzle", "difficulty"),
         }),
         ("Word Details", {
-            "fields": ("text", "meaning_bn", "hint"),
+            "fields": (
+                "text",
+                "meaning_bn",
+                "example_en",
+                "example_bn",
+                "hint",
+            ),
         }),
         ("Meta", {
             "fields": ("created_at",),
         }),
     )
+
+    # 🔹 Short preview for list view
+    def short_example_en(self, obj):
+        if obj.example_en:
+            return obj.example_en[:40] + "..." if len(obj.example_en) > 40 else obj.example_en
+        return "-"
+
+    short_example_en.short_description = "Example (EN)"
+
 # ---------------------------------
 # WordPuzzle Admin
 # ---------------------------------

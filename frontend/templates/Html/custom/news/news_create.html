@@ -32,6 +32,25 @@
         border-radius: 6px;
         overflow: hidden;
     }
+
+    .image-preview .remove-btn {
+        position: absolute;
+        top: 5px;
+        right: 5px;
+        background: rgba(255, 0, 0, 0.7);
+        color: white;
+        border: none;
+        border-radius: 50%;
+        width: 25px;
+        height: 25px;
+        cursor: pointer;
+        font-size: 14px;
+        line-height: 1;
+        z-index: 10;
+    }
+    .image-preview .remove-btn:hover {
+        background: red;
+    }
     .image-preview img {
         width: 100%;
         height: auto;
@@ -298,16 +317,32 @@ document.addEventListener("DOMContentLoaded", function () {
     function createImagePreview(imageData, file) {
         const previewDiv = document.createElement('div');
         previewDiv.classList.add('image-preview');
-        previewDiv.dataset.filename = file.name;
+        // Use a timestamp or unique ID to identify the file in the array
+        const fileId = Date.now() + Math.random();
+        previewDiv.dataset.fileId = fileId;
+        file.fileId = fileId; // Attach ID to the file object
 
         const img = document.createElement('img');
         img.src = imageData;
-        img.draggable = true;
+
+        // Create the Remove Button
+        const removeBtn = document.createElement('button');
+        removeBtn.innerHTML = '×';
+        removeBtn.classList.add('remove-btn');
+        removeBtn.type = 'button'; // Prevent form submission
+
+        removeBtn.onclick = function() {
+            // 1. Remove from the uploadedFiles array
+            uploadedFiles = uploadedFiles.filter(f => f.fileId !== fileId);
+            // 2. Remove from the DOM
+            previewDiv.remove();
+        };
 
         const resizeHandle = document.createElement('div');
         resizeHandle.classList.add('resize-handle');
 
         previewDiv.appendChild(img);
+        previewDiv.appendChild(removeBtn); // Add the button
         previewDiv.appendChild(resizeHandle);
         previewContainer.appendChild(previewDiv);
 

@@ -1,182 +1,352 @@
 {% extends 'new_custom/new_templates/index2.html' %}
 {% load static %}
 
-{% block title %}Mixup - Word Scramble Game Leaderboard{% endblock %}
+{% block title %}Mixup - Word Game Leaderboard{% endblock %}
 
 {% block style %}
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
 <style>
+:root {
+    --bg-body: #0b1220;
+    --card-bg: #111827;
+    --table-bg: #0f172a;
+    --row-odd: rgba(255,255,255,0.03);
+    --row-even: rgba(0,0,0,0.25);
+
+    --accent-indigo: #6366f1;
+    --accent-purple: #a855f7;
+
+    --text-main: #f8fafc;
+    --text-soft: #94a3b8;
+
+    --gold: #fbbf24;
+    --silver: #e5e7eb;
+    --bronze: #cd7f32;
+}
+
 body {
-    background: linear-gradient(to right, #7e1e3b, #b53856, #2d0b54, #120336);
-    min-height: 100vh;
-    color: white;
+    background: var(--bg-body);
+    color: var(--text-main);
+    font-family: 'Inter', system-ui, sans-serif;
 }
-.table-container {
-    background: #210a42;
-    padding: 20px;
+
+/* Card */
+.leaderboard-card {
+    background: var(--card-bg);
+    border-radius: 20px;
+    padding: 2rem;
+    box-shadow: 0 30px 60px rgba(0,0,0,0.6);
+}
+
+/* Title */
+.section-title {
+    font-size: 1.8rem;
+    font-weight: 800;
+    background: linear-gradient(90deg, #fff, #c7d2fe);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+/* Filters */
+.filter-panel {
+    background: rgba(15, 23, 42, 0.6);
+    padding: 1.2rem;
+    border-radius: 14px;
+    border: 1px solid rgba(255,255,255,0.05);
+}
+
+.form-control {
+    background: #020617;
+    border: 1px solid #334155;
+    color: white;
+    border-radius: 8px;
+}
+
+.form-control:focus {
+    border-color: var(--accent-indigo);
+    box-shadow: 0 0 0 3px rgba(99,102,241,0.25);
+}
+
+/* Buttons */
+.btn-update {
+    background: var(--accent-indigo);
+    font-weight: 600;
     border-radius: 10px;
-    margin-top: 30px;
 }
+
+.btn-update:hover {
+    background: #4f46e5;
+}
+
+/* Table Wrapper */
+.table-responsive {
+    border-radius: 14px;
+    overflow-x: auto;
+    border: 1px solid #334155;
+    background: var(--table-bg);
+}
+
+/* TABLE — FIXED LAYOUT */
+.table {
+    min-width: 900px;
+    table-layout: fixed;   /* 🔥 REQUIRED */
+    border-collapse: separate;
+    border-spacing: 0;
+    color: var(--text-main);
+}
+
+/* Header */
 .table thead th {
-    background-color: #3a0d58;
-    color: white;
-    text-align: center;
+    background: linear-gradient(180deg, #1e293b, #020617);
+    color: #c7d2fe;
+    font-size: 0.75rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 1.1rem;
+    border: none;
 }
+
+/* Body cells */
 .table tbody td {
+    padding: 0.95rem;
+    border-bottom: 1px solid #1e293b;
+    color: white;
+}
+
+/* Zebra rows */
+.table tbody tr:nth-child(odd) { background: var(--row-odd); }
+.table tbody tr:nth-child(even) { background: var(--row-even); }
+
+/* Hover */
+.table tbody tr:hover {
+    background: rgba(99,102,241,0.1);
+}
+
+/* STICKY COLUMNS — FIXED WIDTHS */
+.sticky-rank {
+    position: sticky;
+    left: 0;
+    width: 70px;
+    min-width: 70px;
+    background: linear-gradient(180deg, #0f172a, #020617);
+    z-index: 20;
     text-align: center;
-    vertical-align: middle;
 }
-.date-range {
-    display: flex;
-    justify-content: center;
-    gap: 10px;
-    margin-bottom: 15px;
+
+.sticky-user {
+    position: sticky;
+    left: 70px;
+    width: 180px;
+    min-width: 180px;
+    max-width: 180px;
+    background: linear-gradient(180deg, #0f172a, #020617);
+    z-index: 20;
+    border-right: 2px solid #1e293b;
+
+    /* 🔥 TEXT CONTROL */
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
-.date-range input,
-.date-range button {
-    border-radius: 5px;
-    border: none;
-    padding: 5px 10px;
+
+/* Rank badge */
+.rank-circle {
+    width: 34px;
+    height: 34px;
+    line-height: 34px;
+    border-radius: 50%;
+    font-weight: 800;
+    display: inline-block;
 }
-.date-range button {
-    background-color: #3a0d58;
+
+.rank-1 { background: var(--gold); color: #000; }
+.rank-2 { background: var(--silver); color: #000; }
+.rank-3 { background: var(--bronze); color: #000; }
+
+/* Total column */
+.table th:last-child,
+.table td:last-child {
+    background: linear-gradient(180deg, #1e293b, #020617);
+    color: #e9d5ff;
+    font-weight: 800;
+}
+
+/* Pagination */
+.btn-nav {
+    background: #1e293b;
     color: white;
-    cursor: pointer;
-}
-.date-range button:hover {
-    background-color: #1f0842;
-}
-.pagination-container {
-    display: flex;
-    justify-content: center;
-    gap: 10px;
-    margin-top: 15px;
-}
-.pagination-container button {
-    padding: 5px 10px;
-    border-radius: 5px;
-    background-color: #3a0d58;
-    color: white;
+    border-radius: 10px;
+    padding: 0.5rem 1.5rem;
     border: none;
-    cursor: pointer;
 }
-.pagination-container button:disabled {
-    background-color: #777;
-    cursor: not-allowed;
+
+.btn-nav:hover:not(:disabled) { background: #334155; }
+.btn-nav:disabled { opacity: 0.4; }
+
+/* Scrollbar */
+.table-responsive::-webkit-scrollbar { height: 8px; }
+.table-responsive::-webkit-scrollbar-thumb {
+    background: #475569;
+    border-radius: 10px;
+}
+
+/* MOBILE FIX */
+@media (max-width: 576px) {
+    .table {
+        min-width: 750px;
+    }
+
+    .sticky-user {
+        width: 140px;
+        min-width: 140px;
+        max-width: 140px;
+        font-size: 0.85rem;
+    }
+
+    .table thead th,
+    .table tbody td {
+        padding: 0.6rem;
+        font-size: 0.75rem;
+    }
 }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="container">
-    <div class="table-container shadow-lg mb-3">
-        <h2 class="text-center mb-4">Word Game Leaderboard</h2>
+<div class="container my-5">
+    <div class="leaderboard-card">
 
-        <div class="date-range">
-            <input type="date" id="fromDate" class="form-control">
-            <input type="date" id="toDate" class="form-control">
-            <button id="filterBtn" class="btn btn-primary">Filter</button>
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2 class="section-title">Word Game Leaderboard</h2>
+            <div id="loader" class="spinner-border spinner-border-sm text-light d-none"></div>
+        </div>
+
+        <div class="filter-panel mb-4">
+            <div class="row g-3 align-items-end">
+                <div class="col-md-4">
+                    <label class="small text-soft fw-bold mb-1">FROM DATE</label>
+                    <input type="date" id="fromDate" class="form-control">
+                </div>
+                <div class="col-md-4">
+                    <label class="small text-soft fw-bold mb-1">TO DATE</label>
+                    <input type="date" id="toDate" class="form-control">
+                </div>
+                <div class="col-md-4 d-grid">
+                    <button id="filterBtn" class="btn btn-update">Update Leaderboard</button>
+                </div>
+            </div>
         </div>
 
         <div class="table-responsive">
-            <table class="table table-bordered table-striped" id="leaderboardTable">
-                <thead id="tableHead">
-                    <tr>
-                        <th>Rank</th>
-                        <th>Username</th>
-                        <!-- Dynamic Game Titles -->
-                    </tr>
-                </thead>
-                <tbody id="tableBody">
-                    <tr>
-                        <td colspan="10" class="text-center">Loading leaderboard...</td>
-                    </tr>
-                </tbody>
+            <table class="table" id="leaderboardTable">
+                <thead id="tableHead"></thead>
+                <tbody id="tableBody"></tbody>
             </table>
         </div>
 
-        <div class="pagination-container">
-            <button id="prevPage" disabled>Previous</button>
-            <button id="nextPage" disabled>Next</button>
+        <div class="d-flex justify-content-between align-items-center mt-4">
+            <div class="text-soft small" id="pageDisplay"></div>
+            <div class="d-flex gap-2">
+                <button id="prevPage" class="btn-nav" disabled>Previous</button>
+                <button id="nextPage" class="btn-nav" disabled>Next</button>
+            </div>
         </div>
+
     </div>
 </div>
 {% endblock %}
 
 {% block body_js %}
 <script>
+let currentPage = 1;
+
 document.addEventListener("DOMContentLoaded", () => {
     fetchLeaderboard();
-
     document.getElementById("filterBtn").addEventListener("click", () => {
         currentPage = 1;
-        fetchLeaderboard();
+        fetchLeaderboard(1);
     });
 });
 
-let currentPage = 1;
-
-function fetchLeaderboard(page = 1) {
+function fetchLeaderboard(page = currentPage) {
     const fromDate = document.getElementById("fromDate").value;
     const toDate = document.getElementById("toDate").value;
+    const loader = document.getElementById("loader");
+
+    loader.classList.remove("d-none");
 
     let query = `?page=${page}`;
     if (fromDate) query += `&from_date=${fromDate}`;
     if (toDate) query += `&to_date=${toDate}`;
 
-    fetch(`/api/word-game/leaderboard/${query}`, {
-        method: "GET",
-        headers: { "Content-Type": "application/json" }
-    })
-    .then(res => res.json())
-    .then(data => {
-        const tableHead = document.getElementById("tableHead");
-        const tableBody = document.getElementById("tableBody");
-        const prevBtn = document.getElementById("prevPage");
-        const nextBtn = document.getElementById("nextPage");
+    fetch(`/api/word-game/leaderboard/${query}`)
+        .then(res => res.json())
+        .then(data => {
+            loader.classList.add("d-none");
 
-        if (!data.results || Object.keys(data.results).length === 0) {
-            tableBody.innerHTML = `<tr><td colspan="10" class="text-center">No data found.</td></tr>`;
-            tableHead.innerHTML = `<tr><th>Rank</th><th>Username</th></tr>`;
-            prevBtn.disabled = true;
-            nextBtn.disabled = true;
-            return;
-        }
+            const tableHead = document.getElementById("tableHead");
+            const tableBody = document.getElementById("tableBody");
 
-        // DRF pagination wraps your object inside data.results
-        const payload = data.results;
-        const puzzleTitles = payload.puzzle_titles || [];
-        const players = payload.results || [];
+            const payload = data.results || {};
+            const puzzleTitles = payload.puzzle_titles || [];
+            const players = payload.results || [];
 
-        // Build table header
-        let headHtml = "<tr><th>Rank</th><th>Username</th>";
-        puzzleTitles.forEach(title => headHtml += `<th>${title}</th>`);
-        headHtml += "<th>Total Score</th></tr>";
-        tableHead.innerHTML = headHtml;
+            if (!players.length) {
+                tableBody.innerHTML = `
+                    <tr>
+                        <td colspan="100" class="text-center py-5 text-soft">
+                            No leaderboard data available.
+                        </td>
+                    </tr>`;
+                return;
+            }
 
-        // Build table body
-        tableBody.innerHTML = "";
-        players.forEach(player => {
-            let rowHtml = `<tr><td>${player.rank}</td><td>${player.username}</td>`;
+            let headHTML = `
+                <tr>
+                    <th class="sticky-rank">Rank</th>
+                    <th class="sticky-user">Player</th>
+            `;
+
             puzzleTitles.forEach(title => {
-                rowHtml += `<td>${player[title] || 0}</td>`;
+                headHTML += `<th class="text-center">${title}</th>`;
             });
-            rowHtml += `<td>${player.total_score}</td></tr>`;
-            tableBody.innerHTML += rowHtml;
+
+            headHTML += `<th class="text-center">Total</th></tr>`;
+            tableHead.innerHTML = headHTML;
+
+            tableBody.innerHTML = "";
+
+            players.forEach(player => {
+                let rankClass =
+                    player.rank === 1 ? "rank-1" :
+                    player.rank === 2 ? "rank-2" :
+                    player.rank === 3 ? "rank-3" : "";
+
+                let rowHTML = `
+                    <tr>
+                        <td class="sticky-rank">
+                            <span class="rank-circle ${rankClass}" id>${player.rank}</span>
+                        </td>
+                        <td class="sticky-user fw-semibold" title="${player.username || 'Anonymous'}">
+                            ${player.username || "Anonymous"}
+                        </td>
+                `;
+
+                puzzleTitles.forEach(title => {
+                    rowHTML += `<td class="text-center" style="background: linear-gradient(180deg, #1e293b, #020617);">${player[title] ?? 0}</td>`;
+                });
+
+                rowHTML += `<td class="text-center fw-bold">${player.total_score ?? 0}</td></tr>`;
+                tableBody.insertAdjacentHTML("beforeend", rowHTML);
+            });
+
+            document.getElementById("pageDisplay").innerText =
+                `Showing Rank ${players[0].rank} - ${players[players.length - 1].rank}`;
+
+            document.getElementById("prevPage").disabled = !data.previous;
+            document.getElementById("nextPage").disabled = !data.next;
         });
-
-        // Pagination buttons
-        prevBtn.disabled = !data.previous;
-        nextBtn.disabled = !data.next;
-
-        prevBtn.onclick = () => { currentPage--; fetchLeaderboard(currentPage); }
-        nextBtn.onclick = () => { currentPage++; fetchLeaderboard(currentPage); }
-
-    })
-    .catch(err => {
-        console.error("Error fetching leaderboard:", err);
-        tableBody.innerHTML = `<tr><td colspan="10" class="text-center text-danger">Error loading data.</td></tr>`;
-    });
 }
 </script>
 {% endblock %}
