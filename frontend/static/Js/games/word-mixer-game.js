@@ -626,7 +626,7 @@ async function submitScoreToAPI() {
 
 function startGame() {
     score = 0;
-    timeLeft = 60; 
+    timeLeft = 180; 
     gameOver = false;
     solvedWords = [];
     seenWordIds = [];
