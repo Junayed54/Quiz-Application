@@ -1,7 +1,5 @@
-{% comment %} @SPK@include("partials/mainhead.html") {% endcomment %}
 {% include "../../partials/mainhead.html" %}
 
-<!-- ✅ Quill v2 (not used here but okay to include) -->
 <link href="https://cdn.jsdelivr.net/npm/quill@2.0.0/dist/quill.snow.css" rel="stylesheet" />
 
 <style>
@@ -10,13 +8,14 @@
     border-radius: 10px;
     overflow: hidden;
     transition: all 0.3s ease;
-    height: 350px; /* ✅ Fixed height */
+    height: 380px; 
     display: flex;
     flex-direction: column;
+    background: #fff;
   }
   .news-card:hover {
     transform: translateY(-3px);
-    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
   }
   .news-image {
     width: 100%;
@@ -25,7 +24,7 @@
   }
   .news-content {
     padding: 15px;
-    flex-grow: 1; /* ✅ Fill remaining space */
+    flex-grow: 1;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
@@ -34,16 +33,21 @@
     font-size: 1.1rem;
     font-weight: 600;
     margin-bottom: 8px;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
   }
   .news-date {
-    font-size: 0.9rem;
+    font-size: 0.85rem;
     color: #6b7280;
   }
-  .news-actions {
-    margin-top: auto;
+  .pagination-wrapper .page-link {
+    cursor: pointer;
+    color: #0d6efd;
   }
-  .news-actions button {
-    margin-right: 6px;
+  .pagination-wrapper .page-item.disabled .page-link {
+    cursor: not-allowed;
   }
 </style>
 
@@ -58,12 +62,24 @@
     <div class="container mt-5">
       <div class="d-flex justify-content-between align-items-center mb-4">
         <h4 class="fw-bold">📰 News List</h4>
+        <div class="d-flex gap-2">
+            <select id="categoryFilter" class="form-select form-select-sm" style="width: 200px;">
+                <option value="">All Categories</option>
+                <option value="1">Politics</option>
+                <option value="2">Sports</option>
+                <option value="3">Tech</option>
+            </select>
+        </div>
       </div>
 
-      <!-- News List Container -->
-      <div id="newsList" class="row g-4"></div>
+      <div id="newsList" class="row g-4">
+          </div>
 
-      <!-- Message -->
+      <nav aria-label="Page navigation" class="mt-5">
+        <ul class="pagination justify-content-center" id="paginationWrapper">
+            </ul>
+      </nav>
+
       <div id="message" class="mt-4"></div>
     </div>
   </div>
@@ -75,59 +91,102 @@
 {% include "../../partials/commonjs.html" %}
 {% include "../../partials/custom_switcherjs.html" %}
 
-<!-- ✅ JS Dependencies -->
 <script src="https://cdn.jsdelivr.net/npm/quill@2.0.0/dist/quill.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 
 <script>
-document.addEventListener("DOMContentLoaded", async () => {
+document.addEventListener("DOMContentLoaded", () => {
   const token = localStorage.getItem("access_token");
   const newsList = document.getElementById("newsList");
+  const paginationWrapper = document.getElementById("paginationWrapper");
   const message = document.getElementById("message");
+  const categoryFilter = document.getElementById("categoryFilter");
 
-  // ✅ Fetch News List
-  try {
-    const res = await axios.get("/api/news/", {
-      headers: { Authorization: `Bearer ${token}` },
-    });
-    const newsItems = res.data.results;
-    console.log("news", newsItems);
-    if (!newsItems.length) {
-      newsList.innerHTML = `<p class="text-center text-muted">No news found.</p>`;
-      return;
-    }
+  // ✅ Main Fetch Function
+  async function fetchNews(url = "/api/news/") {
+    try {
+      // Clear current list and show loading state if desired
+      newsList.innerHTML = '<div class="text-center w-100"><div class="spinner-border text-primary" role="status"></div></div>';
+      
+      const response = await axios.get(url, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
 
-    newsItems.forEach((news) => {
+      // DRF with Pagination returns { count, next, previous, results }
+      const { results, next, previous, count } = response.data;
+
+      newsList.innerHTML = ""; // Clear loader
+
+      if (!results.length) {
+        newsList.innerHTML = `<p class="text-center text-muted">No news found for this selection.</p>`;
+        renderPagination(null, null);
+        return;
+      }
+
+      // Render News Cards
+      results.forEach((news) => {
         console.log(news);
-      const imgUrl =
-        news.images && news.images.length
+        const imgUrl = news.images && news.images.length
           ? news.images[0].image_url
           : "https://via.placeholder.com/300x180?text=No+Image";
 
-      const card = `
-        <div class="col-md-4">
-          <div class="news-card">
-            <img src="${imgUrl}" class="news-image" alt="News Image">
-            <div class="news-content">
-              <div>
-                <div class="news-title">${news.title}</div>
-                <div class="news-date">${new Date(news.created_at).toLocaleString()}</div>
-              </div>
-              <div class="news-actions mt-3">
-                <a href="/news/${news.id}/update/" class="btn btn-sm btn-warning">Edit</a>
-                <button class="btn btn-sm btn-danger delete-btn" data-id="${news.id}">Delete</button>
+        const card = `
+          <div class="col-md-4">
+            <div class="news-card">
+              <img src="${imgUrl}" class="news-image" alt="News Image">
+              <div class="news-content">
+                <div>
+                  <div class="news-title" title="${news.title}">${news.title}</div>
+                  <div class="news-date">📅 ${new Date(news.created_at).toLocaleDateString()} at ${new Date(news.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</div>
+                </div>
+                <div class="news-actions mt-3">
+                  <a href="/news/${news.id}/update/" class="btn btn-sm btn-outline-warning">Edit</a>
+                  <button class="btn btn-sm btn-outline-danger delete-btn" data-id="${news.id}">Delete</button>
+                </div>
               </div>
             </div>
-          </div>
-        </div>`;
-      newsList.insertAdjacentHTML("beforeend", card);
-    });
-  } catch (error) {
-    console.error(error);
-    message.innerHTML = `<div class="alert alert-danger">❌ Failed to load news list.</div>`;
+          </div>`;
+        newsList.insertAdjacentHTML("beforeend", card);
+      });
+
+      // Update Pagination UI
+      renderPagination(previous, next);
+
+    } catch (error) {
+      console.error("Fetch Error:", error);
+      message.innerHTML = `<div class="alert alert-danger">❌ Failed to load news. Check console for details.</div>`;
+    }
   }
 
-  // ✅ Delete News Item
+  // ✅ Pagination Rendering
+  function renderPagination(prev, next) {
+    paginationWrapper.innerHTML = `
+      <li class="page-item ${!prev ? 'disabled' : ''}">
+        <a class="page-link" onclick="handlePageChange('${prev}')">Previous</a>
+      </li>
+      <li class="page-item ${!next ? 'disabled' : ''}">
+        <a class="page-link" onclick="handlePageChange('${next}')">Next</a>
+      </li>
+    `;
+  }
+
+  // Global function for onclick events
+  window.handlePageChange = (url) => {
+    if (url && url !== "null") {
+      fetchNews(url);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  };
+
+  // ✅ Category Filter Event
+  categoryFilter.addEventListener("change", (e) => {
+    const categoryId = e.target.value;
+    // Construct the URL with query params
+    const url = categoryId ? `/api/news/?category_id=${categoryId}` : "/api/news/";
+    fetchNews(url);
+  });
+
+  // ✅ Delete Functionality
   newsList.addEventListener("click", async (e) => {
     if (e.target.classList.contains("delete-btn")) {
       const id = e.target.getAttribute("data-id");
@@ -139,12 +198,16 @@ document.addEventListener("DOMContentLoaded", async () => {
         });
         e.target.closest(".col-md-4").remove();
         message.innerHTML = `<div class="alert alert-success mt-3">✅ News deleted successfully!</div>`;
+        setTimeout(() => message.innerHTML = "", 3000);
       } catch (err) {
         console.error(err);
         message.innerHTML = `<div class="alert alert-danger mt-3">❌ Failed to delete news.</div>`;
       }
     }
   });
+
+  // Initial Load
+  fetchNews();
 });
 </script>
 
