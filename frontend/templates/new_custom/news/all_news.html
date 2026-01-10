@@ -134,7 +134,7 @@
 
     <div class="text-center mb-5">
         <h1 id="category-header" class="d-none fw-bold text-primary">সংবাদ</h1>
-        <p class="lead text-muted">চাকরি, শিক্ষা, এবং অন্যান্য গুরুত্বপূর্ণ খবর</p>
+        <p class="lead text-muted" id="title-header"></p>
     </div>
 
     <div class="page-layout">
@@ -193,6 +193,7 @@ document.addEventListener("DOMContentLoaded", async function() {
     // 2. Function to fetch and update the category header name
     async function updateCategoryHeader(id) {
         if (!id) return;
+        
         try {
             const response = await fetch(`/api/news-categories/${id}/`); // Assuming a retrieve endpoint exists
             if (!response.ok) throw new Error('Category fetch failed');
@@ -322,6 +323,15 @@ document.addEventListener("DOMContentLoaded", async function() {
     categoryId = getCategoryIdFromUrl();
     
     if (categoryId) {
+        const title_header = document.getElementById("title-header");
+
+        if (categoryId==1){
+            title_header.innerText = "চাকরি, শিক্ষা, এবং অন্যান্য গুরুত্বপূর্ণ খবর।"
+        }
+        else{
+            title_header.innerText = "স্টাডি, ভিসা, ইমিগ্রেশন এবং অন্যান্য গুরুত্বপূর্ণ খবর।"
+
+        }
         updateCategoryHeader(categoryId);
     } else {
         categoryHeader.textContent = 'সকল খবর'; // Fallback if no ID is found in URL
