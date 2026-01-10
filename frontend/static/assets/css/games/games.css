@@ -232,17 +232,18 @@ body {
 
 .board-container {
     position: relative;
-    height: 200px;
+    height: 120px;
     width: 100%;
 }
 
 .slots-container,
 .tiles-container {
     position: absolute;
-    top: 75px;
-    left: 0;
-    right: 0;
+    top: 50%;
+    transform: translateY(-50%);
     height: 60px;
+    width: 100%;
+    transform: none !important;
 }
 
 .slot {
@@ -263,7 +264,8 @@ body {
     -webkit-user-select: none;
     -moz-user-select: none;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
-    will-change: transform;
+    /* will-change: transform; */
+    
 }
 
 .tile:active {

@@ -1,0 +1,254 @@
+{% extends 'new_custom/new_templates/index2.html' %}
+{% load static %}
+
+{% block head_link %}
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+{% endblock %}
+
+{% block style %}
+<style>
+    :root {
+        --glass-bg: rgba(255, 255, 255, 0.85);
+        --accent-primary: #6366f1;
+        --accent-secondary: #f43f5e;
+        --sidebar-width: 280px;
+    }
+
+    body { 
+        font-family: 'Plus Jakarta Sans', sans-serif; 
+        background-color: #f0f2f5; 
+        background-image: radial-gradient(at 0% 0%, hsla(253,16%,7%,1) 0, transparent 50%), 
+                          radial-gradient(at 50% 0%, hsla(225,39%,30%,1) 0, transparent 50%);
+        background-attachment: fixed;
+        min-height: 100vh;
+    }
+
+    /* Profile Header Styling */
+    .profile-hero {
+        background: var(--glass-bg);
+        backdrop-filter: blur(12px);
+        border-radius: 30px;
+        padding: 40px;
+        margin-bottom: 30px;
+        border: 1px solid rgba(255,255,255,0.3);
+        box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+    }
+
+    .avatar-wrapper {
+        width: 120px;
+        height: 120px;
+        border-radius: 35px;
+        background: linear-gradient(45deg, var(--accent-primary), var(--accent-secondary));
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 3rem;
+        color: white;
+        font-weight: 800;
+        box-shadow: 0 10px 20px rgba(99, 102, 241, 0.3);
+    }
+
+    /* Smart Stat Pill */
+    .stat-pill {
+        background: white;
+        border-radius: 20px;
+        padding: 20px;
+        border: 1px solid #edf2f7;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        display: flex;
+        align-items: center;
+        gap: 15px;
+    }
+    .stat-pill:hover { transform: translateY(-8px); box-shadow: 0 15px 30px rgba(0,0,0,0.05); }
+    .icon-box { width: 50px; height: 50px; border-radius: 15px; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; }
+
+    /* Modern Glass Card */
+    .glass-card {
+        background: var(--glass-bg);
+        border-radius: 24px;
+        border: 1px solid rgba(255,255,255,0.4);
+        padding: 25px;
+        height: 100%;
+    }
+
+    .btn-update {
+        background: var(--accent-primary);
+        color: white;
+        border-radius: 12px;
+        padding: 10px 25px;
+        font-weight: 600;
+        border: none;
+        transition: 0.3s;
+    }
+    .btn-update:hover { background: #4f46e5; transform: scale(1.05); }
+
+    .nav-tabs { border: none; gap: 10px; }
+    .nav-link { border: none !important; border-radius: 12px !important; color: #64748b; font-weight: 600; }
+    .nav-link.active { background: white !important; color: var(--accent-primary) !important; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    
+    <div class="profile-hero animate-fade-in">
+        <div class="row align-items-center">
+            <div class="col-lg-2 d-flex justify-content-center">
+                <div class="avatar-wrapper" id="user-avatar">?</div>
+            </div>
+            <div class="col-lg-6 mt-4 mt-lg-0 text-center text-lg-start">
+                <h2 class="fw-800 mb-1" id="display-name">Guest User</h2>
+                <p class="text-muted mb-3"><i class="bi bi-telephone-fill me-2"></i><span id="display-phone">01xxxxxxxxx</span></p>
+                <div class="d-flex gap-2 justify-content-center justify-content-lg-start">
+                    <span class="badge bg-success-subtle text-success px-3 py-2 rounded-pill">Account Verified</span>
+                    <span class="badge bg-primary-subtle text-primary px-3 py-2 rounded-pill" id="rank-badge">Elite Player</span>
+                </div>
+            </div>
+            <div class="col-lg-4 text-center text-lg-end mt-4 mt-lg-0">
+                <button class="btn-update" onclick="location.href='/profile/edit/'">
+                    <i class="bi bi-pencil-square me-2"></i>Edit Profile
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4 mb-5">
+        <div class="col-md-3">
+            <div class="stat-pill">
+                <div class="icon-box bg-primary-subtle text-primary"><i class="bi bi-lightning-charge"></i></div>
+                <div><small class="text-muted d-block">Points</small><strong class="h4 mb-0" id="stat-points">0</strong></div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-pill">
+                <div class="icon-box bg-success-subtle text-success"><i class="bi bi-cash-stack"></i></div>
+                <div><small class="text-muted d-block">Earnings</small><strong class="h4 mb-0">৳ <span id="stat-rewards">0.00</span></strong></div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-pill">
+                <div class="icon-box bg-info-subtle text-info"><i class="bi bi-trophy"></i></div>
+                <div><small class="text-muted d-block">Practice Rank</small><strong class="h4 mb-0">#<span id="practice-rank">12</span></strong></div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-pill">
+                <div class="icon-box bg-danger-subtle text-danger"><i class="bi bi-controller"></i></div>
+                <div><small class="text-muted d-block">Games Played</small><strong class="h4 mb-0" id="total-games">0</strong></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-lg-8">
+            <div class="glass-card">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h5 class="fw-800 mb-0">Learning Curve</h5>
+                    <ul class="nav nav-tabs" id="chartTabs">
+                        <li class="nav-item"><button class="nav-link active">Practice</button></li>
+                        <li class="nav-item"><button class="nav-link">Puzzles</button></li>
+                    </ul>
+                </div>
+                <div style="height: 350px;">
+                    <canvas id="performanceChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="glass-card">
+                <h5 class="fw-800 mb-4">Milestones</h5>
+                <div class="mb-4">
+                    <div class="d-flex justify-content-between mb-2">
+                        <span class="small fw-600">Points to Next Rank</span>
+                        <span class="small text-primary" id="progress-percent">75%</span>
+                    </div>
+                    <div class="progress" style="height: 8px; border-radius: 10px;">
+                        <div class="progress-bar bg-primary" id="progress-bar" style="width: 75%"></div>
+                    </div>
+                </div>
+                
+                <h5 class="fw-800 mb-3">Recent Activity</h5>
+                <div id="activity-feed" class="small">
+                    </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block body_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const token = localStorage.getItem('access_token');
+        const phone = localStorage.getItem('phone_number');
+
+        let apiUrl = '/api/v1/game-activity/';
+        let headers = { 'Content-Type': 'application/json' };
+
+        if (token) headers['Authorization'] = `Bearer ${token}`;
+        else if (phone) apiUrl += `?phone=${encodeURIComponent(phone)}`;
+
+        fetch(apiUrl, { headers: headers })
+            .then(res => res.json())
+            .then(data => {
+                renderProfile(data);
+                initSmartCharts(data);
+            });
+    });
+
+    function renderProfile(data) {
+        const phone = data.identity.phone_number;
+        document.getElementById('display-phone').innerText = phone;
+        document.getElementById('display-name').innerText = data.identity.username || "Game Master";
+        document.getElementById('user-avatar').innerText = (data.identity.username || phone).charAt(0).toUpperCase();
+
+        document.getElementById('stat-points').innerText = data.stats.current_points.toLocaleString();
+        document.getElementById('stat-rewards').innerText = data.stats.total_rewards_taka;
+        document.getElementById('total-games').innerText = data.history.practice.length + data.history.puzzles.length;
+
+        // Populate Activity Feed
+        const feed = document.getElementById('activity-feed');
+        feed.innerHTML = data.history.practice.slice(0, 3).map(p => `
+            <div class="d-flex align-items-center mb-3 p-2 bg-white rounded-3 shadow-sm">
+                <div class="me-3 text-primary"><i class="bi bi-check-circle-fill"></i></div>
+                <div>Completed Practice Session <br> <span class="text-primary fw-bold">+${p.score} pts</span></div>
+            </div>
+        `).join('');
+    }
+
+    function initSmartCharts(data) {
+        const ctx = document.getElementById('performanceChart').getContext('2d');
+        const scores = [...data.history.practice].reverse();
+
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: scores.map((_, i) => `Session ${i+1}`),
+                datasets: [{
+                    label: 'Practice Points',
+                    data: scores.map(s => s.score),
+                    borderColor: '#6366f1',
+                    backgroundColor: 'rgba(99, 102, 241, 0.1)',
+                    fill: true,
+                    tension: 0.4,
+                    pointBackgroundColor: '#fff',
+                    pointBorderColor: '#6366f1',
+                    pointBorderWidth: 2,
+                    pointRadius: 6
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: { 
+                    y: { border: { display: false }, grid: { color: '#f1f5f9' } },
+                    x: { border: { display: false }, grid: { display: false } }
+                }
+            }
+        });
+    }
+</script>
+{% endblock %}

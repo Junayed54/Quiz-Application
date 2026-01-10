@@ -145,6 +145,46 @@
                                 Send notification to all users about this news
                             </label>
                         </div>
+                        
+                        <div class="form-check mb-3">
+                            <input
+                                class="form-check-input"
+                                type="checkbox"
+                                id="autoNotification"
+                            >
+                            <label class="form-check-label" for="autoNotification">
+                                Enable auto notification
+                            </label>
+                        </div>
+
+                        <div class="mb-3" id="delayHoursWrapper" style="display: none;">
+                            <label class="form-label">
+                                Send notification after (hours)
+                            </label>
+                            <input
+                                type="number"
+                                class="form-control"
+                                id="notificationDelayHours"
+                                min="1"
+                                placeholder="e.g. 12, 24, 168"
+                            >
+                        </div>
+
+                        <div class="mb-3" id="expireAtWrapper" style="display: none;">
+                            <label class="form-label">
+                                Notification expire at
+                                <small class="text-muted">(optional)</small>
+                            </label>
+                            <input
+                                type="datetime-local"
+                                class="form-control"
+                                id="notificationExpireAt"
+                            >
+                            <small class="text-muted">
+                                After this time, notification will never be sent.
+                            </small>
+                        </div>
+
 
                         <div class="d-flex align-items-center">
                             <button type="submit" class="btn btn-success me-3" id="submitButton">Create News</button>
@@ -400,64 +440,121 @@ document.addEventListener("DOMContentLoaded", function () {
 
     form.addEventListener('submit', async (e) => {
         e.preventDefault();
-        
-        // 1. SHOW LOADER / DISABLE BUTTON
         setLoading(true);
 
-        // Build FormData
         const formData = new FormData();
+
         formData.append('title', document.getElementById('title').value.trim());
         formData.append('content', quill.root.innerHTML);
 
-        // Append images (same field name repeated for multiple files)
         for (const file of uploadedFiles) {
             formData.append('uploaded_images', file);
         }
+
         const categoryId = categorySelect.value;
         if (categoryId) {
             formData.append("category_id", categoryId);
         }
-        // Append checkbox value explicitly
-        const sendNotification = !!sendNotificationCheckbox.checked;
-        formData.append('send_notification', sendNotification ? 'true' : 'false');
 
+        const sendNotification = sendNotificationCheckbox.checked;
+        const autoNotificationCheckbox = document.getElementById("autoNotification");
+
+        const autoNotification = autoNotificationCheckbox.checked;
+        const delayHoursInput = document.getElementById("notificationDelayHours");
+        const delayHours = delayHoursInput.value;
+        const expireAtInput = document.getElementById("notificationExpireAt");
+        const expireAt = expireAtInput.value;
+
+        // ✅ Validation
+        if (autoNotification && !delayHours) {
+            responseMessage.innerHTML = `
+                <div class="alert alert-warning">
+                    Please enter notification delay hours.
+                </div>`;
+            setLoading(false);
+            return;
+        }
+
+        // 🔔 Notification fields
+        formData.append("send_notification", sendNotification ? "true" : "false");
+
+        if (autoNotification) {
+            formData.append("notification_delay_hours", delayHours);
+        }
+
+        if (expireAt) {
+            // Convert to ISO (backend expects DateTime)
+            formData.append(
+                "notification_expire_at",
+                new Date(expireAt).toISOString()
+            );
+        }
 
         try {
             const token = localStorage.getItem('access_token');
-            const headers = {};
-            if (token) {
-                headers['Authorization'] = `Bearer ${token}`;
-            }
+            const headers = token ? { Authorization: `Bearer ${token}` } : {};
 
-            const res = await axios.post('/api/news/', formData, { headers });
+            await axios.post('/api/news/', formData, { headers });
 
-            responseMessage.innerHTML = `<div class="alert alert-success">✅ News created successfully!</div>`;
+            responseMessage.innerHTML =
+                `<div class="alert alert-success">✅ News created successfully!</div>`;
+
             form.reset();
             quill.root.innerHTML = '';
             uploadedFiles = [];
             previewContainer.innerHTML = '';
+
+            delayHoursWrapper.style.display = "none";
+            expireAtWrapper.style.display = "none";
+
         } catch (error) {
-            console.error('Create news error:', error);
-            // Show server error message if available
             let msg = '❌ Failed to create news';
-            if (error.response && error.response.data) {
-                try {
-                    const data = error.response.data;
-                    if (typeof data === 'string') msg = data;
-                    else if (data.detail) msg = data.detail;
-                    else if (data.non_field_errors) msg = data.non_field_errors.join(' ');
-                    else msg = JSON.stringify(data);
-                } catch (e) {
-                    // ignore parsing errors
-                }
+            if (error.response?.data) {
+                msg = JSON.stringify(error.response.data);
             }
-            responseMessage.innerHTML = `<div class="alert alert-danger">${msg}</div>`;
+            responseMessage.innerHTML =
+                `<div class="alert alert-danger">${msg}</div>`;
         } finally {
-            // 2. HIDE LOADER / RE-ENABLE BUTTON on success or error
             setLoading(false);
         }
     });
+
 });
+</script>
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+
+    const sendNotificationCheckbox = document.getElementById("sendNotification");
+    const autoNotificationCheckbox = document.getElementById("autoNotification");
+
+    const delayHoursWrapper = document.getElementById("delayHoursWrapper");
+    const delayHoursInput = document.getElementById("notificationDelayHours");
+
+    const expireAtWrapper = document.getElementById("expireAtWrapper");
+    const expireAtInput = document.getElementById("notificationExpireAt");
+
+    // 🔁 Toggle auto notification
+    autoNotificationCheckbox.addEventListener("change", function () {
+        if (this.checked) {
+            delayHoursWrapper.style.display = "block";
+            expireAtWrapper.style.display = "block";
+
+            delayHoursInput.required = true;
+
+            // UX: auto-enable send notification
+            sendNotificationCheckbox.checked = true;
+        } else {
+            delayHoursWrapper.style.display = "none";
+            expireAtWrapper.style.display = "none";
+
+            delayHoursInput.required = false;
+            delayHoursInput.value = "";
+            expireAtInput.value = "";
+        }
+    });
+
+});
+
 </script>
 
 

@@ -3,51 +3,99 @@
 <link href="https://cdn.jsdelivr.net/npm/quill@2.0.0/dist/quill.snow.css" rel="stylesheet" />
 
 <style>
+  :root {
+    --card-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    --card-hover-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  }
+
   .news-card {
-    border: 1px solid #e5e7eb;
-    border-radius: 10px;
+    border: none;
+    border-radius: 12px;
     overflow: hidden;
     transition: all 0.3s ease;
-    height: 380px; 
+    height: 100%;
     display: flex;
     flex-direction: column;
     background: #fff;
+    box-shadow: var(--card-shadow);
   }
+
   .news-card:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    transform: translateY(-5px);
+    box-shadow: var(--card-hover-shadow);
   }
+
+  .news-image-container {
+    position: relative;
+    height: 190px;
+    width: 100%;
+    overflow: hidden;
+  }
+
   .news-image {
     width: 100%;
-    height: 180px;
+    height: 100%;
     object-fit: cover;
   }
+
   .news-content {
-    padding: 15px;
+    padding: 1.25rem;
     flex-grow: 1;
     display: flex;
     flex-direction: column;
-    justify-content: space-between;
   }
+
   .news-title {
     font-size: 1.1rem;
-    font-weight: 600;
-    margin-bottom: 8px;
+    font-weight: 700;
+    color: #1a202c;
+    line-height: 1.5;
+    margin-bottom: 0.75rem;
     display: -webkit-box;
     -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
     overflow: hidden;
   }
-  .news-date {
+
+  .news-info {
     font-size: 0.85rem;
-    color: #6b7280;
+    color: #718096;
+    margin-bottom: 1.5rem;
   }
-  .pagination-wrapper .page-link {
-    cursor: pointer;
-    color: #0d6efd;
+
+  /* 🔔 BADGES - ONLY FOR SCHEDULED/SENT */
+  .status-badge {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    padding: 5px 12px;
+    font-size: 0.7rem;
+    font-weight: 800;
+    border-radius: 6px;
+    color: #fff;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    z-index: 5;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
   }
-  .pagination-wrapper .page-item.disabled .page-link {
-    cursor: not-allowed;
+
+  .badge-scheduled { background-color: #fbbf24; color: #92400e; } /* Amber */
+  .badge-sent { background-color: #10b981; } /* Emerald */
+
+  .news-footer {
+    margin-top: auto;
+    display: flex;
+    gap: 8px;
+    border-top: 1px solid #edf2f7;
+    padding-top: 1rem;
+  }
+
+  .btn-news {
+    flex: 1;
+    padding: 0.5rem;
+    font-weight: 600;
+    font-size: 0.85rem;
+    border-radius: 8px;
   }
 </style>
 
@@ -59,39 +107,40 @@
   {% include "../../partials/sidebar.html" %}
 
   <div class="main-content app-content">
-    <div class="container mt-5">
-      <div class="d-flex justify-content-between align-items-center mb-4">
-        <h4 class="fw-bold">📰 News List</h4>
-        <div class="d-flex gap-2">
-            <select id="categoryFilter" class="form-select form-select-sm" style="width: 200px;">
-                <option value="">All Categories</option>
-                <option value="1">Politics</option>
-                <option value="2">Sports</option>
-                <option value="3">Tech</option>
-            </select>
+    <div class="container-fluid mt-4 px-4">
+
+      <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-3">
+        <div>
+          <h3 class="fw-bold text-dark mb-1">News Management</h3>
+          <p class="text-muted small mb-0">View all news and track notification statuses.</p>
+        </div>
+        
+        <div class="d-flex align-items-center gap-2">
+          <label class="text-muted small fw-bold text-nowrap">Filter by:</label>
+          <select id="categoryFilter" class="form-select shadow-sm" style="width:180px;">
+            <option value="">All Categories</option>
+            <option value="1">Politics</option>
+            <option value="2">Sports</option>
+            <option value="3">Tech</option>
+          </select>
         </div>
       </div>
 
       <div id="newsList" class="row g-4">
-          </div>
+        </div>
 
-      <nav aria-label="Page navigation" class="mt-5">
-        <ul class="pagination justify-content-center" id="paginationWrapper">
-            </ul>
+      <nav class="mt-5 pb-5">
+        <ul class="pagination justify-content-center" id="paginationWrapper"></ul>
       </nav>
 
-      <div id="message" class="mt-4"></div>
+      <div id="message"></div>
     </div>
   </div>
 
-  {% include "../../partials/headersearch_modal.html" %}
   {% include "../../partials/footer.html" %}
 </div>
 
 {% include "../../partials/commonjs.html" %}
-{% include "../../partials/custom_switcherjs.html" %}
-
-<script src="https://cdn.jsdelivr.net/npm/quill@2.0.0/dist/quill.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 
 <script>
@@ -99,114 +148,113 @@ document.addEventListener("DOMContentLoaded", () => {
   const token = localStorage.getItem("access_token");
   const newsList = document.getElementById("newsList");
   const paginationWrapper = document.getElementById("paginationWrapper");
-  const message = document.getElementById("message");
   const categoryFilter = document.getElementById("categoryFilter");
 
-  // ✅ Main Fetch Function
   async function fetchNews(url = "/api/news/") {
     try {
-      // Clear current list and show loading state if desired
-      newsList.innerHTML = '<div class="text-center w-100"><div class="spinner-border text-primary" role="status"></div></div>';
-      
-      const response = await axios.get(url, {
-        headers: { Authorization: `Bearer ${token}` },
+      newsList.innerHTML = `<div class="col-12 text-center py-5"><div class="spinner-border text-primary"></div></div>`;
+
+      const res = await axios.get(url, {
+        headers: { Authorization: `Bearer ${token}` }
       });
 
-      // DRF with Pagination returns { count, next, previous, results }
-      const { results, next, previous, count } = response.data;
-
-      newsList.innerHTML = ""; // Clear loader
+      const { results, next, previous } = res.data;
+      newsList.innerHTML = "";
 
       if (!results.length) {
-        newsList.innerHTML = `<p class="text-center text-muted">No news found for this selection.</p>`;
+        newsList.innerHTML = `<div class="col-12 text-center py-5"><p class="text-muted">No news articles found.</p></div>`;
         renderPagination(null, null);
         return;
       }
 
-      // Render News Cards
-      results.forEach((news) => {
-        console.log(news);
-        const imgUrl = news.images && news.images.length
-          ? news.images[0].image_url
-          : "https://via.placeholder.com/300x180?text=No+Image";
+      results.forEach(news => {
+        const imgUrl = news.images?.length ? news.images[0].image_url : "https://via.placeholder.com/400x200?text=No+Image";
+        const now = new Date();
+        
+        // --- BADGE LOGIC ---
+        let badgeHTML = ''; // Default: No badge for general news
+        
+        if (news.send_notification) {
+          const expireAt = news.notification_expire_at ? new Date(news.notification_expire_at) : null;
+          const isExpired = expireAt && now >= expireAt;
+
+          if (news.auto_notification_sent) {
+            badgeHTML = `<span class="status-badge badge-sent">Sent</span>`;
+          } else if (!isExpired) {
+            badgeHTML = `<span class="status-badge badge-scheduled">Scheduled</span>`;
+          }
+        }
+
+        const dateFormatted = new Date(news.created_at).toLocaleDateString('en-GB', {
+          day: '2-digit', month: 'short', year: 'numeric'
+        });
 
         const card = `
-          <div class="col-md-4">
+          <div class="col-sm-6 col-lg-4 col-xl-3">
             <div class="news-card">
-              <img src="${imgUrl}" class="news-image" alt="News Image">
+              <div class="news-image-container">
+                ${badgeHTML}
+                <img src="${imgUrl}" class="news-image" alt="news">
+              </div>
               <div class="news-content">
-                <div>
-                  <div class="news-title" title="${news.title}">${news.title}</div>
-                  <div class="news-date">📅 ${new Date(news.created_at).toLocaleDateString()} at ${new Date(news.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</div>
+                <div class="news-title">${news.title}</div>
+                <div class="news-info">
+                  <i class="bi bi-calendar3 me-1"></i> ${dateFormatted}
                 </div>
-                <div class="news-actions mt-3">
-                  <a href="/news/${news.id}/update/" class="btn btn-sm btn-outline-warning">Edit</a>
-                  <button class="btn btn-sm btn-outline-danger delete-btn" data-id="${news.id}">Delete</button>
+                <div class="news-footer">
+                  <a href="/news/${news.id}/update/" class="btn btn-news btn-outline-primary">Edit</a>
+                  <button class="btn btn-news btn-outline-danger delete-btn" data-id="${news.id}">
+                    Delete
+                  </button>
                 </div>
               </div>
             </div>
-          </div>`;
+          </div>
+        `;
         newsList.insertAdjacentHTML("beforeend", card);
       });
 
-      // Update Pagination UI
       renderPagination(previous, next);
-
-    } catch (error) {
-      console.error("Fetch Error:", error);
-      message.innerHTML = `<div class="alert alert-danger">❌ Failed to load news. Check console for details.</div>`;
+    } catch (err) {
+      newsList.innerHTML = `<div class="alert alert-danger">Error loading news content.</div>`;
     }
   }
 
-  // ✅ Pagination Rendering
   function renderPagination(prev, next) {
+    if (!prev && !next) { paginationWrapper.innerHTML = ""; return; }
     paginationWrapper.innerHTML = `
       <li class="page-item ${!prev ? 'disabled' : ''}">
-        <a class="page-link" onclick="handlePageChange('${prev}')">Previous</a>
+        <a class="page-link" onclick="handlePage('${prev}')">Previous</a>
       </li>
       <li class="page-item ${!next ? 'disabled' : ''}">
-        <a class="page-link" onclick="handlePageChange('${next}')">Next</a>
+        <a class="page-link" onclick="handlePage('${next}')">Next</a>
       </li>
     `;
   }
 
-  // Global function for onclick events
-  window.handlePageChange = (url) => {
+  window.handlePage = (url) => {
     if (url && url !== "null") {
       fetchNews(url);
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+      window.scrollTo({ top: 0, behavior: "smooth" });
     }
   };
 
-  // ✅ Category Filter Event
-  categoryFilter.addEventListener("change", (e) => {
-    const categoryId = e.target.value;
-    // Construct the URL with query params
-    const url = categoryId ? `/api/news/?category_id=${categoryId}` : "/api/news/";
-    fetchNews(url);
+  categoryFilter.addEventListener("change", e => {
+    const id = e.target.value;
+    fetchNews(id ? `/api/news/?category_id=${id}` : "/api/news/");
   });
 
-  // ✅ Delete Functionality
-  newsList.addEventListener("click", async (e) => {
+  newsList.addEventListener("click", async e => {
     if (e.target.classList.contains("delete-btn")) {
-      const id = e.target.getAttribute("data-id");
+      const id = e.target.dataset.id;
       if (!confirm("Are you sure you want to delete this news?")) return;
-
       try {
-        await axios.delete(`/api/news/${id}/`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        e.target.closest(".col-md-4").remove();
-        message.innerHTML = `<div class="alert alert-success mt-3">✅ News deleted successfully!</div>`;
-        setTimeout(() => message.innerHTML = "", 3000);
-      } catch (err) {
-        console.error(err);
-        message.innerHTML = `<div class="alert alert-danger mt-3">❌ Failed to delete news.</div>`;
-      }
+        await axios.delete(`/api/news/${id}/`, { headers: { Authorization: `Bearer ${token}` } });
+        e.target.closest(".col-sm-6").remove();
+      } catch { alert("Delete failed"); }
     }
   });
 
-  // Initial Load
   fetchNews();
 });
 </script>

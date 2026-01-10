@@ -80,6 +80,11 @@ urlpatterns +=[
 ]
 
 
+urlpatterns +=[
+    path("user/profile/", TemplateView.as_view(template_name="new_custom/user/user-profile.html")),
+]
+
+
 from django.views.static import serve
 from django.conf import settings
 from django.urls import re_path

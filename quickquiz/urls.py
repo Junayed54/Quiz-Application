@@ -49,6 +49,7 @@ urlpatterns +=[
 urlpatterns +=[
     path("api/word-game/submit/", SubmitWordGameAPIView.as_view(), name="submit_word_game_attempt"),
     path("api/word-game/leaderboard/", PivotWordGameLeaderboardAPIView.as_view(), name="wordgame_leaderboard"),
+    path('api/v1/game-activity/', UserGameActivityView.as_view(), name='user-game-activity'),
 
 ]
 

@@ -166,6 +166,35 @@ class Player(models.Model):
             return self.username
         return f"Guest-{self.phone_number}" if self.phone_number else "Guest"
     
+    
+    
+    def get_full_history(self):
+        """
+        Retrieves all attempts across both Practice Sessions and Word Puzzles.
+        """
+        # Fetch Practice Sessions
+        practice_history = PracticeSession.objects.filter(
+            models.Q(user=self.user) | models.Q(phone_number=self.phone_number)
+        ).order_by('-created_at')
+
+        # Fetch Word Puzzle Attempts
+        puzzle_history = WordGameAttempt.objects.filter(
+            player=self
+        ).order_by('-started_at')
+
+        return {
+            "practice_sessions": practice_history,
+            "puzzle_attempts": puzzle_history,
+            "total_points": self.get_points()
+        }
+
+    def get_points(self):
+        points_obj = UserPoints.objects.filter(
+            models.Q(user=self.user) | models.Q(phone_number=self.phone_number)
+        ).first()
+        return points_obj.points if points_obj else 0
+    
+    
     def __str__(self):
         if self.user:
             return self.user.username

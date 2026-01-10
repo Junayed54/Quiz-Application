@@ -17,6 +17,8 @@ from rest_framework import status
 from rest_framework.views import APIView
 from .models import *
 from .serializers import *
+from django.db.models import Q
+
 from django.shortcuts import get_object_or_404
 from django.db import IntegrityError
 from decimal import Decimal
@@ -1287,4 +1289,68 @@ class PivotWordGameLeaderboardAPIView(APIView):
         return paginator.get_paginated_response({
             "puzzle_titles": puzzle_titles,
             "results": page
+        })
+        
+        
+
+
+
+class UserActivitySummarySerializer(serializers.Serializer):
+    total_practice_score = serializers.IntegerField()
+    total_puzzle_score = serializers.IntegerField()
+    current_points = serializers.IntegerField()
+    total_earned_money = serializers.DecimalField(max_digits=10, decimal_places=2)
+    
+    # We can nest the detailed history here
+    recent_practice = PracticeSessionSerializer(many=True)
+    recent_puzzles = PuzzleAttemptSerializer(many=True)
+        
+        
+        
+        
+class UserGameActivityView(APIView):
+    def get(self, request):
+        # 1. Identity Logic
+        phone = request.query_params.get('phone')
+        user = request.user if request.user.is_authenticated else None
+        lookup_filter = Q(user=user) if user else Q(phone_number=phone)
+
+        # 2. Aggregate Totals
+        # Total Practice Score (Scalar)
+        practice_total = PracticeSession.objects.filter(lookup_filter).aggregate(total=Sum('score'))['total'] or 0
+        
+        # Total Puzzle Score (Scalar for the Stat card)
+        puzzle_total = WordGameAttempt.objects.filter(
+            player__user=user if user else None, 
+            player__phone_number=phone if not user else None
+        ).aggregate(total=Sum('score'))['total'] or 0
+
+        # Puzzle History (Grouped for the Table)
+        puzzle_grouped_history = WordGameAttempt.objects.filter(
+            player__user=user if user else None, 
+            player__phone_number=phone if not user else None
+        ).values('puzzle__title').annotate(
+            total_puzzle_score=Sum('score')
+        ).order_by('-total_puzzle_score')
+
+        # Points & Rewards
+        points_val = UserPoints.objects.filter(lookup_filter).first()
+        rewards_sum = UserReward.objects.filter(phone_number=phone or (user.player.phone_number if user else "")).aggregate(Sum('reward_amount'))['reward_amount__sum'] or 0.00
+
+        # 3. Construct Response
+        return Response({
+            "identity": {
+                "phone_number": phone or (user.username if user else "Guest"),
+                "access_token_active": user is not None
+            },
+            "stats": {
+                "total_practice_score": practice_total,
+                "total_puzzle_score": puzzle_total, # Now a single number
+                "current_points": points_val.points if points_val else 0,
+                "total_rewards_taka": rewards_sum
+            },
+            "history": {
+                "practice": PracticeSessionSerializer(PracticeSession.objects.filter(lookup_filter).order_by('-created_at')[:10], many=True).data,
+                "puzzles": list(puzzle_grouped_history) # Send the aggregated list directly
+            }
         })

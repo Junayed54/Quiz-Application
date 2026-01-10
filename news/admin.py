@@ -14,44 +14,119 @@ class NewsImageInline(admin.TabularInline):
     model = NewsImage
     extra = 1  # Provides one extra empty form for new images
 
+from django.contrib import admin
+from django.utils.html import format_html
+from .models import News, NewsImage
+
+
+class NewsImageInline(admin.TabularInline):
+    model = NewsImage
+    extra = 0
+
+
 @admin.register(News)
 class NewsAdmin(admin.ModelAdmin):
     """
-    Admin configuration for the News model.
+    Admin configuration for the News model with auto notification support
     """
-    list_display = ('title', 'author', 'published_date', 'created_at')
-    list_filter = ('published_date', 'author')
-    search_fields = ('title', 'content', "category__name")
-    date_hierarchy = 'published_date'
+
+    # 📋 LIST VIEW
+    list_display = (
+        "title",
+        "author",
+        "published_date",
+        "send_notification",
+        "notification_delay_hours",
+        "notification_datetime",
+        "notification_status",
+        "created_at",
+    )
+
+    list_filter = (
+        "send_notification",
+        "auto_notification_sent",
+        "published_date",
+        "author",
+        "category",
+    )
+
+    search_fields = ("title", "content", "category__name")
+    date_hierarchy = "published_date"
+
     inlines = [NewsImageInline]
-    readonly_fields = ('created_at', 'updated_at')
+
+    # 🔒 READ ONLY FIELDS
+    readonly_fields = (
+        "created_at",
+        "updated_at",
+        "notification_datetime",
+        "auto_notification_sent",
+    )
+
+    # 🧩 FORM LAYOUT
     fieldsets = (
         (None, {
-            'fields': ('category', 'title', 'content', 'published_date', 'author')
+            "fields": (
+                "category",
+                "title",
+                "content",
+                "published_date",
+                "author",
+            )
         }),
-        ('Timestamps', {
-            'fields': ('created_at', 'updated_at'),
-            'classes': ('collapse',)
+
+        ("🔔 Notification", {
+            "fields": (
+                "send_notification",
+                "notification_delay_hours",
+                "notification_datetime",
+                "notification_expire_at",
+                "auto_notification_sent",
+            )
+        }),
+
+        ("🕒 Timestamps", {
+            "fields": ("created_at", "updated_at"),
+            "classes": ("collapse",),
         }),
     )
 
+    # 🔍 QUERYSET PERMISSIONS
     def get_queryset(self, request):
         """
-        Filters the queryset to show news created by the current user,
-        unless they are a superuser.
+        Show all news for superuser,
+        only own news for regular users.
         """
         qs = super().get_queryset(request)
         if request.user.is_superuser:
             return qs
         return qs.filter(author=request.user)
 
+    # ✍️ AUTO AUTHOR
     def save_model(self, request, obj, form, change):
         """
-        Automatically sets the author of the news item to the currently logged-in user.
+        Automatically set author.
         """
         if not obj.author:
             obj.author = request.user
         super().save_model(request, obj, form, change)
+
+    # 📊 CUSTOM STATUS COLUMN
+    @admin.display(description="Notification Status")
+    def notification_status(self, obj):
+        if not obj.send_notification:
+            return format_html("<span style='color:#999;'>Disabled</span>")
+
+        if obj.auto_notification_sent:
+            return format_html("<span style='color:green;'>Sent ✔</span>")
+
+        if obj.notification_datetime:
+            return format_html(
+                "<span style='color:orange;'>Scheduled</span>"
+            )
+
+        return format_html("<span style='color:red;'>Invalid</span>")
+
 
 @admin.register(NewsImage)
 class NewsImageAdmin(admin.ModelAdmin):

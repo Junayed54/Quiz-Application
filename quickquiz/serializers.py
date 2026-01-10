@@ -139,3 +139,13 @@ class WordPuzzleSerializer(serializers.ModelSerializer):
     class Meta:
         model = WordPuzzle
         fields = ['id', 'title', 'banner', 'start_date', 'end_date', 'status', 'status_label', 'created_at']
+        
+        
+        
+class PuzzleAttemptSerializer(serializers.ModelSerializer):
+    # This pulls the 'title' from the related WordPuzzle model
+    puzzle_name = serializers.ReadOnlyField(source='puzzle.title')
+    
+    class Meta:
+        model = WordGameAttempt
+        fields = ['id', 'puzzle_name', 'score', 'started_at', 'finished_at']
