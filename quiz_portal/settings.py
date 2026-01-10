@@ -197,12 +197,12 @@ CHANNEL_LAYERS = {
 #     'x-requested-with',
 # ]
 # Database configuration (SQLite for simplicity)
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
-    }
-}
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.sqlite3',
+#         'NAME': BASE_DIR / 'db.sqlite3',
+#     }
+# }
 
 
 # DATABASES = {
@@ -233,22 +233,22 @@ DATABASES = {
 
 # your_local_django_project/settings.py
 
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.postgresql',
-#         'NAME': 'quiz_portal',
-#         'USER': 'root',
-#         'PASSWORD': 'Bridgers@123', # Your actual password for the 'root' user in PostgreSQL
-#         'HOST': 'localhost', # Use localhost if your SSH tunnel is active
-#         'PORT': '5433',     # Use the local port your SSH tunnel is forwarding
-#         'OPTIONS': {
-#             'options': '-c default_transaction_read_only=off -c password_encryption=scram-sha-256'
-#             # OR just:
-#             # 'options': '-c password_encryption=scram-sha-256'
-#             # This line explicitly tells psycopg2 to use SCRAM-SHA-256.
-#         }
-#     }
-# }
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'quiz_portal',
+        'USER': 'root',
+        'PASSWORD': 'Bridgers@123', # Your actual password for the 'root' user in PostgreSQL
+        'HOST': 'localhost', # Use localhost if your SSH tunnel is active
+        'PORT': '5433',     # Use the local port your SSH tunnel is forwarding
+        'OPTIONS': {
+            'options': '-c default_transaction_read_only=off -c password_encryption=scram-sha-256'
+            # OR just:
+            # 'options': '-c password_encryption=scram-sha-256'
+            # This line explicitly tells psycopg2 to use SCRAM-SHA-256.
+        }
+    }
+}
 
 
 # DATABASE_URL = 'postgresql://postgres:WOCPsPKPuyQZVEyjVagJxLLidyAWeGWt@junction.proxy.rlwy.net:44188/railway'
