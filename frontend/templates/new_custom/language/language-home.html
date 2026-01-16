@@ -1,0 +1,284 @@
+{% extends 'new_custom/new_templates/index2.html' %}
+{% load static %}
+
+{% block title %}Lexicon | Professional Dictionary{% endblock %}
+
+{% block style %}
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+
+<style>
+    :root {
+        --classic-slate: #1e293b;
+        --classic-gold: #b45309;
+        --soft-linen: #fdfcfb;
+        --border-subtle: #e5e7eb;
+    }
+
+    body { background-color: #f8fafc; font-family: 'Inter', sans-serif; color: var(--classic-slate); }
+    .serif-font { font-family: 'Playfair Display', serif; }
+
+    /* Search Bar Perfection */
+    .search-container { z-index: 1100; position: relative; }
+    #search-bar {
+        border-radius: 20px; padding: 1.2rem 1.2rem 1.2rem 3.5rem;
+        border: 2px solid var(--border-subtle); transition: 0.3s;
+    }
+    #search-bar:focus { border-color: var(--classic-gold); box-shadow: 0 0 15px rgba(180, 83, 9, 0.1); outline: none; }
+    .search-icon-overlay { position: absolute; left: 1.5rem; top: 50%; transform: translateY(-50%); z-index: 5; color: var(--classic-gold); }
+
+    #search-suggestions {
+        display: none; position: absolute; width: 100%; top: 100%;
+        background: white; border-radius: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        max-height: 300px; overflow-y: auto; z-index: 1200; border: 1px solid var(--border-subtle);
+    }
+
+    /* Tabs */
+    .dictionary-nav { background: white; border: 1px solid var(--border-subtle); border-radius: 100px; padding: 4px; overflow-x: auto; display: flex; }
+    .dictionary-nav .nav-link { color: #64748b; border-radius: 100px; padding: 8px 20px; font-weight: 600; cursor: pointer; white-space: nowrap; }
+    .dictionary-nav .nav-link.active { background-color: var(--classic-slate) !important; color: #fff !important; }
+
+    /* Word Rows */
+    .word-item-container { border-bottom: 1px solid #f1f5f9; background: white; }
+    .word-header-row { padding: 1rem 1.5rem; display: flex; justify-content: space-between; align-items: center; }
+    .word-text { font-size: 1.2rem; font-weight: 600; }
+    
+    .btn-details { border: 1.5px solid var(--classic-slate); color: var(--classic-slate); border-radius: 8px; font-size: 0.75rem; padding: 5px 15px; font-weight: 700; transition: 0.2s; background: transparent; }
+    .btn-details:hover { background: var(--classic-slate); color: white; }
+
+    /* Details Wrapper */
+    .details-wrapper { background: var(--soft-linen); padding: 1.5rem; border-top: 1px solid #edf2f7; }
+    .section-label { font-size: 0.7rem; font-weight: 800; color: var(--classic-gold); text-transform: uppercase; margin-bottom: 0.5rem; display: block; letter-spacing: 0.5px; }
+    .tag-item { background: #fff; border: 1px solid #e2e8f0; padding: 2px 10px; border-radius: 6px; font-size: 0.85rem; display: inline-block; margin: 2px; }
+
+    /* WOTD Sidebar */
+    .wotd-card { border: none; background: white; border-radius: 20px; border-bottom: 5px solid var(--classic-gold); transition: 0.3s; }
+    .wotd-card:hover { transform: translateY(-5px); }
+
+    @media (max-width: 991px) {
+        .mobile-stack { flex-direction: column-reverse !important; }
+        .sticky-top { position: relative !important; top: 0 !important; margin-bottom: 2rem; }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-4 py-lg-5">
+    <div class="row g-4 g-lg-5 mobile-stack">
+        <div class="col-lg-8">
+            <div class="search-container mb-4">
+                <i class="bi bi-search search-icon-overlay"></i>
+                <input type="text" id="search-bar" class="form-control" placeholder="Type a word to search..." autocomplete="off">
+                <div id="search-suggestions" class="list-group"></div>
+            </div>
+
+            <nav class="dictionary-nav mb-4 shadow-sm">
+                <ul class="nav nav-pills nav-fill w-100" id="lex-tabs">
+                    <li class="nav-item"><a class="nav-link active" data-tab="word">Vocabulary</a></li>
+                    <li class="nav-item"><a class="nav-link" data-tab="idiom">Idioms</a></li>
+                    <li class="nav-item"><a class="nav-link" data-tab="phrase">Phrases</a></li>
+                    <li class="nav-item"><a class="nav-link" data-tab="slang">Slang</a></li>
+                </ul>
+            </nav>
+
+            <div id="letters-container" class="accordion"></div>
+        </div>
+
+        <div class="col-lg-4">
+            <div id="wotd-container" class="sticky-top" style="top: 2rem;">
+                </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block body_js %}
+<script>
+const API_BASE = "/api/";
+let activeTab = "word";
+
+// Voice & Copy Utilities
+function speak(text) {
+    if ('speechSynthesis' in window) {
+        const msg = new SpeechSynthesisUtterance(text);
+        msg.rate = 0.9;
+        window.speechSynthesis.speak(msg);
+    }
+}
+
+function copyWord(text) {
+    navigator.clipboard.writeText(text);
+    alert("Copied: " + text);
+}
+
+// 1. Fetch Word of the Day
+async function fetchWOTD() {
+    const wotdBox = document.getElementById("wotd-container");
+    try {
+        const res = await fetch(`${API_BASE}word-of-the-day/`);
+        const w = await res.json();
+        wotdBox.innerHTML = `
+            <div class="card wotd-card shadow-lg p-4">
+                <div class="d-flex justify-content-between mb-2">
+                    <span class="badge bg-warning text-dark px-3 rounded-pill">Word of the Day</span>
+                    <i class="bi bi-star-fill text-warning"></i>
+                </div>
+                <h2 class="serif-font display-5 mb-0">${w.text}</h2>
+                <p class="text-muted small mb-3">${w.part_of_speech?.name || ''}</p>
+                <p class="mb-4 text-secondary">"${w.senses?.[0]?.short_definition || ''}"</p>
+                <button class="btn btn-dark w-100 rounded-pill py-2" onclick="handleSearchSelect(${w.id}, '${w.text}')">
+                    Explore Definition
+                </button>
+            </div>
+        `;
+    } catch (e) { console.error("WOTD Load Error", e); }
+}
+
+// 2. Load Dictionary A-Z
+async function loadList() {
+    const container = document.getElementById("letters-container");
+    container.innerHTML = '<div class="text-center p-5"><div class="spinner-grow text-warning"></div></div>';
+    
+    try {
+        const res = await fetch(`${API_BASE}words/az/`);
+        const data = await res.json();
+        container.innerHTML = "";
+
+        Object.entries(data).forEach(([letter, words]) => {
+            if (!words.length) return;
+            const item = document.createElement("div");
+            item.className = "accordion-item mb-3 border-0 shadow-sm rounded-4 overflow-hidden";
+            item.innerHTML = `
+                <h2 class="accordion-header">
+                    <button class="accordion-button collapsed py-3 px-4 serif-font fw-bold" data-bs-toggle="collapse" data-bs-target="#collapse-${letter}">
+                        ${letter} <span class="ms-2 badge bg-light text-muted border fw-normal" style="font-size: 0.7rem;">${words.length} words</span>
+                    </button>
+                </h2>
+                <div id="collapse-${letter}" class="accordion-collapse collapse">
+                    <div class="bg-white">
+                        ${words.map(w => `
+                            <div class="word-item-container" id="word-block-${w.id}">
+                                <div class="word-header-row">
+                                    <div class="d-flex align-items-center">
+                                        <span class="word-text">${w.text}</span>
+                                        <button class="btn p-0 ms-2 text-warning" onclick="speak('${w.text}')" title="Pronounce"><i class="bi bi-volume-up-fill"></i></button>
+                                        <button class="btn p-0 ms-2 text-muted" onclick="copyWord('${w.text}')" title="Copy"><i class="bi bi-clipboard"></i></button>
+                                    </div>
+                                    <button class="btn-details" id="btn-${w.id}" onclick="fetchDetails(${w.id})">DETAILS</button>
+                                </div>
+                                <div id="details-${w.id}" class="collapse"></div>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            `;
+            container.appendChild(item);
+        });
+    } catch (e) { container.innerHTML = "Failed to load vocabulary list."; }
+}
+
+// 3. Fetch Full Details (Using your Serializer Data)
+async function fetchDetails(id) {
+    const box = document.getElementById(`details-${id}`);
+    if (!box.innerHTML.trim()) {
+        const res = await fetch(`${API_BASE}words/${id}/`);
+        const w = await res.json();
+        
+        let sensesHtml = w.senses.map((s, i) => `
+            <div class="mb-4">
+                <span class="section-label">Definition ${i+1}</span>
+                <p class="fs-5 mb-2 fw-medium">${s.short_definition}</p>
+                
+                ${s.bangla_meanings?.length ? `
+                    <div class="mb-3 p-2 rounded bg-white border-start border-success border-4">
+                        <span class="section-label text-success">Bangla Meaning</span>
+                        ${s.bangla_meanings.map(bm => `<strong>${bm.meaning}</strong>`).join(', ')}
+                    </div>
+                ` : ''}
+
+                ${s.examples?.length ? `
+                    <div class="mb-3">
+                        <span class="section-label">Examples</span>
+                        <ul class="ps-3 text-muted">
+                            ${s.examples.map(ex => `<li class="fst-italic mb-1">"${ex.sentence}"</li>`).join('')}
+                        </ul>
+                    </div>
+                ` : ''}
+
+                <div class="row g-2">
+                    ${s.synonyms?.length ? `<div class="col-6"><span class="section-label">Synonyms</span>${s.synonyms.map(syn => `<span class="tag-item">${syn.word.text}</span>`).join('')}</div>` : ''}
+                    ${s.antonyms?.length ? `<div class="col-6"><span class="section-label">Antonyms</span>${s.antonyms.map(ant => `<span class="tag-item">${ant.word.text}</span>`).join('')}</div>` : ''}
+                </div>
+            </div>
+        `).join('');
+
+        box.innerHTML = `<div class="details-wrapper">
+            <div class="mb-3 d-flex flex-wrap gap-2">
+                ${w.phonetic_uk ? `<span class="badge bg-dark">UK: ${w.phonetic_uk}</span>` : ''}
+                ${w.phonetic_us ? `<span class="badge bg-secondary">US: ${w.phonetic_us}</span>` : ''}
+                <span class="badge bg-info text-dark">${w.part_of_speech?.name || ''}</span>
+            </div>
+            ${sensesHtml}
+        </div>`;
+    }
+    bootstrap.Collapse.getOrCreateInstance(box).toggle();
+}
+
+// 4. Perfect Search Logic
+const searchInput = document.getElementById("search-bar");
+const suggestions = document.getElementById("search-suggestions");
+
+searchInput.addEventListener("input", async () => {
+    const q = searchInput.value.trim();
+    if (!q) { suggestions.style.display = "none"; return; }
+    
+    try {
+        const res = await fetch(`${API_BASE}words/search/?q=${q}`);
+        const data = await res.json();
+        if (data.length > 0) {
+            suggestions.style.display = "block";
+            suggestions.innerHTML = data.map(w => `
+                <button class="list-group-item list-group-item-action py-3 px-4" onclick="handleSearchSelect(${w.id}, '${w.text}')">
+                    <i class="bi bi-search me-2 text-muted"></i> ${w.text}
+                </button>
+            `).join('');
+        } else { suggestions.style.display = "none"; }
+    } catch (e) { suggestions.style.display = "none"; }
+});
+
+function handleSearchSelect(id, text) {
+    suggestions.style.display = "none";
+    searchInput.value = text;
+    
+    // Switch to Vocabulary tab if not already there
+    if (activeTab !== "word") {
+        document.querySelector('[data-tab="word"]').click();
+    }
+
+    const letter = text[0].toUpperCase();
+    const collapseEl = document.getElementById(`collapse-${letter}`);
+    
+    if (collapseEl) {
+        bootstrap.Collapse.getOrCreateInstance(collapseEl).show();
+        setTimeout(() => {
+            const row = document.getElementById(`word-block-${id}`);
+            if (row) {
+                row.scrollIntoView({ behavior: "smooth", block: "center" });
+                fetchDetails(id);
+            }
+        }, 500);
+    }
+}
+
+// Init
+document.addEventListener("DOMContentLoaded", () => {
+    loadList();
+    fetchWOTD();
+});
+
+// Close suggestions on outside click
+document.addEventListener("click", (e) => {
+    if (!searchInput.contains(e.target)) suggestions.style.display = "none";
+});
+</script>
+{% endblock %}

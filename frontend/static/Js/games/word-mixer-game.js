@@ -46,18 +46,32 @@ function formatTime(totalSeconds) {
 // }
 
 
+// function speakWord(word) {
+//     if (window.flutter_inappwebview) {
+//         window.flutter_inappwebview.callHandler('speak', word);
+//     } else {
+//         // Browser fallback
+//         const utterance = new SpeechSynthesisUtterance(word);
+//         utterance.lang = 'en-US';
+//         utterance.rate = 0.9;
+//         window.speechSynthesis.speak(utterance);
+//     }
+// }
+
+
+
 function speakWord(word) {
-    if (window.flutter_inappwebview) {
-        window.flutter_inappwebview.callHandler('speak', word);
+    if (window.TTS) {
+        // Flutter WebView
+        TTS.postMessage(word);
+    } else if ('speechSynthesis' in window) {
+        // Desktop browser
+        const u = new SpeechSynthesisUtterance(word);
+        speechSynthesis.speak(u);
     } else {
-        // Browser fallback
-        const utterance = new SpeechSynthesisUtterance(word);
-        utterance.lang = 'en-US';
-        utterance.rate = 0.9;
-        window.speechSynthesis.speak(utterance);
+        alert("Speech not supported");
     }
 }
-
 
 // ================= API FETCH =================
 

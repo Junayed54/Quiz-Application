@@ -199,6 +199,7 @@
     });
 
     function renderProfile(data) {
+        console.log(data);
         const phone = data.identity.phone_number;
         document.getElementById('display-phone').innerText = phone;
         document.getElementById('display-name').innerText = data.identity.username || "Game Master";

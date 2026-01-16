@@ -1,0 +1,184 @@
+{% include "../../partials/mainhead.html" %}
+
+<title>Upload Dictionary Words</title>
+
+</head>
+
+{% include "../../partials/switcher.html" %}
+<div class="page">
+  {% include "../../partials/header.html" %}
+  {% include "../../partials/sidebar.html" %}
+
+  <div class="main-content app-content">
+    <div class="container-fluid mt-4">
+
+      <div class="row justify-content-center">
+        <div class="col-xl-8 col-lg-10 col-md-12">
+
+          <div class="card shadow-sm border-0">
+            <div class="card-header bg-primary text-white">
+              <h5 class="mb-0">📥 Upload Dictionary Excel File</h5>
+            </div>
+
+            <div class="card-body">
+
+              <!-- Instructions -->
+              <div class="alert alert-info small">
+                <strong>Excel Format:</strong><br>
+                word | pos | language | short_definition | bangla_meanings | examples | example_bn | synonyms | antonyms | forms
+                <br>
+                <span class="text-muted">
+                  • Multiple values use <code>;</code><br>
+                  • Forms format: <code>walked:past;walking:gerund</code>
+                </span>
+              </div>
+
+              <!-- Upload Form -->
+              <form id="excelUploadForm">
+                <div class="mb-3">
+                  <label class="form-label fw-semibold">Select Excel File</label>
+                  <input type="file"
+                         class="form-control"
+                         id="excelFile"
+                         accept=".xlsx,.xls"
+                         required>
+                </div>
+
+                <button type="submit" class="btn btn-primary">
+                  🚀 Upload & Process
+                </button>
+              </form>
+
+              <!-- Progress -->
+              <div id="uploadStatus" class="mt-4 d-none">
+                <div class="spinner-border spinner-border-sm text-primary"></div>
+                <span class="ms-2">Processing file, please wait...</span>
+              </div>
+
+              <!-- Result -->
+              <div id="uploadResult" class="mt-4"></div>
+
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  {% include "../../partials/footer.html" %}
+</div>
+
+{% include "../../partials/commonjs.html" %}
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+
+<script>
+    // 1. Helper to extract language_id from URL: http://.../language/1/upload-words/
+    const getLanguageIdFromUrl = () => {
+        const pathParts = window.location.pathname.split('/');
+        const langIndex = pathParts.indexOf('language');
+        return langIndex !== -1 ? pathParts[langIndex + 1] : null;
+    };
+
+    const uploadForm = document.getElementById("excelUploadForm");
+    const fileInput = document.getElementById("excelFile");
+    const statusBox = document.getElementById("uploadStatus");
+    const resultBox = document.getElementById("uploadResult");
+
+    uploadForm.addEventListener("submit", async (e) => {
+        e.preventDefault();
+
+        const languageId = getLanguageIdFromUrl();
+        const token = localStorage.getItem("access_token"); // 🔑 Get your token
+
+        if (!languageId) {
+            alert("Could not detect Language ID from URL.");
+            return;
+        }
+
+        if (!token) {
+            alert("No access token found. Please log in.");
+            return;
+        }
+
+        const file = fileInput.files[0];
+        if (!file) {
+            alert("Please select a file");
+            return;
+        }
+
+        // Reset UI
+        resultBox.innerHTML = "";
+        statusBox.classList.remove("d-none");
+
+        const formData = new FormData();
+        formData.append("file", file);
+
+        try {
+            // 2. Updated URL to match: api/language/<id>/words/upload/
+            const uploadUrl = `/api/language/${languageId}/words/upload/`;
+
+            const response = await axios.post(
+                uploadUrl,
+                formData,
+                {
+                    headers: {
+                        // 🔑 Add Authorization Header
+                        "Authorization": `Bearer ${token}`,
+                        // Axios handles multipart boundaries automatically when sending FormData
+                        "Content-Type": "multipart/form-data", 
+                    }
+                }
+            );
+
+            statusBox.classList.add("d-none");
+            const data = response.data;
+
+            let html = `
+                <div class="alert alert-success">
+                    ✅ <strong>Upload Successful</strong> for ${data.language}<br>
+                    Created Senses: <strong>${data.created_senses}</strong>
+                </div>
+            `;
+
+            if (data.errors && data.errors.length) {
+                html += `
+                    <div class="alert alert-warning">⚠️ Some rows had issues</div>
+                    <ul class="list-group">
+                `;
+                data.errors.forEach(err => {
+                    html += `
+                        <li class="list-group-item small">
+                            <strong>Row ${err.row}:</strong> ${err.error}
+                        </li>
+                    `;
+                });
+                html += `</ul>`;
+            }
+
+            resultBox.innerHTML = html;
+            uploadForm.reset();
+
+        } catch (error) {
+            statusBox.classList.add("d-none");
+            console.error("Upload Error:", error);
+
+            let message = "Upload failed";
+            if (error.response) {
+                // If 401, token might be expired
+                if (error.response.status === 401) message = "Session expired. Please log in again.";
+                else message = error.response.data.detail || JSON.stringify(error.response.data);
+            }
+
+            resultBox.innerHTML = `
+                <div class="alert alert-danger">
+                    ❌ ${message}
+                </div>
+            `;
+        }
+    });
+</script>
+
+</body>
+</html>
