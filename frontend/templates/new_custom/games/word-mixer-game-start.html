@@ -3,74 +3,7 @@
 
 {% block style %}
 <link rel="stylesheet" href="{% static 'assets/css/games/games.css' %}">
-<style>
-    .hidden { display: none !important; }
-    
-    /* Board Styling */
-    .game-board {
-        background: rgba(255, 255, 255, 0.1);
-        backdrop-filter: blur(10px);
-        border-radius: 20px;
-        padding: 40px 25px;
-        margin-bottom: 30px;
-        border: 1px solid rgba(255, 255, 255, 0.2);
-    }
-    .board-container {
-        position: relative;
-        height: 160px;
-        width: 100%;
-    }
-    .slots-container, .tiles-container {
-        position: absolute;
-        top: 50%;
-        left: 0;
-        right: 0;
-        
-        height: 60px;
-    }
-    .slot { position: absolute; border-radius: 12px; }
-    .tile { 
-        position: absolute; 
-        border-radius: 12px; 
-        display: flex; 
-        align-items: center; 
-        justify-content: center; 
-        font-size: 1.5rem; 
-        font-weight: 700; 
-        box-shadow: 0 4px 6px rgba(0,0,0,0.3);
-        background-color: white;
-        color: #430676;
-    }
 
-    /* Solved Words List inside Game Over */
-    .solved-words-container {
-        margin: 20px 0;
-        text-align: left;
-        max-height: 200px;
-        overflow-y: auto;
-    }
-    .solved-word-item {
-        background: rgba(255, 255, 255, 0.1);
-        padding: 10px;
-        border-radius: 10px;
-        margin-bottom: 8px;
-        display: flex;
-        justify-content: space-between;
-    }
-
-    /* Modal Styling */
-    .custom-modal {
-        position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-        background: rgba(0,0,0,0.85); display: flex; align-items: center;
-        justify-content: center; z-index: 3000;
-    }
-    .modal-content {
-        background: #231651; padding: 30px; border-radius: 20px;
-        width: 90%; max-width: 400px; text-align: center;
-    }
-
-    
-</style>
 {% endblock %}
 
 {% block content %}

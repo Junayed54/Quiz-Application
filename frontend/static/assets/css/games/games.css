@@ -265,7 +265,8 @@ body {
     -moz-user-select: none;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
     /* will-change: transform; */
-    
+    background-color: white;
+    color: #430676;
 }
 
 .tile:active {

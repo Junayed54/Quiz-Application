@@ -2,206 +2,216 @@
 {% load static %}
 
 {% block head_link %}
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <style>
     :root {
-        --glass-bg: rgba(255, 255, 255, 0.9);
-        --glass-border: rgba(255, 255, 255, 0.2);
-        --primary-gradient: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
-        --accent-color: #6366f1;
+        --primary: #4f46e5;
+        --secondary: #7c3aed;
+        --bg-body: #f1f5f9;
+        --card-bg: #ffffff;
     }
 
     body {
-        background: #f8fafc;
-        font-family: 'Inter', sans-serif;
-        color: #1e293b;
+        background-color: var(--bg-body);
+        font-family: 'Plus Jakarta Sans', sans-serif;
     }
 
-    .container { max-width: 1100px; }
+    /* FULL WIDTH WRAPPER */
+    .dashboard-wrapper {
+        width: 100%;
+        padding: 0 30px; /* Base padding for side gaps */
+    }
 
-    /* Profile Hero Section */
+    /* Modern Hero with edge-to-edge feel */
     .profile-hero {
-        background: var(--primary-gradient);
-        border-radius: 24px;
-        padding: 40px;
+        background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+        border-radius: 20px;
+        padding: 50px 40px;
         color: white;
         margin-bottom: 30px;
-        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
-        position: relative;
-        overflow: hidden;
+        box-shadow: 0 10px 30px -10px rgba(79, 70, 229, 0.4);
     }
 
-    .profile-hero::after {
-        content: "";
-        position: absolute;
-        top: -10%; right: -5%;
-        width: 300px; height: 300px;
-        background: rgba(255,255,255,0.1);
-        border-radius: 50%;
-    }
-
-    .avatar-wrapper {
-        width: 100px;
-        height: 100px;
-        background: white;
-        color: var(--accent-color);
-        font-size: 2.5rem;
-        font-weight: 700;
-        border-radius: 30px;
+    .avatar-square {
+        width: 110px;
+        height: 110px;
+        background: rgba(255, 255, 255, 0.2);
+        backdrop-filter: blur(10px);
+        border: 2px solid rgba(255, 255, 255, 0.3);
+        border-radius: 24px;
         display: flex;
         align-items: center;
         justify-content: center;
-        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-        margin: 0 auto;
+        font-size: 2.8rem;
+        font-weight: 700;
+        box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.1);
     }
 
-    /* Stats Cards */
-    .stat-pill {
-        background: white;
-        border: 1px solid #e2e8f0;
-        border-radius: 20px;
-        padding: 20px;
-        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    /* Grid layout for Full Width */
+    .stat-card {
+        background: var(--card-bg);
+        border-radius: 18px;
+        padding: 24px;
+        border: 1px solid rgba(226, 232, 240, 0.8);
+        transition: all 0.3s ease;
+        height: 100%;
     }
 
-    .stat-pill:hover {
+    .stat-card:hover {
         transform: translateY(-5px);
-        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05);
+        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.05);
     }
 
-    .stat-pill small {
-        text-transform: uppercase;
-        letter-spacing: 0.05em;
+    .stat-label {
+        font-size: 0.85rem;
         font-weight: 600;
         color: #64748b;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
     }
 
-    .stat-pill h4 {
-        margin-top: 5px;
+    .stat-value {
+        font-size: 1.75rem;
         font-weight: 700;
+        color: #1e293b;
+        margin-top: 8px;
+    }
+
+    .glass-panel {
+        background: var(--card-bg);
+        border-radius: 24px;
+        padding: 30px;
+        border: 1px solid #e2e8f0;
+    }
+
+    .section-title {
+        font-weight: 700;
+        font-size: 1.25rem;
+        margin-bottom: 25px;
         color: #0f172a;
     }
 
-    /* Glass Cards */
-    .glass-card {
-        background: white;
-        border-radius: 24px;
-        padding: 25px;
-        border: 1px solid #e2e8f0;
-        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+    /* Custom scrollbar for game list */
+    .scroll-list {
+        max-height: 400px;
+        overflow-y: auto;
+        padding-right: 10px;
     }
 
-    .glass-card h5 {
-        font-weight: 700;
-        margin-bottom: 20px;
-        display: flex;
-        align-items: center;
-        gap: 10px;
-    }
-
-    /* List styling */
-    .custom-list-item {
-        border: none !important;
-        border-bottom: 1px solid #f1f5f9 !important;
-        padding: 15px 10px;
-    }
-
-    .custom-list-item:last-child { border-bottom: none !important; }
-
-    .badge-soft {
-        background: #eef2ff;
-        color: #4338ca;
-        padding: 6px 12px;
-        border-radius: 10px;
-        font-weight: 600;
+    @media (max-width: 768px) {
+        .dashboard-wrapper { padding: 0 15px; }
+        .profile-hero { padding: 30px 20px; }
     }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="container py-5">
+<div class="container-fluid py-4 px-md-5">
 
     <div class="profile-hero">
         <div class="row align-items-center">
-            <div class="col-lg-2 text-center text-lg-start">
-                <div class="avatar-wrapper" id="user-avatar">?</div>
+            <div class="col-auto">
+                <div class="avatar-square" id="user-avatar">?</div>
             </div>
-            <div class="col-lg-6 text-center text-lg-start mt-3 mt-lg-0">
-                <h2 class="fw-bold mb-1" id="display-name">Guest User</h2>
-                <p class="opacity-75 mb-2" id="display-phone"><i class="fa-solid fa-phone me-2"></i>01xxxxxxxxx</p>
-                <div class="d-flex justify-content-center justify-content-lg-start gap-2">
-                    <span class="badge rounded-pill bg-white text-dark px-3 py-2">
-                        <i class="fa-solid fa-trophy text-warning me-1"></i> Rank #<span id="practice-rank-badge">-</span>
-                    </span>
+            <div class="col ms-md-3 mt-3 mt-md-0">
+                <h1 class="fw-bold mb-1" id="display-name" style="letter-spacing: -1px;">Guest User</h1>
+                <p class="fs-5 opacity-75 mb-3" id="display-phone">01xxxxxxxxx</p>
+                <div class="d-inline-flex align-items-center bg-white bg-opacity-10 rounded-pill px-3 py-2 border border-white border-opacity-25">
+                    <i class="fa-solid fa-crown text-warning me-2"></i>
+                    <span class="fw-semibold">Practice Rank: #<span id="practice-rank-badge">-</span></span>
                 </div>
             </div>
         </div>
     </div>
 
-    <div class="row g-4 mb-4">
-        <div class="col-6 col-md-3">
-            <div class="stat-pill">
-                <small><i class="fa-solid fa-star text-warning me-1"></i> Points</small>
-                <h4 id="stat-points">0</h4>
+    <div class="row g-4 mb-5">
+        <div class="col-sm-6 col-xl-3">
+            <div class="stat-card">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <div class="stat-label text-primary">Total Points</div>
+                        <div class="stat-value" id="stat-points">0</div>
+                    </div>
+                    <div class="icon-box text-primary fs-3 opacity-25"><i class="fa-solid fa-award"></i></div>
+                </div>
             </div>
         </div>
-        <div class="col-6 col-md-3">
-            <div class="stat-pill">
-                <small><i class="fa-solid fa-wallet text-success me-1"></i> Earnings</small>
-                <h4>৳ <span id="stat-rewards">0</span></h4>
+        <div class="col-sm-6 col-xl-3">
+            <div class="stat-card">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <div class="stat-label text-success">Wallet Balance</div>
+                        <div class="stat-value">৳ <span id="stat-rewards">0</span></div>
+                    </div>
+                    <div class="icon-box text-success fs-3 opacity-25"><i class="fa-solid fa-coins"></i></div>
+                </div>
             </div>
         </div>
-        <div class="col-6 col-md-3">
-            <div class="stat-pill">
-                <small><i class="fa-solid fa-chart-line text-primary me-1"></i> Rank</small>
-                <h4>#<span id="practice-rank">-</span></h4>
+        <div class="col-sm-6 col-xl-3">
+            <div class="stat-card">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <div class="stat-label text-purple">Global Rank</div>
+                        <div class="stat-value">#<span id="practice-rank">-</span></div>
+                    </div>
+                    <div class="icon-box text-purple fs-3 opacity-25"><i class="fa-solid fa-ranking-star"></i></div>
+                </div>
             </div>
         </div>
-        <div class="col-6 col-md-3">
-            <div class="stat-pill">
-                <small><i class="fa-solid fa-gamepad text-info me-1"></i> Games</small>
-                <h4 id="total-games">0</h4>
+        <div class="col-sm-6 col-xl-3">
+            <div class="stat-card">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <div class="stat-label text-info">Games History</div>
+                        <div class="stat-value" id="total-games">0</div>
+                    </div>
+                    <div class="icon-box text-info fs-3 opacity-25"><i class="fa-solid fa-gamepad"></i></div>
+                </div>
             </div>
         </div>
     </div>
 
     <div class="row g-4">
-        <div class="col-lg-7">
-            <div class="glass-card h-100">
-                <h5><i class="fa-solid fa-bolt text-primary"></i> Practice Activity</h5>
-                <div style="height:320px">
+        <div class="col-xl-8">
+            <div class="glass-panel h-100">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h5 class="section-title mb-0">Analytics Overview</h5>
+                    <select class="form-select form-select-sm w-auto border-0 bg-light">
+                        <option>Last 7 Sessions</option>
+                    </select>
+                </div>
+                <div style="height: 380px;">
                     <canvas id="practiceChart"></canvas>
                 </div>
             </div>
         </div>
 
-        <div class="col-lg-5">
-            <div class="glass-card h-100">
-                <h5><i class="fa-solid fa-ranking-star text-primary"></i> Recent Puzzles</h5>
-                <div class="list-group list-group-flush" id="game-score-list">
+        <div class="col-xl-4">
+            <div class="glass-panel h-100">
+                <h5 class="section-title">Performance Log</h5>
+                <div class="scroll-list" id="game-score-list">
                     </div>
-                <div class="mt-4">
-                    <canvas id="gameChart" height="150"></canvas>
+                <hr class="my-4">
+                <div style="height: 200px;">
+                    <canvas id="gameChart"></canvas>
                 </div>
             </div>
         </div>
     </div>
-
 </div>
 {% endblock %}
 
 {% block body_js %}
 <script>
+// (Keep the same logic as before, but the updated UI handles the full-width classes)
 document.addEventListener('DOMContentLoaded', function () {
     const token = localStorage.getItem('access_token');
     const phone = localStorage.getItem('phone_number');
-
     let apiUrl = '/api/v1/game-activity/';
     let headers = { 'Content-Type': 'application/json' };
-
     if (token) headers['Authorization'] = `Bearer ${token}`;
     else if (phone) apiUrl += `?phone=${phone}`;
 
@@ -227,24 +237,20 @@ function renderProfile(data) {
 
 function renderPracticeChart(practice) {
     const ctx = document.getElementById('practiceChart').getContext('2d');
-    const gradient = ctx.createLinearGradient(0, 0, 0, 400);
-    gradient.addColorStop(0, 'rgba(99, 102, 241, 0.2)');
-    gradient.addColorStop(1, 'rgba(99, 102, 241, 0)');
-
     new Chart(ctx, {
         type: 'line',
         data: {
             labels: practice.map((_, i) => `S${i + 1}`),
             datasets: [{
-                label: 'Score',
+                label: 'Points',
                 data: practice.map(p => p.score),
-                borderColor: '#6366f1',
-                borderWidth: 3,
+                borderColor: '#4f46e5',
+                backgroundColor: 'rgba(79, 70, 229, 0.05)',
+                borderWidth: 4,
                 tension: 0.4,
                 fill: true,
-                backgroundColor: gradient,
-                pointBackgroundColor: '#6366f1',
-                pointRadius: 4
+                pointRadius: 0,
+                pointHoverRadius: 6
             }]
         },
         options: {
@@ -252,8 +258,8 @@ function renderPracticeChart(practice) {
             maintainAspectRatio: false,
             plugins: { legend: { display: false } },
             scales: {
-                y: { grid: { display: false }, border: { display: false } },
-                x: { grid: { display: false }, border: { display: false } }
+                y: { grid: { color: '#f1f5f9' }, border: { display: false } },
+                x: { grid: { display: false } }
             }
         }
     });
@@ -261,15 +267,14 @@ function renderPracticeChart(practice) {
 
 function renderGamePerformance(puzzles) {
     if (!puzzles.length) return;
-
     const list = document.getElementById('game-score-list');
-    list.innerHTML = puzzles.slice(0, 4).map(g => `
-        <div class="custom-list-item d-flex justify-content-between align-items-center">
+    list.innerHTML = puzzles.map(g => `
+        <div class="d-flex justify-content-between align-items-center mb-3 p-3 bg-light rounded-4">
             <div>
-                <div class="fw-bold text-dark">${g.puzzle__title}</div>
-                <small class="text-muted">Puzzle Game</small>
+                <div class="fw-bold small">${g.puzzle__title}</div>
+                <div class="text-muted" style="font-size: 10px;">ID: #PX-${Math.floor(Math.random()*1000)}</div>
             </div>
-            <span class="badge-soft">${g.total_puzzle_score} pts</span>
+            <span class="badge bg-primary rounded-pill">${g.total_puzzle_score}</span>
         </div>
     `).join('');
 
@@ -280,17 +285,13 @@ function renderGamePerformance(puzzles) {
             labels: puzzles.map(g => g.puzzle__title.split(' ')[0]),
             datasets: [{
                 data: puzzles.map(g => g.total_puzzle_score),
-                backgroundColor: '#6366f1',
-                borderRadius: 8,
-                barThickness: 15
+                backgroundColor: '#7c3aed',
+                borderRadius: 5
             }]
         },
         options: {
             plugins: { legend: { display: false } },
-            scales: {
-                y: { display: false },
-                x: { grid: { display: false } }
-            }
+            scales: { y: { display: false }, x: { grid: { display: false } } }
         }
     });
 }
