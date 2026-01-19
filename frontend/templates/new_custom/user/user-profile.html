@@ -2,254 +2,297 @@
 {% load static %}
 
 {% block head_link %}
-
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-{% endblock %}
 
-{% block style %}
 <style>
     :root {
-        --glass-bg: rgba(255, 255, 255, 0.85);
-        --accent-primary: #6366f1;
-        --accent-secondary: #f43f5e;
-        --sidebar-width: 280px;
+        --glass-bg: rgba(255, 255, 255, 0.9);
+        --glass-border: rgba(255, 255, 255, 0.2);
+        --primary-gradient: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
+        --accent-color: #6366f1;
     }
 
-    body { 
-        font-family: 'Plus Jakarta Sans', sans-serif; 
-        background-color: #f0f2f5; 
-        background-image: radial-gradient(at 0% 0%, hsla(253,16%,7%,1) 0, transparent 50%), 
-                          radial-gradient(at 50% 0%, hsla(225,39%,30%,1) 0, transparent 50%);
-        background-attachment: fixed;
-        min-height: 100vh;
+    body {
+        background: #f8fafc;
+        font-family: 'Inter', sans-serif;
+        color: #1e293b;
     }
 
-    /* Profile Header Styling */
+    .container { max-width: 1100px; }
+
+    /* Profile Hero Section */
     .profile-hero {
-        background: var(--glass-bg);
-        backdrop-filter: blur(12px);
-        border-radius: 30px;
+        background: var(--primary-gradient);
+        border-radius: 24px;
         padding: 40px;
+        color: white;
         margin-bottom: 30px;
-        border: 1px solid rgba(255,255,255,0.3);
-        box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .profile-hero::after {
+        content: "";
+        position: absolute;
+        top: -10%; right: -5%;
+        width: 300px; height: 300px;
+        background: rgba(255,255,255,0.1);
+        border-radius: 50%;
     }
 
     .avatar-wrapper {
-        width: 120px;
-        height: 120px;
-        border-radius: 35px;
-        background: linear-gradient(45deg, var(--accent-primary), var(--accent-secondary));
+        width: 100px;
+        height: 100px;
+        background: white;
+        color: var(--accent-color);
+        font-size: 2.5rem;
+        font-weight: 700;
+        border-radius: 30px;
         display: flex;
         align-items: center;
         justify-content: center;
-        font-size: 3rem;
-        color: white;
-        font-weight: 800;
-        box-shadow: 0 10px 20px rgba(99, 102, 241, 0.3);
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        margin: 0 auto;
     }
 
-    /* Smart Stat Pill */
+    /* Stats Cards */
     .stat-pill {
         background: white;
+        border: 1px solid #e2e8f0;
         border-radius: 20px;
         padding: 20px;
-        border: 1px solid #edf2f7;
-        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .stat-pill:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05);
+    }
+
+    .stat-pill small {
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        font-weight: 600;
+        color: #64748b;
+    }
+
+    .stat-pill h4 {
+        margin-top: 5px;
+        font-weight: 700;
+        color: #0f172a;
+    }
+
+    /* Glass Cards */
+    .glass-card {
+        background: white;
+        border-radius: 24px;
+        padding: 25px;
+        border: 1px solid #e2e8f0;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+    }
+
+    .glass-card h5 {
+        font-weight: 700;
+        margin-bottom: 20px;
         display: flex;
         align-items: center;
-        gap: 15px;
-    }
-    .stat-pill:hover { transform: translateY(-8px); box-shadow: 0 15px 30px rgba(0,0,0,0.05); }
-    .icon-box { width: 50px; height: 50px; border-radius: 15px; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; }
-
-    /* Modern Glass Card */
-    .glass-card {
-        background: var(--glass-bg);
-        border-radius: 24px;
-        border: 1px solid rgba(255,255,255,0.4);
-        padding: 25px;
-        height: 100%;
+        gap: 10px;
     }
 
-    .btn-update {
-        background: var(--accent-primary);
-        color: white;
-        border-radius: 12px;
-        padding: 10px 25px;
+    /* List styling */
+    .custom-list-item {
+        border: none !important;
+        border-bottom: 1px solid #f1f5f9 !important;
+        padding: 15px 10px;
+    }
+
+    .custom-list-item:last-child { border-bottom: none !important; }
+
+    .badge-soft {
+        background: #eef2ff;
+        color: #4338ca;
+        padding: 6px 12px;
+        border-radius: 10px;
         font-weight: 600;
-        border: none;
-        transition: 0.3s;
     }
-    .btn-update:hover { background: #4f46e5; transform: scale(1.05); }
-
-    .nav-tabs { border: none; gap: 10px; }
-    .nav-link { border: none !important; border-radius: 12px !important; color: #64748b; font-weight: 600; }
-    .nav-link.active { background: white !important; color: var(--accent-primary) !important; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
 </style>
 {% endblock %}
 
 {% block content %}
 <div class="container py-5">
-    
-    <div class="profile-hero animate-fade-in">
+
+    <div class="profile-hero">
         <div class="row align-items-center">
-            <div class="col-lg-2 d-flex justify-content-center">
+            <div class="col-lg-2 text-center text-lg-start">
                 <div class="avatar-wrapper" id="user-avatar">?</div>
             </div>
-            <div class="col-lg-6 mt-4 mt-lg-0 text-center text-lg-start">
-                <h2 class="fw-800 mb-1" id="display-name">Guest User</h2>
-                <p class="text-muted mb-3"><i class="bi bi-telephone-fill me-2"></i><span id="display-phone">01xxxxxxxxx</span></p>
-                <div class="d-flex gap-2 justify-content-center justify-content-lg-start">
-                    <span class="badge bg-success-subtle text-success px-3 py-2 rounded-pill">Account Verified</span>
-                    <span class="badge bg-primary-subtle text-primary px-3 py-2 rounded-pill" id="rank-badge">Elite Player</span>
+            <div class="col-lg-6 text-center text-lg-start mt-3 mt-lg-0">
+                <h2 class="fw-bold mb-1" id="display-name">Guest User</h2>
+                <p class="opacity-75 mb-2" id="display-phone"><i class="fa-solid fa-phone me-2"></i>01xxxxxxxxx</p>
+                <div class="d-flex justify-content-center justify-content-lg-start gap-2">
+                    <span class="badge rounded-pill bg-white text-dark px-3 py-2">
+                        <i class="fa-solid fa-trophy text-warning me-1"></i> Rank #<span id="practice-rank-badge">-</span>
+                    </span>
                 </div>
-            </div>
-            <div class="col-lg-4 text-center text-lg-end mt-4 mt-lg-0">
-                <button class="btn-update" onclick="location.href='#'">
-                    <i class="bi bi-pencil-square me-2"></i>Edit Profile
-                </button>
             </div>
         </div>
     </div>
 
-    <div class="row g-4 mb-5">
-        <div class="col-md-3">
+    <div class="row g-4 mb-4">
+        <div class="col-6 col-md-3">
             <div class="stat-pill">
-                <div class="icon-box bg-primary-subtle text-primary"><i class="bi bi-lightning-charge"></i></div>
-                <div><small class="text-muted d-block">Points</small><strong class="h4 mb-0" id="stat-points">0</strong></div>
+                <small><i class="fa-solid fa-star text-warning me-1"></i> Points</small>
+                <h4 id="stat-points">0</h4>
             </div>
         </div>
-        <div class="col-md-3">
+        <div class="col-6 col-md-3">
             <div class="stat-pill">
-                <div class="icon-box bg-success-subtle text-success"><i class="bi bi-cash-stack"></i></div>
-                <div><small class="text-muted d-block">Earnings</small><strong class="h4 mb-0">৳ <span id="stat-rewards">0.00</span></strong></div>
+                <small><i class="fa-solid fa-wallet text-success me-1"></i> Earnings</small>
+                <h4>৳ <span id="stat-rewards">0</span></h4>
             </div>
         </div>
-        <div class="col-md-3">
+        <div class="col-6 col-md-3">
             <div class="stat-pill">
-                <div class="icon-box bg-info-subtle text-info"><i class="bi bi-trophy"></i></div>
-                <div><small class="text-muted d-block">Practice Rank</small><strong class="h4 mb-0">#<span id="practice-rank">12</span></strong></div>
+                <small><i class="fa-solid fa-chart-line text-primary me-1"></i> Rank</small>
+                <h4>#<span id="practice-rank">-</span></h4>
             </div>
         </div>
-        <div class="col-md-3">
+        <div class="col-6 col-md-3">
             <div class="stat-pill">
-                <div class="icon-box bg-danger-subtle text-danger"><i class="bi bi-controller"></i></div>
-                <div><small class="text-muted d-block">Games Played</small><strong class="h4 mb-0" id="total-games">0</strong></div>
+                <small><i class="fa-solid fa-gamepad text-info me-1"></i> Games</small>
+                <h4 id="total-games">0</h4>
             </div>
         </div>
     </div>
 
     <div class="row g-4">
-        <div class="col-lg-8">
-            <div class="glass-card">
-                <div class="d-flex justify-content-between align-items-center mb-4">
-                    <h5 class="fw-800 mb-0">Learning Curve</h5>
-                    <ul class="nav nav-tabs" id="chartTabs">
-                        <li class="nav-item"><button class="nav-link active">Practice</button></li>
-                        <li class="nav-item"><button class="nav-link">Puzzles</button></li>
-                    </ul>
-                </div>
-                <div style="height: 350px;">
-                    <canvas id="performanceChart"></canvas>
+        <div class="col-lg-7">
+            <div class="glass-card h-100">
+                <h5><i class="fa-solid fa-bolt text-primary"></i> Practice Activity</h5>
+                <div style="height:320px">
+                    <canvas id="practiceChart"></canvas>
                 </div>
             </div>
         </div>
 
-        <div class="col-lg-4">
-            <div class="glass-card">
-                <h5 class="fw-800 mb-4">Milestones</h5>
-                <div class="mb-4">
-                    <div class="d-flex justify-content-between mb-2">
-                        <span class="small fw-600">Points to Next Rank</span>
-                        <span class="small text-primary" id="progress-percent">75%</span>
+        <div class="col-lg-5">
+            <div class="glass-card h-100">
+                <h5><i class="fa-solid fa-ranking-star text-primary"></i> Recent Puzzles</h5>
+                <div class="list-group list-group-flush" id="game-score-list">
                     </div>
-                    <div class="progress" style="height: 8px; border-radius: 10px;">
-                        <div class="progress-bar bg-primary" id="progress-bar" style="width: 75%"></div>
-                    </div>
+                <div class="mt-4">
+                    <canvas id="gameChart" height="150"></canvas>
                 </div>
-                
-                <h5 class="fw-800 mb-3">Recent Activity</h5>
-                <div id="activity-feed" class="small">
-                    </div>
             </div>
         </div>
     </div>
+
 </div>
 {% endblock %}
 
 {% block body_js %}
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const token = localStorage.getItem('access_token');
-        const phone = localStorage.getItem('phone_number');
+document.addEventListener('DOMContentLoaded', function () {
+    const token = localStorage.getItem('access_token');
+    const phone = localStorage.getItem('phone_number');
 
-        let apiUrl = '/api/v1/game-activity/';
-        let headers = { 'Content-Type': 'application/json' };
+    let apiUrl = '/api/v1/game-activity/';
+    let headers = { 'Content-Type': 'application/json' };
 
-        if (token) headers['Authorization'] = `Bearer ${token}`;
-        else if (phone) apiUrl += `?phone=${encodeURIComponent(phone)}`;
+    if (token) headers['Authorization'] = `Bearer ${token}`;
+    else if (phone) apiUrl += `?phone=${phone}`;
 
-        fetch(apiUrl, { headers: headers })
-            .then(res => res.json())
-            .then(data => {
-                renderProfile(data);
-                initSmartCharts(data);
-            });
-    });
-
-    function renderProfile(data) {
-        console.log(data);
-        const phone = data.identity.phone_number;
-        document.getElementById('display-phone').innerText = phone;
-        document.getElementById('display-name').innerText = data.identity.username || "Game Master";
-        document.getElementById('user-avatar').innerText = (data.identity.username || phone).charAt(0).toUpperCase();
-
-        document.getElementById('stat-points').innerText = data.stats.current_points.toLocaleString();
-        document.getElementById('stat-rewards').innerText = data.stats.total_rewards_taka;
-        document.getElementById('total-games').innerText = data.history.practice.length + data.history.puzzles.length;
-
-        // Populate Activity Feed
-        const feed = document.getElementById('activity-feed');
-        feed.innerHTML = data.history.practice.slice(0, 3).map(p => `
-            <div class="d-flex align-items-center mb-3 p-2 bg-white rounded-3 shadow-sm">
-                <div class="me-3 text-primary"><i class="bi bi-check-circle-fill"></i></div>
-                <div>Completed Practice Session <br> <span class="text-primary fw-bold">+${p.score} pts</span></div>
-            </div>
-        `).join('');
-    }
-
-    function initSmartCharts(data) {
-        const ctx = document.getElementById('performanceChart').getContext('2d');
-        const scores = [...data.history.practice].reverse();
-
-        new Chart(ctx, {
-            type: 'line',
-            data: {
-                labels: scores.map((_, i) => `Session ${i+1}`),
-                datasets: [{
-                    label: 'Practice Points',
-                    data: scores.map(s => s.score),
-                    borderColor: '#6366f1',
-                    backgroundColor: 'rgba(99, 102, 241, 0.1)',
-                    fill: true,
-                    tension: 0.4,
-                    pointBackgroundColor: '#fff',
-                    pointBorderColor: '#6366f1',
-                    pointBorderWidth: 2,
-                    pointRadius: 6
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: { legend: { display: false } },
-                scales: { 
-                    y: { border: { display: false }, grid: { color: '#f1f5f9' } },
-                    x: { border: { display: false }, grid: { display: false } }
-                }
-            }
+    fetch(apiUrl, { headers })
+        .then(res => res.json())
+        .then(data => {
+            renderProfile(data);
+            renderPracticeChart(data.history.practice);
+            renderGamePerformance(data.history.puzzles);
         });
-    }
+});
+
+function renderProfile(data) {
+    document.getElementById('display-phone').innerText = data.identity.phone_number;
+    document.getElementById('display-name').innerText = data.identity.username || 'Guest';
+    document.getElementById('user-avatar').innerText = (data.identity.username || data.identity.phone_number)[0].toUpperCase();
+    document.getElementById('practice-rank').innerText = data.stats.quiz_rank || '-';
+    document.getElementById('practice-rank-badge').innerText = data.stats.quiz_rank || '-';
+    document.getElementById('stat-points').innerText = data.stats.current_points.toLocaleString();
+    document.getElementById('stat-rewards').innerText = data.stats.total_rewards_taka;
+    document.getElementById('total-games').innerText = data.history.puzzles.length;
+}
+
+function renderPracticeChart(practice) {
+    const ctx = document.getElementById('practiceChart').getContext('2d');
+    const gradient = ctx.createLinearGradient(0, 0, 0, 400);
+    gradient.addColorStop(0, 'rgba(99, 102, 241, 0.2)');
+    gradient.addColorStop(1, 'rgba(99, 102, 241, 0)');
+
+    new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: practice.map((_, i) => `S${i + 1}`),
+            datasets: [{
+                label: 'Score',
+                data: practice.map(p => p.score),
+                borderColor: '#6366f1',
+                borderWidth: 3,
+                tension: 0.4,
+                fill: true,
+                backgroundColor: gradient,
+                pointBackgroundColor: '#6366f1',
+                pointRadius: 4
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: {
+                y: { grid: { display: false }, border: { display: false } },
+                x: { grid: { display: false }, border: { display: false } }
+            }
+        }
+    });
+}
+
+function renderGamePerformance(puzzles) {
+    if (!puzzles.length) return;
+
+    const list = document.getElementById('game-score-list');
+    list.innerHTML = puzzles.slice(0, 4).map(g => `
+        <div class="custom-list-item d-flex justify-content-between align-items-center">
+            <div>
+                <div class="fw-bold text-dark">${g.puzzle__title}</div>
+                <small class="text-muted">Puzzle Game</small>
+            </div>
+            <span class="badge-soft">${g.total_puzzle_score} pts</span>
+        </div>
+    `).join('');
+
+    const ctx = document.getElementById('gameChart').getContext('2d');
+    new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: puzzles.map(g => g.puzzle__title.split(' ')[0]),
+            datasets: [{
+                data: puzzles.map(g => g.total_puzzle_score),
+                backgroundColor: '#6366f1',
+                borderRadius: 8,
+                barThickness: 15
+            }]
+        },
+        options: {
+            plugins: { legend: { display: false } },
+            scales: {
+                y: { display: false },
+                x: { grid: { display: false } }
+            }
+        }
+    });
+}
 </script>
 {% endblock %}

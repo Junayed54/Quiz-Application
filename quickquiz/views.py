@@ -32,6 +32,9 @@ from rest_framework.pagination import PageNumberPagination
 from django.utils.dateparse import parse_date
 from datetime import datetime, time
 
+from django.db.models import Sum, Q, Window
+from django.db.models.functions import Rank
+
 class SubjectViewSet(viewsets.ModelViewSet):
     # queryset = Subject.objects.all()
     serializer_class = SubjectSerializer
@@ -1295,62 +1298,118 @@ class PivotWordGameLeaderboardAPIView(APIView):
 
 
 
-class UserActivitySummarySerializer(serializers.Serializer):
-    total_practice_score = serializers.IntegerField()
-    total_puzzle_score = serializers.IntegerField()
-    current_points = serializers.IntegerField()
-    total_earned_money = serializers.DecimalField(max_digits=10, decimal_places=2)
-    
-    # We can nest the detailed history here
-    recent_practice = PracticeSessionSerializer(many=True)
-    recent_puzzles = PuzzleAttemptSerializer(many=True)
-        
-        
-        
-        
 class UserGameActivityView(APIView):
     def get(self, request):
+        # -----------------------------
         # 1. Identity Logic
+        # -----------------------------
         phone = request.query_params.get('phone')
         user = request.user if request.user.is_authenticated else None
+
+        if not user and not phone:
+            return Response(
+                {"detail": "User authentication or phone number is required"},
+                status=400
+            )
+
         lookup_filter = Q(user=user) if user else Q(phone_number=phone)
 
-        # 2. Aggregate Totals
-        # Total Practice Score (Scalar)
-        practice_total = PracticeSession.objects.filter(lookup_filter).aggregate(total=Sum('score'))['total'] or 0
-        
-        # Total Puzzle Score (Scalar for the Stat card)
-        puzzle_total = WordGameAttempt.objects.filter(
-            player__user=user if user else None, 
-            player__phone_number=phone if not user else None
-        ).aggregate(total=Sum('score'))['total'] or 0
+        # -----------------------------
+        # 2. QUIZ (Practice) TOTAL SCORE
+        # -----------------------------
+        practice_total = (
+            PracticeSession.objects
+            .filter(lookup_filter)
+            .aggregate(total=Sum('score'))
+            .get('total') or 0
+        )
 
-        # Puzzle History (Grouped for the Table)
-        puzzle_grouped_history = WordGameAttempt.objects.filter(
-            player__user=user if user else None, 
-            player__phone_number=phone if not user else None
-        ).values('puzzle__title').annotate(
-            total_puzzle_score=Sum('score')
-        ).order_by('-total_puzzle_score')
+        # -----------------------------
+        # 3. QUIZ RANK (FROM USERPOINTS)
+        # SAME LOGIC AS LEADERBOARD
+        # -----------------------------
+        quiz_rank = None
+        user_points = UserPoints.objects.filter(lookup_filter).first()
 
-        # Points & Rewards
-        points_val = UserPoints.objects.filter(lookup_filter).first()
-        rewards_sum = UserReward.objects.filter(phone_number=phone or (user.player.phone_number if user else "")).aggregate(Sum('reward_amount'))['reward_amount__sum'] or 0.00
+        if user_points:
+            if user:
+                rank_list = list(
+                    UserPoints.objects
+                    .order_by('-points')
+                    .values_list('user_id', flat=True)
+                )
+                try:
+                    quiz_rank = rank_list.index(user.id) + 1
+                except ValueError:
+                    quiz_rank = None
+            else:
+                rank_list = list(
+                    UserPoints.objects
+                    .order_by('-points')
+                    .values_list('phone_number', flat=True)
+                )
+                try:
+                    quiz_rank = rank_list.index(phone) + 1
+                except ValueError:
+                    quiz_rank = None
 
-        # 3. Construct Response
+        # -----------------------------
+        # 4. GAME / PUZZLE (NO RANK)
+        # -----------------------------
+        puzzle_total = (
+            WordGameAttempt.objects.filter(
+                player__user=user if user else None,
+                player__phone_number=phone if not user else None
+            )
+            .aggregate(total=Sum('score'))
+            .get('total') or 0
+        )
+
+        puzzle_grouped_history = (
+            WordGameAttempt.objects.filter(
+                player__user=user if user else None,
+                player__phone_number=phone if not user else None
+            )
+            .values('puzzle__title')
+            .annotate(total_puzzle_score=Sum('score'))
+            .order_by('-total_puzzle_score')
+        )
+
+        # -----------------------------
+        # 5. Points & Rewards
+        # -----------------------------
+        rewards_sum = (
+            UserReward.objects.filter(
+                phone_number=phone or (
+                    user.player.phone_number if user and hasattr(user, "player") else ""
+                )
+            )
+            .aggregate(total=Sum('reward_amount'))
+            .get('total') or 0.00
+        )
+
+        # -----------------------------
+        # 6. RESPONSE
+        # -----------------------------
         return Response({
             "identity": {
-                "phone_number": phone or (user.username if user else "Guest"),
-                "access_token_active": user is not None
+                "phone_number": phone or user.username,
+                "access_token_active": bool(user)
             },
             "stats": {
                 "total_practice_score": practice_total,
-                "total_puzzle_score": puzzle_total, # Now a single number
-                "current_points": points_val.points if points_val else 0,
+                "quiz_rank": quiz_rank,              # ✅ MATCHES LEADERBOARD
+                "total_puzzle_score": puzzle_total,
+                "current_points": user_points.points if user_points else 0,
                 "total_rewards_taka": rewards_sum
             },
             "history": {
-                "practice": PracticeSessionSerializer(PracticeSession.objects.filter(lookup_filter).order_by('-created_at')[:10], many=True).data,
-                "puzzles": list(puzzle_grouped_history) # Send the aggregated list directly
+                "practice": PracticeSessionSerializer(
+                    PracticeSession.objects
+                    .filter(lookup_filter)
+                    .order_by('-created_at')[:10],
+                    many=True
+                ).data,
+                "puzzles": list(puzzle_grouped_history)
             }
         })
