@@ -173,7 +173,7 @@ function enableDrag() {
         onPress() {
             emptyX = gsap.getProperty(this.target, "x");
             lastHitTile = null;
-            gsap.to(this.target, { scale: 1.1, zIndex: 50 });
+            gsap.to(this.target, {zIndex: 50 });
         },
         onDrag() {
             const currentTile = this.target;
