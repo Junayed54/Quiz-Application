@@ -3,7 +3,38 @@
 
 {% block style %}
 <link rel="stylesheet" href="{% static 'assets/css/games/games.css' %}">
+<style>
+    /* The semi-transparent background overlay */
+.custom-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.8); /* Dim the background */
+    display: flex;
+    justify-content: center; /* Center horizontally */
+    align-items: center;     /* Center vertically */
+    z-index: 9999;
+    padding: 20px;           /* Prevents touching edges on small phones */
+}
 
+/* The actual white box containing the form */
+.modal-content {
+    background: white;
+    padding: 2rem;
+    border-radius: 15px;
+    width: 100%;             /* Allow it to be fluid */
+    max-width: 400px;        /* Prevents it from getting too wide on desktop */
+    box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+    text-align: center;
+}
+
+/* Ensure it stays hidden when it has the .hidden class */
+.hidden {
+    display: none !important;
+}
+</style>
 {% endblock %}
 
 {% block content %}
