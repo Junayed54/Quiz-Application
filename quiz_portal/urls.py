@@ -27,6 +27,8 @@ urlpatterns = [
     
     path('', include("notifications.urls")),
     
+    path('', include("language_center.urls")),
+    
     # Expose firebase-messaging-sw.js at root
     re_path(r'^firebase-messaging-sw.js$', serve, {
         'path': 'firebase-messaging-sw.js',

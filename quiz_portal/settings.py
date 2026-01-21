@@ -25,7 +25,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'wkf6c#&j%k%-jae(!p_*dq&9x*j_cvsa_l4ump#5f-^p1b(-8b'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 # FRONTEND_URL = 'http://localhost:8000'
 
 # ALLOWED_HOSTS = []
@@ -83,6 +83,7 @@ INSTALLED_APPS = [
     'written_exam',
     'news',
     'notifications',
+    'language_center',
     
     
 ]
