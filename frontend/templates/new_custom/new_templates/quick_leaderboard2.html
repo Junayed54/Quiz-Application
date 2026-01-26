@@ -1,342 +1,315 @@
-{% extends 'new_custom/new_templates/index2.html'%}
-
-{% block title %}Leaderboard{% endblock %}
+{% extends 'new_custom/new_templates/index2.html' %}
 {% load static %}
+
+{% block title %}Leaderboard | Student Portal{% endblock %}
+
 {% block style %}
-  <style>
-    body {
-      background-color: #0f172a;
-      color: white;
-    }
-    .text-custom{
-      background: linear-gradient(90deg, #FFFFFF 0%, #4DFFDF 100%);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      font-weight: 700;
-      font-size: 32px;
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
 
-    }
-    .cards {
-      background-color: #1e293b;
-      border: none;
-      border-radius: 15px;
-    }
-
-    .button{
-      background: #6C4DF61A;
-      border: 1px solid #6C4DF6;
-    }
-    .button:hover{
-      box-shadow: 0px 0px 10px 0px #6C4DF680;
-    }
-
-    .rank-row {
-      background-color: #1e293b;
-      padding: 20px;
-      height: 70px;
-      border-bottom: 1px solid #4f46e5;
-    }
-
-    {% comment %} .rank-1 { background-color: #facc15; color: #000; }
-    .rank-2 { background-color: #60a5fa; color: #000; }
-    .rank-3 { background-color: #f472b6; color: #000; } {% endcomment %}
-
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      border-radius: 10px;
-      overflow: hidden;
-    }
-
-    table thead th {
-      color: #38bdf8;
-      font-size: 0.9rem;
-      text-transform: uppercase;
-      padding: 12px;
-      background-color: #1e293b;
-      border-bottom: 2px solid #4f46e5;
-    }
-
-    table tbody tr {
-      transition: background 0.3s ease;
-    }
-
-    table tbody tr:nth-child(even) {
-      background-color: rgba(255, 255, 255, 0.03);
-    }
-
-    table tbody tr:hover {
-      background-color: rgba(255, 255, 255, 0.08);
-    }
-
-    table td {
-      padding: 14px 16px;
-      color: white;
-      font-size: 0.95rem;
-      font-weight: 500;
-      vertical-align: middle;
-    }
-
-    .avatar {
-      width: 60px;
-      height: 60px;
-      object-fit: cover;
-      border-radius: 50%;
-    }
-
-    .top-avatar {
-      width: 80px;
-      height: 80px;
-      object-fit: cover;
-      border-radius: 50%;
-      border: 3px solid gold;
-    }
-
-    .leader-you {
-      background-color: #3b2c9a !important;
-      color: white;
-    }
-
-    /* round container */
-
-    .circle-1 {
-      position: absolute;
-      width: 200px;
-      height: 200px;
-      top: -100px;
-      left: -100px;
-      opacity: 0.15;
-      border-radius: 150px;
-      background-color: #6C4DF6;
-      backdrop-filter: blur(20px);
-      z-index: 0; /* Or lower than content */
-      pointer-events: none; /* Prevent interaction */
-    }
-
-
-    .circle-2 {
-      
-      width: 100px;
-      height: 100px;
-      bottom: -20px;
-      left: -50px;
-      opacity: 0.15;
-      border-radius: 75px;
-      background-color: #4DFFDF;;
-      backdrop-filter: blur(20px);
-      z-index: 0; /* Or lower than content */
-      pointer-events: none; /* Prevent interaction */
-    }
-
-
-    .circle-3 {
-      
-      width: 150px;
-      height: 150px;
-      bottom: -20px;
-      right: -150px;
-      opacity: 0.15;
-      border-radius: 75px;
-      background-color: #FF4D79;;
-      backdrop-filter: blur(20px);
-      z-index: 0; /* Or lower than content */
-      pointer-events: none; /* Prevent interaction */
-    }
-
-
-    /* Container for the whole top performers section */
-#top-performers {
-    display: flex;
-    justify-content: center; /* Center the columns horizontally */
-    align-items: flex-start; /* Align items to the top for vertical staggering */
-    min-height: 280px; /* Adjust as needed to provide space for vertical offset */
-    background: #0F1B2CB2;
-    padding: 20px 0; /* Add vertical padding */
-    border-radius: 10px;
-    gap: 20px; /* Space between columns */
+:root {
+    --bg-dark: #0f172a;
+    --text-light: #e2e8f0;
+    --accent-cyan: #66FFF0;
+    --glass-bg: rgba(30, 41, 59, 0.7);
+    --glass-border: rgba(148, 163, 184, 0.1);
 }
 
-/* Wrapper for the circular and rectangular parts to manage their relative positioning */
-.performer-card-wrapper {
-    display: flex;
-    flex-direction: column; /* Stacks the circle and box vertically within the wrapper */
-    align-items: center;
-    position: relative; /* Crucial for absolute positioning of children (like medal) */
-    width: 120px; /* Define a fixed width for the wrapper to control overall card width */
-    margin-bottom: 10px; /* Space between the visual elements and text below */
+body {
+    font-family: 'Inter', sans-serif;
+    background: var(--bg-dark);
+    color: var(--text-light);
 }
 
-
-.performer-initials-circle span {
-    text-shadow: 1px 1px 2px rgba(0,0,0,0.3); /* Optional: slight shadow for text */
+/* ---------- GLASS CARD ---------- */
+.glass-card {
+    background: var(--glass-bg);
+    backdrop-filter: blur(14px);
+    border: 1px solid var(--glass-border);
+    border-radius: 1.25rem;
 }
 
-/* The "small div" for the actual profile image or generic avatar. This is the rectangular box. */
-.performer-main-content-box {
-    width: 100px; /* Width of the rectangular image/avatar box */
-    height: 100px; /* Height of the rectangular image/avatar box */
-    border-radius: 8px; /* Slightly rounded corners for the box */
-    overflow: hidden; /* Hide overflow if image is larger */
-    z-index: 2; /* Place it *above* the initials circle visually */
-    position: relative; /* For image inside */
-    margin-top: -40px; /* Pull it UP to overlap the circle below */
-    border: 2px solid #555; /* Subtle border for the box */
-    background-color: #333; /* Default background for box if no image */
-    flex-shrink: 0; /* Prevent it from shrinking */
-    display: flex; /* For centering content inside if no image */
-    align-items: center;
-    justify-content: center;
-}
-
-.performer-profile-image {
-    width: 100%;
-    height: 100%;
-    object-fit: cover; /* Ensure image covers the box */
-    display: block; /* Remove extra space below image */
-}
-
-/* Styling for the case when there is no image (initials within the rectangular box) */
-.performer-no-image-avatar {
-    width: 100%;
-    height: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background-color: #444; /* A slightly different background for clarity */
-}
-
-/* Medal Badge positioning */
-.medal-badge {
-    /* Position absolutely relative to .performer-card-wrapper */
+/* ---------- ORBS ---------- */
+.orb {
     position: absolute;
-    top: 35px; /* Adjust vertically to sit near the top-right of the circle */
-    right: 5px; /* Adjust horizontally */
-    transform: translate(50%, -50%); /* Fine-tune to center on the corner */
-    z-index: 3; /* Ensure medal is on top of everything */
-    padding: 0.2em 0.5em; /* Adjust padding for badge size */
+    border-radius: 50%;
+    filter: blur(120px);
+    pointer-events: none;
+    z-index: 0;
 }
 
-/* Vertical Positioning Classes (applied to the .col div for staggering) */
-.topper-1st-pos {
-    margin-top: 0; /* Highest position */
+/* ---------- TEXT ---------- */
+.text-gradient {
+    background: linear-gradient(90deg, #fff, var(--accent-cyan));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
 }
 
-.topper-2nd-pos {
-    margin-top: 50px; /* Lower than 1st */
+/* ---------- INPUT ---------- */
+.form-control-dark {
+    background: rgba(30, 41, 59, 0.6);
+    border: 1px solid var(--glass-border);
+    color: white;
+}
+.form-control-dark:focus {
+    border-color: var(--accent-cyan);
+    box-shadow: 0 0 0 .25rem rgba(102,255,240,.12);
 }
 
-.topper-3rd-pos {
-    margin-top: 100px; /* Even lower than 2nd */
+/* ---------- TABLE ---------- */
+.table-custom {
+    --bs-table-bg: transparent;
+    --bs-table-color: #e2e8f0;
+    --bs-table-border-color: rgba(148,163,184,.12);
+}
+.table-custom thead th {
+    font-size: .7rem;
+    text-transform: uppercase;
+    letter-spacing: .05rem;
+    background: rgba(15,23,42,.85);
 }
 
-/* Adjust Bootstrap column padding if needed to control spacing */
-.col {
-    padding: 0 10px; /* Reduce horizontal padding between columns if using default .col */
+/* ---------- AVATAR (LOCKED SIZE) ---------- */
+.table-avatar {
+    width: 34px !important;
+    height: 34px !important;
+    min-width: 34px;
+    min-height: 34px;
+    max-width: 34px;
+    max-height: 34px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid var(--accent-cyan);
 }
 
-@media (min-width: 768px) {
-  .w-md-75 {
-    width: 75%;
-  }
-  .circle{
-    display: hidden;
-  }
+/* ---------- PODIUM ---------- */
+.podium-item {
+    transition: transform .4s ease;
 }
+.podium-1 { transform: scale(1.12); }
+.podium-2, .podium-3 { opacity: .85; }
 
-
+/* ---------- BUTTON ---------- */
+.btn-accent {
+    background: var(--accent-cyan);
+    color: #0f172a;
+    font-weight: 700;
+}
 </style>
-
-
-  
 {% endblock %}
 
 {% block content %}
-<div class="container position-relative w-md-75" style="margin-bottom: 200px;">
-  
+<div class="position-relative min-vh-10">
 
-  <div class="d-flex justify-content-between align-items-center mb-4 py-4">
-    <h2 class="fw-bold" style="color: #66FFF0;">Leaderboard</h2>
-    <div>
-      <button class="btn btn-sm me-2 text-white button" >📅This Month</button>
-      <button class="btn btn-sm text-white button" onclick="refreshLeaderboard()">🔄Refresh</button>
-    </div>
-  </div>
+    <!-- ORBS -->
+    <div class="orb" style="width:400px;height:400px;top:-120px;background:rgba(102,255,240,.08)"></div>
+    <div class="orb" style="width:400px;height:400px;bottom:-120px;background:rgba(168,85,247,.08)"></div>
 
-  <div class="row g-3 mb-4">
-    <div class="col-md-4">
-      
-      <div class="position-relative cards p-3 text-center">
-        <div class="circle-1"></div>
-        <div class="text-white" style="font-weight: 400; font-size: 14px; background: #F0F0FF; -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;">Your Current Rank</div>
-        <h3 class="text-custom" id="my_rank"></h3>
-      </div>
-    </div>
-    <div class="col-md-4">
-      <div class="cards p-3 text-center">
-        <div class="text-white" style="font-weight: 400; font-size: 14px; background: #F0F0FF; -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;">Points This Month</div>
-        <h3 class="text-custom" id="my_points"></h3>
-      </div>
-    </div>
-    <div class="col-md-4">
-      <div class="cards p-3 text-center">
-        <div class="text-white" style="font-weight: 400; font-size: 14px; background: #F0F0FF; -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;">Completed Tests</div>
-        <h3 class="text-custom" id="my_complete_test"></h3>
-      </div>
-    </div>
-  </div>
+    <div class="container py-5 position-relative" style="z-index:5">
 
-  
-    <div class="p-4 mb-4">
-      <div class="d-flex justify-content-between align-items-center mb-3" style="border-bottom: 1px solid #FFFFFF0D">
-       
-      </div>
-       <h5 class="text-white text-center">Top Performers</h5>
-      <div id="top-performers" class="d-flex justify-content-center gap-4 mt-4"></div>
-    </div>
+        <!-- HEADER -->
+        <div class="row align-items-center mb-5 gy-4">
+            <div class="col-md-6 text-center text-md-start">
+                <div class="d-flex align-items-center gap-3 justify-content-center justify-content-md-start">
+                    <div class="p-3 bg-info bg-opacity-10 rounded-3 text-info">
+                        <i class="fas fa-trophy fs-3"></i>
+                    </div>
+                    <h1 class="fw-black text-uppercase m-0">
+                        Leader<span class="text-info">board</span>
+                    </h1>
+                </div>
+                <p class="text-secondary mt-2 mb-0">
+                    Global academic ranking & performance tracking
+                </p>
+            </div>
 
-    <div class="rounded px-4 pb-4">
-      <table class="text-white">
-        <thead>
-          <tr class="rank-row">
-            <th>Rank</th>
-            <th>Player</th>
-            <th>Tests</th>
-            <th>Score</th>
-            <th>Percentage</th>
-          </tr>
-        </thead>
-        <tbody id="rank-list">
-          <!-- Example row (to be replaced by JS or Django context loop) -->
-          <!--
-          <tr>
-            <td>#1</td>
-            <td>Jonayed Shanto</td>
-            <td>12</td>
-            <td>1140</td>
-            <td>95%</td>
-          </tr>
-          -->
-        </tbody>
-       
-      </table>
-       
+            <div class="col-md-6">
+                <div class="d-flex gap-3">
+                    <div class="position-relative flex-grow-1">
+                        <i class="fas fa-search position-absolute top-50 start-0 translate-middle-y ms-3 text-secondary"></i>
+                        <input id="studentSearch"
+                               class="form-control form-control-dark rounded-pill ps-5"
+                               placeholder="Search students...">
+                    </div>
+                    <button class="btn btn-outline-secondary rounded-circle position-relative"
+                            style="width:45px;height:45px">
+                        <i class="fas fa-bell"></i>
+                        <span class="position-absolute top-0 start-100 translate-middle p-1 bg-danger rounded-circle"></span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- STATS -->
+        <div class="row g-4 mb-5" id="statsGrid">
+            <!-- JS injects stat cards -->
+        </div>
+
+        <!-- PODIUM -->
+        <section class="mb-5">
+            <div class="text-center mb-4">
+                <h2 class="h5 fw-bold text-gradient">
+                    <i class="fas fa-medal me-2"></i>Elite Performers
+                </h2>
+                <div class="mx-auto bg-info rounded-pill" style="width:60px;height:3px;opacity:.5"></div>
+            </div>
+
+            <div class="row justify-content-center align-items-end g-4" id="top-performers">
+                <!-- JS injects podium -->
+            </div>
+        </section>
+
+        <!-- MAIN TABLE -->
+        <section class="glass-card mb-5 shadow-lg overflow-hidden">
+            <div class="p-4 border-bottom border-secondary border-opacity-10 d-flex justify-content-between">
+                <h2 class="h6 fw-bold mb-0">Full Leaderboard</h2>
+                <div class="btn-group btn-group-sm">
+                    <button class="btn btn-accent">Month</button>
+                    <button class="btn btn-link text-secondary">All Time</button>
+                </div>
+            </div>
+
+            <div class="table-responsive">
+                <table class="table table-custom align-middle mb-0">
+                    <thead>
+                        <tr>
+                            <th class="ps-4">Rank</th>
+                            <th>Student</th>
+                            <th>Points</th>
+                            <th>Attempts</th>
+                            <th class="pe-4">Badges</th>
+                        </tr>
+                    </thead>
+                    <tbody id="leaderboard-table-body">
+                        <!-- JS injects rows -->
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="p-4 border-top border-secondary border-opacity-10 d-flex justify-content-between small text-secondary">
+                <span id="message">Showing -- results</span>
+                <nav id="pagination-controls"></nav>
+            </div>
+        </section>
+
+        <!-- BOTTOM -->
+        <div class="row g-4 mb-5">
+
+            <!-- FILTER -->
+            <div class="col-lg-4">
+                <div class="glass-card p-4 mb-4">
+                    <h6 class="fw-bold mb-3">
+                        <i class="fas fa-filter text-info me-2"></i>Filter Activity
+                    </h6>
+
+                    <input type="date" id="startDate" class="form-control form-control-dark mb-3">
+                    <input type="date" id="endDate" class="form-control form-control-dark mb-3">
+
+                    <button id="filterBtn" class="btn btn-info w-100 fw-bold">
+                        Generate Report
+                    </button>
+                </div>
+            </div>
+
+            <!-- DAILY -->
+            <div class="col-lg-8">
+                <div class="glass-card h-100 overflow-hidden">
+                    <div class="p-4 border-bottom border-secondary border-opacity-10">
+                        <h6 class="fw-bold mb-0">
+                            <i class="fas fa-bolt text-warning me-2"></i>
+                            Today's Performers
+                        </h6>
+                    </div>
+
+                    <table class="table table-custom align-middle mb-0">
+                        <thead>
+                            <tr>
+                                <th>Rank</th>
+                                <th class="text-start">User</th>
+                                <th>Score</th>
+                            </tr>
+                        </thead>
+                        <tbody id="scorerTable">
+                            <!-- JS injects -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
     </div>
-    
-  
-  <div class="position-absolute circle-2"></div>
-  <div class="position-absolute circle-3"></div>
 </div>
 {% endblock %}
 
 {% block body_js %}
+<script src="../../../static/Js/quickquiz/leaderboard.js"></script>
 <script>
-  function refreshLeaderboard() {
-    alert("Leaderboard refreshed!");
-    // You could trigger an AJAX call here to reload the data
-  }
+document.addEventListener("DOMContentLoaded", () => {
+    const apiURL = "/api/top-scorers/";
+    const tableBody = document.getElementById("scorerTable");
+    const message = document.getElementById("message");
+
+    // ---------- FUNCTION: LOAD LEADERBOARD (Daily or Range) ----------
+    async function loadTopScorers(params = "") {
+        tableBody.innerHTML = "";
+        message.textContent = "Loading...";
+
+        try {
+            const res = await fetch(`${apiURL}${params}`, {
+                headers: { "Content-Type": "application/json" },
+            });
+
+            if (!res.ok) throw new Error(`HTTP Error: ${res.status}`);
+
+            const data = await res.json();
+            console.log("Leaderboard:", data);
+
+            if (!data.leaderboard || data.leaderboard.length === 0) {
+                message.textContent = "";
+                return;
+            }
+
+            message.textContent = "";
+
+            // Render leaderboard
+            data.leaderboard.forEach((item, index) => {
+                const row = `
+                    <tr class="${index === 0 ? 'bg-success' : ''}">
+                        <td class="px-4 py-3 text-sm fw-bold text-white"><strong>#${index + 1}</strong></td>
+                        <td class="px-4 py-3 text-sm fw-bold text-white">${item.username}</td>
+                        <td class="px-4 py-3 text-sm fw-bold text-white">
+                            <span class="badge bg-primary fs-6">${item.total_score}</span>
+                        </td>
+                    </tr>
+                `;
+                tableBody.insertAdjacentHTML("beforeend", row);
+            });
+
+        } catch (err) {
+            console.error(err);
+            message.textContent = "⚠️ Unable to load leaderboard.";
+        }
+    }
+
+    // ---------- LOAD TODAY'S DATA BY DEFAULT ----------
+    loadTopScorers();
+
+    // ---------- RANGE FILTER ----------
+    const filterBtn = document.getElementById("filterBtn");
+
+    if (filterBtn) {
+        filterBtn.addEventListener("click", () => {
+            const start = document.getElementById("startDate").value;
+            const end = document.getElementById("endDate").value;
+
+            if (!start || !end) {
+                message.textContent = "Please select both start & end date.";
+                return;
+            }
+
+            loadTopScorers(`?start_date=${start}&end_date=${end}`);
+        });
+    }
+});
 </script>
-<script src="{% static 'Js/quickquiz/leaderboard.js' %}"></script>
 {% endblock %}

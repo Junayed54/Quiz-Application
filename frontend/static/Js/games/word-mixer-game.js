@@ -340,7 +340,7 @@ async function submitScoreToAPI() {
 
 function startGame() {
     score = 0;
-    timeLeft = 100; 
+    timeLeft = 180; 
     gameOver = false;
     solvedWords = [];
     seenWordIds = [];

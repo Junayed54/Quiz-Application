@@ -85,22 +85,31 @@
     }
 
     .question-dropdown {
-      display: none; /* Initially hidden */
+      position: absolute;
+      top: 100%;
+      left: 0;
+      z-index: 3000;
       flex-direction: row;
       flex-wrap: wrap;
-      max-width: 100%;       /* Prevents the div from exceeding the screen width */
-      word-wrap: break-word;
       gap: 2rem;
       padding: 1.5rem;
       background-color: rgba(255, 255, 255, 0.7);
       backdrop-filter: blur(10px);
-      -webkit-backdrop-filter: blur(10px);
       border: 1px solid rgba(200, 200, 200, 0.3);
       border-radius: 10px;
+      max-width: 95vw;
+  }
 
-      /* ADD THESE LINES */
-      max-width: 95vw;    /* Prevent it from being wider than the viewport */
-      overflow-x: hidden; /* Prevent horizontal scroll */
+    .nav-item.dropdown {
+      position: relative; /* Makes absolute dropdown position relative to this li */
+    }
+    .navbar,
+    .navbar-collapse {
+        overflow: visible;
+    }
+
+    .dropdown-menu {
+      z-index: 3000;
     }
 
     .dropdown-column {

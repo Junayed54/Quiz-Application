@@ -1,154 +1,249 @@
-{% extends 'new_custom/new_templates/index2.html'%}
-{% block title %}Leaderboard{% endblock %}
+{% extends 'new_custom/new_templates/index2.html' %}
 {% load static %}
+
+{% block title %}Leaderboard | Student Portal{% endblock %}
+
 {% block style %}
-  <style>
-    body {
-      background-color: #0f172a;
-      color: #fff;
-    }
-    .table-dark th, .table-dark td {
-      border-color: #334155;
-    }
-    .rank-badge {
-      font-weight: bold;
-      padding: 0.25rem 0.5rem;
-      border-radius: 0.5rem;
-    }
-    .rank-1 { background-color: #facc15; color: #000; }
-    .rank-2 { background-color: #60a5fa; color: #000; }
-    .rank-3 { background-color: #f472b6; color: #000; }
-    .user-highlight {
-      background-color: #1e293b;
-      border-left: 4px solid #9333ea;
-    }
-    .change-up { color: #4ade80; }  /* green */
-    .change-down { color: #f87171; } /* red */
-    .change-same { color: #cbd5e1; } /* gray */
-    .initials-badge {
-      width: 36px;
-      height: 36px;
-      border-radius: 50%;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      color: #fff;
-      font-weight: bold;
-      margin-right: 0.5rem;
-    }
-  </style>
+<style>
+/* --- BASE THEME & BACKGROUND --- */
+:root {
+    --bg-dark: #060b28;
+    --row-gradient: linear-gradient(90deg, #1e40af 0%, #3b82f6 50%, #1e40af 100%);
+    --me-gradient: linear-gradient(90deg, #0d9488 0%, #14b8a6 50%, #0d9488 100%);
+    --accent-cyan: #66FFF0;
+}
 
+body {
+    /* Background Image with Overlay */
+    background: linear-gradient(rgba(6, 11, 40, 0.85), rgba(6, 11, 40, 0.95)), 
+                url('https://images.unsplash.com/photo-1574629810360-7efbbe195018?q=80&w=2000&auto=format&fit=crop'); 
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+    color: #e2e8f0;
+    min-height: 100vh;
+}
+
+/* --- GLASS CONTAINER --- */
+.glass-container {
+    background: rgba(15, 23, 42, 0.6);
+    backdrop-filter: blur(15px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 2rem;
+    padding: 2.5rem;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+}
+
+/* --- CAPSULE TABLE UI --- */
+.table-soccer {
+    border-collapse: separate;
+    border-spacing: 0 12px;
+    width: 100%;
+}
+
+.table-soccer thead th {
+    border: none;
+    color: var(--accent-cyan);
+    text-transform: uppercase;
+    font-size: 0.75rem;
+    letter-spacing: 2px;
+    padding: 10px 15px;
+    text-align: center;
+}
+
+.table-soccer thead th.team-header { text-align: left; padding-left: 2rem; }
+
+/* Capsule Row Styling */
+.soccer-row td {
+    background: var(--row-gradient);
+    border: none;
+    padding: 1.2rem 0.5rem;
+    color: white;
+    text-align: center;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+    transition: transform 0.2s ease;
+}
+
+.soccer-row:hover td {
+    transform: scale(1.01);
+}
+
+/* Highlight "ME" Row */
+.soccer-row.leaderboard-you-row td {
+    background: var(--me-gradient);
+    border-top: 1px solid var(--accent-cyan);
+    border-bottom: 1px solid var(--accent-cyan);
+}
+
+/* Pill Shapes */
+.soccer-row td:first-child {
+    border-top-left-radius: 50px;
+    border-bottom-left-radius: 50px;
+    padding-left: 2rem;
+    font-weight: 900;
+}
+
+.soccer-row td:last-child {
+    border-top-right-radius: 50px;
+    border-bottom-right-radius: 50px;
+    padding-right: 2rem;
+    font-weight: 900;
+}
+
+.team-cell { text-align: left !important; font-weight: 600 !important; }
+
+/* Status Badges */
+.table-badge {
+    font-size: 0.65rem;
+    padding: 5px 12px;
+    border-radius: 50px;
+    background: rgba(255,255,255,0.15);
+    border: 1px solid rgba(255,255,255,0.2);
+    font-weight: 700;
+}
+
+/* Pagination Styling */
+.page-link {
+    background: rgba(30, 41, 59, 0.8) !important;
+    border: 1px solid rgba(255,255,255,0.1) !important;
+    color: white !important;
+    border-radius: 8px;
+    margin: 0 3px;
+}
+.page-item.active .page-link {
+    background: var(--accent-cyan) !important;
+    color: #060b28 !important;
+    border-color: var(--accent-cyan) !important;
+}
+</style>
 {% endblock %}
+
 {% block content %}
+<div class="container py-5">
+    
+    <div class="text-center mb-5">
+        <h1 class="display-4 fw-black text-white text-uppercase tracking-tighter mb-0">Soccer Cup Qualifications</h1>
+        <div class="d-inline-block px-4 py-1 bg-info bg-opacity-25 rounded-pill border border-info border-opacity-50">
+            <span class="text-info small fw-bold">SEASON 2024</span>
+        </div>
+    </div>
 
-  <div class="container py-5">
-  <h2 class="mb-4 text-info fw-bold">Leaderboard</h2>
+    <div class="row justify-content-center g-4 mb-5" id="top-performers"></div>
 
-  <div class="table-responsive">
-    <table class="table table-dark table-hover align-middle">
-      <thead>
-        <tr class="text-secondary">
-          <th scope="col">Rank</th>
-          <th scope="col">Player</th>
-          <th scope="col">Tests</th>
-          <th scope="col">Score</th>
-          <th scope="col">Change</th>
-        </tr>
-      </thead>
-      <tbody>
-
-        <tr>
-          <td><span class="rank-badge rank-1">#1</span></td>
-          <td>
-            <span class="initials-badge bg-warning text-dark">SA</span> Saadia Ahmed
-          </td>
-          <td>12</td>
-          <td class="text-warning fw-bold">1,520</td>
-          <td class="change-same">–</td>
-        </tr>
-
-        <tr>
-          <td><span class="rank-badge rank-2">#2</span></td>
-          <td>
-            <span class="initials-badge bg-primary">RI</span> Rafiul Islam
-          </td>
-          <td>11</td>
-          <td class="text-info fw-bold">1,465</td>
-          <td class="change-up">+1</td>
-        </tr>
-
-        <tr>
-          <td><span class="rank-badge rank-3">#3</span></td>
-          <td>
-            <span class="initials-badge bg-danger">TS</span> Tahmina
-          </td>
-          <td>10</td>
-          <td class="text-danger fw-bold">1,380</td>
-          <td class="change-down">–1</td>
-        </tr>
-
-        <tr>
-          <td>#4</td>
-          <td>
-            <span class="initials-badge bg-secondary">HM</span> Hasan Mahmud
-          </td>
-          <td>10</td>
-          <td>1,305</td>
-          <td class="change-up">+2</td>
-        </tr>
-
-        <tr>
-          <td>#5</td>
-          <td>
-            <span class="initials-badge bg-secondary">FN</span> Farzana Noor
-          </td>
-          <td>10</td>
-          <td>1,250</td>
-          <td class="change-up">+1</td>
-        </tr>
-
-        <tr>
-          <td>#6</td>
-          <td>
-            <span class="initials-badge bg-secondary">AR</span> Arif Rahman
-          </td>
-          <td>10</td>
-          <td>1,215</td>
-          <td class="change-down">–2</td>
-        </tr>
-
-        <tr>
-          <td>#7</td>
-          <td>
-            <span class="initials-badge bg-secondary">SK</span> Shantier Khan
-          </td>
-          <td>9</td>
-          <td>1,175</td>
-          <td class="change-same">–</td>
-        </tr>
-
-        <tr class="user-highlight">
-          <td><span class="rank-badge bg-purple">#8</span></td>
-          <td>
-            <span class="initials-badge bg-purple">YO</span> You
-          </td>
-          <td>9</td>
-          <td class="text-info fw-bold">1,140</td>
-          <td class="change-same">–</td>
-        </tr>
-
-      </tbody>
-    </table>
-  </div>
+    <div class="glass-container">
+        <div class="table-responsive">
+            <table class="table table-soccer align-middle mb-0">
+                <thead>
+                    <tr>
+                        <th style="width: 80px;">No.</th>
+                        <th class="team-header">Student / Team</th>
+                        <th>Points</th>
+                        <th>Attempts</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody id="leaderboard-table-body">
+                    </tbody>
+            </table>
+        </div>
+        
+        <div class="mt-4 d-flex justify-content-between align-items-center">
+            <div id="pagination-controls"></div>
+        </div>
+    </div>
 </div>
 {% endblock %}
 
 {% block body_js %}
 <script>
-  function refreshLeaderboard() {
-    alert("Leaderboard refreshed!");
-    // You could trigger an AJAX call here to reload the data
-  }
+document.addEventListener("DOMContentLoaded", function () {
+    const usersPerPage = 10;
+    let currentPage = 1;
+    let allLeaderboardUsers = []; 
+    let currentUserData = null; 
+
+    // --- Helpers ---
+    function getStaticImageUrl(imageName) { return `/static/images/${imageName}`; }
+
+    // --- API Fetching ---
+    const token = localStorage.getItem("access_token");
+    const phoneNumber = localStorage.getItem("phone_number");
+    let leaderboardUrl = "/api/practice/leaderboard/";
+    if (!token && phoneNumber) leaderboardUrl += `?phone_number=${encodeURIComponent(phoneNumber)}`;
+
+    const headers = { "Content-Type": "application/json" };
+    if (token) headers["Authorization"] = `Bearer ${token}`;
+
+    fetch(leaderboardUrl, { method: "GET", headers: headers })
+        .then(res => res.json())
+        .then(data => {
+            if (data.top_10) {
+                allLeaderboardUsers = data.top_10;
+                currentUserData = data.me;
+                renderLeaderboardPage(currentPage, currentUserData);
+                setupPagination(allLeaderboardUsers.length);
+            }
+        })
+        .catch(err => console.error("Fetch Error:", err));
+
+    // --- Rendering Capsule UI ---
+    function renderLeaderboardPage(page, meData) {
+        const tableBody = document.getElementById("leaderboard-table-body");
+        if (!tableBody) return;
+        tableBody.innerHTML = ""; 
+
+        const start = (page - 1) * usersPerPage;
+        const slice = allLeaderboardUsers.slice(start, start + usersPerPage);
+
+        slice.forEach((user, index) => {
+            const actualRank = start + index + 1;
+            const isMe = (meData && String(user.username) === String(meData.username));
+            const profileImg = user.profile_image || getStaticImageUrl('user.png');
+
+            let badge = 'ACTIVE';
+            if (actualRank === 1) badge = 'TOP PERFORMER';
+            else if (actualRank === 2) badge = 'FAST LEARNER';
+            else if (actualRank === 3) badge = 'CONSISTENT';
+
+            const row = `
+                <tr class="soccer-row ${isMe ? 'leaderboard-you-row' : ''}">
+                    <td>${actualRank}.</td>
+                    <td class="team-cell">
+                        <div class="d-flex align-items-center gap-3">
+                            <img src="${profileImg}" class="rounded-circle border border-white border-opacity-25" style="width: 35px; height: 35px; object-fit: cover;">
+                            <span>${user.username} ${isMe ? '<span class="badge bg-light text-dark ms-2">YOU</span>' : ''}</span>
+                        </div>
+                    </td>
+                    <td>${(user.points || 0).toLocaleString()}</td>
+                    <td>${user.attempts || '0'}</td>
+                    <td><span class="table-badge">${badge}</span></td>
+                </tr>`;
+            tableBody.insertAdjacentHTML('beforeend', row);
+        });
+    }
+
+    // --- Pagination Logic ---
+    function setupPagination(total) {
+        const navContainer = document.getElementById("pagination-controls");
+        const pages = Math.ceil(total / usersPerPage);
+        if (!navContainer || pages <= 1) return;
+
+        let paginationHtml = `<ul class="pagination mb-0">`;
+        for (let i = 1; i <= pages; i++) {
+            paginationHtml += `
+                <li class="page-item ${i === currentPage ? 'active' : ''}">
+                    <a class="page-link" href="#" onclick="changePage(${i})">${i}</a>
+                </li>`;
+        }
+        paginationHtml += `</ul>`;
+        navContainer.innerHTML = paginationHtml;
+    }
+
+    window.changePage = function(page) {
+        currentPage = page;
+        renderLeaderboardPage(currentPage, currentUserData);
+        setupPagination(allLeaderboardUsers.length);
+    };
+});
 </script>
-<script src="{% static 'Js/quickquiz/leaderboard.js' %}"></script>
 {% endblock %}
