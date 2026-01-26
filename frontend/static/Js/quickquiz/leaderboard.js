@@ -492,45 +492,46 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     // --- UI Component: Main Leaderboard Table ---
-    // --- Updated UI Component: Main Leaderboard Table ---
-function renderLeaderboardPage(page, meData) {
-    const tableBody = document.getElementById("leaderboard-table-body");
-    if (!tableBody) return;
-    
-    tableBody.innerHTML = ""; 
+    function renderLeaderboardPage(page, meData) {
+        const tableBody = document.getElementById("leaderboard-table-body");
+        if (!tableBody) return;
+        
+        tableBody.innerHTML = ""; 
 
-    const start = (page - 1) * usersPerPage;
-    const slice = allLeaderboardUsers.slice(start, start + usersPerPage);
+        const start = (page - 1) * usersPerPage;
+        const slice = allLeaderboardUsers.slice(start, start + usersPerPage);
 
-    slice.forEach((user, index) => {
-        const actualRank = start + index + 1;
-        const isMe = (meData && String(user.username) === String(meData.username));
-        const profileImg = user.profile_image || getStaticImageUrl('user.png');
+        slice.forEach((user, index) => {
+            const actualRank = start + index + 1;
+            const isMe = (meData && String(user.username) === String(meData.username));
+            const profileImg = user.profile_image || getStaticImageUrl('user.png');
 
-        // Determine Badge Content
-        let badgeContent = 'Active';
-        if (actualRank === 1) badgeContent = 'Top Performer';
-        else if (actualRank === 2) badgeContent = 'Fast Learner';
-        else if (actualRank === 3) badgeContent = 'Consistent';
+            let badge = '';
+            if (actualRank === 1) badge = `<span class="table-badge table-badge-top">Top Performer</span>`;
+            else if (actualRank === 2) badge = `<span class="table-badge table-badge-fast">Fast Learner</span>`;
+            else if (actualRank === 3) badge = `<span class="table-badge table-badge-consistent">Consistent</span>`;
 
-        // Create the Capsule Row Template
-        const row = `
-            <tr class="soccer-row ${isMe ? 'leaderboard-you-row' : ''}">
-                <td>${actualRank}.</td>
-                <td class="team-cell">
-                    <div class="d-flex align-items-center gap-2">
-                        <img src="${profileImg}" class="rounded-circle" style="width: 30px; height: 30px; border: 2px solid rgba(255,255,255,0.5);">
-                        <span class="fw-bold">${user.username} ${isMe ? '(You)' : ''}</span>
-                    </div>
-                </td>
-                <td>${(user.points || 0).toLocaleString()}</td>
-                <td>${user.attempts || '0'}</td>
-                <td><span class="table-badge">${badgeContent}</span></td>
-            </tr>
-        `;
-        tableBody.insertAdjacentHTML('beforeend', row);
-    });
-}
+            tableBody.innerHTML += `
+                <tr class="align-middle ${isMe ? 'leaderboard-you-row' : ''}">
+                    <td class="px-4 py-3">
+                        <span class="d-inline-flex align-items-center justify-content-center fw-bold rounded-circle 
+                            ${actualRank === 1 ? 'bg-warning text-dark' : actualRank === 2 ? 'bg-info text-dark' : actualRank === 3 ? 'bg-primary text-dark' : 'text-secondary'}" 
+                            style="width: 30px; height: 30px; font-size: 0.85rem;">
+                            ${actualRank}
+                        </span>
+                    </td>
+                    <td class="px-4 py-3">
+                        <div class="d-flex align-items-center gap-3">
+                            <img src="${profileImg}" class="rounded-circle border border-secondary" style="width: 35px; height: 35px; object-fit: cover;">
+                            <span class="fw-bold ${isMe ? 'text-info' : 'text-white'}">${user.username}</span>
+                        </div>
+                    </td>
+                    <td class="px-4 py-3 text-secondary">${user.attempts || '0'}</td>
+                    <td class="px-4 py-3 fw-bold ${isMe ? 'text-info' : 'text-white'}">${(user.points || 0).toLocaleString()}</td>
+                    <td class="px-4 py-3">${badge}</td>
+                </tr>`;
+        });
+    }
 
     // --- UI Component: Pagination Logic ---
     function setupPagination(total) {
