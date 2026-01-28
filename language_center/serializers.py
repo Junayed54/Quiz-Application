@@ -9,8 +9,6 @@ from .models import (
     DefinitionTranslation,
     ExampleSentence,
     ExampleTranslation,
-    Synonym,
-    Antonym,
     WordForm,
 )
 
@@ -96,20 +94,20 @@ class RelatedWordSerializer(serializers.ModelSerializer):
         fields = ["id", "text"]
 
 
-class SynonymSerializer(serializers.ModelSerializer):
-    word = RelatedWordSerializer(read_only=True)
+# class SynonymSerializer(serializers.ModelSerializer):
+#     word = RelatedWordSerializer(read_only=True)
 
-    class Meta:
-        model = Synonym
-        fields = ["id", "word"]
+#     class Meta:
+#         model = Synonym
+#         fields = ["id", "word"]
 
 
-class AntonymSerializer(serializers.ModelSerializer):
-    word = RelatedWordSerializer(read_only=True)
+# class AntonymSerializer(serializers.ModelSerializer):
+#     word = RelatedWordSerializer(read_only=True)
 
-    class Meta:
-        model = Antonym
-        fields = ["id", "word"]
+#     class Meta:
+#         model = Antonym
+#         fields = ["id", "word"]
 
 
 # -------------------------
@@ -120,8 +118,10 @@ class SenseSerializer(serializers.ModelSerializer):
     bangla_meanings = BanglaMeaningSerializer(many=True, read_only=True)
     definitions = DefinitionSerializer(many=True, read_only=True)
     examples = ExampleSentenceSerializer(many=True, read_only=True)
-    synonyms = SynonymSerializer(many=True, read_only=True)
-    antonyms = AntonymSerializer(many=True, read_only=True)
+
+    # expose as list instead of raw comma string (optional but recommended)
+    synonyms = serializers.SerializerMethodField()
+    antonyms = serializers.SerializerMethodField()
 
     class Meta:
         model = Sense
@@ -129,12 +129,23 @@ class SenseSerializer(serializers.ModelSerializer):
             "id",
             "short_definition",
             "usage_note",
+            "synonyms",
+            "antonyms",
             "bangla_meanings",
             "definitions",
             "examples",
-            "synonyms",
-            "antonyms",
         ]
+
+    def get_synonyms(self, obj):
+        if not obj.synonyms:
+            return []
+        return [s.strip() for s in obj.synonyms.split(",") if s.strip()]
+
+    def get_antonyms(self, obj):
+        if not obj.antonyms:
+            return []
+        return [a.strip() for a in obj.antonyms.split(",") if a.strip()]
+
 
 
 # -------------------------

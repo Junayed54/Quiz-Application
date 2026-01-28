@@ -1,142 +1,147 @@
 {% extends 'new_custom/new_templates/index2.html' %}
 {% load static %}
 
-{% block title %}Leaderboard | Student Portal{% endblock %}
+{% block title %}Leaderboard | Quiz Portal{% endblock %}
 
 {% block style %}
 <style>
-/* --- BASE THEME & BACKGROUND --- */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
 :root {
     --bg-dark: #060b28;
+    --accent-cyan: #66FFF0;
     --row-gradient: linear-gradient(90deg, #1e40af 0%, #3b82f6 50%, #1e40af 100%);
     --me-gradient: linear-gradient(90deg, #0d9488 0%, #14b8a6 50%, #0d9488 100%);
-    --accent-cyan: #66FFF0;
+    --glass-bg: rgba(15, 23, 42, 0.6);
+    --header-bg: rgba(30, 41, 59, 0.9);
 }
 
 body {
-    /* Background Image with Overlay */
+    font-family: 'Inter', sans-serif;
     background: linear-gradient(rgba(6, 11, 40, 0.85), rgba(6, 11, 40, 0.95)), 
-                url('https://images.unsplash.com/photo-1574629810360-7efbbe195018?q=80&w=2000&auto=format&fit=crop'); 
+                url('https://images.unsplash.com/photo-1434030216411-0b793f4b4173?q=80&w=2000&auto=format&fit=crop'); 
     background-size: cover;
     background-position: center;
     background-attachment: fixed;
     color: #e2e8f0;
-    min-height: 100vh;
 }
 
-/* --- GLASS CONTAINER --- */
-.glass-container {
-    background: rgba(15, 23, 42, 0.6);
-    backdrop-filter: blur(15px);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 2rem;
-    padding: 2.5rem;
-    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
-}
-
-/* --- CAPSULE TABLE UI --- */
-.table-soccer {
+/* ---------- CAPSULE TABLE DESIGN & TRANSPARENCY FIX ---------- */
+.table-custom {
     border-collapse: separate;
     border-spacing: 0 12px;
     width: 100%;
+    background-color: transparent !important; /* Removes white table base */
 }
 
-.table-soccer thead th {
-    border: none;
+/* Ensure the table doesn't inherit background from Bootstrap */
+.table-custom :not(caption) > * > * {
+    background-color: transparent !important;
+    box-shadow: none !important;
+}
+
+/* Rounded Header */
+.table-custom thead tr {
+    background: var(--header-bg) !important;
+}
+.table-custom thead th {
+    border: none !important;
     color: var(--accent-cyan);
     text-transform: uppercase;
-    font-size: 0.75rem;
-    letter-spacing: 2px;
-    padding: 10px 15px;
+    font-size: .75rem;
+    letter-spacing: .1rem;
+    padding: 1.2rem 1rem;
     text-align: center;
 }
+.table-custom thead th:first-child { border-top-left-radius: 50px; border-bottom-left-radius: 50px; padding-left: 2rem; }
+.table-custom thead th:last-child { border-top-right-radius: 50px; border-bottom-right-radius: 50px; padding-right: 2rem; }
 
-.table-soccer thead th.team-header { text-align: left; padding-left: 2rem; }
-
-/* Capsule Row Styling */
+/* Capsule Rows */
 .soccer-row td {
-    background: var(--row-gradient);
-    border: none;
-    padding: 1.2rem 0.5rem;
+    background: var(--row-gradient) !important; /* The visible capsule color */
+    border: none !important;
+    padding: 1rem 0.5rem;
     color: white;
     text-align: center;
-    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
-    transition: transform 0.2s ease;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2) !important;
+}
+.soccer-row td:first-child { border-top-left-radius: 50px; border-bottom-left-radius: 50px; padding-left: 2rem; }
+.soccer-row td:last-child { border-top-right-radius: 50px; border-bottom-right-radius: 50px; padding-right: 2rem; }
+
+/* User "Me" Highlight */
+.leaderboard-you-row td {
+    background: tomato !important;
 }
 
-.soccer-row:hover td {
-    transform: scale(1.01);
+/* ---------- RANK BADGES ---------- */
+.rank-badge {
+    width: 32px; height: 32px;
+    display: inline-flex; align-items: center; justify-content: center;
+    border-radius: 50%; font-weight: 800; font-size: 0.85rem;
+}
+.rank-1 { background: linear-gradient(45deg, #FFD700, #FFF9C4); color: #000; box-shadow: 0 0 15px rgba(255,215,0,0.4); }
+.rank-2 { background: linear-gradient(45deg, #C0C0C0, #F5F5F5); color: #000; }
+.rank-3 { background: linear-gradient(45deg, #CD7F32, #FFE0B2); color: #000; }
+
+.status-badge {
+    padding: 4px 12px; border-radius: 50px; font-size: 0.65rem; font-weight: 700; text-transform: uppercase;
+    background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.1);
 }
 
-/* Highlight "ME" Row */
-.soccer-row.leaderboard-you-row td {
-    background: var(--me-gradient);
-    border-top: 1px solid var(--accent-cyan);
-    border-bottom: 1px solid var(--accent-cyan);
+/* ---------- UI GLASS ELEMENTS ---------- */
+.glass-card {
+    background: var(--glass-bg);
+    backdrop-filter: blur(14px);
+    border: 1px solid rgba(255,255,255,0.05);
+    border-radius: 1.5rem;
 }
 
-/* Pill Shapes */
-.soccer-row td:first-child {
-    border-top-left-radius: 50px;
-    border-bottom-left-radius: 50px;
-    padding-left: 2rem;
-    font-weight: 900;
-}
-
-.soccer-row td:last-child {
-    border-top-right-radius: 50px;
-    border-bottom-right-radius: 50px;
-    padding-right: 2rem;
-    font-weight: 900;
-}
-
-.team-cell { text-align: left !important; font-weight: 600 !important; }
-
-/* Status Badges */
-.table-badge {
-    font-size: 0.65rem;
-    padding: 5px 12px;
-    border-radius: 50px;
-    background: rgba(255,255,255,0.15);
-    border: 1px solid rgba(255,255,255,0.2);
-    font-weight: 700;
-}
-
-/* Pagination Styling */
-.page-link {
-    background: rgba(30, 41, 59, 0.8) !important;
-    border: 1px solid rgba(255,255,255,0.1) !important;
-    color: white !important;
-    border-radius: 8px;
-    margin: 0 3px;
-}
-.page-item.active .page-link {
-    background: var(--accent-cyan) !important;
-    color: #060b28 !important;
-    border-color: var(--accent-cyan) !important;
+.form-control-dark {
+    background: rgba(30, 41, 59, 0.6);
+    border: 1px solid rgba(255,255,255,0.1);
+    color: white;
 }
 </style>
 {% endblock %}
 
 {% block content %}
 <div class="container py-5">
-    
-    <div class="text-center mb-5">
-        <h1 class="display-4 fw-black text-white text-uppercase tracking-tighter mb-0">Soccer Cup Qualifications</h1>
-        <div class="d-inline-block px-4 py-1 bg-info bg-opacity-25 rounded-pill border border-info border-opacity-50">
-            <span class="text-info small fw-bold">SEASON 2024</span>
+    <div class="row align-items-center mb-5 gy-4">
+        <div class="col-md-6">
+            <div class="d-flex align-items-center gap-3">
+                <div class="p-3 bg-info bg-opacity-10 rounded-3 text-info">
+                    <i class="fas fa-trophy fs-3"></i>
+                </div>
+                <div>
+                    <h1 class="fw-black text-uppercase m-0">Quiz <span class="text-info">Leaderboard</span></h1>
+                    <p class="text-secondary small mb-0">Live academic rankings and performance</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="position-relative">
+                <i class="fas fa-search position-absolute top-50 start-0 translate-middle-y ms-3 text-secondary"></i>
+                <input id="studentSearch" class="form-control form-control-dark rounded-pill ps-5" placeholder="Search students by name...">
+            </div>
         </div>
     </div>
 
-    <div class="row justify-content-center g-4 mb-5" id="top-performers"></div>
+    <div class="row justify-content-center align-items-end g-4 mb-5" id="top-performers">
+    
+    </div>
 
-    <div class="glass-container">
+    <section class="glass-card mb-5 shadow-lg overflow-hidden p-4">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2 class="h6 fw-bold mb-0 text-uppercase tracking-wider">Overall Ranking</h2>
+            <div class="badge bg-info bg-opacity-10 text-info p-2">Academic Season 2026</div>
+        </div>
+
         <div class="table-responsive">
-            <table class="table table-soccer align-middle mb-0">
+            <table class="table table-custom align-middle mb-0">
                 <thead>
                     <tr>
-                        <th style="width: 80px;">No.</th>
-                        <th class="team-header">Student / Team</th>
+                        <th style="width: 80px;">Rank</th>
+                        <th class="text-start">Student</th>
                         <th>Points</th>
                         <th>Attempts</th>
                         <th>Status</th>
@@ -146,104 +151,138 @@ body {
                     </tbody>
             </table>
         </div>
-        
+
         <div class="mt-4 d-flex justify-content-between align-items-center">
-            <div id="pagination-controls"></div>
+            <span id="message" class="small text-secondary"></span>
+            <nav id="pagination-controls"></nav>
+        </div>
+    </section>
+
+    <div class="row g-4">
+        <div class="col-lg-4">
+            <div class="glass-card p-4">
+                <h6 class="fw-bold mb-3"><i class="fas fa-calendar-alt text-info me-2"></i>Date Range Filter</h6>
+                <div class="mb-2">
+                    <label class="x-small text-secondary">Start Date</label>
+                    <input type="date" id="startDate" class="form-control form-control-dark">
+                </div>
+                <div class="mb-3">
+                    <label class="x-small text-secondary">End Date</label>
+                    <input type="date" id="endDate" class="form-control form-control-dark">
+                </div>
+                <button id="filterBtn" class="btn btn-info w-100 fw-bold rounded-pill text-dark">Apply Filter</button>
+            </div>
+        </div>
+        <div class="col-lg-8">
+            <div class="glass-card overflow-hidden">
+                <div class="p-3 border-bottom border-white border-opacity-10">
+                    <h6 class="fw-bold mb-0"><i class="fas fa-bolt text-warning me-2"></i>Today's Top Performers</h6>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-custom mb-0">
+                        <tbody id="scorerTable">
+                            </tbody>
+                    </table>
+                </div>
+            </div>
         </div>
     </div>
 </div>
 {% endblock %}
 
 {% block body_js %}
+<script src="{% static 'Js/quickquiz/leaderboard.js' %}"></script>
+
 <script>
-document.addEventListener("DOMContentLoaded", function () {
-    const usersPerPage = 10;
-    let currentPage = 1;
-    let allLeaderboardUsers = []; 
-    let currentUserData = null; 
+document.addEventListener("DOMContentLoaded", () => {
+    const apiURL = "/api/top-scorers/";
+    const mainTableBody = document.getElementById("leaderboard-table-body");
+    const scorerTable = document.getElementById("scorerTable");
+    const message = document.getElementById("message");
+    const searchInput = document.getElementById("studentSearch");
 
-    // --- Helpers ---
-    function getStaticImageUrl(imageName) { return `/static/images/${imageName}`; }
+    let fullData = []; // Store data locally for search filtering
 
-    // --- API Fetching ---
-    const token = localStorage.getItem("access_token");
-    const phoneNumber = localStorage.getItem("phone_number");
-    let leaderboardUrl = "/api/practice/leaderboard/";
-    if (!token && phoneNumber) leaderboardUrl += `?phone_number=${encodeURIComponent(phoneNumber)}`;
+    // Core Render Function
+    function renderTable(data, targetContainer, isMainTable = true, meData = null) {
+        targetContainer.innerHTML = "";
+        
+        if (data.length === 0) {
+            targetContainer.innerHTML = `<tr><td colspan="5" class="text-center py-5">No records found.</td></tr>`;
+            return;
+        }
 
-    const headers = { "Content-Type": "application/json" };
-    if (token) headers["Authorization"] = `Bearer ${token}`;
-
-    fetch(leaderboardUrl, { method: "GET", headers: headers })
-        .then(res => res.json())
-        .then(data => {
-            if (data.top_10) {
-                allLeaderboardUsers = data.top_10;
-                currentUserData = data.me;
-                renderLeaderboardPage(currentPage, currentUserData);
-                setupPagination(allLeaderboardUsers.length);
-            }
-        })
-        .catch(err => console.error("Fetch Error:", err));
-
-    // --- Rendering Capsule UI ---
-    function renderLeaderboardPage(page, meData) {
-        const tableBody = document.getElementById("leaderboard-table-body");
-        if (!tableBody) return;
-        tableBody.innerHTML = ""; 
-
-        const start = (page - 1) * usersPerPage;
-        const slice = allLeaderboardUsers.slice(start, start + usersPerPage);
-
-        slice.forEach((user, index) => {
-            const actualRank = start + index + 1;
-            const isMe = (meData && String(user.username) === String(meData.username));
-            const profileImg = user.profile_image || getStaticImageUrl('user.png');
-
-            let badge = 'ACTIVE';
-            if (actualRank === 1) badge = 'TOP PERFORMER';
-            else if (actualRank === 2) badge = 'FAST LEARNER';
-            else if (actualRank === 3) badge = 'CONSISTENT';
+        data.forEach((user, index) => {
+            const rank = index + 1;
+            const isMe = (meData && user.username === meData.username);
+            
+            // Rank Badge Logic
+            let rankHtml = `<span class="rank-badge">${rank}</span>`;
+            if(rank === 1) rankHtml = `<span class="rank-badge rank-1"><i class="fas fa-crown"></i></span>`;
+            else if(rank === 2) rankHtml = `<span class="rank-badge rank-2">2</span>`;
+            else if(rank === 3) rankHtml = `<span class="rank-badge rank-3">3</span>`;
 
             const row = `
                 <tr class="soccer-row ${isMe ? 'leaderboard-you-row' : ''}">
-                    <td>${actualRank}.</td>
-                    <td class="team-cell">
+                    <td>${rankHtml}</td>
+                    <td class="text-start">
                         <div class="d-flex align-items-center gap-3">
-                            <img src="${profileImg}" class="rounded-circle border border-white border-opacity-25" style="width: 35px; height: 35px; object-fit: cover;">
-                            <span>${user.username} ${isMe ? '<span class="badge bg-light text-dark ms-2">YOU</span>' : ''}</span>
+                            <img src="${user.profile_image || '/static/images/user.png'}" 
+                                 class="rounded-circle border border-white" 
+                                 style="width:35px;height:35px;object-fit:cover;"
+                                 onerror="this.src='/static/images/user.png'">
+                            <span class="fw-bold">${user.username}</span>
                         </div>
                     </td>
-                    <td>${(user.points || 0).toLocaleString()}</td>
-                    <td>${user.attempts || '0'}</td>
-                    <td><span class="table-badge">${badge}</span></td>
-                </tr>`;
-            tableBody.insertAdjacentHTML('beforeend', row);
+                    <td class="fw-bold text-info">${(user.points || user.total_score || 0).toLocaleString()}</td>
+                    <td>${user.attempts || 0}</td>
+                    <td><span class="status-badge ">${rank <= 3 ? 'Elite' : 'Qualified'}</span></td>
+                </tr>
+            `;
+            targetContainer.insertAdjacentHTML('beforeend', row);
         });
     }
 
-    // --- Pagination Logic ---
-    function setupPagination(total) {
-        const navContainer = document.getElementById("pagination-controls");
-        const pages = Math.ceil(total / usersPerPage);
-        if (!navContainer || pages <= 1) return;
-
-        let paginationHtml = `<ul class="pagination mb-0">`;
-        for (let i = 1; i <= pages; i++) {
-            paginationHtml += `
-                <li class="page-item ${i === currentPage ? 'active' : ''}">
-                    <a class="page-link" href="#" onclick="changePage(${i})">${i}</a>
-                </li>`;
+    // Fetch and Load Data
+    async function fetchData(params = "") {
+        if(message) message.textContent = "Updating leaderboard...";
+        try {
+            const res = await fetch(`${apiURL}${params}`);
+            const data = await res.json();
+            
+            if (data.leaderboard) {
+                fullData = data.leaderboard;
+                // Render both tables
+                renderTable(fullData, mainTableBody, true, data.me);
+                renderTable(fullData.slice(0, 5), scorerTable, false, data.me);
+                if(message) message.textContent = `Showing ${fullData.length} students`;
+            }
+        } catch (e) {
+            console.error("Fetch error:", e);
+            if(message) message.textContent = "Error loading data.";
         }
-        paginationHtml += `</ul>`;
-        navContainer.innerHTML = paginationHtml;
     }
 
-    window.changePage = function(page) {
-        currentPage = page;
-        renderLeaderboardPage(currentPage, currentUserData);
-        setupPagination(allLeaderboardUsers.length);
-    };
+    // Search Logic
+    searchInput.addEventListener("input", (e) => {
+        const term = e.target.value.toLowerCase();
+        const filtered = fullData.filter(u => u.username.toLowerCase().includes(term));
+        renderTable(filtered, mainTableBody, true);
+    });
+
+    // Filter Logic
+    document.getElementById("filterBtn").addEventListener("click", () => {
+        const start = document.getElementById("startDate").value;
+        const end = document.getElementById("endDate").value;
+        if(start && end) {
+            fetchData(`?start_date=${start}&end_date=${end}`);
+        } else {
+            alert("Please select both dates");
+        }
+    });
+
+    // Initial Load
+    fetchData();
 });
 </script>
 {% endblock %}

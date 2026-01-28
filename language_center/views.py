@@ -97,18 +97,34 @@ class WordSearchAPIView(APIView):
         serializer = WordListSerializer(words, many=True)
         return Response(serializer.data)
 
+
 import re
 import pandas as pd
 
-def extract_quoted_sentences(text):
+def extract_multi_values(text):
     """
-    Extract sentences wrapped in double quotes.
-    Example:
-    '"This is one." "This is two."' → ["This is one.", "This is two."]
+    Extract comma-separated words.
+    Quotes are ignored completely.
+
+    Examples:
+    add, apply
+    "add, apply"
+    "add","apply"
     """
     if pd.isna(text):
         return []
-    return re.findall(r'"(.*?)"', str(text))
+
+    # Remove quotes
+    text = re.sub(r'["\']', '', str(text))
+
+    # Split by comma
+    return [
+        item.strip()
+        for item in text.split(',')
+        if item.strip()
+    ]
+
+
 
 
 class DictionaryExcelUploadAPIView(APIView):
@@ -120,14 +136,10 @@ class DictionaryExcelUploadAPIView(APIView):
 
         df = pd.read_excel(serializer.validated_data["file"])
 
-        # 🔒 FIX LANGUAGE CONTEXT FROM URL
         try:
             language = Language.objects.get(id=language_id)
         except Language.DoesNotExist:
-            return Response(
-                {"detail": "Invalid language ID"},
-                status=400
-            )
+            return Response({"detail": "Invalid language ID"}, status=400)
 
         bn_language, _ = Language.objects.get_or_create(
             code="BN", defaults={"name": "Bangla"}
@@ -140,13 +152,13 @@ class DictionaryExcelUploadAPIView(APIView):
             try:
                 # ---------- PART OF SPEECH ----------
                 pos, _ = PartOfSpeech.objects.get_or_create(
-                    name=str(row["pos"]).lower()
+                    name=str(row["pos"]).lower().strip()
                 )
 
                 # ---------- WORD ----------
                 word, _ = Word.objects.get_or_create(
                     language=language,
-                    text=str(row["word"]).lower(),
+                    text=str(row["word"]).lower().strip(),
                     part_of_speech=pos,
                     defaults={
                         "phonetic_uk": row.get("phonetic_uk", ""),
@@ -157,7 +169,7 @@ class DictionaryExcelUploadAPIView(APIView):
                 # ---------- SENSE ----------
                 sense, created = Sense.objects.get_or_create(
                     word=word,
-                    short_definition=row["short_definition"]
+                    short_definition=str(row["short_definition"]).strip()
                 )
                 if created:
                     created_senses += 1
@@ -173,23 +185,23 @@ class DictionaryExcelUploadAPIView(APIView):
                 # ---------- DEFINITIONS ----------
                 Definition.objects.get_or_create(
                     sense=sense,
-                    definition_text=row["short_definition"]
+                    definition_text=str(row["short_definition"]).strip()
                 )
 
-                # ---------- EXAMPLES (MULTIPLE IN QUOTES) ----------
-                examples = extract_quoted_sentences(row.get("examples"))
-                bn_examples = extract_quoted_sentences(row.get("example_bn"))
+                # ---------- EXAMPLES ----------
+                examples = extract_multi_values(row.get("examples"))
+                bn_examples = extract_multi_values(row.get("example_bn"))
 
                 for idx, ex in enumerate(examples):
                     ex_obj, _ = ExampleSentence.objects.get_or_create(
                         sense=sense,
-                        sentence=ex.strip()
+                        sentence=ex
                     )
                     if idx < len(bn_examples):
                         ExampleTranslation.objects.get_or_create(
                             example=ex_obj,
                             language=bn_language,
-                            defaults={"translated_text": bn_examples[idx].strip()}
+                            defaults={"translated_text": bn_examples[idx]}
                         )
 
                 # ---------- WORD FORMS ----------
@@ -203,31 +215,21 @@ class DictionaryExcelUploadAPIView(APIView):
                                 label=label.strip()
                             )
 
-                # ---------- SYNONYMS ----------
+                # ---------- SYNONYMS (TEXT FIELD) ----------
                 if pd.notna(row.get("synonyms")):
-                    for s in str(row["synonyms"]).split(";"):
-                        syn_word, _ = Word.objects.get_or_create(
-                            language=language,
-                            text=s.strip().lower(),
-                            part_of_speech=pos
-                        )
-                        Synonym.objects.get_or_create(
-                            sense=sense,
-                            word=syn_word
-                        )
+                    new_synonyms = extract_multi_values(row["synonyms"])
+                    existing = sense.get_synonyms_list()
+                    merged = sorted(set(existing + new_synonyms))
+                    sense.synonyms = ", ".join(merged)
 
-                # ---------- ANTONYMS ----------
+                # ---------- ANTONYMS (TEXT FIELD) ----------
                 if pd.notna(row.get("antonyms")):
-                    for a in str(row["antonyms"]).split(";"):
-                        ant_word, _ = Word.objects.get_or_create(
-                            language=language,
-                            text=a.strip().lower(),
-                            part_of_speech=pos
-                        )
-                        Antonym.objects.get_or_create(
-                            sense=sense,
-                            word=ant_word
-                        )
+                    new_antonyms = extract_multi_values(row["antonyms"])
+                    existing = sense.get_antonyms_list()
+                    merged = sorted(set(existing + new_antonyms))
+                    sense.antonyms = ", ".join(merged)
+
+                sense.save()
 
             except Exception as e:
                 errors.append({
@@ -240,3 +242,4 @@ class DictionaryExcelUploadAPIView(APIView):
             "created_senses": created_senses,
             "errors": errors
         })
+

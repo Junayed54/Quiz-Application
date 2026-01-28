@@ -206,9 +206,29 @@ async function fetchDetails(id) {
                 ` : ''}
 
                 <div class="row g-2">
-                    ${s.synonyms?.length ? `<div class="col-6"><span class="section-label">Synonyms</span>${s.synonyms.map(syn => `<span class="tag-item">${syn.word.text}</span>`).join('')}</div>` : ''}
-                    ${s.antonyms?.length ? `<div class="col-6"><span class="section-label">Antonyms</span>${s.antonyms.map(ant => `<span class="tag-item">${ant.word.text}</span>`).join('')}</div>` : ''}
+                    ${s.synonyms?.length ? `
+                        <div class="col-6">
+                            <span class="section-label">Synonyms</span>
+                            ${s.synonyms.map(syn => `
+                                <span class="tag-item" onclick="handleSearchSelect(null, '${syn}')">
+                                    ${syn}
+                                </span>
+                            `).join('')}
+                        </div>
+                    ` : ''}
+
+                    ${s.antonyms?.length ? `
+                        <div class="col-6">
+                            <span class="section-label">Antonyms</span>
+                            ${s.antonyms.map(ant => `
+                                <span class="tag-item" onclick="handleSearchSelect(null, '${ant}')">
+                                    ${ant}
+                                </span>
+                            `).join('')}
+                        </div>
+                    ` : ''}
                 </div>
+
             </div>
         `).join('');
 

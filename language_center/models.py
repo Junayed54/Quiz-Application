@@ -73,6 +73,23 @@ class Sense(models.Model):
     short_definition = models.TextField()
     usage_note = models.TextField(blank=True)  # formal, informal, etc.
 
+    # NEW: comma-separated text
+    synonyms = models.TextField(
+        blank=True,
+        help_text="Comma separated synonyms (e.g. add, connect, join)"
+    )
+    antonyms = models.TextField(
+        blank=True,
+        help_text="Comma separated antonyms (e.g. remove, subtract)"
+    )
+    
+    def get_synonyms_list(self):
+        return [s.strip() for s in self.synonyms.split(",") if s.strip()]
+
+    def get_antonyms_list(self):
+        return [a.strip() for a in self.antonyms.split(",") if a.strip()]
+    
+    
     def __str__(self):
         return self.short_definition
 
@@ -150,45 +167,45 @@ class ExampleTranslation(models.Model):
         return self.translated_text
 
 
-class Synonym(models.Model):
-    sense = models.ForeignKey(
-        Sense,
-        on_delete=models.CASCADE,
-        related_name="synonyms"
-    )
+# class Synonym(models.Model):
+#     sense = models.ForeignKey(
+#         Sense,
+#         on_delete=models.CASCADE,
+#         related_name="synonyms"
+#     )
     
-    word = models.ForeignKey(
-        Word,
-        on_delete=models.CASCADE,
-        related_name="as_synonym"
-    )
+#     word = models.ForeignKey(
+#         Word,
+#         on_delete=models.CASCADE,
+#         related_name="as_synonym"
+#     )
 
 
-    class Meta:
-        unique_together = ("sense", "word")
+#     class Meta:
+#         unique_together = ("sense", "word")
 
-    def __str__(self):
-        return self.word.text
-
-
-class Antonym(models.Model):
-    sense = models.ForeignKey(
-        Sense,
-        on_delete=models.CASCADE,
-        related_name="antonyms"
-    )
-    word = models.ForeignKey(
-        Word,
-        on_delete=models.CASCADE,
-        related_name="as_antonym"
-    )
+#     def __str__(self):
+#         return self.word.text
 
 
-    class Meta:
-        unique_together = ("sense", "word")
+# class Antonym(models.Model):
+#     sense = models.ForeignKey(
+#         Sense,
+#         on_delete=models.CASCADE,
+#         related_name="antonyms"
+#     )
+#     word = models.ForeignKey(
+#         Word,
+#         on_delete=models.CASCADE,
+#         related_name="as_antonym"
+#     )
 
-    def __str__(self):
-        return self.word.text
+
+    # class Meta:
+    #     unique_together = ("sense", "word")
+
+    # def __str__(self):
+    #     return self.word.text
 
 
 class WordForm(models.Model):
