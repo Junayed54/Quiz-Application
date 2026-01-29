@@ -69,61 +69,75 @@
       return new Date(dateString).toLocaleDateString('bn-BD', options);
     }
 
-    // Fetch and display news
     async function fetchNews() {
       try {
-        const response = await fetch('/api/news/', {
+        const response = await fetch('/api/news/?today=true', {
           headers: { 'Accept': 'application/json' }
         });
+
         if (!response.ok) {
           throw new Error(`HTTP error! Status: ${response.status}`);
         }
-        const newsData = await response.json();
 
-        // Filter news for today
-        const today = new Date();
-        const todayUTC = new Date(Date.UTC(today.getFullYear(), today.getMonth(), today.getDate()));
-        const todayNews = newsData.filter(news => {
-          const publishedDate = new Date(news.published_date);
-          const publishedDateUTC = new Date(Date.UTC(publishedDate.getFullYear(), publishedDate.getMonth(), publishedDate.getDate()));
-          return publishedDateUTC.getTime() === todayUTC.getTime();
+        const data = await response.json();
+        console.log("API Response:", data);
+
+        // ✅ FIX: paginated results
+        const newsList = data.results || [];
+
+        if (newsList.length === 0) {
+          noNewsMessage.classList.remove('d-none');
+          return;
+        }
+
+        let isFirstItem = true;
+
+        newsList.forEach(news => {
+          const carouselItem = document.createElement('div');
+          carouselItem.className = `carousel-item${isFirstItem ? ' active' : ''}`;
+
+          const imageUrl =
+            news.images && news.images.length > 0
+              ? news.images[0].image_url
+              : '/assets/images/default-news.png';
+
+          carouselItem.innerHTML = `
+            <div class="d-flex flex-column flex-md-row justify-content-center text-center text-md-start">
+              <img 
+                src="${imageUrl}" 
+                class="d-block img-fluid me-md-4 mb-3 mb-md-0"
+                style="max-height: 250px; object-fit: cover; border-radius: 8px;"
+                alt="${news.title}"
+              >
+              <div class="news-content">
+                <h5 class="fw-bold mb-3">${news.title}</h5>
+                <p class="text-muted mb-2">
+                  <small>প্রকাশের তারিখ: ${formatDate(news.published_date)}</small>
+                </p>
+                <div class="text-secondary">
+                  ${news.content.substring(0, 250)}...
+                </div>
+                <a href="/news/details/${news.id}" class="btn btn-custom mt-2">
+                  আরও পড়ুন
+                </a>
+              </div>
+            </div>
+          `;
+
+          newsCarouselInner.appendChild(carouselItem);
+          isFirstItem = false;
         });
 
-        if (todayNews.length > 0) {
-          let isFirstItem = true;
-          todayNews.forEach(news => {
-            const carouselItem = document.createElement('div');
-            carouselItem.className = `carousel-item${isFirstItem ? ' active' : ''}`;
-
-            const imageUrl = news.images?.length > 0 ? news.images[0].image_url : '/assets/images/default-news.png';
-
-            carouselItem.innerHTML = `
-              <div class="d-flex flex-column flex-md-row  justify-content-center text-center text-md-start" style="background-color: transparent;">
-                <img src="${imageUrl}" class="d-block img-fluid me-md-4 mb-3 mb-md-0" style="max-height: 250px; object-fit: cover; border-radius: 8px;" alt="${news.title}">
-                <div class="news-content" >
-                  <h5 class="fw-bold mb-3">${news.title}</h5>
-                  <p class="text-muted mb-2"><small>প্রকাশের তারিখ: ${formatDate(news.published_date)}</small></p>
-                  <p class="text-secondary">${news.content.substring(0, 250)}...</p>
-                  <a href="/news/details/${news.id}" class="btn btn-custom mt-2">আরও পড়ুন</a>
-                </div>
-              </div>
-            `;
-            newsCarouselInner.appendChild(carouselItem);
-            isFirstItem = false;
+        // Initialize Bootstrap carousel
+        const newsCarousel = document.getElementById('newsCarousel');
+        if (newsCarousel) {
+          new bootstrap.Carousel(newsCarousel, {
+            interval: 5000,
+            pause: 'hover',
+            wrap: true
           });
-
-          // Initialize Bootstrap carousel
-          const newsCarousel = document.getElementById('newsCarousel');
-          if (newsCarousel) {
-            new bootstrap.Carousel(newsCarousel, {
-              interval: 5000,
-              pause: 'hover',
-              wrap: true
-            });
-          }
-        } else {
-          noNewsMessage.classList.remove('d-none');
         }
+
       } catch (error) {
         console.error('Error fetching news:', error);
         noNewsMessage.classList.remove('d-none');

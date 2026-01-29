@@ -133,32 +133,28 @@ class NewsViewSet(viewsets.ModelViewSet):
     pagination_class = NewsPagination
     
     def get_queryset(self):
-        # 1. Start with the base queryset, ordered by creation date
-        queryset = News.objects.all().order_by("-created_at")
+        base_queryset = News.objects.all().order_by("-created_at")
 
-        user = self.request.user
-        
-        # --- Standard User Role Filtering ---
-        # if user.is_authenticated:
-        #     if user.role in ["teacher", "admin"]:
-        #         # If the user is a teacher/admin, show only their news (or the admin's view)
-        #         queryset = queryset.filter(author=user)
-        # -----------------------------------
-        
-        # 2. Check for the 'category_id' query parameter
-        category_id = self.request.query_params.get('category_id')
+        today = self.request.query_params.get('today')
+        if today == 'true':
+            start = timezone.localtime().replace(
+                hour=0, minute=0, second=0, microsecond=0
+            )
+            end = start + timedelta(days=1)
 
-        if category_id:
-            try:
-                # Filter the queryset if category_id is provided
-                # Assuming your News model has a ForeignKey called 'category' to a Category model
-                queryset = queryset.filter(category_id=category_id)
-            except ValueError:
-                # Handle cases where category_id is not a valid integer if needed
-                pass
+            today_news = base_queryset.filter(
+                published_date__gte=start,
+                published_date__lt=end
+            )
 
-        # 3. Return the final filtered queryset
-        return queryset
+            # ✅ If today has news → return them
+            if today_news.exists():
+                return today_news
+
+            # ✅ Else → return last 10 news
+            return base_queryset[:10]
+
+        return base_queryset
 
 # The URL for filtering would be: /api/news/?category_id=5
     

@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>পরীক্ষা ও চাকরির প্রস্তুতি | Jobs Academy</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Hind+Siliguri:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+
+    <style>
+        :root {
+            --primary-color: #0d6efd;
+            --dark-navy: #1e293b;
+            --glass-bg: rgba(255, 255, 255, 0.9);
+            --bg-light: #f8fafc;
+        }
+
+        body {
+            font-family: 'Inter', 'Hind Siliguri', sans-serif;
+            background-color: var(--bg-light);
+            color: var(--dark-navy);
+            overflow-x: hidden;
+        }
+
+        /* Modern Navbar */
+        .navbar {
+            background: var(--glass-bg);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(0,0,0,0.05);
+            padding: 0.8rem 0;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .nav-link {
+            font-weight: 600;
+            color: var(--dark-navy) !important;
+            padding: 8px 16px !important;
+            transition: all 0.3s ease;
+            border-radius: 8px;
+        }
+
+        .nav-link:hover, .active-link {
+            color: var(--primary-color) !important;
+            background: rgba(13, 110, 253, 0.05);
+        }
+
+        /* Glassmorphism Cards */
+        .feature-card {
+            background: #ffffff;
+            border: 1px solid rgba(0,0,0,0.05);
+            border-radius: 20px;
+            padding: 2rem;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            height: 100%;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.08);
+        }
+
+        /* Hero Section Styling */
+        .hero-section {
+            padding: 80px 0;
+            background: linear-gradient(135deg, #f0f7ff 0%, #ffffff 100%);
+        }
+
+        .btn-modern {
+            padding: 12px 30px;
+            border-radius: 12px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .btn-primary-modern {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            box-shadow: 0 4px 14px rgba(13, 110, 253, 0.39);
+        }
+
+        .btn-primary-modern:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(13, 110, 253, 0.23);
+        }
+
+        /* Dynamic Mobile Nav */
+        .mobile-bottom-nav {
+            box-shadow: 0 -5px 20px rgba(0,0,0,0.05);
+            border-radius: 20px 20px 0 0;
+        }
+
+        .mobile-tab {
+            color: #64748b;
+            font-size: 0.75rem;
+            transition: 0.3s;
+        }
+
+        .mobile-tab.active-tab {
+            color: var(--primary-color);
+        }
+
+        /* Custom Dropdown Animation */
+        .dropdown-menu {
+            border: none;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            border-radius: 15px;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @media (max-width: 992px) {
+            .hero-section { text-align: center; padding: 40px 0; }
+            .navbar-collapse {
+                background: white;
+                padding: 20px;
+                border-radius: 15px;
+                margin-top: 10px;
+                box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+            }
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <nav class="navbar navbar-expand-lg">
+        <div class="container">
+            <a class="navbar-brand" href="/">
+                <img src="/static/images/jobs_academy5.png" alt="Logo" height="50">
+            </a>
+
+            <div class="d-flex align-items-center order-lg-3">
+                <div class="dropdown">
+                    <a href="#" class="d-flex align-items-center text-decoration-none dropdown-toggle" data-bs-toggle="dropdown">
+                        <img src="https://ui-avatars.com/api/?name=User&background=0D6EFD&color=fff" class="rounded-circle" width="40" height="40">
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-end p-3">
+                        <li><a class="dropdown-item rounded-3" href="/login/">লগইন</a></li>
+                        <li><a class="dropdown-item rounded-3" href="/user/profile/">প্রোফাইল</a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item text-danger" href="#">লগ আউট</a></li>
+                    </ul>
+                </div>
+                <button class="navbar-toggler ms-2 border-0" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+            </div>
+
+            <div class="collapse navbar-collapse justify-content-center" id="mainNav">
+                <ul class="navbar-nav gap-2">
+                    <li class="nav-item"><a class="nav-link" href="/">হোম</a></li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">প্রশ্ন</a>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="/past_exams/">বিগত বছরের পরীক্ষা</a></li>
+                            <li><a class="dropdown-item" href="/model-tests/">মডেল টেস্ট</a></li>
+                        </ul>
+                    </li>
+                    <li class="nav-item"><a class="nav-link" href="/quiz-games/">কুইজ</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/job-circular/">প্রজ্ঞাপন</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/news/1/">নিউজ</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+</header>
+
+<main>
+    <section class="hero-section">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-lg-6 mb-5 mb-lg-0">
+                    <span class="badge bg-primary-subtle text-primary px-3 py-2 rounded-pill mb-3">Best Job Prep Platform</span>
+                    <h1 class="display-5 fw-bold mb-4">আপনার ক্যারিয়ার গড়ার <span class="text-primary">নির্ভরযোগ্য সঙ্গী</span></h1>
+                    <p class="lead text-secondary mb-4">Jobs Academy-তে শিক্ষক নিবন্ধন, প্রাথমিক, ব্যাংক ও BCS সহ সকল সরকারি চাকরির জন্য পূর্ণ প্রস্তুতি নিন একদম সহজ নিয়মে।</p>
+                    <div class="d-flex gap-3 justify-content-center justify-content-lg-start">
+                        <a href="/model-tests/" class="btn btn-modern btn-primary-modern">শুরু করুন</a>
+                        <a href="/about-us/" class="btn btn-modern btn-outline-dark">আরও জানুন</a>
+                    </div>
+                </div>
+                <div class="col-lg-6">
+                    <script src="https://unpkg.com/@dotlottie/player-component@latest/dist/dotlottie-player.mjs" type="module"></script>
+                    <dotlottie-player src="https://lottie.host/cee2ad16-dfca-4923-a081-9703e3ce9aa7/Tt3ids5KIP.lottie" background="transparent" speed="1" style="width: 100%; height: auto;" loop autoplay></dotlottie-player>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="py-5">
+        <div class="container">
+            <div class="text-center mb-5">
+                <h2 class="fw-bold">আমাদের বিশেষত্বসমূহ</h2>
+                <div class="mx-auto bg-primary rounded" style="width: 60px; height: 4px;"></div>
+            </div>
+            <div class="row g-4">
+                <div class="col-md-4">
+                    <div class="feature-card text-center">
+                        <div class="icon-box mb-3 text-primary fs-1"><i class="fas fa-layer-group"></i></div>
+                        <h4 class="fw-bold">বিগত বছরের প্রশ্ন</h4>
+                        <p class="text-muted">বিগত ২০ বছরের সকল চাকুরীর পরীক্ষার প্রশ্নের নির্ভুল সমাধান ও ব্যাখ্যা পান এখানে।</p>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="feature-card text-center">
+                        <div class="icon-box mb-3 text-success fs-1"><i class="fas fa-chart-line"></i></div>
+                        <h4 class="fw-bold">লাইভ লিডারবোর্ড</h4>
+                        <p class="text-muted">সারাদেশের হাজারো পরীক্ষার্থীদের মাঝে আপনার বর্তমান অবস্থান যাচাই করুন রিয়েল-টাইমে।</p>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="feature-card text-center">
+                        <div class="icon-box mb-3 text-warning fs-1"><i class="fas fa-book-open"></i></div>
+                        <h4 class="fw-bold">স্টাডি ম্যাটেরিয়াল</h4>
+                        <p class="text-muted">সহজে বোধগম্য লেকচার শিট এবং পিডিএফ নোটস সংগ্রহ করুন আপনার প্রস্তুতির জন্য।</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+</main>
+
+<footer class="bg-dark text-white pt-5 pb-4 mt-5">
+    <div class="container">
+        <div class="row gy-4">
+            <div class="col-lg-4">
+                <h4 class="fw-bold mb-4">Jobs Academy</h4>
+                <p class="text-secondary small">আমরা আধুনিক প্রযুক্তির মাধ্যমে আপনার চাকরির প্রস্তুতিকে করছি আরও সহজ এবং কার্যকর। আজই আমাদের সাথে যুক্ত হয়ে আপনার লক্ষ্য অর্জন করুন।</p>
+                <div class="social-links mt-4">
+                    <a href="#" class="btn btn-outline-light btn-sm rounded-circle me-2"><i class="fab fa-facebook-f"></i></a>
+                    <a href="#" class="btn btn-outline-light btn-sm rounded-circle me-2"><i class="fab fa-twitter"></i></a>
+                    <a href="#" class="btn btn-outline-light btn-sm rounded-circle"><i class="fab fa-linkedin-in"></i></a>
+                </div>
+            </div>
+            <div class="col-lg-2 offset-lg-1">
+                <h6 class="fw-bold mb-4">লিংকসমূহ</h6>
+                <ul class="list-unstyled">
+                    <li><a href="#" class="text-secondary text-decoration-none small mb-2 d-block">মডেল টেস্ট</a></li>
+                    <li><a href="#" class="text-secondary text-decoration-none small mb-2 d-block">প্রাইভেসি পলিসি</a></li>
+                    <li><a href="#" class="text-secondary text-decoration-none small d-block">যোগাযোগ</a></li>
+                </ul>
+            </div>
+            <div class="col-lg-4">
+                <h6 class="fw-bold mb-4">নিউজলেটার</h6>
+                <div class="input-group mb-3">
+                    <input type="text" class="form-control border-0" placeholder="আপনার ইমেইল">
+                    <button class="btn btn-primary" type="button">সাবস্ক্রাইব</button>
+                </div>
+            </div>
+        </div>
+        <hr class="mt-5 border-secondary">
+        <div class="text-center text-secondary small">
+            &copy; 2026 Jobs Academy. All rights reserved.
+        </div>
+    </div>
+</footer>
+
+<div class="mobile-bottom-nav d-md-none fixed-bottom bg-white py-2">
+    <div class="d-flex justify-content-around text-center">
+        <a href="/" class="mobile-tab text-decoration-none active-tab">
+            <i class="fas fa-home d-block fs-5"></i>
+            <span>হোম</span>
+        </a>
+        <a href="/past_exams/" class="mobile-tab text-decoration-none">
+            <i class="fas fa-book d-block fs-5"></i>
+            <span>প্রশ্নব্যাংক</span>
+        </a>
+        <a href="/quiz-games/" class="mobile-tab text-decoration-none">
+            <i class="fas fa-trophy d-block fs-5"></i>
+            <span>কুইজ</span>
+        </a>
+        <a href="/news/1/" class="mobile-tab text-decoration-none">
+            <i class="fas fa-newspaper d-block fs-5"></i>
+            <span>নিউজ</span>
+        </a>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
