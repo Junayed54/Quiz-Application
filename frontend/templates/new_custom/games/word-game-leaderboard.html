@@ -1,7 +1,7 @@
 {% extends 'new_custom/new_templates/index2.html' %}
 {% load static %}
 
-{% block title %}Leaderboard - Transparent Design{% endblock %}
+{% block title %}Leaderboard - Colored Columns{% endblock %}
 
 {% block style %}
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -9,166 +9,93 @@
 <style>
 :root {
     --bg-body: #0b1220;
-    --card-bg: rgba(17, 24, 39, 0.8); /* Semi-transparent card */
-    --table-bg: rgba(15, 23, 42, 0.4); /* Transparent table base */
-    --accent-indigo: #6366f1;
-    --text-main: #f8fafc;
+    --card-bg: rgba(255, 255, 255, 0.04);
+    --text-main: #ffffff;
     --text-soft: #94a3b8;
-    --border-color: rgba(255, 255, 255, 0.1); /* Subtle white border */
+    --border-color: rgba(255, 255, 255, 0.1);
 }
 
 body { 
-    background: radial-gradient(circle at top right, #1e1b4b, #0b1220); /* Gradient background for transparency effect */
+    background: radial-gradient(circle at top right, #1e1b4b, #0b1220, #020617);
     color: var(--text-main); 
     font-family: 'Inter', sans-serif; 
     min-height: 100vh;
 }
 
-/* --- MOBILE TOP FILTER --- */
+/* --- GAME SELECTION --- */
 #mobileGameFilter { display: none; }
-
 @media (max-width: 768px) {
     #mobileGameFilter { display: block; }
-    .game-selection-column {
-        display: flex;
-        gap: 10px;
-        overflow-x: auto;
-        padding-bottom: 15px;
-        scrollbar-width: none;
-    }
+    .game-selection-column { display: flex; overflow-x: auto; padding: 10px 0 20px 0; }
     .game-item {
-        background: rgba(30, 41, 59, 0.6);
-        border: 1px solid var(--border-color);
-        color: var(--text-soft);
-        padding: 10px 18px;
-        border-radius: 10px;
-        white-space: nowrap;
-        backdrop-filter: blur(5px);
+        background: rgba(255, 255, 255, 0.05); border: 1px solid var(--border-color);
+        color: var(--text-soft); padding: 10px 20px; border-radius: 12px;
+        backdrop-filter: blur(10px); cursor: pointer; white-space: nowrap;
     }
-    .game-item.active {
-        background: var(--accent-indigo);
-        color: white;
-    }
+    .game-item.active { background: #6366f1; color: white; }
 }
 
-/* --- TRANSPARENT TABLE DESIGN --- */
+/* --- LEADERBOARD CARD --- */
 .leaderboard-card {
-    background: var(--card-bg);
-    border-radius: 20px;
-    padding: 1.5rem;
-    backdrop-filter: blur(10px); /* Frosted glass effect */
-    border: 1px solid var(--border-color);
+    background: var(--card-bg); border-radius: 24px; padding: 1.5rem;
+    backdrop-filter: blur(20px); border: 1px solid var(--border-color);
 }
 
 .table-responsive {
-    border-radius: 12px;
-    border: 1px solid var(--border-color);
-    background: transparent; /* Full transparency */
+    border-radius: 16px; border: 1px solid var(--border-color);
+    background: rgba(0, 0, 0, 0.3);
 }
 
-.table { 
-    color: var(--text-main); 
-    margin-bottom: 0; 
-    background: transparent !important; 
+/* STICKY PLAYER NAME (Kept dark for contrast) */
+.sticky-rank {
+    position: sticky; left: 0; width: 60px;
+    background: #0f172a !important; z-index: 10; text-align: center;
 }
 
-/* Header Transparency */
-.table thead th {
-    background: rgba(255, 255, 255, 0.05) !important;
-    border-bottom: 1px solid var(--border-color);
-    color: var(--accent-indigo);
-    backdrop-filter: blur(5px);
+.sticky-user {
+    position: sticky; left: 60px; width: 150px;
+    background: #0f172a !important; z-index: 10;
+    color: #ffffff !important; font-weight: 700 !important;
+    border-right: 2px solid var(--border-color) !important;
 }
 
-/* Row Transparency */
-.table tbody tr {
-    background: transparent;
-    transition: background 0.3s ease;
+/* --- COLUMN BACKGROUND STYLING --- */
+.table td, .table th {
+    padding: 1rem 0.75rem;
+    vertical-align: middle;
+    border: none;
 }
 
-.table tbody tr:hover {
-    background: rgba(255, 255, 255, 0.03);
-}
-
-/* STICKY COLUMNS WITH TRANSPARENCY */
-/* We use a solid-ish RGBA so the text underneath doesn't overlap while scrolling */
-.sticky-rank { 
-    position: sticky; 
-    left: 0; 
-    width: 60px; 
-    background: rgba(15, 23, 42, 0.9) !important; 
-    z-index: 5; 
-    text-align: center;
-    backdrop-filter: blur(10px);
-}
-
-.sticky-user { 
-    position: sticky; 
-    left: 60px; 
-    width: 150px; 
-    background: rgba(15, 23, 42, 0.9) !important; 
-    z-index: 5; 
-    border-right: 1px solid var(--border-color);
-    backdrop-filter: blur(10px);
-}
-
-/* Misc UI */
-.rank-circle {
-    width: 28px; height: 28px; line-height: 28px; border-radius: 50%;
-    font-weight: 800; display: inline-block; font-size: 0.8rem;
-}
-.rank-1 { background: #fbbf24; color: #000; box-shadow: 0 0 10px rgba(251, 191, 36, 0.4); }
-
-.filter-panel {
-    background: rgba(0, 0, 0, 0.2);
-    border: 1px solid var(--border-color);
+.total-score-cell {
+    background: rgba(45, 212, 191, 0.1) !important; /* Teal background for total */
+    color: #2dd4bf !important;
+    font-weight: 800;
 }
 </style>
 {% endblock %}
 
 {% block content %}
 <div class="container my-4">
-    
     <div id="mobileGameFilter" class="mb-3">
-        <label class="small text-soft fw-bold mb-2">GAMES</label>
-        <div class="game-selection-column" id="gameListContainer">
-            <div class="text-soft small">Loading games...</div>
-        </div>
+        <label class="small text-soft fw-bold mb-2">SELECT GAME</label>
+        <div class="game-selection-column" id="gameListContainer"></div>
     </div>
 
     <div class="leaderboard-card">
-        <div class="d-flex justify-content-between align-items-center mb-3">
-            <h4 class="fw-bold mb-0" id="displayGameTitle">Leaderboard</h4>
-            <div id="loader" class="spinner-border spinner-border-sm text-light d-none"></div>
-        </div>
+        <h4 class="fw-bold mb-4" id="displayGameTitle">Leaderboard</h4>
 
-        <div class="filter-panel mb-4 p-3 rounded shadow-sm">
-            <div class="row g-2">
-                <div class="col-6 col-md-4">
-                    <input type="date" id="fromDate" class="form-control form-control-sm bg-transparent text-white border-secondary">
-                </div>
-                <div class="col-6 col-md-4">
-                    <input type="date" id="toDate" class="form-control form-control-sm bg-transparent text-white border-secondary">
-                </div>
-                <div class="col-12 col-md-4">
-                    <button id="filterBtn" class="btn btn-sm btn-primary w-100 fw-bold">Update</button>
-                </div>
-            </div>
+        <div class="row g-3 mb-4 align-items-end">
+            <div class="col-5"><input type="date" id="fromDate" class="form-control bg-dark text-white border-secondary"></div>
+            <div class="col-5"><input type="date" id="toDate" class="form-control bg-dark text-white border-secondary"></div>
+            <div class="col-2"><button id="filterBtn" class="btn btn-primary w-100">Apply</button></div>
         </div>
 
         <div class="table-responsive">
-            <table class="table" id="leaderboardTable">
+            <table class="table d-none" id="leaderboardTable">
                 <thead id="tableHead"></thead>
                 <tbody id="tableBody"></tbody>
             </table>
-        </div>
-
-        <div class="d-flex justify-content-between align-items-center mt-4">
-            <span class="text-soft small" id="pageDisplay"></span>
-            <div class="btn-group">
-                <button id="prevPage" class="btn btn-sm btn-outline-secondary px-3" disabled>Prev</button>
-                <button id="nextPage" class="btn btn-sm btn-outline-secondary px-3" disabled>Next</button>
-            </div>
+            <div id="initialState" class="p-5 text-center text-soft">Select dates to load leaderboard.</div>
         </div>
     </div>
 </div>
@@ -176,107 +103,79 @@ body {
 
 {% block body_js %}
 <script>
-let currentPage = 1;
+// These colors will be used for the column backgrounds (low opacity)
+const columnBgColors = [
+    'rgba(251, 191, 36, 0.15)', // Amber
+    'rgba(244, 114, 182, 0.15)', // Pink
+    'rgba(52, 211, 153, 0.15)', // Emerald
+    'rgba(96, 165, 250, 0.15)', // Blue
+    'rgba(167, 139, 250, 0.15)'  // Violet
+];
+
+// Matching text colors for the headers
+const columnTextColors = ['#fbbf24', '#f472b6', '#34d399', '#60a5fa', '#a78bfa'];
+
 let selectedGameId = null;
 
 document.addEventListener("DOMContentLoaded", () => {
     loadGames();
-
-    document.getElementById("filterBtn").addEventListener("click", () => {
-        currentPage = 1;
-        fetchLeaderboard();
-    });
-
-    document.getElementById("prevPage").addEventListener("click", () => {
-        if (currentPage > 1) { currentPage--; fetchLeaderboard(); }
-    });
-
-    document.getElementById("nextPage").addEventListener("click", () => {
-        currentPage++; fetchLeaderboard();
-    });
+    document.getElementById("filterBtn").addEventListener("click", fetchLeaderboard);
 });
 
 function loadGames() {
-    fetch('/api/word-game/list/') 
-        .then(res => res.json())
-        .then(data => {
-            const container = document.getElementById("gameListContainer");
-            container.innerHTML = ""; 
-
-            if (data.games && data.games.length > 0) {
-                data.games.forEach((game, index) => {
-                    const div = document.createElement("div");
-                    div.className = `game-item ${index === 0 ? 'active' : ''}`;
-                    div.innerText = game.name;
-                    div.dataset.id = game.id;
-                    
-                    if (index === 0) {
-                        selectedGameId = game.id;
-                        document.getElementById('displayGameTitle').innerText = game.name;
-                    }
-
-                    div.onclick = function() {
-                        document.querySelectorAll('.game-item').forEach(el => el.classList.remove('active'));
-                        this.classList.add('active');
-                        selectedGameId = this.dataset.id;
-                        document.getElementById('displayGameTitle').innerText = this.innerText;
-                        currentPage = 1;
-                        fetchLeaderboard();
-                    };
-                    container.appendChild(div);
-                });
-                fetchLeaderboard();
-            }
+    fetch('/api/word-game/list/').then(res => res.json()).then(data => {
+        const container = document.getElementById("gameListContainer");
+        data.games.forEach((game, i) => {
+            const div = document.createElement("div");
+            div.className = `game-item ${i === 0 ? 'active' : ''}`;
+            div.innerText = game.name;
+            div.onclick = function() {
+                document.querySelectorAll('.game-item').forEach(el => el.classList.remove('active'));
+                this.classList.add('active');
+                selectedGameId = game.id;
+                document.getElementById('displayGameTitle').innerText = game.name;
+            };
+            container.appendChild(div);
+            if (i === 0) selectedGameId = game.id;
         });
+    });
 }
 
 function fetchLeaderboard() {
     const fromDate = document.getElementById("fromDate").value;
     const toDate = document.getElementById("toDate").value;
-    const loader = document.getElementById("loader");
+    document.getElementById("initialState").classList.add("d-none");
+    document.getElementById("leaderboardTable").classList.remove("d-none");
 
-    loader.classList.remove("d-none");
-
-    let url = `/api/word-game/leaderboard/?page=${currentPage}`;
-    if (selectedGameId) url += `&game_id=${selectedGameId}`;
-    if (fromDate) url += `&from_date=${fromDate}`;
-    if (toDate) url += `&to_date=${toDate}`;
-
-    fetch(url)
+    fetch(`/api/word-game/leaderboard/?game_id=${selectedGameId}&from_date=${fromDate}&to_date=${toDate}`)
         .then(res => res.json())
         .then(data => {
-            loader.classList.add("d-none");
-            const tableHead = document.getElementById("tableHead");
-            const tableBody = document.getElementById("tableBody");
-            
-            const payload = data.results || {};
-            const puzzleTitles = payload.puzzle_titles || [];
-            const players = payload.results || [];
+            const head = document.getElementById("tableHead");
+            const body = document.getElementById("tableBody");
+            const titles = data.results.puzzle_titles || [];
+            const players = data.results.results || [];
 
-            if (!players.length) {
-                tableBody.innerHTML = `<tr><td colspan="100" class="text-center py-4 text-soft">No data available.</td></tr>`;
-                return;
-            }
-
+            // Build Head
             let headHTML = `<tr><th class="sticky-rank">#</th><th class="sticky-user">Player</th>`;
-            puzzleTitles.forEach(t => headHTML += `<th class="text-center">${t}</th>`);
-            headHTML += `<th class="text-center">Total</th></tr>`;
-            tableHead.innerHTML = headHTML;
-
-            tableBody.innerHTML = "";
-            players.forEach(player => {
-                let rankClass = player.rank <= 3 ? `rank-${player.rank}` : "";
-                let rowHTML = `<tr>
-                    <td class="sticky-rank"><span class="rank-circle ${rankClass}">${player.rank}</span></td>
-                    <td class="sticky-user fw-bold">${player.username}</td>`;
-                puzzleTitles.forEach(t => rowHTML += `<td class="text-center">${player[t] ?? 0}</td>`);
-                rowHTML += `<td class="text-center fw-bold text-primary">${player.total_score ?? 0}</td></tr>`;
-                tableBody.insertAdjacentHTML("beforeend", rowHTML);
+            titles.forEach((t, i) => {
+                const color = columnTextColors[i % columnTextColors.length];
+                const bg = columnBgColors[i % columnBgColors.length];
+                headHTML += `<th class="text-center" style="color: ${color}; background: ${bg}">${t}</th>`;
             });
+            headHTML += `<th class="text-center total-score-cell">Total</th></tr>`;
+            head.innerHTML = headHTML;
 
-            document.getElementById("pageDisplay").innerText = `Page ${currentPage}`;
-            document.getElementById("prevPage").disabled = !data.previous;
-            document.getElementById("nextPage").disabled = !data.next;
+            // Build Rows
+            body.innerHTML = "";
+            players.forEach(p => {
+                let rowHTML = `<tr><td class="sticky-rank text-secondary">${p.rank}</td><td class="sticky-user">${p.username}</td>`;
+                titles.forEach((t, i) => {
+                    const bg = columnBgColors[i % columnBgColors.length];
+                    rowHTML += `<td class="text-center" style="background: ${bg}; color: #fff; font-weight: 500;">${p[t] ?? 0}</td>`;
+                });
+                rowHTML += `<td class="text-center total-score-cell">${p.total_score ?? 0}</td></tr>`;
+                body.insertAdjacentHTML("beforeend", rowHTML);
+            });
         });
 }
 </script>

@@ -70,7 +70,8 @@ body {
 
 /* User "Me" Highlight */
 .leaderboard-you-row td {
-    background: tomato !important;
+    
+    background: rgb(126, 236, 111) !important;
 }
 
 /* ---------- RANK BADGES ---------- */
@@ -224,7 +225,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
             const row = `
                 <tr class="soccer-row ${isMe ? 'leaderboard-you-row' : ''}">
-                    <td>${rankHtml}</td>
+                    <td style="">${rankHtml}</td>
                     <td class="text-start">
                         <div class="d-flex align-items-center gap-3">
                             <img src="${user.profile_image || '/static/images/user.png'}" 

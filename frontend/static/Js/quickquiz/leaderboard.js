@@ -507,15 +507,15 @@ document.addEventListener("DOMContentLoaded", function () {
             const profileImg = user.profile_image || getStaticImageUrl('user.png');
 
             let badge = '';
-            if (actualRank === 1) badge = `<span class="table-badge table-badge-top">Top Performer</span>`;
-            else if (actualRank === 2) badge = `<span class="table-badge table-badge-fast">Fast Learner</span>`;
-            else if (actualRank === 3) badge = `<span class="table-badge table-badge-consistent">Consistent</span>`;
+            if (actualRank === 1) badge = `<span class="table-badge table-badge-top text-success">Top Performer</span>`;
+            else if (actualRank === 2) badge = `<span class="table-badge table-badge-fast text-primary">Fast Learner</span>`;
+            else if (actualRank === 3) badge = `<span class="table-badge table-badge-consistent text-secondary">Consistent</span>`;
 
             tableBody.innerHTML += `
                 <tr class="align-middle ${isMe ? 'leaderboard-you-row' : ''}">
                     <td class="px-4 py-3">
                         <span class="d-inline-flex align-items-center justify-content-center fw-bold rounded-circle 
-                            ${actualRank === 1 ? 'bg-warning text-dark' : actualRank === 2 ? 'bg-info text-dark' : actualRank === 3 ? 'bg-primary text-dark' : 'text-secondary'}" 
+                            ${actualRank === 1 ? 'bg-warning text-white' : actualRank === 2 ? 'bg-info text-white' : actualRank === 3 ? 'bg-primary text-white' : 'text-white'}" 
                             style="width: 30px; height: 30px; font-size: 0.85rem;">
                             ${actualRank}
                         </span>
@@ -523,11 +523,11 @@ document.addEventListener("DOMContentLoaded", function () {
                     <td class="px-4 py-3">
                         <div class="d-flex align-items-center gap-3">
                             <img src="${profileImg}" class="rounded-circle border border-secondary" style="width: 35px; height: 35px; object-fit: cover;">
-                            <span class="fw-bold ${isMe ? 'text-info' : 'text-white'}">${user.username}</span>
+                            <span class="fw-bold ${isMe ? 'text-white' : 'text-white'}">${user.username}</span>
                         </div>
                     </td>
                     <td class="px-4 py-3 text-secondary">${user.attempts || '0'}</td>
-                    <td class="px-4 py-3 fw-bold ${isMe ? 'text-info' : 'text-white'}">${(user.points || 0).toLocaleString()}</td>
+                    <td class="px-4 py-3 fw-bold ${isMe ? 'text-white' : 'text-white'}">${(user.points || 0).toLocaleString()}</td>
                     <td class="px-4 py-3">${badge}</td>
                 </tr>`;
         });

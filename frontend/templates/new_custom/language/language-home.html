@@ -59,6 +59,17 @@
         .mobile-stack { flex-direction: column-reverse !important; }
         .sticky-top { position: relative !important; top: 0 !important; margin-bottom: 2rem; }
     }
+
+    @media (max-width: 768px) {
+    .dictionary-nav {
+        justify-content: flex-start; /* Forces alignment to the left */
+        border-radius: 15px; /* Slightly less rounded on mobile if preferred */
+        padding-left: 10px;
+    }
+    .dictionary-nav .nav-link {
+        padding: 8px 15px; /* Adjust padding for better thumb-tapping */
+    }
+}
 </style>
 {% endblock %}
 
@@ -73,7 +84,7 @@
             </div>
 
             <nav class="dictionary-nav mb-4 shadow-sm">
-                <ul class="nav nav-pills nav-fill w-100" id="lex-tabs">
+                <ul class="nav nav-pill w-100" id="lex-tabs">
                     <li class="nav-item"><a class="nav-link active" data-tab="word">Vocabulary</a></li>
                     <li class="nav-item"><a class="nav-link" data-tab="idiom">Idioms & Phrases</a></li>
                     <li class="nav-item"><a class="nav-link" data-tab="phrase">Proverbs</a></li>
@@ -143,7 +154,7 @@ async function loadList() {
         const res = await fetch(`${API_BASE}words/az/`);
         const data = await res.json();
         container.innerHTML = "";
-
+        
         Object.entries(data).forEach(([letter, words]) => {
             if (!words.length) return;
             const item = document.createElement("div");
@@ -183,7 +194,7 @@ async function fetchDetails(id) {
     if (!box.innerHTML.trim()) {
         const res = await fetch(`${API_BASE}words/${id}/`);
         const w = await res.json();
-        
+        console.log(w);
         let sensesHtml = w.senses.map((s, i) => `
             <div class="mb-4">
                 <span class="section-label">Definition ${i+1}</span>
@@ -200,7 +211,16 @@ async function fetchDetails(id) {
                     <div class="mb-3">
                         <span class="section-label">Examples</span>
                         <ul class="ps-3 text-muted">
-                            ${s.examples.map(ex => `<li class="fst-italic mb-1">"${ex.sentence}"</li>`).join('')}
+                            ${s.examples.map(ex => `
+                                <li class="mb-2">
+                                    <div class="fst-italic">"${ex.sentence}"</div>
+                                    ${ex.translations?.length ? `
+                                        <div class="text-success small">
+                                            — ${ex.translations[0].translated_text}
+                                        </div>
+                                    ` : ''}
+                                </li>
+                            `).join('')}
                         </ul>
                     </div>
                 ` : ''}

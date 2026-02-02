@@ -195,6 +195,21 @@
       margin-top: 20px;
       
     }
+
+    .navbar .container {
+      max-width: 100% !important;
+      padding-left: 0 !important;
+      padding-right: 0 !important;
+      margin-left: 0 !important;
+      margin-right: 0 !important;
+  }
+
+  /* Optional: If you want the logo and user icon to have a tiny bit of breathing room 
+    without the massive "container" gap, add a small padding back to the nav itself */
+  .navbar {
+      padding-left: 20px;
+      padding-right: 20px;
+  }
     .navbar-toggler:focus,
     .navbar-toggler:active,
     .navbar-toggler:focus-visible {
@@ -431,7 +446,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
     
   <nav class="navbar navbar-expand-lg navbar-light">
-    <div class="container">
+    <div class="container-fluid px-0">
       <div id="clickable" class="d-flex justify-content-center align-items-center">
         <a href="/" style="text-decoration: none;">
           <img src="../../../static/images/jobs_academy5.png" alt="nav-image" width="120" height="80">
