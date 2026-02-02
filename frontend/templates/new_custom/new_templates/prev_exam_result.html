@@ -1,155 +1,290 @@
 {% extends 'new_custom/new_templates/index2.html'%}
-{% block title %}University Questions{% endblock %}
+{% block title %}বিশ্ববিদ্যালয় প্রশ্নব্যাংক{% endblock %}
+
 {% block style %}
+<link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;600;700&display=swap" rel="stylesheet">
 <style>
-    /* CSS for hover effect to show it's clickable */
-    .clickable-div {
-        cursor: pointer; /* Show pointer cursor */
-        transition: background-color 0.2s ease; /* Smooth transition for background color */
+    :root {
+        --eye-comfort-bg: #F4F9F4; /* হালকা মিন্ট ক্রিম - চোখের জন্য আরামদায়ক */
+        --primary-forest: #2D5A27; /* গাঢ় সবুজ */
+        --accent-leaf: #79AC78;    /* পাতা সবুজ */
+        --soft-white: #FFFFFF;
+        --text-dark: #1A3C40;
     }
 
-    .clickable-div:hover {
-        background-color: #f0f0f0; /* Light background on hover */
+    body {
+        background-color: var(--eye-comfort-bg) !important;
+        color: var(--text-dark);
+        font-family: 'Hind Siliguri', sans-serif;
     }
 
-    .border-primary {
-        border: 2px solid #007bff; /* Highlight user icon */
+    .main-container {
+        padding: 40px 0;
     }
-    .d-flex {
-        border-radius: 10px;
+
+    /* ইউনিক টেবিল ডিজাইন */
+    .glass-card {
+        background: var(--soft-white);
+        border-radius: 20px;
+        box-shadow: 0 8px 32px rgba(45, 90, 39, 0.08);
+        border: 1px solid rgba(255, 255, 255, 0.5);
+        overflow: hidden;
     }
-    .text-success {
+
+    .table thead {
+        background-color: var(--primary-forest);
+        color: white;
+    }
+
+    .table thead th {
+        font-weight: 600;
+        padding: 15px;
+        border: none;
+    }
+
+    /* লিডারবোর্ড ডিজাইন */
+    .leaderboard-item {
+        background: var(--soft-white);
+        border-radius: 15px;
+        padding: 12px;
+        margin-bottom: 12px;
+        transition: all 0.3s ease;
+        border-left: 5px solid var(--accent-leaf);
+        display: flex;
+        align-items: center;
+        cursor: pointer;
+    }
+
+    .leaderboard-item:hover {
+        transform: translateX(10px);
+        background: #E8F3E8;
+    }
+
+    .rank-badge {
+        background: var(--primary-forest);
+        color: white;
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
         font-weight: bold;
-        color: #28a745 !important;
-    }
-    .table {
-        border-radius: 10px;
+        font-size: 0.9rem;
     }
 
-    
-    table {
-        border-collapse: collapse; /* Ensures proper rounding */
-        width: 100%;
-        border-radius: 10px; /* Adjust radius as needed */
-        overflow: hidden; /* Hides overflow from corners */
-        border: 2px solid #ccc; /* Optional: Border color */
+    .section-header {
+        border-bottom: 3px solid var(--accent-leaf);
+        display: inline-block;
+        padding-bottom: 5px;
+        margin-bottom: 25px;
+        color: var(--primary-forest);
+        font-weight: 700;
     }
 
-    th{
-        color: #fff;
+    .btn-custom {
+        background-color: var(--accent-leaf);
+        color: white;
+        border-radius: 8px;
+        border: none;
+        padding: 5px 15px;
+        transition: 0.3s;
     }
 
-    th, td {
-        border: 1px solid #ddd;
-        padding: 10px;
-        text-align: left;
+    .btn-custom:hover {
+        background-color: var(--primary-forest);
+        color: white;
     }
 
-    
+    /* গোল্ডেন মেডেল ইফেক্ট প্রথম ৩ জনের জন্য */
+    .leaderboard-item:nth-child(1) { border-left-color: #FFD700; }
+    .leaderboard-item:nth-child(2) { border-left-color: #C0C0C0; }
+    .leaderboard-item:nth-child(3) { border-left-color: #CD7F32; }
 </style>
 {% endblock %}
 
 {% block content %}
-        <div style="background: rgb(255, 253, 208);">
-            
-            <div class="container my-5">
-               
-                <div class="row">
-                    
-                    <!-- User Attempts Section -->
-                    <div class="col-lg-8 col-md-12">
-                        <div style="display: flex; align-items: center; gap:4px; color:#727D73; text-align: center; font-size: 22px; font-weight: 700; text-transform: uppercase; word-spacing: 1px; letter-spacing:2px;">
-                            <h4 class="mb-4" style="color: #FF8080; text-align: center; font-size: 22px; font-weight: 700; text-transform: uppercase; word-spacing: 1px; letter-spacing:2px; margin:0 auto;">Users Attempts 
-                            
-                        </div>
-                       
-                        <div class="overflow-auto">
-                            <table class="table table-bordered text-center rounded-3">
-                            
-                                
-                                <thead class="table-bordered" style=";">
-                                    <tr><td colspan="8" id="exam-details" class="" style="color: #FFB200; text-align: center; background-color: #51829B"> </td></tr>
-                                    <tr class="">
-                                        
-                                        <th style="color: #fff; background: #9BB0C1;">Date</th>
-                                        <th style="color: #fff; background: #9BB0C1;">Name</th>
-                                        <th style="color: #fff; background: #9BB0C1;">Questions</th>
-                                        <th style="color: #fff; background: #9BB0C1;">Answered</th>
-                                        <th style="color: #fff; background: #9BB0C1;">Right</th>
-                                        <th style="color: #fff; background: #9BB0C1;">Wrong</th>
-                                        <th style="color: #fff; background: #9BB0C1;">Pass Mark</th>
-                                        <th style="color: #fff; background: #9BB0C1;">Action</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="user-attempts" style="">
-                                    
-                                    <!-- Dynamically populated -->
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                
-                    <!-- Detailed Attempt Modal -->
-                    <div class="modal fade" id="attempt-details-modal" tabindex="-1" aria-labelledby="attemptDetailsModalLabel" aria-hidden="true">
-                        <div class="modal-dialog modal-lg">
-                            <div class="modal-content">
-                                <div class="modal-header">
-                                    <h5 class="modal-title" id="attemptDetailsModalLabel">Attempt Details</h5>
-                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                                </div>
-                                <div class="modal-body overflow-auto">
-                                    <table class="table table-striped text-center overflow-hidden">
-                                        <thead>
-                                            <tr class="text-white" style="background: #80CBC4">
-                                                <th>Attempt Date</th>
-                                                <th>Attempt Time</th>
-                                                <th>Total Questions</th>
-                                                <th>Answered</th>
-                                                <th>Correct</th>
-                                                <th>Wrong</th>
-                                                <th>Pass Mark</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody id="user-attempts-details">
-                                            <!-- Dynamically populated -->
-                                        </tbody>
-                                    </table>
-
-                                    <div class="my-4">
-                                        <canvas id="attemptChart"></canvas>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                
-                    <!-- Leaderboard Section -->
-                    <div class="col-lg-3 col-md-12">
-                        <h4 class="text-center mb-4" style="color: #FF8080">Top 10 Scorers</h4>
-                        <div class="card">
-                            <div class="card-body">
-                                <div id="leaderboard" class="row row-cols-1 row-cols-md-2 row-cols-lg-1 g-4">
-                                    <!-- Dynamic Entries will be inserted here -->
-                                </div>
-                                
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                
+<div class="main-container">
+    <div class="container">
+        
+        <div class="text-center mb-5">
+            <div id="exam-details" style="display: inline-block; background: white; padding: 10px 30px; border-radius: 50px; box-shadow: 0 4px 15px rgba(0,0,0,0.05);">
+                <h2 id="exam-title-bn" class="mb-0" style="color: var(--primary-forest);">লোড হচ্ছে...</h2>
             </div>
-            
-            <div style="height: 220px;"></div>
-
         </div>
 
-            <!-- MY custom macq-->
+        <div class="row">
+            <div class="col-lg-8">
+                <h4 class="section-header"><i class="fa fa-history"></i> শিক্ষার্থীদের অংশগ্রহণের তালিকা</h4>
+                <div class="glass-card">
+                    <div class="table-responsive">
+                        <table class="table text-center align-middle">
+                            <thead>
+                                <tr>
+                                    <th>তারিখ</th>
+                                    <th>নাম</th>
+                                    <th>মোট প্রশ্ন</th>
+                                    <th>সঠিক</th>
+                                    <th>ভুল</th>
+                                    <th>পাস মার্ক</th>
+                                    <th>অ্যাকশন</th>
+                                </tr>
+                            </thead>
+                            <tbody id="user-attempts">
+                                </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-4">
+                <h4 class="section-header"><i class="fa fa-trophy"></i> সেরা ১০ জন শিক্ষার্থী</h4>
+                <div id="leaderboard">
+                    </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="attempt-details-modal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content" style="border-radius: 20px;">
+            <div class="modal-header border-0">
+                <h5 class="modal-title fw-bold" style="color: var(--primary-forest)">বিস্তারিত ফলাফল রিপোর্ট</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div id="chart-container" style="height: 300px; margin-bottom: 20px;">
+                    <canvas id="attemptChart"></canvas>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-sm table-hover text-center">
+                        <thead class="table-light">
+                            <tr>
+                                <th>সময়</th>
+                                <th>মোট প্রশ্ন</th>
+                                <th>সঠিক উত্তর</th>
+                                <th>ফলাফল</th>
+                            </tr>
+                        </thead>
+                        <tbody id="user-attempts-details"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 {% endblock %}
 
 {% block body_js %}
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script src="../../../static/Js/past_exams/past_exam_result.js"></script>
-{% endblock %}
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const examId = window.location.pathname.split('/')[2];
+        const accessToken = localStorage.getItem('access_token');
 
+        // পরীক্ষার নাম লোড
+        fetch(`/quiz/past-exams/${examId}/`, {
+            headers: { 'Authorization': `Bearer ${accessToken}` }
+        })
+        .then(res => res.json())
+        .then(data => {
+            document.getElementById('exam-title-bn').innerText = data.title;
+        });
+
+        // সেরা ফলাফল লোড
+        fetch(`/quiz/past_exam/best_attempts/?past_exam_id=${examId}`, {
+            headers: { 'Authorization': `Bearer ${accessToken}` }
+        })
+        .then(res => res.json())
+        .then(data => {
+            const container = document.getElementById('user-attempts');
+            container.innerHTML = '';
+            
+            data.forEach(attempt => {
+                const row = `
+                    <tr>
+                        <td>${new Date(attempt.attempt_time).toLocaleDateString('bn-BD')}</td>
+                        <td><strong>${attempt.user_name}</strong></td>
+                        <td>${attempt.total_questions}</td>
+                        <td class="text-success fw-bold">${attempt.correct_answers}</td>
+                        <td class="text-danger">${attempt.wrong_answers}</td>
+                        <td>${attempt.pass_mark}%</td>
+                        <td>
+                            <button class="btn btn-custom btn-sm details-btn" data-user-id="${attempt.user}">
+                                বিস্তারিত
+                            </button>
+                        </td>
+                    </tr>`;
+                container.innerHTML += row;
+            });
+            attachDetailListeners();
+        });
+
+        // লিডারবোর্ড লোড
+        fetch(`/quiz/past_exam/leaderboard/${examId}/`, {
+            headers: { 'Authorization': `Bearer ${accessToken}` }
+        })
+        .then(res => res.json())
+        .then(data => {
+            const container = document.getElementById('leaderboard');
+            container.innerHTML = '';
+            data.forEach((entry, index) => {
+                const percentage = ((entry.score / entry.total_questions) * 100).toFixed(1);
+                container.innerHTML += `
+                    <div class="leaderboard-item" onclick="window.location.href='/user-summary/${entry.user_id}/'">
+                        <div class="rank-badge me-3">${index + 1}</div>
+                        <div class="flex-grow-1">
+                            <h6 class="mb-0 fw-bold">${entry.user}</h6>
+                            <small class="text-muted">স্কোর: ${entry.score} | সঠিক: ${percentage}%</small>
+                        </div>
+                        <i class="fa fa-chevron-right text-muted small"></i>
+                    </div>`;
+            });
+        });
+
+        let myChart = null;
+        function attachDetailListeners() {
+            document.querySelectorAll('.details-btn').forEach(btn => {
+                btn.onclick = function() {
+                    const userId = this.dataset.userId;
+                    fetch(`/quiz/past_exam/user_attempts/?past_exam_id=${examId}&user_id=${userId}`, {
+                        headers: { 'Authorization': `Bearer ${accessToken}` }
+                    })
+                    .then(r => r.json())
+                    .then(data => {
+                        const detailTable = document.getElementById('user-attempts-details');
+                        detailTable.innerHTML = data.map(a => `
+                            <tr>
+                                <td>${new Date(a.attempt_time).toLocaleTimeString('bn-BD')}</td>
+                                <td>${a.total_questions}</td>
+                                <td class="text-success fw-bold">${a.correct_answers}</td>
+                                <td><span class="badge bg-success">সফল</span></td>
+                            </tr>
+                        `).join('');
+
+                        // চার্ট আপডেট
+                        const ctx = document.getElementById('attemptChart').getContext('2d');
+                        if (myChart) myChart.destroy();
+                        myChart = new Chart(ctx, {
+                            type: 'bar',
+                            data: {
+                                labels: data.map((_, i) => `চেষ্টা ${i+1}`),
+                                datasets: [{
+                                    label: 'সঠিক উত্তর',
+                                    data: data.map(a => a.correct_answers),
+                                    backgroundColor: '#79AC78'
+                                }]
+                            },
+                            options: { responsive: true, maintainAspectRatio: false }
+                        });
+
+                        new bootstrap.Modal(document.getElementById('attempt-details-modal')).show();
+                    });
+                };
+            });
+        }
+    });
+</script>
+{% endblock %}

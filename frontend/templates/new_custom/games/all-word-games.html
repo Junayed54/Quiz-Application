@@ -7,6 +7,7 @@
 <style>
     :root {
         --primary-gradient: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+        --secondary-gradient: linear-gradient(135deg, #344422 0%, #22e52f 100%);
     }
 
     body { background-color: #fcfcfd; }
@@ -65,13 +66,14 @@
     .play-btn {
         border-radius: 14px;
         font-weight: 700;
-        padding: 14px;
+        padding: 8px;
         text-transform: uppercase;
         letter-spacing: 1px;
         transition: 0.3s;
         border: none;
         background: var(--primary-gradient);
         color: white;
+        text-decoration: none;
     }
 
     .play-btn:hover {
@@ -150,11 +152,18 @@ async function fetchGames() {
                             <h3 class="h5 fw-bold mb-1 text-dark">${game.title}</h3>
                             <!-- <p class="small text-muted mb-4">Ends: ${new Date(game.end_date).toLocaleDateString()}</p> -->
                             
-                            <div class="mt-auto">
+                            <div class="my-2">
                                 <a href="${game.status === 'active' ? gameUrl : '#'}" 
-                                   class="btn play-btn w-100 ${config.disabled}"
+                                   class=" play-btn w-100 ${config.disabled}"
                                    style="${game.status !== 'active' ? 'opacity: 0.6; cursor: not-allowed;' : ''}">
                                     ${config.action}
+                                </a>
+                            </div>
+                            <div class="mt-2">
+                                <a href="leaderboard/" 
+                                   class=" play-btn w-100 ${config.disabled}"
+                                   style="${game.status !== 'active' ? 'opacity: 0.6; cursor: not-allowed;' : ''}">
+                                    Leaderboard
                                 </a>
                             </div>
                         </div>

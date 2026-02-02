@@ -29,39 +29,64 @@ class WordOfTheDayAPIView(APIView):
 
 # GET /api/words/<id>/
 class WordDetailAPIView(RetrieveAPIView):
-    permission_classes = [AllowAny]
-    serializer_class = WordSerializer
-    lookup_field = "id"
-
-    def get_queryset(self):
-        return (
-            Word.objects
-            .select_related("language", "part_of_speech")
-            .prefetch_related(
-                "forms",
-                "senses__definitions",
-                "senses__examples",
-                "senses__synonyms__word",
-                "senses__antonyms__word",
-            )
+    queryset = (
+        Word.objects
+        .select_related("language", "part_of_speech")
+        .prefetch_related(
+            "forms",
+            "senses__definitions",
+            "senses__examples",
+            "senses__bangla_meanings",
         )
+    )
+    serializer_class = WordSerializer
+    permission_classes = [AllowAny]
+
 
 
 
 # GET /api/words/az/
+# class WordAZAPIView(APIView):
+#     permission_classes = [AllowAny]
+
+#     def get(self, request):
+#         queryset = (
+#             Word.objects
+#             .select_related("part_of_speech", "language")
+#             .prefetch_related(
+#                 "forms",
+#                 "senses__definitions",
+#                 "senses__examples",
+#                 # "senses__synonyms__word",
+#                 # "senses__antonyms__word",
+#             )
+#             .order_by("text")
+#         )
+
+#         grouped_words = defaultdict(list)
+
+#         for word in queryset:
+#             letter = word.text[0].upper()
+#             grouped_words[letter].append(
+#                 WordSerializer(word).data
+#             )
+
+#         return Response(dict(sorted(grouped_words.items())))
+
+
 class WordAZAPIView(APIView):
     permission_classes = [AllowAny]
 
     def get(self, request):
         queryset = (
             Word.objects
-            .select_related("part_of_speech", "language")
-            .prefetch_related(
-                "forms",
-                "senses__definitions",
-                "senses__examples",
-                "senses__synonyms__word",
-                "senses__antonyms__word",
+            .select_related("part_of_speech")
+            .only(
+                "id",
+                "text",
+                "phonetic_uk",
+                "phonetic_us",
+                "part_of_speech__name",
             )
             .order_by("text")
         )
@@ -71,11 +96,10 @@ class WordAZAPIView(APIView):
         for word in queryset:
             letter = word.text[0].upper()
             grouped_words[letter].append(
-                WordSerializer(word).data
+                WordAZSerializer(word).data
             )
 
-        return Response(dict(sorted(grouped_words.items())))
-
+        return Response(grouped_words)
 
 # GET /api/words/search/?q=apple
 class WordSearchAPIView(APIView):

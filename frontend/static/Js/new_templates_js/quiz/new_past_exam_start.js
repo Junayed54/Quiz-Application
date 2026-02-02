@@ -403,13 +403,17 @@ document.addEventListener('DOMContentLoaded', function(){
     let questions = [];
     let answers = [];
     const accessToken = localStorage.getItem('access_token');
+    if (!accessToken) {
+        window.location.replace('/login/');
+        return;
+    }
+
     const questionsContainer = document.getElementById('questions-container');
     const submitButton = document.getElementById('submit-exam');
     const subscriptionDiv = document.getElementById('subscription-section'); // Assuming you have a div with this ID
     let questionsShownCount = 0;
 
     
-
     let timeRemaining;
     const timeDisplay = document.getElementById('time-remaining');
     let timerInterval;

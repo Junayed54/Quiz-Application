@@ -133,28 +133,58 @@ class NewsViewSet(viewsets.ModelViewSet):
     pagination_class = NewsPagination
     
     def get_queryset(self):
-        base_queryset = News.objects.all().order_by("-created_at")
+        queryset = News.objects.all().order_by("-created_at")
 
-        today = self.request.query_params.get('today')
-        if today == 'true':
+        # ✅ Filter by category if category_id exists
+        category_id = self.request.query_params.get("category_id")
+        if category_id:
+            queryset = queryset.filter(category_id=category_id)
+
+        today = self.request.query_params.get("today")
+        if today == "true":
             start = timezone.localtime().replace(
                 hour=0, minute=0, second=0, microsecond=0
             )
             end = start + timedelta(days=1)
 
-            today_news = base_queryset.filter(
+            today_news = queryset.filter(
                 published_date__gte=start,
                 published_date__lt=end
             )
 
-            # ✅ If today has news → return them
+            # ✅ If today has news → return them (category-aware)
             if today_news.exists():
                 return today_news
 
-            # ✅ Else → return last 10 news
-            return base_queryset[:10]
+            # ✅ Else → return last 10 news (category-aware)
+            return queryset[:10]
 
-        return base_queryset
+        return queryset
+    
+    
+    # def get_queryset(self):
+    #     base_queryset = News.objects.all().order_by("-created_at")
+
+    #     today = self.request.query_params.get('today')
+    #     if today == 'true':
+    #         start = timezone.localtime().replace(
+    #             hour=0, minute=0, second=0, microsecond=0
+    #         )
+    #         end = start + timedelta(days=1)
+
+    #         today_news = base_queryset.filter(
+    #             published_date__gte=start,
+    #             published_date__lt=end
+    #         )
+
+    #         # ✅ If today has news → return them
+    #         if today_news.exists():
+    #             return today_news
+
+    #         # ✅ Else → return last 10 news
+    #         return base_queryset[:10]
+
+    #     return base_queryset
 
 # The URL for filtering would be: /api/news/?category_id=5
     

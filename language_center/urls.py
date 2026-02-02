@@ -6,7 +6,7 @@ from django.views.generic import TemplateView
 urlpatterns = [
     path("api/word-of-the-day/", WordOfTheDayAPIView.as_view(), name="word-of-the-day"),
     # path("api/words/", WordListAPIView.as_view(), name="word-list"),
-    path("api/words/<int:id>/", WordDetailAPIView.as_view(), name="word-detail"),
+    path("api/words/<int:pk>/", WordDetailAPIView.as_view(), name="word-detail"),
     path("api/words/az/", WordAZAPIView.as_view(), name="word-az"),
     path("api/words/search/", WordSearchAPIView.as_view(), name="word-search"),
     path("api/language/<int:language_id>/words/upload/", DictionaryExcelUploadAPIView.as_view()),

@@ -171,6 +171,19 @@ class WordSerializer(serializers.ModelSerializer):
             "senses",
         ]
 
+class WordAZSerializer(serializers.ModelSerializer):
+    part_of_speech = serializers.StringRelatedField()
+
+    class Meta:
+        model = Word
+        fields = [
+            "id",
+            "text",
+            "phonetic_uk",
+            "phonetic_us",
+            "part_of_speech",
+        ]
+
 
 class WordListSerializer(serializers.ModelSerializer):
     part_of_speech = PartOfSpeechSerializer(read_only=True)
