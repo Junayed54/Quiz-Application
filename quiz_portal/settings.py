@@ -225,7 +225,7 @@ DATABASES = {
         'NAME': 'quiz_portal',
         'USER': 'root',
         'PASSWORD': 'Bridgers@123',
-        'HOST': 'localhost',
+        'HOST': '127.0.0.1',
         'PORT': '5432',
     }
 }
