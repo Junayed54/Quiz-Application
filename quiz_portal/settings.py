@@ -219,18 +219,27 @@ CHANNEL_LAYERS = {
 
 
 
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.postgresql',
+#         'NAME': 'quiz_portal',
+#         'USER': 'root',
+#         'PASSWORD': 'Bridgers@123',
+#         'HOST': '127.0.0.1',
+#         'PORT': '5432',
+#     }
+# }
+
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'quiz_portal',
-        'USER': 'root',
-        'PASSWORD': 'Bridgers@123',
-        'HOST': '127.0.0.1',
-        'PORT': '5432',
+        'NAME': 'quiz_portal',           # your database name
+        'USER': 'quiz_user',             # your PostgreSQL user
+        'PASSWORD': 'Bridgers@123',      # your PostgreSQL password
+        'HOST': '127.0.0.1',             # important! use TCP instead of socket
+        'PORT': '5433',                   # the port your PostgreSQL is running on
     }
 }
-
-
 
 # your_local_django_project/settings.py
 
