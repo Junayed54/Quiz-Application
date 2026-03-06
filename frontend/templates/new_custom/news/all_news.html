@@ -1,162 +1,190 @@
 {% extends 'new_custom/new_templates/index2.html' %}
-{% block title %}চাকরি নিউজ{% endblock %}
+{% block title %}চাকরি নিউজ | খবর ও আপডেট{% endblock %}
 
 {% block style %}
 <style>
-/* (Your existing CSS remains here, ensuring the list layout is consistent) */
-
-/* 1. Main Content Layout for Desktop */
-.page-layout {
-    display: flex;
-    justify-content: center;
-    gap: 20px; /* Space between main content and ads */
-    padding: 20px 0;
-}
-
-/* 2. Ad Containers Styling (Hidden by default on small screens) */
-.side-ad {
-    width: 160px; /* Standard wide skyscraper width */
-    flex-shrink: 0; /* Prevents the ad from shrinking */
-    display: none; /* Hide on mobile by default */
-}
-
-/* 3. Media Query to Show Ads on Large Screens (e.g., above 992px) */
-@media (min-width: 992px) {
-    .side-ad {
-        display: block; /* Show ads on large screens */
+    :root {
+        --primary-red: #e31e24;
+        --dark-navy: #0a1d37;
+        --text-main: #202124;
+        --text-muted: #5f6368;
+        --bg-body: #f7f9fc;
+        --border-light: #e0e0e0;
     }
 
-    /* Adjust the main content width for better balance */
-    .main-content {
-        max-width: 750px;
+    body {
+        background-color: var(--bg-body);
+        font-family: 'SolaimanLipi', Arial, sans-serif;
+    }
+
+    /* Standard Layout Container */
+    .page-wrapper {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 30px;
+        margin-top: 20px;
+    }
+
+    @media (min-width: 992px) {
+        .page-wrapper {
+            grid-template-columns: 8fr 4fr; /* Main News | Sidebar */
+        }
+    }
+
+    /* Section Heading */
+    .news-section-header {
+        border-bottom: 2px solid var(--primary-red);
+        margin-bottom: 25px;
+        display: flex;
+    }
+
+    .news-section-label {
+        background: var(--primary-red);
+        color: #fff;
+        padding: 8px 20px;
+        font-weight: 700;
+        font-size: 1.25rem;
+    }
+
+    /* News Item Card */
+    .news-card {
+        background: #fff;
+        border-radius: 8px;
+        border: 1px solid var(--border-light);
+        margin-bottom: 20px;
+        padding: 15px;
+        display: flex;
+        gap: 20px;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .news-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 10px 20px rgba(0,0,0,0.05);
+    }
+
+    .news-card-img {
+        flex: 0 0 240px;
+        height: 150px;
+        overflow: hidden;
+        border-radius: 6px;
+    }
+
+    .news-card-img img {
         width: 100%;
+        height: 100%;
+        object-fit: cover;
     }
-}
 
-/* Center the news container within the main content */
-.news-container {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    min-height: 70vh;
-}
-
-/* List container */
-.news-list {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-    width: 100%;
-    max-width: 700px;
-}
-
-/* List items */
-.news-item {
-    border-bottom: 1px solid #e5e7eb;
-    padding: 1rem 0;
-    display: flex;
-    align-items: flex-start;
-    gap: 1rem;
-}
-
-.news-item:last-child {
-    border-bottom: none;
-}
-
-/* Thumbnail image */
-.news-thumb {
-    width: 120px;
-    height: 80px;
-    object-fit: cover;
-    border-radius: 8px;
-    flex-shrink: 0;
-}
-
-/* Title and meta container */
-.news-content {
-    flex: 1;
-}
-
-.news-title {
-    font-size: 1.1rem;
-    font-weight: 700;
-    color: #231651;
-    text-decoration: none;
-    margin-bottom: 0.25rem;
-    display: block;
-}
-
-.news-title:hover {
-    color: #ff4b4b;
-}
-
-.news-meta {
-    font-size: 0.8rem;
-    color: #6b7280;
-    margin-bottom: 0.25rem;
-}
-
-/* Read more link */
-.btn-custom {
-    display: inline-block;
-    background-color: #ff4b4b;
-    color: #fff;
-    border: none;
-    padding: 4px 12px;
-    border-radius: 25px;
-    font-size: 0.8rem;
-    font-weight: 600;
-    text-decoration: none;
-    transition: background-color 0.3s ease;
-}
-
-.btn-custom:hover {
-    background-color: #e64242;
-}
-
-/* Responsive adjustments */
-@media (max-width: 768px) {
-    .news-item {
+    .news-card-content {
+        flex: 1;
+        display: flex;
         flex-direction: column;
-        align-items: flex-start;
     }
-    .news-thumb {
-        width: 100%;
-        height: 180px;
+
+    .news-card-title {
+        font-size: 1.3rem;
+        font-weight: 700;
+        color: var(--dark-navy);
+        text-decoration: none;
+        line-height: 1.4;
+        margin-bottom: 8px;
     }
-}
+
+    .news-card-title:hover {
+        color: var(--primary-red);
+    }
+
+    .news-card-meta {
+        font-size: 0.85rem;
+        color: var(--text-muted);
+        margin-bottom: 10px;
+    }
+
+    .news-card-excerpt {
+        font-size: 0.95rem;
+        color: #444;
+        line-height: 1.6;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+
+    /* Sidebar Widgets */
+    .widget {
+        background: #fff;
+        border: 1px solid var(--border-light);
+        padding: 20px;
+        border-radius: 8px;
+        margin-bottom: 25px;
+    }
+
+    .widget-title {
+        font-weight: 800;
+        font-size: 1.1rem;
+        border-bottom: 1px solid #eee;
+        padding-bottom: 10px;
+        margin-bottom: 15px;
+        color: var(--primary-red);
+    }
+
+    /* Pagination Styling - Standard News Style */
+    .pagination .page-item .page-link {
+        border: none;
+        color: var(--dark-navy);
+        padding: 8px 16px;
+        margin: 0 4px;
+        border-radius: 4px;
+        font-weight: 600;
+        background: #fff;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    }
+
+    .pagination .page-item.active .page-link {
+        background-color: var(--primary-red);
+        color: #fff;
+    }
+
+    .pagination .page-item.disabled .page-link {
+        opacity: 0.5;
+    }
+
+    @media (max-width: 768px) {
+        .news-card {
+            flex-direction: column;
+        }
+        .news-card-img {
+            flex: 0 0 auto;
+            width: 100%;
+            height: 180px;
+        }
+    }
 </style>
 {% endblock %}
 
 {% block content %}
-<main class="container py-5">
-
-    <div class="text-center mb-5">
-        <h1 id="category-header" class="d-none fw-bold text-primary">সংবাদ</h1>
-        <p class="lead text-muted" id="title-header"></p>
+<main class="container py-4">
+    <div class="news-section-header">
+        <div class="news-section-label" id="category-header">সংবাদ লোড হচ্ছে...</div>
     </div>
+    <p class="lead text-muted small mt-2" id="title-header"></p>
 
-    <div class="page-layout">
-        
-        <div class="main-content">
-            <div class="news-container">
-                <div id="loading-message" class="text-center my-5">
-                    <div class="spinner-border text-primary" role="status">
-                        <span class="visually-hidden">Loading...</span>
-                    </div>
-                    <p class="mt-2">সংবাদ লোড হচ্ছে...</p>
-                </div>
+    <div class="page-wrapper">
+        <div class="main-column">
+            <div id="loading-message" class="text-center my-5">
+                <div class="spinner-border text-danger" role="status"></div>
+                <p class="mt-2">সংবাদ লোড হচ্ছে...</p>
+            </div>
 
-                <ul id="news-list" class="news-list"></ul>
+            <div id="news-list"></div>
 
-                <div id="no-news-message" class="text-center d-none my-5">
-                    <p class="lead text-muted">এই ক্যাটাগরিতে কোনো সংবাদ পাওয়া যায়নি।</p>
-                </div>
+            <div id="no-news-message" class="text-center d-none my-5">
+                <p class="lead text-muted">এই ক্যাটাগরিতে কোনো সংবাদ পাওয়া যায়নি।</p>
+            </div>
 
-                <div id="error-message" class="text-center d-none my-5">
-                    <p class="lead text-danger">সংবাদ লোড করতে সমস্যা হয়েছে। অনুগ্রহ করে আবার চেষ্টা করুন।</p>
-                </div>
+            <div id="error-message" class="text-center d-none my-5">
+                <p class="lead text-danger">সংবাদ লোড করতে সমস্যা হয়েছে। আবার চেষ্টা করুন।</p>
             </div>
 
             <nav aria-label="Page navigation" class="mt-5 d-flex justify-content-center">
@@ -164,10 +192,25 @@
             </nav>
         </div>
 
-        </div>
+        <aside class="sidebar-column">
+            <div class="widget">
+                <h4 class="widget-title">বিজ্ঞাপন</h4>
+                <div style="background:#eee; height:250px; display:flex; align-items:center; justify-content:center; color:#888; border: 1px dashed #ccc;">
+                    Google Ad Space
+                </div>
+            </div>
+
+            <div class="widget">
+                <h4 class="widget-title">জনপ্রিয় বিভাগ</h4>
+                <ul class="list-unstyled">
+                    <li class="mb-2"><a href="/news/1/" class="text-decoration-none text-dark">सरकारी চাকরি</a></li>
+                    <li class="mb-2"><a href="/news/2/" class="text-decoration-none text-dark">ব্যাংক জবস</a></li>
+                </ul>
+            </div>
+        </aside>
+    </div>
 </main>
 {% endblock %}
-
 
 {% block body_js %}
 <script>
@@ -178,59 +221,61 @@ document.addEventListener("DOMContentLoaded", async function() {
     const noNewsMessage = document.getElementById('no-news-message');
     const errorMessage = document.getElementById('error-message');
     const categoryHeader = document.getElementById('category-header');
+    const title_header = document.getElementById("title-header");
     
     let currentPage = 1;
-    const itemsPerPage = 9; // Should match DRF pagination setting
-    let categoryId = null; 
+    const itemsPerPage = 9; 
+    let categoryId = getCategoryIdFromUrl(); 
 
-    // 1. Function to extract category ID from URL (e.g., /news/5/)
     function getCategoryIdFromUrl() {
-        // Regex to find the ID after '/news/' and before the next '/' or end of string
         const match = window.location.pathname.match(/\/news\/(\d+)\/?/);
         return match ? match[1] : null;
     }
 
-    // 2. Function to fetch and update the category header name
     async function updateCategoryHeader(id) {
         if (!id) return;
-        
         try {
-            const response = await fetch(`/api/news-categories/${id}/`); // Assuming a retrieve endpoint exists
-            if (!response.ok) throw new Error('Category fetch failed');
-            
-            const category = await response.json();
-            categoryHeader.textContent = category.name + ' - চাকরির খবর';
-            document.title = category.name + ' | চাকরি নিউজ';
+            const response = await fetch(`/api/news-categories/${id}/`);
+            if (response.ok) {
+                const category = await response.json();
+                categoryHeader.textContent = category.name;
+                document.title = category.name + ' | চাকরি নিউজ';
+            }
         } catch (error) {
-            console.warn('Could not fetch category name:', error);
-            categoryHeader.textContent = 'চাকরি খবর'; // Fallback
+            categoryHeader.textContent = 'চাকরি খবর';
         }
     }
 
     function formatDate(dateString) {
         const options = { year: 'numeric', month: 'long', day: 'numeric' };
-        const date = new Date(dateString);
-        return date.toLocaleDateString('bn-BD', options);
+        return new Date(dateString).toLocaleDateString('bn-BD', options);
     }
 
     function renderNewsItems(newsListData) {
         newsList.innerHTML = '';
         if (newsListData.length > 0) {
             newsListData.forEach(news => {
-                const imageUrl = news.images?.length > 0
-                    ? news.images[0].image_url
-                    : 'https://via.placeholder.com/120x80.png?text=No+Image';
-                const newsItem = document.createElement('li');
-                newsItem.className = 'news-item';
-                newsItem.innerHTML = `
-                    <img src="${imageUrl}" alt="${news.title}" class="news-thumb">
-                    <div class="news-content">
-                        <a href="/news/details/${news.id}" class="news-title">${news.title}</a>
-                        <p class="news-meta"><i class="fa-solid fa-calendar-alt"></i> ${formatDate(news.published_date)}</p>
-                        <a href="/news/details/${news.id}" class="btn-custom">বিস্তারিত পড়ুন</a>
-                    </div>
+                const imageUrl = news.images?.length > 0 ? news.images[0].image_url : 'https://via.placeholder.com/240x150.png?text=No+Image';
+                
+                const cardHtml = `
+                    <article class="news-card">
+                        <div class="news-card-img">
+                            <a href="/news/details/${news.id}">
+                                <img src="${imageUrl}" alt="${news.title}">
+                            </a>
+                        </div>
+                        <div class="news-card-content">
+                            <div class="news-card-meta">
+                                <i class="fa-solid fa-calendar-alt text-danger me-1"></i> ${formatDate(news.published_date)}
+                            </div>
+                            <a href="/news/details/${news.id}" class="news-card-title">${news.title}</a>
+                            <p class="news-card-excerpt">
+                                ${news.content ? news.content.substring(0, 140) + '...' : 'বিস্তারিত জানতে খবরটি পড়ুন।'}
+                            </p>
+                        </div>
+                    </article>
                 `;
-                newsList.appendChild(newsItem);
+                newsList.insertAdjacentHTML('beforeend', cardHtml);
             });
             noNewsMessage.classList.add('d-none');
         } else {
@@ -238,28 +283,23 @@ document.addEventListener("DOMContentLoaded", async function() {
         }
     }
 
+    // --- INTEGRATED PAGINATION LOGIC FROM PREVIOUS CODE ---
     function renderPagination(count, next, previous) {
         paginationContainer.innerHTML = '';
-
         const totalPages = Math.ceil(count / itemsPerPage);
         if (totalPages <= 1) return;
 
-        // ... (Pagination logic is unchanged, remains correct) ...
-        
         // Previous button
         const prevItem = document.createElement('li');
         prevItem.className = `page-item ${!previous ? 'disabled' : ''}`;
         prevItem.innerHTML = `<a class="page-link" href="#" data-page="${currentPage - 1}">পূর্ববর্তী</a>`;
         paginationContainer.appendChild(prevItem);
 
-        // Page numbers
+        // Page logic (sliding window)
         let startPage = Math.max(1, currentPage - 2);
         let endPage = Math.min(totalPages, currentPage + 2);
-
-        // Adjust visible range if near edges
         if (currentPage <= 3) endPage = Math.min(totalPages, 5);
         if (currentPage > totalPages - 2) startPage = Math.max(1, totalPages - 4);
-
 
         for (let i = startPage; i <= endPage; i++) {
             const pageItem = document.createElement('li');
@@ -274,7 +314,7 @@ document.addEventListener("DOMContentLoaded", async function() {
         nextItem.innerHTML = `<a class="page-link" href="#" data-page="${currentPage + 1}">পরবর্তী</a>`;
         paginationContainer.appendChild(nextItem);
 
-        // Add click handlers
+        // Click Event Listeners
         paginationContainer.querySelectorAll('.page-link').forEach(link => {
             link.addEventListener('click', function(e) {
                 e.preventDefault();
@@ -282,7 +322,7 @@ document.addEventListener("DOMContentLoaded", async function() {
                 if (newPage >= 1 && newPage <= totalPages && newPage !== currentPage) {
                     currentPage = newPage;
                     fetchAndRenderNews(currentPage);
-                    window.scrollTo({ top: 0, behavior: 'smooth' }); // Scroll to top on page change
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
                 }
             });
         });
@@ -290,54 +330,37 @@ document.addEventListener("DOMContentLoaded", async function() {
 
     async function fetchAndRenderNews(page = 1) {
         loadingMessage.classList.remove('d-none');
-        noNewsMessage.classList.add('d-none');
-        errorMessage.classList.add('d-none');
-
-        // Construct the API URL with category filter
+        newsList.style.opacity = '0.5';
+        
         let apiUrl = `/api/news/?page=${page}`;
-        if (categoryId) {
-            // This assumes your backend has implemented the category_id filtering
-            apiUrl += `&category_id=${categoryId}`;
-        }
+        if (categoryId) apiUrl += `&category_id=${categoryId}`;
 
         try {
             const response = await fetch(apiUrl);
-            if (!response.ok) throw new Error('Network response was not ok');
-
+            if (!response.ok) throw new Error('Network response not ok');
             const data = await response.json();
+            
             loadingMessage.classList.add('d-none');
-
-            // Set itemsPerPage dynamically based on backend pagination size if necessary
-            // For now, keep it hardcoded to 9 (as per your current JS)
+            newsList.style.opacity = '1';
             
             renderNewsItems(data.results);
             renderPagination(data.count, data.next, data.previous);
         } catch (error) {
-            console.error('Error fetching news:', error);
             loadingMessage.classList.add('d-none');
             errorMessage.classList.remove('d-none');
         }
     }
 
-    // --- Initial setup ---
-    categoryId = getCategoryIdFromUrl();
-    
+    // Initial setup
     if (categoryId) {
-        const title_header = document.getElementById("title-header");
-
-        if (categoryId==1){
-            title_header.innerText = "চাকরি, শিক্ষা, এবং অন্যান্য গুরুত্বপূর্ণ খবর।"
-        }
-        else{
-            title_header.innerText = "স্টাডি, ভিসা, ইমিগ্রেশন এবং অন্যান্য গুরুত্বপূর্ণ খবর।"
-
-        }
+        title_header.innerText = (categoryId == 1) 
+            ? "চাকরি, শিক্ষা, এবং অন্যান্য গুরুত্বপূর্ণ খবর।" 
+            : "স্টাডি, ভিসা, ইমিগ্রেশন এবং অন্যান্য গুরুত্বপূর্ণ খবর।";
         updateCategoryHeader(categoryId);
     } else {
-        categoryHeader.textContent = 'সকল খবর'; // Fallback if no ID is found in URL
+        categoryHeader.textContent = 'সকল খবর';
     }
     
-    // Initial load
     fetchAndRenderNews(currentPage);
 });
 </script>
